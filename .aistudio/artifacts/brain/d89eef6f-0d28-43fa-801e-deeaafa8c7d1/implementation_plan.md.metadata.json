@@ -1,0 +1,6 @@
+{
+  "summary":  "MediaPipe Selfie Segmenterの導入による人物セグメンテーションのリアルタイム追随および遅延・枠ズレ解消のための詳細実装計画。\n本物のピクセルレベル人物マスク抽出、追随遅延バッファの最適化、インカメラ時の頭部・上半身の完全追従を実現します。",
+  "updatedAt":  "2026-10-23T10:39:48.221029794Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

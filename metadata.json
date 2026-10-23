@@ -1,0 +1,6 @@
+{
+  "name": "Webcam Vision & Segmentation Studio",
+  "description": "リアルタイムWebカメラ物体認識・セグメンテーション（YOLO-seg, SegFormer, MediaPipe）と比較デモ＆日本語音声読み上げスタジオ",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
