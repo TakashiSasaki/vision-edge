@@ -1,0 +1,2 @@
+Command: ['git', 'diff', '--exit-code', '7b813beeebfa3ded90aacda3d69dab76a5ea991d', '--', 'package.json', 'package-lock.json', '.nvmrc', '.github/workflows/ci.yml', 'playwright.config.ts', 'vitest.config.ts', 'eslint.config.js', 'src/services/dictionary.ts', 'src/services/speechService.ts']
+Exit: 0

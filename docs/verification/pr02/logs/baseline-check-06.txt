@@ -1,0 +1,6 @@
+Command: ['npm', 'run', 'lint']
+Exit: 0
+
+
+> vision-studio@1.0.0 lint
+> eslint . --max-warnings=0

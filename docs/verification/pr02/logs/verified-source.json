@@ -1,0 +1,27 @@
+{
+  "base": "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+  "sha256": {
+    "README.md": "da555c069110d4d2fde96687f651269dd0b3a50f92fab85707d1b4c49dad30c7",
+    "e2e/smoke.spec.ts": "c7f696776eeff9724f16e5e67a05ea7cb0b8046fa3eff9bb6f0cdc5b6cf8c57f",
+    "index.html": "37388c217b688b3bc5f973a4e6ecdc52ebdb2a20ccadc024a1940ee34a7b3b21",
+    "metadata.json": "27636efd1503627908eb5e223b32dffd57b339c5f8a605e2e27caade75a2f385",
+    "src/App.test.tsx": "13831c895bad8658bef9262ff441fb8ef4c2d0d08aecf3a59edea144f526b086",
+    "src/App.tsx": "3558778f7c3793938bd53dab67bc917c89290d8aa0d5195f08bff35efb712f2b",
+    "src/components/ControlPanel.tsx": "0cf0305e42b1c74e533963a1968d2e65c71b56b9af5e02417364be53b9d618f4",
+    "src/components/Header.tsx": "657ae0c41ca4fe2eb039f26a02bc2b2ca91c889431b19c79e40ff4e3da40c53c",
+    "src/components/ModelComparisonTable.tsx": "32a90954bf524900ba6386605de2a30f4f4990cb25baeacbec2f9e5e6044be94",
+    "src/components/ModelStatus.tsx": "41b3d020147bd8a035c7b18f95a8c60dbd226bbe3040f9cc7ed4821f61a44354",
+    "src/components/VisionCanvas.test.tsx": "1ef9c5328ce733448b4306f5a70abec9bdf11da925639c02c4377c7d6b7aa2ce",
+    "src/components/VisionCanvas.tsx": "99addcd2d4f15bb7ac05df0ad8a848d0c3ca62b89504bfdcecea01879d569e40",
+    "src/main.tsx": "6d84ef84ce96b80b0909622959c17d795c60b3d7fed05154e00d027645143476",
+    "src/services/dictionary.test.ts": "9eed4caf65533f764f51bb16c3041d3e07d5e160cba17ebe436e255c3ed0cf8b",
+    "src/services/dictionary.ts": "e5333b12898b7be3becaaf9d9daab4e704f9fc43549decee6e9dab68b2c6e3a2",
+    "src/services/modelRegistry.ts": "d12effee6c147a1404d846bdd44a381c9f9d61bd085f4df085fdb5e472c22d3b",
+    "src/services/speechService.test.ts": "14e03176957ef8f331208d9ae89ea33054dc56a30409f5789e3d5c884000389a",
+    "src/services/speechService.ts": "36bc30c2d510fb0336f0ef24ab0bf08a4c124e94a773cd94d22fbd27c1c2f8f9",
+    "src/services/visionEngine.test.ts": "d1616f88df98c219f5dcb5501b6ac02011865ae4d102139ff6b122ef10b1b430",
+    "src/services/visionEngine.ts": "d016eff86c0685f5876ba84c24b06bd0e8839d611771e6aad5e26acea050f114",
+    "src/test/setup.ts": "268e7200d092daa3225eb06790ed72842e5d3234a53980c90ff463d7b81528d3",
+    "src/types/vision.ts": "573f5c8d2f7c70a1390d61d67336d0f52cab2b6a3a5395ef5f8547bec58ddc24"
+  }
+}

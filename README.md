@@ -4,11 +4,26 @@ VisionStudio AI is a React/TypeScript browser demo for webcam object detection,
 person segmentation, Japanese labels, and optional speech synthesis. It uses Vite,
 Tailwind CSS, and MediaPipe Tasks Vision. Published app: https://vision-edge.ai.studio.
 
-The current engine implements MediaPipe object detection and Selfie Segmenter.
-YOLO-seg and SegFormer are selectable UI entries, but currently reuse the object
-detector with generated polygons; their advertised runtimes are not implemented.
-Backend selection currently changes displayed labels, not the MediaPipe GPU delegate.
-Model accuracy, performance claims, and runtime truthfulness require separate review.
+The runnable models are **Selfie Segmenter** (MediaPipe ImageSegmenter: person
+region mask and enclosing box, not per-person instance segmentation) and
+**EfficientDet-Lite0** (MediaPipe ObjectDetector: boxes and class labels).
+YOLO-seg and SegFormer are unimplemented future candidates and cannot be selected
+or run. `src/services/modelRegistry.ts` defines the names, implementation status,
+outputs and descriptions shared by the engine, selectors, model dialog and HUD.
+
+Each App owns one engine and at most one active task. Model state is separate from
+camera state: `idle`, `loading`, `ready`, or `error`. Only the selected task is
+created; duplicate pending requests share a Promise. Failures retain their WASM or
+task-creation stage and cause, appear in Japanese, and retry only on explicit user
+request. Superseded/unmounted completions cannot become current and their tasks
+are closed. Model changes clear old detections and overlays. Ready means model
+initialization succeeded, not that the camera or inference has succeeded.
+
+The read-only backend label reports the **GPU delegate setting passed to the task
+factory** after successful initialization; actual GPU use has not been measured.
+There is no WebGPU/WASM-SIMD/CPU selector or automatic CPU fallback. FPS/latency
+numbers are hidden as **計測未整備**; correct scheduler/measurement work remains
+PR-04. No fixed speed, accuracy or zero-latency guarantee is made.
 
 ## Requirements and setup
 
@@ -79,17 +94,21 @@ npx playwright install --with-deps chromium
 npm run test:e2e
 ```
 
-Vitest uses jsdom and React Testing Library. Tests cover dictionary translation,
-unknown labels, deterministic colors, initial/unavailable speech synthesis, and
-app rendering/model-selection interactions. The app test mocks the external
-MediaPipe loader, denies camera permission, and supplies a null canvas context.
+Vitest uses jsdom and React Testing Library. Tests cover dictionary/speech boundaries, supported model selection, staged
+initialization errors, explicit retry, shared requests, cancellation, task ownership
+and controlled out-of-order completion. The actual engine/state/UI run with the
+MediaPipe creation boundary injected. Canvas bridge tests use a controlled RAF,
+timers and canvas context, and exercise successful inference dispatch as well as
+old-result invalidation. Camera acquisition is rejected or held pending by tests;
+these are not device tests.
 Unit tests do not evaluate real GPU inference, canvas rendering, or audible speech.
 
 Playwright starts a fresh Vite production preview at `127.0.0.1:4173` and runs the
 real built app in Chromium. It denies camera access and blocks every external
 request, including model/WASM/CDN/font resources. It verifies the header, model
-controls, comparison UI interactions, successful local resources, and no uncaught
-JavaScript exception. It does not replace app modules or mock model outputs.
+supported/disabled model choices, comparison UI, model-load error/retry, continued
+camera controls, required stylesheet CSS MIME/rules/applied styles, successful local
+resources, and no uncaught JavaScript exception. It does not replace app modules or mock model outputs.
 If a compatible Chromium is already installed, a local-only override is available:
 
 ```sh
@@ -103,6 +122,9 @@ The job runs install, typecheck, ESLint, unit tests, production build, browser
 installation, and smoke tests in that order. Failures stop subsequent verification
 steps and fail the job. Browser reports and failure traces/screenshots are uploaded
 for 14 days. CI needs no application secrets and does not deploy or merge.
+
+See [PR-02 verification evidence](docs/verification/pr02.md) for state/task ownership,
+regression coverage and remaining lifecycle/measurement limits.
 
 See [PR-01 verification evidence](docs/verification/pr01.md) for executed checks,
 dependency decisions, environmental limits, and known deferred issues. Real

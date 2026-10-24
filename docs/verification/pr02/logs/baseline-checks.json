@@ -1,0 +1,99 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "baseline-check-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "baseline-check-01.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "ci",
+      "--cache",
+      "/tmp/vision-edge-review-npm-cache"
+    ],
+    "exit": 0,
+    "log": "baseline-check-02.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "baseline-check-03.txt"
+  },
+  {
+    "command": [
+      "chromium",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "baseline-check-04.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "log": "baseline-check-05.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "log": "baseline-check-06.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "log": "baseline-check-07.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "log": "baseline-check-08.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 0,
+    "log": "baseline-check-09.txt"
+  },
+  {
+    "command": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "exit": 0,
+    "log": "baseline-check-10.txt"
+  }
+]
