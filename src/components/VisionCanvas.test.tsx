@@ -51,6 +51,7 @@ beforeEach(() => {
   clearRect = vi.fn();
   const ctx = { clearRect, drawImage: vi.fn(), save: vi.fn(), restore: vi.fn(), beginPath: vi.fn(), arc: vi.fn(), roundRect: vi.fn(), stroke: vi.fn(), fill: vi.fn(), fillText: vi.fn(), measureText: vi.fn(() => ({ width: 20 })) };
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
+  Object.defineProperty(HTMLVideoElement.prototype, 'getVideoPlaybackQuality', { configurable: true, value: function(this: HTMLVideoElement) { return { totalVideoFrames: Math.floor(this.currentTime * 1000000) + 1 }; } });
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
   Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: vi.fn(async () => {
@@ -58,7 +59,7 @@ beforeEach(() => {
     return { getTracks: () => [track] } as unknown as MediaStream;
   }) } });
 });
-afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); Reflect.deleteProperty(navigator, 'mediaDevices'); });
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); Reflect.deleteProperty(HTMLVideoElement.prototype, 'getVideoPlaybackQuality'); Reflect.deleteProperty(navigator, 'mediaDevices'); });
 
 it('runs the ready model through the real App/canvas bridge and removes old list/overlays on switch', async () => {
   const f = fixture();

@@ -158,7 +158,7 @@ for (const fallback of [false, true]) {
       expect(result.calls).toBe(1); expect(result.inputs).toHaveLength(1);
       expect(result.inputs[0].pixels).toHaveLength(64 * 64 * 4);
       expect(result.inputs[0].sourceKind).toBe('video-frame');
-      expect(result.inputs[0].time * 1000000).toBeGreaterThan(result.reservedImageTimestamp);
+      expect(result.inputs[0].time! * 1000000).toBeGreaterThan(result.reservedImageTimestamp);
       expect(result.inputs[0].qualityFrames).toBeGreaterThanOrEqual(result.reservedFrames);
       expect(result.inputs[0].pixels.every((value, i) => value === result.reservedPixels[i])).toBe(false);
       expect(result.requests).toBe(1);

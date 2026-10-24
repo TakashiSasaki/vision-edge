@@ -26,14 +26,23 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
   let timer: ReturnType<typeof setTimeout> | null = null;
   let pending = false;
   let latestArrival: { key: string; mediaTime: number } | null = null;
-  type Progress = { time: number; qualityFrames: number | null; frameTime: number | null };
+  type Pixels = { width: number; height: number; data: Uint8ClampedArray };
+  type Progress = { time: number; qualityFrames: number | null; frameTime: number | null; pixels: Pixels | null };
+  const samePixels = (a: Pixels | null, b: Pixels | null) => a !== null && b !== null
+    && a.width === b.width && a.height === b.height && a.data.length === b.data.length
+    && a.data.every((value, index) => value === b.data[index]);
+  let observedPixels: Pixels | null = null;
+  let pixelCanvas: HTMLCanvasElement | null = null;
+  let pixelContext: CanvasRenderingContext2D | null = null;
   let consumed: { progress: Progress; arrivalKey: string | null } | null = null;
   let lastObserved: string | null = null;
   let running = false;
   const useVideoCallback = typeof video.requestVideoFrameCallback === 'function' && typeof video.cancelVideoFrameCallback === 'function';
   const valid = () => !stopped && current() && video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0;
   const stop = () => {
-    stopped = true; pending = false;
+    stopped = true; pending = false; consumed = null; observedPixels = null;
+    if (pixelCanvas) { pixelCanvas.width = 0; pixelCanvas.height = 0; }
+    pixelCanvas = null; pixelContext = null;
     if (timer !== null) clearTimeout(timer);
     if (callback !== null) {
       if (useVideoCallback) video.cancelVideoFrameCallback(callback);
@@ -49,21 +58,44 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
   // A VideoFrame carries the source image's own timestamp, unlike currentTime
   // (playhead) and playback-quality totals (which can include decoded-ahead data).
   // Keep this immutable image alive until its owning job finishes.
-  const captureInput = (): { source: InferenceInput; progress: Progress; release: () => void } | null => {
+  const captureInput = (ownInput = false): { source: InferenceInput; progress: Progress; release: () => void } | null => {
     const time = video.currentTime;
     if (!Number.isFinite(time) || time < 0) return null;
     if (typeof VideoFrame === 'function') {
       const frame = new VideoFrame(video);
       if (!Number.isFinite(frame.timestamp) || frame.timestamp < 0) { frame.close(); return null; }
-      return { source: frame, progress: { time, qualityFrames: null, frameTime: frame.timestamp }, release: () => frame.close() };
+      return { source: frame, progress: { time, qualityFrames: null, frameTime: frame.timestamp, pixels: null }, release: () => frame.close() };
     }
-    const frames = video.getVideoPlaybackQuality?.().totalVideoFrames;
-    return { source: video, progress: { time, qualityFrames: Number.isFinite(frames) && frames! > 0 ? frames! : null, frameTime: null }, release() {} };
+    const frames = video.getVideoPlaybackQuality?.()?.totalVideoFrames;
+    if (Number.isFinite(frames) && frames! > 0)
+      return { source: video, progress: { time, qualityFrames: frames!, frameTime: null, pixels: null }, release() {} };
+    // A running playhead is not source progress. When no image timestamp or
+    // usable counter exists, bind a private full-resolution pixel snapshot to
+    // its exact bytes. Identical content can coalesce; changed pixels cannot.
+    const canvas = pixelCanvas ??= document.createElement('canvas');
+    if (canvas.width !== video.videoWidth) canvas.width = video.videoWidth;
+    if (canvas.height !== video.videoHeight) canvas.height = video.videoHeight;
+    const context = pixelContext ??= canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) throw new Error('Pixel capture context unavailable');
+    context.drawImage(video, 0, 0);
+    const image = context.getImageData(0, 0, canvas.width, canvas.height);
+    if (image.data.length !== canvas.width * canvas.height * 4) throw new Error('Incomplete pixel capture');
+    const pixels = { width: canvas.width, height: canvas.height, data: image.data };
+    const progress = { time, qualityFrames: null, frameTime: null, pixels };
+    if (!ownInput) return { source: video, progress, release() {} };
+    const owned = document.createElement('canvas'); owned.width = canvas.width; owned.height = canvas.height;
+    try {
+      const copy = owned.getContext('2d');
+      if (!copy) throw new Error('Owned pixel snapshot unavailable');
+      copy.putImageData(image, 0, 0);
+      return { source: owned, progress, release() { owned.width = 0; owned.height = 0; } };
+    } catch (cause) { owned.width = 0; owned.height = 0; throw cause; }
   };
   const arrivalKey = (progress: Progress) => latestArrival?.mediaTime === progress.time ? latestArrival.key : null;
   const alreadyConsumed = (progress: Progress): boolean => {
     if (!consumed) return false;
     const previous = consumed.progress;
+    if (progress.pixels !== null) return samePixels(progress.pixels, previous.pixels);
     if (progress.frameTime !== null && previous.frameTime !== null) return progress.frameTime === previous.frameTime;
     if (progress.qualityFrames !== null && previous.qualityFrames !== null)
       return progress.qualityFrames === previous.qualityFrames;
@@ -79,6 +111,10 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
     return consumed.arrivalKey === key;
   };
   const observe = (progress: Progress) => {
+    if (progress.pixels !== null) {
+      if (!samePixels(progress.pixels, observedPixels)) { observedPixels = progress.pixels; input(); }
+      return;
+    }
     const key = progress.frameTime !== null ? `image:${progress.frameTime}` : progress.qualityFrames !== null ? `quality:${progress.qualityFrames}`
       : `time:${progress.time}:${useVideoCallback ? arrivalKey(progress) ?? '' : ''}`;
     if (key !== lastObserved) { lastObserved = key; input(); }
@@ -100,7 +136,7 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
       const failed = (cause: unknown) => { if (valid()) error(cause); };
       try {
         if (!valid()) { finish(); return; }
-        try { captured = captureInput(); }
+        try { captured = captureInput(true); }
         catch (cause) { captureFailed(cause); finish(); return; }
         if (!captured || !valid() || alreadyConsumed(captured.progress)) { finish(); return; }
         const { progress, source } = captured;

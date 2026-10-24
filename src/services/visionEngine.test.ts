@@ -280,3 +280,12 @@ it('routes an immutable VideoFrame input to the correct SDK task using its intri
   expect(f.engine.detectVideoFrame(frame, 'selfie-segmenter', 0.3)).toMatchObject({ status: 'ready', objects: [] });
   expect(f.segment).toHaveBeenCalledWith(frame, expect.any(Number)); expect(close).not.toHaveBeenCalled();
 });
+it('uses a caller-owned compatibility canvas as the actual SDK image with its own dimensions', async () => {
+  const f = fixture(); const canvas = document.createElement('canvas'); canvas.width = 640; canvas.height = 480;
+  await f.engine.initialize('mediapipe');
+  expect(f.engine.detectVideoFrame(canvas, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [expect.objectContaining({ bbox: { x: 0.1, y: 0.1, width: 0.2, height: 0.2 } })] });
+  expect(f.detect).toHaveBeenCalledWith(canvas, expect.any(Number)); expect(canvas.width).toBe(640);
+  await f.engine.initialize('selfie-segmenter');
+  expect(f.engine.detectVideoFrame(canvas, 'selfie-segmenter', 0.3)).toMatchObject({ status: 'ready', objects: [] });
+  expect(f.segment).toHaveBeenCalledWith(canvas, expect.any(Number)); expect(canvas.width).toBe(640);
+});

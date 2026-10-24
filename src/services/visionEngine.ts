@@ -137,7 +137,8 @@ export class VisionEngine {
     const state = this.state;
     const active = this.activeTask;
     const outputGeneration = this.outputGeneration;
-    const videoReady = 'readyState' in videoElement ? videoElement.readyState >= 2 : videoElement.displayWidth > 0 && videoElement.displayHeight > 0;
+    const videoReady = 'readyState' in videoElement ? videoElement.readyState >= 2 : 'displayWidth' in videoElement
+      ? videoElement.displayWidth > 0 && videoElement.displayHeight > 0 : videoElement.width > 0 && videoElement.height > 0;
     if (state.status !== 'ready' || state.model !== model || active?.model !== model || !videoReady) {
       return { status: 'not-ready', model, requestId: state.requestId };
     }
@@ -145,8 +146,8 @@ export class VisionEngine {
       const frameTimestamp = performance.now();
       let rawObjects: DetectedObject[] = [];
 
-      const vW = ('videoWidth' in videoElement ? videoElement.videoWidth : videoElement.displayWidth) || 640;
-      const vH = ('videoHeight' in videoElement ? videoElement.videoHeight : videoElement.displayHeight) || 480;
+      const vW = ('videoWidth' in videoElement ? videoElement.videoWidth : 'displayWidth' in videoElement ? videoElement.displayWidth : videoElement.width) || 640;
+      const vH = ('videoHeight' in videoElement ? videoElement.videoHeight : 'displayHeight' in videoElement ? videoElement.displayHeight : videoElement.height) || 480;
 
       // 1. SELFIE SEGMENTER: Real pixel-accurate segmentation mask + tight bounding box
       if (active.model === 'selfie-segmenter') {

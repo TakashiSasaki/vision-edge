@@ -3,16 +3,29 @@ import { JobLock, startFrameScheduler } from './frameScheduler';
 let raf: Map<number, FrameRequestCallback>;
 let rvfc: Map<number, VideoFrameRequestCallback>;
 let id: number;
+let pixelIds: WeakMap<HTMLVideoElement, number>;
 beforeEach(() => {
+  pixelIds = new WeakMap();
   vi.useFakeTimers(); raf = new Map(); rvfc = new Map(); id = 0;
+  const contexts = new WeakMap<HTMLCanvasElement, CanvasRenderingContext2D>();
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function(this: HTMLCanvasElement) {
+    const previous = contexts.get(this); if (previous) return previous;
+    let image = 0;
+    const context = { putImageData: (pixels: ImageData) => { image = new DataView(pixels.data.buffer).getFloat64(0, true); }, drawImage: (video: HTMLVideoElement) => { image = pixelIds.get(video) ?? video.currentTime; },
+      getImageData: (_x: number, _y: number, width: number, height: number) => {
+        const data = new Uint8ClampedArray(width * height * 4); new DataView(data.buffer).setFloat64(0, image, true);
+        return { data, width, height };
+      } } as unknown as CanvasRenderingContext2D;
+    contexts.set(this, context); return context;
+  });
   vi.stubGlobal('requestAnimationFrame', vi.fn((fn: FrameRequestCallback) => { raf.set(++id, fn); return id; }));
   vi.stubGlobal('cancelAnimationFrame', vi.fn((key: number) => raf.delete(key)));
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
-function setup(native = false, lock = new JobLock()) {
+function setup(native = false, lock = new JobLock(), dimensions = { width: 640, height: 480 }) {
   let current = true;
   const video = Object.defineProperties(document.createElement('video'), {
-    readyState: { configurable: true, value: 2 }, videoWidth: { value: 640 }, videoHeight: { value: 480 },
+    readyState: { configurable: true, value: 2 }, videoWidth: { value: dimensions.width, configurable: true }, videoHeight: { value: dimensions.height, configurable: true },
   });
   if (native) {
     video.requestVideoFrameCallback = vi.fn(fn => { rvfc.set(++id, fn); return id; });
@@ -87,6 +100,7 @@ it('uses presented-frame identity with coarse media timestamps and ignores inval
   vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenCalledTimes(1); // Bootstrap the already-ready image.
   f.frame(NaN, 1); vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenCalledTimes(1);
   f.frame(0, 1); vi.runOnlyPendingTimers();
+  pixelIds.set(f.video, 2); // A genuinely different image at the same coarse media time.
   f.frame(0, 2); vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenCalledTimes(2);
   f.frame(1, 2); vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenCalledTimes(2); f.stop();
 });
@@ -221,4 +235,53 @@ it('capture failure after acquiring the job token releases that token and permit
   expect(f.work).not.toHaveBeenCalled(); expect(f.error).toHaveBeenCalledTimes(1); expect(close).toHaveBeenCalledTimes(1);
   expect(raf.size + rvfc.size).toBe(0); f.stop();
   vi.stubGlobal('VideoFrame', undefined); const next = setup(false, lock); vi.runOnlyPendingTimers(); expect(next.work).toHaveBeenCalledTimes(1); next.stop();
+});
+it.each([false, true])('pixel-only input ignores playhead/metadata drift, accepts changed images and releases owned canvases (%s)', native => {
+  const f = setup(native); pixelIds.set(f.video, 0);
+  const images: number[] = []; const owned: HTMLCanvasElement[] = [];
+  f.work.mockImplementation((input?: HTMLVideoElement | VideoFrame | HTMLCanvasElement) => {
+    const canvas = input as HTMLCanvasElement; owned.push(canvas);
+    images.push(new DataView(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data.buffer).getFloat64(0, true));
+    return images.length;
+  });
+  vi.runOnlyPendingTimers();
+  for (let i = 1; i <= 60; i++) { f.frame(i / 10, i); vi.advanceTimersByTime(50); }
+  expect(images).toEqual([0]); expect(f.input).toHaveBeenCalledTimes(1);
+  pixelIds.set(f.video, 7); f.frame(6, 60); vi.runOnlyPendingTimers();
+  expect(images).toEqual([0, 7]); expect(f.input).toHaveBeenCalledTimes(2);
+  f.stop(); expect(owned.every(canvas => canvas.width === 0 && canvas.height === 0)).toBe(true);
+});
+it.each([false, true])('pixel snapshot binds late B exactly and never retries a failed unchanged B (%s)', native => {
+  const f = setup(native); const pixels: number[] = [];
+  f.work.mockImplementation((input?: HTMLVideoElement | VideoFrame | HTMLCanvasElement) => {
+    const canvas = input as HTMLCanvasElement;
+    pixels.push(new DataView(canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data.buffer).getFloat64(0, true));
+    throw new Error('SDK');
+  });
+  pixelIds.set(f.video, 1); f.frame(1, 1);
+  pixelIds.set(f.video, 2); f.video.currentTime = 2; vi.runOnlyPendingTimers();
+  f.frame(2.1, 2); vi.runOnlyPendingTimers(); f.frame(3, 3); vi.runOnlyPendingTimers();
+  expect(pixels).toEqual([2]); expect(f.error).toHaveBeenCalledTimes(1);
+  f.work.mockReturnValue(7); pixelIds.set(f.video, 3); f.frame(3, 3); vi.runOnlyPendingTimers();
+  expect(f.adopt).toHaveBeenCalledWith(7); expect(f.work).toHaveBeenCalledTimes(2); f.stop();
+});
+it('pixel comparison checks every byte and dimensions rather than a sparse hash or clock', () => {
+  let current = new Uint8ClampedArray([255, 0, 0, 255, 0, 0, 255, 255]);
+  vi.mocked(HTMLCanvasElement.prototype.getContext).mockImplementation(() => {
+    let image = current.slice();
+    return { drawImage() { image = current.slice(); }, putImageData(pixels: ImageData) { image = new Uint8ClampedArray(pixels.data); },
+      getImageData() { return { data: image.slice() }; } } as unknown as CanvasRenderingContext2D;
+  });
+  const f = setup(false, new JobLock(), { width: 2, height: 1 }); vi.runOnlyPendingTimers();
+  current = new Uint8ClampedArray([0, 0, 255, 255, 255, 0, 0, 255]); // Same sums/histogram, different image.
+  f.frame(0); vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenCalledTimes(2);
+  Object.defineProperties(f.video, { videoWidth: { value: 1 }, videoHeight: { value: 2 } });
+  f.frame(0); vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenCalledTimes(3); f.stop();
+});
+it('pixel capture/readback failure stops callbacks and releases its job lock for explicit recovery', () => {
+  const lock = new JobLock(); const f = setup(false, lock);
+  // Acquisition succeeded; make the owned execution snapshot fail after locking.
+  vi.mocked(HTMLCanvasElement.prototype.getContext).mockReturnValue(null);
+  vi.runOnlyPendingTimers(); expect(f.work).not.toHaveBeenCalled(); expect(f.error).toHaveBeenCalledTimes(1);
+  expect(raf.size + rvfc.size).toBe(0); const token = lock.acquire(); expect(token).not.toBeNull(); lock.release(token!); f.stop();
 });
