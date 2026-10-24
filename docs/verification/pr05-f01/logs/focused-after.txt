@@ -1,0 +1,18 @@
+
+> vision-studio@1.0.0 test
+> vitest run src/services/videoCoordinates.test.ts src/components/VisionCanvas.test.tsx
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+
+ Test Files  2 passed (2)
+      Tests  88 passed (88)
+   Start at  12:22:22
+   Duration  1.64s (environment 56%, tests 22%, transform 9%, setup 8%, import 5%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

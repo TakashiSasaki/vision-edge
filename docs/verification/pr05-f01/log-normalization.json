@@ -1,0 +1,20 @@
+{
+  "operation": "Readable TXT trailing whitespace/terminal blank lines only; original bytes retained in raw-command-logs.zip",
+  "changed": [
+    {
+      "file": "logs/final-03.txt",
+      "rawSha256": "24d0874c683ef121c05f0f2fde6df107483f0565962673234d1b422c8f4dd16c",
+      "readableSha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda"
+    },
+    {
+      "file": "logs/final-04.txt",
+      "rawSha256": "8254c57afd7e6f2c88036baa9a2ad81d75fda7aeea4a3877684e35157794fc2b",
+      "readableSha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c"
+    },
+    {
+      "file": "logs/final-05.txt",
+      "rawSha256": "badc37241c4820a769c335aa82241037874d5669e782671b676486fa8098ee66",
+      "readableSha256": "f80dcc00704d9900d4bc3bc3bb628a424d9b09a351c055d32eb9b86db01d46c4"
+    }
+  ]
+}

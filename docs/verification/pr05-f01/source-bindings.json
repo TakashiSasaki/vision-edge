@@ -1,0 +1,17 @@
+{
+  "reviewHead": "57ee68bc503cfc1633039d948d1b39fcf341caa5",
+  "reviewTree": "a73fd0734d0358de0bbf1a70653f780a3637c659",
+  "reviewedProduct": "be1402c793616788e81a746b6a21b03a25a5a3ec",
+  "reviewedTree": "a6c4f4eaa0d3db02a85861653d27bfcfdb53005d",
+  "replay": "Exact frozen scripts extracted separately; src and locked node_modules symlink to author checkout. No assertion/output-path/import edits. Original files remain unchanged. Generated output is only in this extracted copy.",
+  "probeHashes": {
+    "generate-vectors.py": "d1a00ee9dfb81912cda667d0f5dc41a979b9f74354bee61e16314ae969bc265b",
+    "numeric-oracle.mjs": "b33e3ae1415c2cfcc661d3802ab072b36a688e8cb0965bd0b37bcfca025fb470",
+    "browser-oracle.mjs": "a474034f61be8c8875b9560b9140d8b16da46e515fdfe839150b71d291d02847",
+    "component-oracle.test.tsx": "2a949c432883e45bc05ea8875b623a14323a81f14e76b0053bfc553b22e4b9db",
+    "intrinsic-oracle.mjs": "15f4371d9b5e9b028104d18f3d995eca1fee0194eb9683b3d0a2e7b831736699",
+    "image-oracle.py": "ea3e5619ba3059044485b3583784a2ab924fe2522aaf3ef87b4fa36fc215c7b8"
+  },
+  "beforeHelperSha256": "cbc177d373790a27e4efe7b291bbca24006c8cc1c05d633caac66e639e9fc00e",
+  "afterHelperSha256": "99c904ddbe15f822efbedbd03d428e7def74d609cdf4fe6768d6438bcb1fcfa7"
+}

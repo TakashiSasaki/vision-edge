@@ -1,0 +1,58 @@
+{
+  "phase": "Author correction and replay; independent closure pending",
+  "reviewerEvidence": "57ee68bc503cfc1633039d948d1b39fcf341caa5",
+  "reviewedProduct": "be1402c793616788e81a746b6a21b03a25a5a3ec",
+  "correctiveCode": "c585a09a7642fa21d68967dfe3a5a00be2038652",
+  "before": {
+    "unchangedReviewerOracle": {
+      "exit": 1,
+      "pass": 1580,
+      "fail": 36
+    },
+    "newRegressionsWithOldHelper": {
+      "exit": 1,
+      "pass": 63,
+      "fail": 25
+    }
+  },
+  "after": {
+    "unchangedReviewerOracle": {
+      "exit": 0,
+      "pass": 1616,
+      "fail": 0
+    },
+    "nearBoundaryOracle": {
+      "exit": 0,
+      "pass": 2400,
+      "fail": 0
+    },
+    "focusedTests": {
+      "exit": 0,
+      "pass": 88
+    },
+    "reviewerComponentReplay": {
+      "exit": 0,
+      "pass": 3
+    },
+    "reviewerBrowserReplay": {
+      "exit": 0,
+      "pass": 24
+    },
+    "reviewerNativeIntrinsicReplay": {
+      "exit": 0,
+      "pass": 1
+    },
+    "reviewerImageReplay": {
+      "exit": 0,
+      "pass": 26,
+      "note": "Preserved frozen baseline images plus newly rendered corrected after images, unchanged oracle."
+    },
+    "fullStandard": {
+      "vitest": 187,
+      "playwright": 16,
+      "controls": 7,
+      "allTenCommandsExit": 0
+    }
+  },
+  "browser": "Local explicit system Chromium 154; matched download not retried; hosted matched CI separate."
+}
