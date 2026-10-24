@@ -32,6 +32,8 @@ jobs:
         run: npm run lint
       - name: Unit and component tests
         run: npm test
+      - name: Real-SDK foundation regressions (offline)
+        run: node --test scripts/real-sdk/assets.test.mjs scripts/real-sdk/corrections.test.mjs
       - name: Production build
         run: npm run build
       - name: Install Chromium
