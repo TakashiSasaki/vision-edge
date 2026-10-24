@@ -72,12 +72,20 @@ export class VisionEngine {
     this.closeTask(this.activeTask);
     this.activeTask = null;
     this.resetOutputs();
-    this.publish({ status: 'loading', model, requestId });
     const cancelled = (): InitializationResult => ({ status: 'cancelled', model, requestId });
     const current = () => requestId === this.generation;
-    this.pending = (async (): Promise<InitializationResult> => {
+
+    // Establish ownership before synchronous subscribers can reenter initialize
+    // or dispose. Return this request's Promise, never a replacement's pending.
+    let resolve!: (result: InitializationResult) => void;
+    let reject!: (cause: unknown) => void;
+    const pending = new Promise<InitializationResult>((yes, no) => { resolve = yes; reject = no; });
+    this.pending = pending;
+    this.publish({ status: 'loading', model, requestId });
+    void (async (): Promise<InitializationResult> => {
       let stage: 'wasm' | 'task' = 'wasm';
       try {
+        if (!current()) return cancelled();
         const fileset = await this.factory.load();
         if (!current()) return cancelled();
         stage = 'task';
@@ -99,8 +107,8 @@ export class VisionEngine {
       } finally {
         if (current()) this.pending = null;
       }
-    })();
-    return this.pending;
+    })().then(resolve, reject);
+    return pending;
   }
 
   // Only the owning App calls this on selection cancellation/unmount. An old
