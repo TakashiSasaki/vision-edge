@@ -63,6 +63,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   const latestFrameRef = useRef<DetectionFrame | null>(null);
   const lockRef = useRef(new JobLock());
   const schedulerGeneration = useRef(0);
+  const previousScheduler = useRef<{ engine: VisionEngine; activeModel: RunnableModelType; requestId: number; cameraRequestId: number; threshold: number; retry: number } | null>(null);
   const [inferenceError, setInferenceError] = useState(false);
   const [fault, setFault] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
@@ -105,6 +106,12 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !isCameraActive || !cameraReady || !modelReady || fault) return;
+    const previous = previousScheduler.current;
+    // A threshold change invalidates the attempted old result, but is not a new
+    // camera/model session or an explicit retry of its already consumed image.
+    const bootstrap = !previous || previous.engine !== engine || previous.activeModel !== activeModel || previous.requestId !== requestId || previous.cameraRequestId !== cameraRequestId
+      || previous.retry !== retry || previous.threshold === threshold;
+    previousScheduler.current = { engine, activeModel, requestId, cameraRequestId, threshold, retry };
     const generation = schedulerGeneration.current;
     let stopped = false;
     let drawId: number | null = null;
@@ -132,10 +139,11 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       setFault(stage);
     };
     cancelAcquisition = startFrameScheduler({
-      video, current, lock: lockRef.current, input: () => metrics.input(),
-      work: () => {
+      video, current, bootstrap, lock: lockRef.current, input: () => metrics.input(),
+      captureError: () => fail('映像フレーム取得エラー'),
+      work: input => {
         const start = performance.now();
-        const result = engine.detectVideoFrame(video, activeModel, latest.current.renderOptions.confidenceThreshold);
+        const result = engine.detectVideoFrame(input, activeModel, latest.current.renderOptions.confidenceThreshold);
         const end = performance.now();
         return { result, start, end };
       },

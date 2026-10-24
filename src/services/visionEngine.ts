@@ -1,5 +1,5 @@
 import { FilesetResolver, ObjectDetector, ImageSegmenter, type ImageSegmenterResult } from '@mediapipe/tasks-vision';
-import type { DetectedObject, RunnableModelType, ModelState, FrameResult } from '../types/vision';
+import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput } from '../types/vision';
 import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 
@@ -129,7 +129,7 @@ export class VisionEngine {
   }
 
   public detectVideoFrame(
-    videoElement: HTMLVideoElement,
+    videoElement: InferenceInput,
     model: RunnableModelType,
     confidenceThreshold: number
   ): FrameResult {
@@ -137,15 +137,16 @@ export class VisionEngine {
     const state = this.state;
     const active = this.activeTask;
     const outputGeneration = this.outputGeneration;
-    if (state.status !== 'ready' || state.model !== model || active?.model !== model || videoElement.readyState < 2) {
+    const videoReady = 'readyState' in videoElement ? videoElement.readyState >= 2 : videoElement.displayWidth > 0 && videoElement.displayHeight > 0;
+    if (state.status !== 'ready' || state.model !== model || active?.model !== model || !videoReady) {
       return { status: 'not-ready', model, requestId: state.requestId };
     }
     try {
       const frameTimestamp = performance.now();
       let rawObjects: DetectedObject[] = [];
 
-      const vW = videoElement.videoWidth || 640;
-      const vH = videoElement.videoHeight || 480;
+      const vW = ('videoWidth' in videoElement ? videoElement.videoWidth : videoElement.displayWidth) || 640;
+      const vH = ('videoHeight' in videoElement ? videoElement.videoHeight : videoElement.displayHeight) || 480;
 
       // 1. SELFIE SEGMENTER: Real pixel-accurate segmentation mask + tight bounding box
       if (active.model === 'selfie-segmenter') {

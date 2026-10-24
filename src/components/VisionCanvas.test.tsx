@@ -29,9 +29,9 @@ function fixture() {
   };
   return { engine: new VisionEngine(factory), factory, detector, segmenter, detect, segment };
 }
-function step() {
+function step(advanceVideo = true) {
   act(() => {
-    document.querySelectorAll('video').forEach(video => { video.currentTime += 1 / 30; });
+    if (advanceVideo) document.querySelectorAll('video').forEach(video => { video.currentTime += 1 / 30; });
     for (const [id, callback] of [...raf]) {
       raf.delete(id);
       callback(performance.now());
@@ -58,7 +58,7 @@ beforeEach(() => {
     return { getTracks: () => [track] } as unknown as MediaStream;
   }) } });
 });
-afterEach(() => { cleanup(); vi.useRealTimers(); Reflect.deleteProperty(navigator, 'mediaDevices'); });
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); Reflect.deleteProperty(navigator, 'mediaDevices'); });
 
 it('runs the ready model through the real App/canvas bridge and removes old list/overlays on switch', async () => {
   const f = fixture();
@@ -114,7 +114,8 @@ it('cancels a queued old-generation inference and allows the replacement model t
   view.rerender(<VisionCanvas {...common} activeModel="selfie-segmenter" modelState={f.engine.getState()} />);
   act(() => { vi.advanceTimersByTime(0); });
   expect(f.detect).not.toHaveBeenCalled();
-  step();
+  expect(f.segment).toHaveBeenCalledTimes(1); // Ready replacement bootstraps the existing frame.
+  step(false); // An arrival for that same image must not run it twice.
   act(() => { vi.advanceTimersByTime(0); });
   expect(f.segment).toHaveBeenCalledTimes(1);
   act(() => { vi.advanceTimersByTime(250); });
@@ -217,13 +218,14 @@ it('does not infer the same fallback frame repeatedly, while still drawing and p
   act(() => { vi.advanceTimersByTime(1000); });
   expect(props.onFrame.mock.calls.filter(([frame]) => frame !== null)).toHaveLength(1);
 });
-it.each(['draw', 'notification', 'tts'] as const)('exposes a stopped %s fault and recovers explicitly without recreating camera or model', async stage => {
+it.each(['draw', 'notification', 'tts', 'capture'] as const)('exposes a stopped %s fault and recovers explicitly without recreating camera or model', async stage => {
   const f = fixture(); await f.engine.initialize('mediapipe'); const props = canvasProps(f);
   if (stage === 'tts') props.ttsConfig = { ...props.ttsConfig, enabled: true, autoReadout: true };
   const speak = vi.spyOn(speechService, 'speak').mockImplementation(() => true);
   vi.spyOn(speechService, 'canSpeakLabel').mockReturnValue(true);
   const view = render(<VisionCanvas {...props} />); await act(async () => {}); makeVideoReady(view.container);
   const ctx = view.container.querySelector('canvas')!.getContext('2d')!;
+  if (stage === 'capture') vi.stubGlobal('VideoFrame', class { constructor() { throw new Error('capture fault'); } });
   if (stage === 'draw') vi.mocked(ctx.drawImage).mockImplementationOnce(() => { throw new Error('draw fault'); });
   if (stage === 'notification') props.onFrame.mockImplementationOnce(() => { throw new Error('notify fault'); });
   if (stage === 'tts') speak.mockImplementationOnce(() => { throw new Error('speech fault'); });
@@ -232,6 +234,7 @@ it.each(['draw', 'notification', 'tts'] as const)('exposes a stopped %s fault an
   expect(screen.getByRole('alert')).toHaveTextContent('処理を停止しました');
   const count = f.detect.mock.calls.length;
   step(); act(() => { vi.advanceTimersByTime(500); }); expect(f.detect).toHaveBeenCalledTimes(count);
+  if (stage === 'capture') vi.stubGlobal('VideoFrame', undefined);
   act(() => { fireEvent.click(screen.getByRole('button', { name: '処理を再試行' })); });
   step(); act(() => { vi.advanceTimersByTime(0); }); step(); act(() => { vi.advanceTimersByTime(250); });
   expect(screen.queryByRole('alert')).not.toBeInTheDocument(); expect(f.detect.mock.calls.length).toBeGreaterThan(count);
@@ -300,4 +303,26 @@ it.each(['model', 'camera', 'threshold', 'unmount'] as const)('rejects a result 
   step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); });
   expect(props.onFrame.mock.calls.filter(([frame]) => frame !== null)).toHaveLength(0);
   expect(screen.queryByText('(dog)')).not.toBeInTheDocument();
+});
+it('F01 real canvas/engine: a delayed arrival cannot adopt or announce the same live image twice', async () => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const props = canvasProps(f);
+  props.ttsConfig = { ...props.ttsConfig, enabled: true, autoReadout: true };
+  const gate = vi.spyOn(speechService, 'canSpeakLabel').mockReturnValue(true);
+  vi.spyOn(speechService, 'speak').mockReturnValue(true);
+  const inputs: number[] = [];
+  const detect = f.detect.getMockImplementation()!;
+  f.detect.mockImplementation((videoElement?: HTMLVideoElement) => {
+    // Read the actual SDK-boundary argument rather than the scheduler candidate.
+    inputs.push(videoElement!.currentTime);
+    return detect();
+  });
+  const view = render(<VisionCanvas {...props} />); await act(async () => {}); makeVideoReady(view.container);
+  const video = view.container.querySelector('video')!;
+  video.currentTime = 1; step(false);
+  video.currentTime = 2; act(() => { vi.advanceTimersByTime(0); });
+  act(() => { vi.advanceTimersByTime(500); }); step(false);
+  act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); });
+  expect(inputs).toEqual([2]); expect(gate).toHaveBeenCalledTimes(1);
+  expect(props.onFrame.mock.calls.filter(([frame]) => frame !== null)).toHaveLength(1);
+  expect(screen.getByLabelText('推論FPS')).toHaveTextContent('未計測'); // One distinct successful input, not 2 FPS.
 });

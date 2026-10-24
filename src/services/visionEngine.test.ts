@@ -270,3 +270,13 @@ it('does not refill smoothing state if the scene is cleared reentrantly during S
   expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [] });
   expect(f.engine.getState()).toMatchObject({ status: 'ready', requestId: 1 });
 });
+it('routes an immutable VideoFrame input to the correct SDK task using its intrinsic dimensions without closing its caller-owned handle', async () => {
+  const f = fixture(); const close = vi.fn();
+  const frame = { displayWidth: 640, displayHeight: 480, timestamp: 0, close } as unknown as VideoFrame;
+  await f.engine.initialize('mediapipe');
+  expect(f.engine.detectVideoFrame(frame, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [expect.objectContaining({ bbox: { x: 0.1, y: 0.1, width: 0.2, height: 0.2 } })] });
+  expect(f.detect).toHaveBeenCalledWith(frame, expect.any(Number));
+  await f.engine.initialize('selfie-segmenter');
+  expect(f.engine.detectVideoFrame(frame, 'selfie-segmenter', 0.3)).toMatchObject({ status: 'ready', objects: [] });
+  expect(f.segment).toHaveBeenCalledWith(frame, expect.any(Number)); expect(close).not.toHaveBeenCalled();
+});
