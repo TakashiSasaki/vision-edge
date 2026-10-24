@@ -1,0 +1,50 @@
+{
+  "operation": "Only new review readable logs: strip trailing line whitespace and terminal blank lines. Raw exact hosted decoded text remains in hosted-job.raw.json. Prior evidence and original/adapted observer source bytes untouched.",
+  "records": [
+    {
+      "path": "logs/check-03.txt",
+      "before_sha256": "24d0874c683ef121c05f0f2fde6df107483f0565962673234d1b422c8f4dd16c",
+      "after_sha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda"
+    },
+    {
+      "path": "logs/check-04.txt",
+      "before_sha256": "8254c57afd7e6f2c88036baa9a2ad81d75fda7aeea4a3877684e35157794fc2b",
+      "after_sha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c"
+    },
+    {
+      "path": "logs/check-05.txt",
+      "before_sha256": "9afdd3ce7723f357b7aa6036f2aaeffa6da965ab9d19e1c3d5b885c0a860894b",
+      "after_sha256": "4395bfbd6a4670e3b996d74160cac95db775f61d9eadbc567df2abaa8e602b5b"
+    },
+    {
+      "path": "logs/check-11.txt",
+      "before_sha256": "5756e97f70a15eb5cbb8e830d56cd94dab1fdb7cc3f3637e97f7c0a8228ebe42",
+      "after_sha256": "273636731a2afc1936ef81d504148c132b55f22d69e4424239eb5073f555f658"
+    },
+    {
+      "path": "logs/hosted-job.txt",
+      "before_sha256": "e8f4b8a603f3b3428a41c6eff47dbd51547262eeb8ed278bac69e444d2a6f244",
+      "after_sha256": "035fe865fdd8ab5a69c93ae7e2db82aaec2eb78e011804e57946382bbfd81efd"
+    },
+    {
+      "path": "logs/independent-pixel-app.txt",
+      "before_sha256": "61a7c3d2878daf6f5e202e0154833b39e99a70aa0f0a074d690f7d1f24945081",
+      "after_sha256": "136f15f2a07ca395c16e28d62b703d36e45015cdcf33b5e7d9bb422e781e801b"
+    },
+    {
+      "path": "logs/pr8-logical-adapter.txt",
+      "before_sha256": "c3bd657603dd1e594d504e0e164139a239278dafcd8240d2054b67a1e9183ea0",
+      "after_sha256": "0fb3dad7a3581d6ada8ca5713c9044a01a2c9c85ceec548d894e3071271beb8c"
+    },
+    {
+      "path": "logs/pr8-raw.txt",
+      "before_sha256": "3034e339957d5b3fb51e91d64d3786176fdcea81daf79e6775dd7736f115ab42",
+      "after_sha256": "667cced9c0d523e92808e35d53693c6b0d85dc502bfde1de480f1abc4d433764"
+    },
+    {
+      "path": "logs/pr9-unit.txt",
+      "before_sha256": "d49f9cbbefbdec06886bdb885f411a7295f1aebefb02c4ee1ebe6268ffd36127",
+      "after_sha256": "329a0775375653cc01d12541b512919317e17c256d8bed5834a3710b43006258"
+    }
+  ]
+}

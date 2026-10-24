@@ -1,0 +1,55 @@
+{
+  "reviewed_head": "d92b7b40c7d2dc11572147d052f69f11657540e2",
+  "reviewed_tree": "e357f512a371df5c86950913cf3a43208f0321ce",
+  "start_head": "d92b7b40c7d2dc11572147d052f69f11657540e2",
+  "resume_head": "d92b7b40c7d2dc11572147d052f69f11657540e2",
+  "end_before_publication_head": "d92b7b40c7d2dc11572147d052f69f11657540e2",
+  "moved": false,
+  "main": "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+  "prior_evidence": [
+    {
+      "number": 9,
+      "head": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+      "state": "open",
+      "draft": true
+    },
+    {
+      "number": 8,
+      "head": "c632cf0cbce82b48503540651120c88fff75c8ef",
+      "state": "open",
+      "draft": true
+    }
+  ],
+  "latest_open_prs": [
+    {
+      "number": 7,
+      "title": "fix: reliable video inference scheduling and truthful metrics (PR-04)",
+      "head": "d92b7b40c7d2dc11572147d052f69f11657540e2",
+      "base": "main"
+    },
+    {
+      "number": 9,
+      "title": "review: PR-04 corrections — F02 closed, F01 compatibility defect remains",
+      "head": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+      "base": "fix/inference-scheduler-metrics"
+    },
+    {
+      "number": 8,
+      "title": "review: independently assess PR-04 — FAIL (duplicate input and missing first frame)",
+      "head": "c632cf0cbce82b48503540651120c88fff75c8ef",
+      "base": "fix/inference-scheduler-metrics"
+    },
+    {
+      "number": 4,
+      "title": "review: independently validate PR-01 F01 CSS smoke correction — PASS",
+      "head": "fc0e643afef17fdcd7ab888e59e34991b85cd2a7",
+      "base": "fix/pr01-css-smoke-validation"
+    },
+    {
+      "number": 2,
+      "title": "review: PR-01 foundation — PASS WITH CONDITIONS",
+      "head": "67e0c15e652d88c773a82b06f615b2befa27a695",
+      "base": "chore/build-ci-test-foundation"
+    }
+  ]
+}

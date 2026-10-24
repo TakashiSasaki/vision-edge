@@ -1,0 +1,108 @@
+[WebServer] (node:15587) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:15600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:15631) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:15644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:15668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"missing"} (30.1s)
+(node:15809) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"zero"} (30.1s)
+(node:15956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"missing"} (30.1s)
+(node:16092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"zero"} (30.1s)
+
+
+  1) docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"missing"}
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.evaluate: Test timeout of 30000ms exceeded.
+
+      52 |   await page.goto('/');await expect.poll(()=>page.evaluate(()=>window.review2Input.first.length)).toBe(1);
+      53 |   await page.evaluate(()=>window.releaseReview2());await expect.poll(()=>page.evaluate(()=>window.review2Sdk.calls)).toBe(1);
+    > 54 |   await page.evaluate(()=>window.review2Input.send(null));await page.waitForTimeout(150);
+         |              ^
+      55 |   expect(await page.evaluate(()=>window.review2Sdk.calls)).toBe(1);
+      56 |   await page.waitForTimeout(2100);
+      57 |   await expect(page.getByLabel('推論FPS')).toHaveText('推論: 未計測');
+        at /workspace/pr04-rereview2/docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:54:14
+
+    Error Context: test-results/pixel-app-independent-pixe-a07c2-back-false-quality-missing-/error-context.md
+
+  2) docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"zero"}
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.evaluate: Test timeout of 30000ms exceeded.
+
+      52 |   await page.goto('/');await expect.poll(()=>page.evaluate(()=>window.review2Input.first.length)).toBe(1);
+      53 |   await page.evaluate(()=>window.releaseReview2());await expect.poll(()=>page.evaluate(()=>window.review2Sdk.calls)).toBe(1);
+    > 54 |   await page.evaluate(()=>window.review2Input.send(null));await page.waitForTimeout(150);
+         |              ^
+      55 |   expect(await page.evaluate(()=>window.review2Sdk.calls)).toBe(1);
+      56 |   await page.waitForTimeout(2100);
+      57 |   await expect(page.getByLabel('推論FPS')).toHaveText('推論: 未計測');
+        at /workspace/pr04-rereview2/docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:54:14
+
+    Error Context: test-results/pixel-app-independent-pixe-ad2b4-allback-false-quality-zero-/error-context.md
+
+  3) docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"missing"}
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.evaluate: Test timeout of 30000ms exceeded.
+
+      52 |   await page.goto('/');await expect.poll(()=>page.evaluate(()=>window.review2Input.first.length)).toBe(1);
+      53 |   await page.evaluate(()=>window.releaseReview2());await expect.poll(()=>page.evaluate(()=>window.review2Sdk.calls)).toBe(1);
+    > 54 |   await page.evaluate(()=>window.review2Input.send(null));await page.waitForTimeout(150);
+         |              ^
+      55 |   expect(await page.evaluate(()=>window.review2Sdk.calls)).toBe(1);
+      56 |   await page.waitForTimeout(2100);
+      57 |   await expect(page.getByLabel('推論FPS')).toHaveText('推論: 未計測');
+        at /workspace/pr04-rereview2/docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:54:14
+
+    Error Context: test-results/pixel-app-independent-pixe-eeff3-lback-true-quality-missing-/error-context.md
+
+  4) docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"zero"}
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.evaluate: Test timeout of 30000ms exceeded.
+
+      52 |   await page.goto('/');await expect.poll(()=>page.evaluate(()=>window.review2Input.first.length)).toBe(1);
+      53 |   await page.evaluate(()=>window.releaseReview2());await expect.poll(()=>page.evaluate(()=>window.review2Sdk.calls)).toBe(1);
+    > 54 |   await page.evaluate(()=>window.review2Input.send(null));await page.waitForTimeout(150);
+         |              ^
+      55 |   expect(await page.evaluate(()=>window.review2Sdk.calls)).toBe(1);
+      56 |   await page.waitForTimeout(2100);
+      57 |   await expect(page.getByLabel('推論FPS')).toHaveText('推論: 未計測');
+        at /workspace/pr04-rereview2/docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:54:14
+
+    Error Context: test-results/pixel-app-independent-pixe-8ac20-fallback-true-quality-zero-/error-context.md
+
+  4 failed
+    docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"missing"}
+    docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"zero"}
+    docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"missing"}
+    docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"zero"}
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

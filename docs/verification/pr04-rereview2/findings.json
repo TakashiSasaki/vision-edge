@@ -1,0 +1,86 @@
+{
+  "reviewed_head": "d92b7b40c7d2dc11572147d052f69f11657540e2",
+  "reviewed_tree": "e357f512a371df5c86950913cf3a43208f0321ce",
+  "verdict": "PASS WITH CONDITIONS",
+  "verdict_scope": "Independent synthetic/native-video acceptance of PR-04 at this exact checkpoint. Conditions are disclosed nonblocking limits, not outstanding product fixes or merge/deployment authorization.",
+  "open_product_defect_counts": { "critical": 0, "high": 0, "medium": 0, "low": 0 },
+  "new_findings": [],
+  "per_finding_closure": [
+    {
+      "id": "PR04-F01",
+      "original_severity": "medium",
+      "status": "closed at this checkpoint",
+      "location": { "file": "src/services/frameScheduler.ts", "line": 98 },
+      "related_locations": [
+        { "file": "src/services/frameScheduler.ts", "line": 31 },
+        { "file": "src/services/frameScheduler.ts", "line": 81 },
+        { "file": "src/services/frameScheduler.ts", "line": 90 },
+        { "file": "src/services/frameScheduler.ts", "line": 115 }
+      ],
+      "independent_observations": [
+        "PR #9's native still matrix, real-app case and forced delayed-work matrices now pass against the complete actual corrected source, with only a Canvas-capable observation constructor adaptation and unchanged assertions.",
+        "New independent real App/Canvas/Engine native tests pass for missing and zero quality in both rVFC and RAF paths. A still image and fresh identical presentations yield one SDK call, insufficient-sample inference FPS, expired processing duration and content-stalled state after the timeout.",
+        "Actual SDK input is an owned canvas. Full bytes and dimensions match an independently captured current video reference. Equal-histogram swapped pixels cause a new inference; unchanged byte sequence with different dimensions causes a new inference.",
+        "Failed SDK input is consumed once, later identical presentations do not retry it, changed content recovers, and readback failure produces explicit stopped state and retry without new camera/model creation.",
+        "17 new independent unit boundaries pass, including 1000 duplicate arrivals with one execution/input notification, no pending timer, two created canvases, exact byte/dimension identity, unusable quality values, failure/ownership/generation interleavings and cleanup."
+      ],
+      "closure_limits": [
+        "When neither immutable timestamps nor usable counters exist, the fallback intentionally identifies sampled content changes, not every physical camera frame. Fresh identical-pixel frames coalesce and do not renew content age.",
+        "Pixel capture/compare cost is O(width*height), substantial at high resolutions, and outside the named detectVideoFrame-call duration. See nonblocking condition PR04-C02."
+      ],
+      "evidence": [
+        "logs/pr9-native-adapted.txt",
+        "logs/pr9-app-adapted.txt",
+        "logs/pr9-forced-adapted.txt",
+        "logs/independent-pixel-app-aged-identical.txt",
+        "logs/independent-app-observations.json",
+        "logs/independent-pixel-unit-final-verified.txt",
+        "vectors/pixel-app.spec.mjs",
+        "vectors/pixel-boundaries.test.js"
+      ]
+    },
+    {
+      "id": "PR04-F02",
+      "original_severity": "medium",
+      "status": "closed; closure preserved",
+      "location": { "file": "src/services/frameScheduler.ts", "line": 191 },
+      "independent_observations": [
+        "Original native one-frame probe passes: rVFC 1 and RAF 1 on a pre-presented usable image.",
+        "Current 14-case browser suite retains actual model-gated first-frame, equal-time camera restarts and bootstrap/arrival-race tests.",
+        "New missing/zero-capability actual-app cases each start with one pre-presented usable image without waiting for a second image."
+      ],
+      "evidence": ["logs/pr8-first-native.txt", "logs/check-07.txt", "logs/independent-pixel-app-aged-identical.txt"]
+    }
+  ],
+  "nonblocking_conditions": [
+    {
+      "id": "PR04-C01",
+      "classification": "documented semantic limit",
+      "location": { "file": "src/services/frameScheduler.ts", "line": 72 },
+      "condition": "Retain the explicit content-change/coalescing description. In the pixel-only path, stalled means no changed sampled content; it does not prove missing native frame arrivals or a failed physical camera. Successful inference FPS is not camera FPS. Canvas observations have no source PTS; a synthetic observation timestamp must not be presented as source identity.",
+      "evidence": ["logs/independent-pixel-app-aged-identical.txt", "observer-adaptations.md"]
+    },
+    {
+      "id": "PR04-C02",
+      "classification": "measured performance limit",
+      "location": { "file": "src/services/frameScheduler.ts", "line": 81 },
+      "condition": "Retain O(width*height) CPU/storage and main-thread readback disclosure. Do not infer a real-time device guarantee from this acceptance. Local equal-content polling averaged 0.475 ms at 64x64, 16.165 ms at 640x480, 43.94 ms at 1280x720 and 94.015 ms at 1920x1080, over 20 forced polls each. These are synthetic local observations, not universal bounds or GPU/model performance.",
+      "resource_result": "Each run used one sampler plus one already-released owned canvas, 22 readbacks for bootstrap/execution plus 20 polls, one inference and one input event. All recorded canvas dimensions were zero after stop. Static application state retains no frame queue or history; total browser/SDK/GC heap bounds were not measured.",
+      "evidence": ["logs/pixel-cost.json", "vectors/pixel-cost.mjs"]
+    },
+    {
+      "id": "PR04-C03",
+      "classification": "validation scope",
+      "condition": "Physical cameras/permission UX, downloaded real models, actual GPU execution/utilization, audible TTS, device background behavior and cross-platform/deployment equivalence remain unverified. No missing optional SDK-only timing finding is raised."
+    }
+  ],
+  "retained_future_risks": [
+    {
+      "id": "PR04-R01",
+      "severity": "low",
+      "blocking_acceptance": false,
+      "status": "unchanged future asynchronous-path risk",
+      "description": "A replacement rVFC candidate may need another arrival after an old Promise-valued job unlocks. Production inference is synchronous. Before making it asynchronous, revisit wakeup and cancellation ownership. No Worker migration is required by this review."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-independent/vectors/vitest.config.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 1,
+    "log": "pr8-raw.txt"
+  },
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/vitest.config.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr9-unit.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/native-boundaries.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr9-native-adapted.txt"
+  },
+  {
+    "command": [
+      "node",
+      "node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/playwright.config.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr9-app-adapted.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/forced-native-race.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr9-forced-adapted.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-first-frame.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr8-first-native.txt"
+  }
+]

@@ -1,0 +1,33 @@
+[WebServer] (node:17201) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17222) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:17253) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17266) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:17290) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+INDEPENDENT PIXELS {"fallback":false,"quality":"missing","stages":[{"calls":1,"width":16,"height":8,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"},{"calls":2,"width":16,"height":8,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":3,"width":8,"height":16,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":5,"width":8,"height":16,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"}],"presentations":[{"time":0.20895,"count":2,"width":16,"height":8},{"time":2.041349,"count":3,"width":16,"height":8},{"time":2.748835,"count":4,"width":16,"height":8},{"time":2.976026,"count":5,"width":8,"height":16},{"time":3.134762,"count":6,"width":8,"height":16},{"time":3.235726,"count":7,"width":8,"height":16},{"time":3.619097,"count":8,"width":8,"height":16},{"time":3.754071,"count":9,"width":8,"height":16}],"first":[{"time":0,"count":1}],"requests":1,"calls":6,"successes":5,"samplers":2}
+  ✓  1 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"missing"} (4.4s)
+INDEPENDENT PIXELS {"fallback":false,"quality":"zero","stages":[{"calls":1,"width":16,"height":8,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"},{"calls":2,"width":16,"height":8,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":3,"width":8,"height":16,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":5,"width":8,"height":16,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"}],"presentations":[{"time":0.256115,"count":2,"width":16,"height":8},{"time":2.06977,"count":3,"width":16,"height":8},{"time":2.716411,"count":4,"width":16,"height":8},{"time":2.847,"count":5,"width":8,"height":16},{"time":2.978438,"count":6,"width":8,"height":16},{"time":3.002623,"count":7,"width":8,"height":16},{"time":3.365456,"count":8,"width":8,"height":16},{"time":3.512409,"count":9,"width":8,"height":16}],"first":[{"time":0,"count":1}],"requests":1,"calls":6,"successes":5,"samplers":2}
+  ✓  2 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"zero"} (4.0s)
+INDEPENDENT PIXELS {"fallback":true,"quality":"missing","stages":[{"calls":1,"width":16,"height":8,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"},{"calls":2,"width":16,"height":8,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":3,"width":8,"height":16,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":5,"width":8,"height":16,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"}],"presentations":[{"time":0.276476,"count":2,"width":16,"height":8},{"time":2.103972,"count":3,"width":16,"height":8},{"time":2.734242,"count":4,"width":16,"height":8},{"time":2.863707,"count":5,"width":8,"height":16},{"time":2.998888,"count":6,"width":8,"height":16},{"time":3.039287,"count":7,"width":8,"height":16},{"time":3.415943,"count":8,"width":8,"height":16},{"time":3.54101,"count":9,"width":8,"height":16}],"first":[{"time":0,"count":1}],"requests":1,"calls":6,"successes":5,"samplers":2}
+  ✓  3 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"missing"} (4.1s)
+INDEPENDENT PIXELS {"fallback":true,"quality":"zero","stages":[{"calls":1,"width":16,"height":8,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"},{"calls":2,"width":16,"height":8,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":3,"width":8,"height":16,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":5,"width":8,"height":16,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"}],"presentations":[{"time":0.303971,"count":2,"width":16,"height":8},{"time":2.143411,"count":3,"width":16,"height":8},{"time":2.938904,"count":4,"width":16,"height":8},{"time":3.098453,"count":5,"width":8,"height":16},{"time":3.24147,"count":6,"width":8,"height":16},{"time":3.342107,"count":7,"width":8,"height":16},{"time":3.705729,"count":8,"width":8,"height":16},{"time":3.840118,"count":9,"width":8,"height":16}],"first":[{"time":0,"count":1}],"requests":1,"calls":6,"successes":5,"samplers":2}
+  ✓  4 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"zero"} (4.4s)
+
+  4 passed (21.4s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

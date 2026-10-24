@@ -1,0 +1,87 @@
+[
+  {
+    "evidence_commit": "c632cf0cbce82b48503540651120c88fff75c8ef",
+    "path": "docs/verification/pr04-independent/vectors/canvas.test.jsx",
+    "sha256": "3fcd94fca5db5c6ed8e808d55f59f38499cae51862ec2a22d2a242288dab1aa2"
+  },
+  {
+    "evidence_commit": "c632cf0cbce82b48503540651120c88fff75c8ef",
+    "path": "docs/verification/pr04-independent/vectors/metrics.test.js",
+    "sha256": "0bfe3f398e1c0f5c8ed38bcca8d1d844c39cc38d7970acc8c5ffd699af10904e"
+  },
+  {
+    "evidence_commit": "c632cf0cbce82b48503540651120c88fff75c8ef",
+    "path": "docs/verification/pr04-independent/vectors/native-first-frame.mjs",
+    "sha256": "f84c1b00ce011995453e54d4dc26a5dba63f0b68ef43632fd342f7b1ae3b1b7c"
+  },
+  {
+    "evidence_commit": "c632cf0cbce82b48503540651120c88fff75c8ef",
+    "path": "docs/verification/pr04-independent/vectors/native-frame-race.mjs",
+    "sha256": "f8a224b07c0f1521b472fc56ae6ec92345ca1857963bd548a4d9f6d70c0be42c"
+  },
+  {
+    "evidence_commit": "c632cf0cbce82b48503540651120c88fff75c8ef",
+    "path": "docs/verification/pr04-independent/vectors/run-checks.py",
+    "sha256": "ce87f33a0eeb6c58d4d205a4c16bddaa3f65a1fbc89d6020351916e51dcfac36"
+  },
+  {
+    "evidence_commit": "c632cf0cbce82b48503540651120c88fff75c8ef",
+    "path": "docs/verification/pr04-independent/vectors/scheduler.test.js",
+    "sha256": "9a7bafa6519b9901551714143aa735589f195f00b1d06ae995a2d6af90549ed2"
+  },
+  {
+    "evidence_commit": "c632cf0cbce82b48503540651120c88fff75c8ef",
+    "path": "docs/verification/pr04-independent/vectors/vitest.config.mjs",
+    "sha256": "43c34e0ee88ea30c21e6955f398b5728e040475827303830033fc9d82e7e5fce"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs",
+    "sha256": "eb7d485aca14bdf696ea12d05bf98964fbdf244d3624f9a5b69279e956934d71"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/capture-boundaries.test.js",
+    "sha256": "48d03c390e56fcd677c5c90c703b78464b0b86593e2584db90bb6632a09ba113"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/forced-native-race.mjs",
+    "sha256": "0f34964a9059443018b49ae95bbb6ed74f9a815d3b81ce371f49ca90f67c1003"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/generator-collision.mjs",
+    "sha256": "aa58320479d34ea117ccb408e10517fc9cb94ead7148739c690bbf9e3f1e76e6"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/independentSdk.mjs",
+    "sha256": "620b212e754e605c1c135cf1114d29607dc9f807b363e86ab26f8ab174a59485"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/native-boundaries.mjs",
+    "sha256": "e7c3bee35de88f3d71d8fd7f06350ed4d3ab6fd420330df239328a604fa55d22"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/playwright.config.mjs",
+    "sha256": "6399ce4e63a19a1f1b924f7c8e89455158750f7cd67ce7e49da5fa7e55133255"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/run-checks.py",
+    "sha256": "66166fac100ac5ed375307ee7df1ba2e88ebbdb96164c860b88bbc3144514ea2"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/vite.config.mjs",
+    "sha256": "04ad3f5fd19e7d408bc0154474db9e3ccc7b76e2465fab1be7313f55f2f716ca"
+  },
+  {
+    "evidence_commit": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "path": "docs/verification/pr04-rereview/vectors/vitest.config.mjs",
+    "sha256": "53caf992a3c4d1379d045e5b99152382be8a9cdb09f3126a3fc89d8e4a9bcaf5"
+  }
+]

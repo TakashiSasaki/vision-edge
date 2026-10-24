@@ -1,0 +1,33 @@
+[WebServer] (node:16302) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:16315) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:16346) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:16359) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:16383) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+INDEPENDENT PIXELS {"fallback":false,"quality":"missing","stages":[{"calls":1,"width":16,"height":8,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"},{"calls":2,"width":16,"height":8,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":3,"width":8,"height":16,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":5,"width":8,"height":16,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"}],"presentations":[{"time":0.288075,"count":2,"width":16,"height":8},{"time":2.74873,"count":3,"width":16,"height":8},{"time":2.919302,"count":4,"width":8,"height":16},{"time":3.059494,"count":5,"width":8,"height":16},{"time":3.372322,"count":6,"width":8,"height":16},{"time":3.743134,"count":7,"width":8,"height":16},{"time":3.880211,"count":8,"width":8,"height":16}],"first":[{"time":0,"count":1}],"requests":1,"calls":6,"successes":5,"samplers":2}
+  ✓  1 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"missing"} (4.5s)
+INDEPENDENT PIXELS {"fallback":false,"quality":"zero","stages":[{"calls":1,"width":16,"height":8,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"},{"calls":2,"width":16,"height":8,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":3,"width":8,"height":16,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":5,"width":8,"height":16,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"}],"presentations":[{"time":0.275427,"count":2,"width":16,"height":8},{"time":2.724228,"count":3,"width":16,"height":8},{"time":2.868255,"count":4,"width":8,"height":16},{"time":3.003564,"count":5,"width":8,"height":16},{"time":3.309573,"count":6,"width":8,"height":16},{"time":3.671529,"count":7,"width":8,"height":16},{"time":3.802775,"count":8,"width":8,"height":16}],"first":[{"time":0,"count":1}],"requests":1,"calls":6,"successes":5,"samplers":2}
+  ✓  2 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":false,"quality":"zero"} (4.3s)
+INDEPENDENT PIXELS {"fallback":true,"quality":"missing","stages":[{"calls":1,"width":16,"height":8,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"},{"calls":2,"width":16,"height":8,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":3,"width":8,"height":16,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":5,"width":8,"height":16,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"}],"presentations":[{"time":0.26226,"count":2,"width":16,"height":8},{"time":2.702736,"count":3,"width":16,"height":8},{"time":2.836147,"count":4,"width":8,"height":16},{"time":2.96796,"count":5,"width":8,"height":16},{"time":3.019193,"count":6,"width":8,"height":16},{"time":3.38622,"count":7,"width":8,"height":16},{"time":3.551355,"count":8,"width":8,"height":16}],"first":[{"time":0,"count":1}],"requests":1,"calls":6,"successes":5,"samplers":2}
+  ✓  3 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"missing"} (4.1s)
+INDEPENDENT PIXELS {"fallback":true,"quality":"zero","stages":[{"calls":1,"width":16,"height":8,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"},{"calls":2,"width":16,"height":8,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":3,"width":8,"height":16,"pixelSha256":"3495405b0c60fe33d88ac52116e3ef1f111176864b1deabb944e92186b65b9b5"},{"calls":5,"width":8,"height":16,"pixelSha256":"d3cccbb467c433b9227a0934283444c3be62938e418f09b204c23dc97294eff2"}],"presentations":[{"time":0.34108,"count":2,"width":16,"height":8},{"time":2.795249,"count":3,"width":16,"height":8},{"time":2.983606,"count":4,"width":8,"height":16},{"time":3.113681,"count":5,"width":8,"height":16},{"time":3.42279,"count":6,"width":8,"height":16},{"time":3.817343,"count":7,"width":8,"height":16},{"time":3.946242,"count":8,"width":8,"height":16}],"first":[{"time":0,"count":1}],"requests":1,"calls":6,"successes":5,"samplers":2}
+  ✓  4 docs/verification/pr04-rereview2/vectors/pixel-app.spec.mjs:4:2 › independent pixels, dimensions, aging and capture recovery {"fallback":true,"quality":"zero"} (4.8s)
+
+  4 passed (20.7s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

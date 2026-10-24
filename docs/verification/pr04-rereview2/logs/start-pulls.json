@@ -1,0 +1,92 @@
+[
+  {
+    "number": 7,
+    "title": "fix: reliable video inference scheduling and truthful metrics (PR-04)",
+    "state": "open",
+    "draft": false,
+    "head": "d92b7b40c7d2dc11572147d052f69f11657540e2",
+    "base": "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+    "head_ref": "fix/inference-scheduler-metrics",
+    "base_ref": "main"
+  },
+  {
+    "number": 9,
+    "title": "review: PR-04 corrections — F02 closed, F01 compatibility defect remains",
+    "state": "open",
+    "draft": true,
+    "head": "232b2104a2564d96a01e354bf7aeee7a380733f2",
+    "base": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+    "head_ref": "review/pr04-independent-rereview",
+    "base_ref": "fix/inference-scheduler-metrics"
+  },
+  {
+    "number": 8,
+    "title": "review: independently assess PR-04 — FAIL (duplicate input and missing first frame)",
+    "state": "open",
+    "draft": true,
+    "head": "c632cf0cbce82b48503540651120c88fff75c8ef",
+    "base": "2f4cdea1bc3e6706f49e37116ede8b1881472f7f",
+    "head_ref": "review/pr04-independent-acceptance",
+    "base_ref": "fix/inference-scheduler-metrics"
+  },
+  {
+    "number": 6,
+    "title": "fix: stabilize camera lifecycle and release late streams",
+    "state": "closed",
+    "draft": false,
+    "head": "1b4db0a98605d403994c2f6b34e10720de30c7cd",
+    "base": "d3cafd523617d77c75bcb919da72dce033b5632a",
+    "head_ref": "fix/camera-lifecycle",
+    "base_ref": "main"
+  },
+  {
+    "number": 3,
+    "title": "test: reject missing production CSS in smoke (PR-01 F01)",
+    "state": "closed",
+    "draft": false,
+    "head": "27a5c034cdc7f1e367b704a5f38c6998077d7de7",
+    "base": "2d167050920268f7a8281453dfb47c37e510a455",
+    "head_ref": "fix/pr01-css-smoke-validation",
+    "base_ref": "main"
+  },
+  {
+    "number": 5,
+    "title": "fix: align model capabilities and initialization status with implementation",
+    "state": "closed",
+    "draft": false,
+    "head": "5ed8109f67768f7684af91104868fc0e0678adbd",
+    "base": "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+    "head_ref": "fix/model-capabilities-and-initialization",
+    "base_ref": "main"
+  },
+  {
+    "number": 4,
+    "title": "review: independently validate PR-01 F01 CSS smoke correction — PASS",
+    "state": "open",
+    "draft": true,
+    "head": "fc0e643afef17fdcd7ab888e59e34991b85cd2a7",
+    "base": "accfb1e895f16b4aec32db5dd5025a1bf2782898",
+    "head_ref": "review/pr01-css-smoke-validation",
+    "base_ref": "fix/pr01-css-smoke-validation"
+  },
+  {
+    "number": 2,
+    "title": "review: PR-01 foundation — PASS WITH CONDITIONS",
+    "state": "open",
+    "draft": true,
+    "head": "67e0c15e652d88c773a82b06f615b2befa27a695",
+    "base": "f20474be156522ee6141cde9c2b3a958db8d2457",
+    "head_ref": "review/pr01-build-ci-test-foundation",
+    "base_ref": "chore/build-ci-test-foundation"
+  },
+  {
+    "number": 1,
+    "title": "chore: establish reproducible build, lint, test and CI infrastructure",
+    "state": "closed",
+    "draft": false,
+    "head": "f20474be156522ee6141cde9c2b3a958db8d2457",
+    "base": "90323c00a6cd9a8157bf3eec853dbe5a857f07a1",
+    "head_ref": "chore/build-ci-test-foundation",
+    "base_ref": "main"
+  }
+]

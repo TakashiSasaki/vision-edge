@@ -1,0 +1,123 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.00742650032043457,
+    "log": "check-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.1340944766998291,
+    "log": "check-01.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit": 0,
+    "seconds": 26.98987865447998,
+    "log": "check-02.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 10.009933710098267,
+    "log": "check-03.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 4.961448431015015,
+    "log": "check-04.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 7.013206243515015,
+    "log": "check-05.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 0.997530460357666,
+    "log": "check-06.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 0,
+    "seconds": 55.402576208114624,
+    "log": "check-07.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e:controls"
+    ],
+    "exit": 0,
+    "seconds": 46.73205924034119,
+    "log": "check-08.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+      "d92b7b40c7d2dc11572147d052f69f11657540e2"
+    ],
+    "exit": 0,
+    "seconds": 0.011118888854980469,
+    "log": "check-09.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+      "d92b7b40c7d2dc11572147d052f69f11657540e2"
+    ],
+    "exit": 0,
+    "seconds": 0.005811929702758789,
+    "log": "check-10.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--prefix",
+      "/workspace/pr04-baseline",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 6.0278542041778564,
+    "log": "check-11.txt"
+  }
+]

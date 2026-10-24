@@ -1,0 +1,65 @@
+{
+  "note": "Local synthetic readback/byte-comparison costs only; no model, hardware camera, GPU or universal latency guarantee.",
+  "results": [
+    {
+      "width": 64,
+      "height": 64,
+      "iterations": 20,
+      "work": 1,
+      "input": 1,
+      "canvases": 2,
+      "liveBeforeStop": 1,
+      "allZeroAfterStop": true,
+      "readCalls": 22,
+      "readBytes": 360448,
+      "readMs": 0.9999999981373549,
+      "elapsedMs": 9.5,
+      "meanPollMs": 0.475
+    },
+    {
+      "width": 640,
+      "height": 480,
+      "iterations": 20,
+      "work": 1,
+      "input": 1,
+      "canvases": 2,
+      "liveBeforeStop": 1,
+      "allZeroAfterStop": true,
+      "readCalls": 22,
+      "readBytes": 27033600,
+      "readMs": 23.299999995157123,
+      "elapsedMs": 323.30000000074506,
+      "meanPollMs": 16.165000000037253
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "iterations": 20,
+      "work": 1,
+      "input": 1,
+      "canvases": 2,
+      "liveBeforeStop": 1,
+      "allZeroAfterStop": true,
+      "readCalls": 22,
+      "readBytes": 81100800,
+      "readMs": 61.69999999552965,
+      "elapsedMs": 878.8000000007451,
+      "meanPollMs": 43.94000000003725
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "iterations": 20,
+      "work": 1,
+      "input": 1,
+      "canvases": 2,
+      "liveBeforeStop": 1,
+      "allZeroAfterStop": true,
+      "readCalls": 22,
+      "readBytes": 182476800,
+      "readMs": 141.20000000670552,
+      "elapsedMs": 1880.2999999988824,
+      "meanPollMs": 94.01499999994412
+    }
+  ]
+}

@@ -1,0 +1,341 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.00742650032043457,
+    "log": "check-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.1340944766998291,
+    "log": "check-01.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit": 0,
+    "seconds": 26.98987865447998,
+    "log": "check-02.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 10.009933710098267,
+    "log": "check-03.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 4.961448431015015,
+    "log": "check-04.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 7.013206243515015,
+    "log": "check-05.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 0.997530460357666,
+    "log": "check-06.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 0,
+    "seconds": 55.402576208114624,
+    "log": "check-07.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e:controls"
+    ],
+    "exit": 0,
+    "seconds": 46.73205924034119,
+    "log": "check-08.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+      "d92b7b40c7d2dc11572147d052f69f11657540e2"
+    ],
+    "exit": 0,
+    "seconds": 0.011118888854980469,
+    "log": "check-09.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+      "d92b7b40c7d2dc11572147d052f69f11657540e2"
+    ],
+    "exit": 0,
+    "seconds": 0.005811929702758789,
+    "log": "check-10.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--prefix",
+      "/workspace/pr04-baseline",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 6.0278542041778564,
+    "log": "check-11.txt"
+  },
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-independent/vectors/vitest.config.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 1,
+    "log": "pr8-raw.txt"
+  },
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/vitest.config.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr9-unit.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/native-boundaries.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr9-native-adapted.txt"
+  },
+  {
+    "command": [
+      "node",
+      "node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/playwright.config.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr9-app-adapted.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/forced-native-race.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr9-forced-adapted.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-first-frame.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "log": "pr8-first-native.txt"
+  },
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-compatibility/probes/original-unit.config.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview2-replay",
+    "exit": 0,
+    "adapter": "Author-supplied fixture capability adapter inspected independently; original assertions unchanged. This selects a positive mocked quality path and is NOT evidence for missing-capability correctness.",
+    "log": "pr8-logical-adapter.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview2/vectors/playwright.config.mjs"
+    ],
+    "exit": 1,
+    "phase": "initial fixture without repaint",
+    "result": "4 fixture timeouts at identical-frame request, no later product assertions reached",
+    "log": "independent-pixel-app.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview2/vectors/playwright.config.mjs"
+    ],
+    "exit": 0,
+    "phase": "pixel-capable native producer",
+    "result": "4/4 pass",
+    "log": "independent-pixel-app-final.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview2/vectors/playwright.config.mjs"
+    ],
+    "exit": 0,
+    "phase": "fresh identical presentation near expiry",
+    "result": "4/4 pass",
+    "log": "independent-pixel-app-aged-identical.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "docs/verification/pr04-rereview2/vectors/vitest.config.mjs"
+    ],
+    "exit": 0,
+    "phase": "initial pixel boundaries",
+    "result": "11/11 pass",
+    "log": "independent-pixel-unit.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "docs/verification/pr04-rereview2/vectors/vitest.config.mjs"
+    ],
+    "exit": 0,
+    "phase": "expanded capability returns",
+    "result": "17/17 pass",
+    "log": "independent-pixel-unit-final.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "docs/verification/pr04-rereview2/vectors/vitest.config.mjs"
+    ],
+    "exit": 0,
+    "phase": "final recorder form",
+    "result": "17/17 pass",
+    "log": "independent-pixel-unit-final-verified.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview2/vectors/pixel-cost.mjs"
+    ],
+    "exit": 0,
+    "result": "four resolution/resource structural controls pass",
+    "log": "pixel-cost.json"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "phase": "initial evidence-inclusive",
+    "log": "evidence-typecheck.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 1,
+    "phase": "initial evidence-inclusive",
+    "reason": "no-this-alias in new review unit recorder; fixed without suppression",
+    "log": "evidence-lint.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "phase": "final evidence-inclusive",
+    "log": "evidence-final-typecheck.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "phase": "final evidence-inclusive",
+    "log": "evidence-final-lint.txt"
+  },
+  {
+    "command": [
+      "python",
+      "frozen-source SHA-256 and artifact-marker checks"
+    ],
+    "exit": 0,
+    "result": "56 non-evidence tracked hashes match, normal/e2e/independent build isolation verified"
+  }
+]

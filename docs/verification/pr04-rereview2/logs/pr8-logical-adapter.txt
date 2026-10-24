@@ -1,0 +1,8 @@
+
+ RUN  v5.0.5 /workspace/pr04-rereview2-replay
+
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  09:43:04
+   Duration  2.14s (environment 70%, tests 15%, transform 8%, import 6%, setup 1%)

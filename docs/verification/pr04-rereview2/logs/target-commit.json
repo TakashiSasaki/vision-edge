@@ -1,0 +1,11 @@
+{
+  "sha": "d92b7b40c7d2dc11572147d052f69f11657540e2",
+  "tree": {
+    "sha": "e357f512a371df5c86950913cf3a43208f0321ce",
+    "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/git/trees/e357f512a371df5c86950913cf3a43208f0321ce"
+  },
+  "parents": [
+    "316f149d68e08e50705e00869455835a28ea483d"
+  ],
+  "message": "docs: record residual F01 compatibility correction evidence"
+}

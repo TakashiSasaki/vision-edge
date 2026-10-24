@@ -1,0 +1,96 @@
+[
+  {
+    "fallback": false,
+    "compatibility": "immutable",
+    "blocked": true,
+    "reservedTimestamp": 50000,
+    "observations": [
+      {
+        "timestamp": 350000,
+        "samePixels": false,
+        "kind": "immutable",
+        "time": 0.380053,
+        "quality": 12
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": false,
+    "compatibility": "live-quality",
+    "blocked": true,
+    "reservedTimestamp": 50000,
+    "observations": [
+      {
+        "timestamp": 350000,
+        "samePixels": false,
+        "kind": "live",
+        "time": 0.398913,
+        "quality": 12
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": false,
+    "compatibility": "live-time",
+    "blocked": true,
+    "reservedTimestamp": 50000,
+    "observations": [
+      {
+        "timestamp": 0,
+        "samePixels": false,
+        "kind": "live",
+        "time": 0.387901
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "immutable",
+    "blocked": true,
+    "reservedTimestamp": 0,
+    "observations": [
+      {
+        "timestamp": 300000,
+        "samePixels": false,
+        "kind": "immutable",
+        "time": 0.336733,
+        "quality": 11
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "live-quality",
+    "blocked": true,
+    "reservedTimestamp": 0,
+    "observations": [
+      {
+        "timestamp": 150000,
+        "samePixels": false,
+        "kind": "live",
+        "time": 0.336369,
+        "quality": 9
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "live-time",
+    "blocked": true,
+    "reservedTimestamp": 0,
+    "observations": [
+      {
+        "timestamp": 0,
+        "samePixels": false,
+        "kind": "live",
+        "time": 0.337871
+      }
+    ],
+    "errors": []
+  }
+]

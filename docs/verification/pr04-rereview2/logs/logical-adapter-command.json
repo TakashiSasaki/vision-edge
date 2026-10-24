@@ -1,0 +1,13 @@
+{
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "docs/verification/pr04-compatibility/probes/original-unit.config.mjs"
+  ],
+  "cwd": "/workspace/pr04-rereview2-replay",
+  "exit": 0,
+  "adapter": "Author-supplied fixture capability adapter inspected independently; original assertions unchanged. This selects a positive mocked quality path and is NOT evidence for missing-capability correctness.",
+  "log": "pr8-logical-adapter.txt"
+}

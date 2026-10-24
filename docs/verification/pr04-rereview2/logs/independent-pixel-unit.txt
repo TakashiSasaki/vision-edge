@@ -1,0 +1,14 @@
+
+ RUN  v5.0.5 /workspace/pr04-rereview2
+
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  09:40:18
+   Duration  1.07s (environment 80%, transform 10%, tests 7%, import 3%, worker 1%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

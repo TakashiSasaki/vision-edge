@@ -1,0 +1,41 @@
+[
+  {
+    "directory": "dist",
+    "markers": {
+      "visionSdkProbe": false,
+      "visionSdkObserverFrame": false,
+      "Test-only SDK fault": false,
+      "review2Sdk": false,
+      "review2ModelGate": false
+    },
+    "sha256": {
+      "dist/assets/index-BBY8N3Rl.js": "97b1cf95a9f4d150d4198ae6ec501c2abd7ab62fe95c1bef630bdbab0160c56d"
+    }
+  },
+  {
+    "directory": ".cache/vision-edge-e2e",
+    "markers": {
+      "visionSdkProbe": true,
+      "visionSdkObserverFrame": true,
+      "Test-only SDK fault": true,
+      "review2Sdk": false,
+      "review2ModelGate": false
+    },
+    "sha256": {
+      ".cache/vision-edge-e2e/assets/index-DDM_Vpfz.js": "56f0ae621bc5b3991ea424fdd8b3ab09235f94e4470d2663622e37a44b06e94b"
+    }
+  },
+  {
+    "directory": ".cache/pr04-rereview2",
+    "markers": {
+      "visionSdkProbe": false,
+      "visionSdkObserverFrame": false,
+      "Test-only SDK fault": false,
+      "review2Sdk": true,
+      "review2ModelGate": true
+    },
+    "sha256": {
+      ".cache/pr04-rereview2/assets/index-l3Rnd4FN.js": "ecf58fbdc36ad5cfc7b33f4883deffe8d612d7a2eb51c4afba251c96bf0104df"
+    }
+  }
+]
