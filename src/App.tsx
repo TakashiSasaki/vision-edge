@@ -1,38 +1,38 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  BackendOption,
-  BenchmarkStats, 
+import React, { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
+import {
+  DetectionFrame,
   CameraFacingMode,
-  DetectedObject, 
-  ModelType, 
-  RenderOptions, 
-  TTSConfig 
+  RunnableModelType,
+  RenderOptions,
+  TTSConfig
 } from './types/vision';
 import { Header } from './components/Header';
 import { VisionCanvas } from './components/VisionCanvas';
 import { ControlPanel } from './components/ControlPanel';
 import { ModelComparisonTable } from './components/ModelComparisonTable';
-import { MODELS_METADATA } from './services/visionEngine';
+import { VisionEngine } from './services/visionEngine';
+import { modelMetadata, isRunnableModel } from './services/modelRegistry';
+import { ModelStatus } from './components/ModelStatus';
 import { speechService } from './services/speechService';
 
-export default function App() {
-  const [activeModel, setActiveModel] = useState<ModelType>('selfie-segmenter');
-  const [selectedBackend, setSelectedBackend] = useState<BackendOption>('auto');
+export default function App({ engine: suppliedEngine }: { engine?: VisionEngine } = {}) {
+  const [engine] = useState(() => suppliedEngine ?? new VisionEngine());
+  const modelState = useSyncExternalStore(engine.subscribe, engine.getState);
+  const [activeModel, setActiveModel] = useState<RunnableModelType>('selfie-segmenter');
   const [facingMode, setFacingMode] = useState<CameraFacingMode>('user');
   const [isCameraActive, setIsCameraActive] = useState<boolean>(true);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isComparisonOpen, setIsComparisonOpen] = useState<boolean>(false);
 
   const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
-  const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([]);
-  const [, setStats] = useState<BenchmarkStats>({
-    inferenceTimeMs: 12,
-    fps: 60,
-    objectCount: 0,
-    backend: 'MediaPipe GPU (WebGL)',
-    resolution: '640x480',
-    processedFrames: 0
-  });
+  const [lastFrame, setLastFrame] = useState<DetectionFrame | null>(null);
+  const hasCurrentFrame = isCameraActive && modelState.status === 'ready'
+    && modelState.model === activeModel && lastFrame?.model === activeModel
+    && lastFrame.requestId === modelState.requestId;
+  const detectedObjects = hasCurrentFrame ? lastFrame.objects : [];
+
+  useEffect(() => () => engine.dispose(), [engine]);
+  useEffect(() => { void engine.initialize(activeModel); }, [engine, activeModel]);
 
   const [renderOptions, setRenderOptions] = useState<RenderOptions>({
     showBoxes: true,
@@ -63,11 +63,14 @@ export default function App() {
     };
   }, []);
 
-  const handleSelectModel = (model: ModelType) => {
+  const handleSelectModel = (model: RunnableModelType) => {
+    if (!isRunnableModel(model) || model === activeModel) return;
+    engine.dispose();
+    setLastFrame(null);
     setActiveModel(model);
     setSelectedObjectId(undefined);
     if (ttsConfig.enabled) {
-      speechService.speak(`${MODELS_METADATA[model].name}に切り替えました`, 'model-switch', ttsConfig, 'manual');
+      speechService.speak(`${modelMetadata(model).name}に切り替えました`, 'model-switch', ttsConfig, 'manual');
     }
   };
 
@@ -75,10 +78,7 @@ export default function App() {
     setFacingMode(prev => (prev === 'user' ? 'environment' : 'user'));
   };
 
-  const handleStatsUpdate = useCallback((newStats: BenchmarkStats, newObjects: DetectedObject[]) => {
-    setStats(newStats);
-    setDetectedObjects(newObjects);
-  }, []);
+  const handleFrame = useCallback((frame: DetectionFrame | null) => { setLastFrame(frame); }, []);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col font-sans">
@@ -86,8 +86,7 @@ export default function App() {
       <Header
         activeModel={activeModel}
         onSelectModel={handleSelectModel}
-        selectedBackend={selectedBackend}
-        onSelectBackend={setSelectedBackend}
+        modelState={modelState}
         isCameraActive={isCameraActive}
         onToggleCamera={() => setIsCameraActive(prev => !prev)}
         ttsEnabled={ttsConfig.enabled}
@@ -96,13 +95,16 @@ export default function App() {
         onOpenComparison={() => setIsComparisonOpen(true)}
       />
 
+      <ModelStatus state={modelState} onRetry={() => { void engine.initialize(activeModel); }} />
+
       {/* Zero-Scroll Main Stage (Side-by-Side) */}
       <main className="flex-1 overflow-hidden p-2.5 sm:p-4 max-w-7xl w-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch">
         {/* Left Column: Compact Camera Preview with In-Preview Flip Button */}
         <div className="md:col-span-8 h-full flex flex-col justify-center overflow-hidden">
           <VisionCanvas
             activeModel={activeModel}
-            selectedBackend={selectedBackend}
+            engine={engine}
+            modelState={modelState}
             facingMode={facingMode}
             onToggleFacingMode={handleToggleFacingMode}
             renderOptions={renderOptions}
@@ -112,7 +114,7 @@ export default function App() {
             onCameraStop={() => setIsCameraActive(false)}
             onSelectObject={(obj) => setSelectedObjectId(obj.id)}
             selectedObjectId={selectedObjectId}
-            onStatsUpdate={handleStatsUpdate}
+            onFrame={handleFrame}
           />
         </div>
 
@@ -125,6 +127,7 @@ export default function App() {
             ttsConfig={ttsConfig}
             onChangeTTSConfig={(cfg) => setTTSConfig(prev => ({ ...prev, ...cfg }))}
             detectedObjects={detectedObjects}
+            hasCurrentFrame={hasCurrentFrame}
             onSelectObject={(obj) => setSelectedObjectId(obj.id)}
             selectedObjectId={selectedObjectId}
             isSpeaking={isSpeaking}

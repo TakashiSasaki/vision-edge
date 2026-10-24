@@ -1,0 +1,19 @@
+Command: ['npm', 'test']
+Exit: 0
+
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge-pr02-audit
+
+
+ Test Files  5 passed (5)
+      Tests  36 passed (36)
+   Start at  04:03:38
+   Duration  1.94s (environment 58%, tests 18%, setup 9%, transform 9%, import 6%)
+
+Environment  jsdom was created 5 times · 2.58s total, 58% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments

@@ -1,0 +1,7 @@
+{
+  "exit": 1,
+  "expected_exit": 1,
+  "diagnostic": "required stylesheet MIME",
+  "passed": true,
+  "original_build_unchanged": true
+}

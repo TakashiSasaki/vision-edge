@@ -1,0 +1,15 @@
+Command: ['npm', 'test']
+Exit: 0
+
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge-pr02-audit
+
+
+ Test Files  3 passed (3)
+      Tests  8 passed (8)
+   Start at  03:41:28
+   Duration  1.25s (environment 64%, tests 12%, setup 11%, transform 8%, import 5%, worker 1%)

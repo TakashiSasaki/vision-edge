@@ -67,16 +67,32 @@ test('production app loads and model controls work without camera or external se
   // Observe the real loader reaching the blocked network boundary before asserting errors.
   await expect.poll(() => externalRequests.some(url => url.includes('cdn.jsdelivr.net'))).toBe(true);
 
-  const model = header.getByRole('combobox').nth(0);
+  await expect(page.getByRole('alert')).toContainText(/モデル(実行環境の読み込み|の生成)に失敗しました/);
+  await expect(header.getByLabel('バックエンド状態')).toHaveText('バックエンド未準備');
+  await expect(page.getByText('現在しきい値を超える物体はありません')).toHaveCount(0);
+  await expect(page.getByText('性能：計測未整備')).toBeVisible();
+  await page.getByRole('button', { name: 'モデルを再試行' }).click();
+  await expect(page.getByRole('alert')).toContainText(/モデル(実行環境の読み込み|の生成)に失敗しました/);
+
+  const model = header.getByRole('combobox', { name: 'モデル', exact: true });
   await expect(model).toHaveValue('selfie-segmenter');
-  await expect(model.getByRole('option')).toHaveCount(4);
+  expect(await model.locator('option:not(:disabled)').evaluateAll(options => options.map(option => (option as HTMLOptionElement).value))).toEqual(['selfie-segmenter', 'mediapipe']);
+  await expect(model.locator('option[value="yolo-seg"]')).toBeDisabled();
+  await expect(model.locator('option[value="segformer"]')).toBeDisabled();
+  await expect(header.getByRole('combobox')).toHaveCount(1);
   await model.selectOption('mediapipe');
   await expect(model).toHaveValue('mediapipe');
   await header.getByRole('button', { name: '仕様', exact: true }).click();
   await expect(page.getByRole('heading', { name: '物体認識・セグメンテーションモデル仕様' })).toBeVisible();
-  await page.getByText('YOLO-seg (YOLOv8/11-seg)', { exact: true }).click();
-  await expect(model).toHaveValue('yolo-seg');
+  const specs = page.getByRole('dialog');
+  await expect(specs.getByRole('button', { name: /YOLO-seg/ })).toBeDisabled();
+  await expect(specs.getByRole('button', { name: /SegFormer/ })).toBeDisabled();
+  await specs.getByRole('button', { name: 'Selfie Segmenter', exact: true }).click();
+  await expect(model).toHaveValue('selfie-segmenter');
   await expect(page.getByRole('heading', { name: '物体認識・セグメンテーションモデル仕様' })).toBeHidden();
+  await expect(page.getByRole('alert')).toContainText(/モデル(実行環境の読み込み|の生成)に失敗しました/);
+  await header.getByRole('button', { name: 'カメラ開始', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'カメラエラー' })).toBeVisible();
   await expect(header).toBeVisible();
   expect(localFailures).toEqual([]);
   expect(pageErrors).toEqual([]);

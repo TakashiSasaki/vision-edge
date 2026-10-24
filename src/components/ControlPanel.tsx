@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Sliders, 
-  Volume2, 
+import {
+  Sliders,
+  Volume2,
   Layers
 } from 'lucide-react';
 import { DetectedObject, ModelType, RenderOptions, TTSConfig } from '../types/vision';
@@ -14,6 +14,7 @@ interface ControlPanelProps {
   ttsConfig: TTSConfig;
   onChangeTTSConfig: (cfg: Partial<TTSConfig>) => void;
   detectedObjects: DetectedObject[];
+  hasCurrentFrame: boolean;
   onSelectObject: (obj: DetectedObject) => void;
   selectedObjectId?: string;
   isSpeaking: boolean;
@@ -25,6 +26,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   ttsConfig,
   onChangeTTSConfig,
   detectedObjects,
+  hasCurrentFrame,
   onSelectObject,
   selectedObjectId
 }) => {
@@ -67,7 +69,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>認識物体 ({detectedObjects.length})</span>
+          <span>認識物体 {hasCurrentFrame ? `(${detectedObjects.length})` : '（未取得）'}</span>
         </button>
 
         <button
@@ -92,15 +94,15 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         {activeTab === 'detection' && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-[11px] text-slate-400">
-              <span>カメラ検出中 ({detectedObjects.length}件)</span>
+              <span>{hasCurrentFrame ? `認識結果 (${detectedObjects.length}件)` : '認識結果は未取得です'}</span>
               <span>タップで個別発話</span>
             </div>
 
             {detectedObjects.length === 0 ? (
               <div className="p-6 text-center border border-dashed border-slate-800 rounded-lg bg-slate-900/30">
                 <Layers className="w-6 h-6 mx-auto text-slate-600 mb-1.5" />
-                <p className="text-slate-400">現在しきい値を超える物体はありません</p>
-                <p className="text-[10px] text-slate-500 mt-1">カメラを物体に向けてください</p>
+                <p className="text-slate-400">{hasCurrentFrame ? '現在しきい値を超える物体はありません' : 'モデルとカメラの準備後、推論結果を表示します'}</p>
+                <p className="text-[10px] text-slate-500 mt-1">{hasCurrentFrame ? 'カメラを物体に向けてください' : '未取得は正常な空検出を意味しません'}</p>
               </div>
             ) : (
               <div className="space-y-1.5">

@@ -1,6 +1,6 @@
 export type ModelType = 'selfie-segmenter' | 'yolo-seg' | 'mediapipe' | 'segformer';
 
-export type BackendOption = 'auto' | 'webgpu' | 'wasm-simd' | 'webgl';
+export type RunnableModelType = 'selfie-segmenter' | 'mediapipe';
 
 export type CameraFacingMode = 'user' | 'environment';
 
@@ -22,15 +22,6 @@ export interface DetectedObject {
   maskPolygon?: Array<{ x: number; y: number }>;
   maskCanvas?: HTMLCanvasElement;
   semanticClassId?: number;
-}
-
-export interface BenchmarkStats {
-  inferenceTimeMs: number;
-  fps: number;
-  objectCount: number;
-  backend: string;
-  resolution: string;
-  processedFrames: number;
 }
 
 export interface TTSConfig {
@@ -55,12 +46,24 @@ export interface RenderOptions {
 export interface ModelMetadata {
   id: ModelType;
   name: string;
-  tagline: string;
+  implemented: boolean;
   runtime: string;
   outputType: string;
-  classesCount: number;
-  datasetName: string;
-  typicalFps: string;
   description: string;
-  pros: string[];
 }
+
+export type ModelState =
+  | { status: 'idle'; model: null; requestId: number }
+  | { status: 'loading'; model: RunnableModelType; requestId: number }
+  | { status: 'ready'; model: RunnableModelType; requestId: number; delegate: 'GPU' }
+  | { status: 'error'; model: RunnableModelType; requestId: number; stage: 'wasm' | 'task'; cause: unknown };
+
+export interface DetectionFrame {
+  model: RunnableModelType;
+  requestId: number;
+  objects: DetectedObject[];
+}
+
+export type FrameResult =
+  | ({ status: 'ready' } & DetectionFrame)
+  | { status: 'not-ready'; model: RunnableModelType; requestId: number };

@@ -51,7 +51,9 @@ try {
       mutated = mutated.replace('</head>', '<script>setTimeout(() => { throw new Error("F01 fatal JavaScript control"); }, 0);</script></head>');
     }
     writeFileSync(path.join(dist, 'index.html'), mutated);
-    const result = spawnSync(process.execPath, [path.join(root, 'node_modules/@playwright/test/cli.js'), 'test', '--reporter=json'], {
+    // Controls exercise exactly the production smoke, even when other e2e files
+    // are added. Ordinary CI still runs the complete browser test suite.
+    const result = spawnSync(process.execPath, [path.join(root, 'node_modules/@playwright/test/cli.js'), 'test', 'e2e/smoke.spec.ts', '--retries=0', '--reporter=json'], {
       cwd: probe,
       env: process.env,
       encoding: 'utf8',

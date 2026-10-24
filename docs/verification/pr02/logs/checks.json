@@ -1,0 +1,117 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "final-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "final-01.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit": 0,
+    "log": "final-02.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "final-03.txt"
+  },
+  {
+    "command": [
+      "chromium",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "final-04.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "log": "final-05.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "log": "final-06.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "log": "final-07.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "log": "final-08.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 0,
+    "log": "final-09.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "log": "final-10.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--exit-code",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+      "--",
+      "package.json",
+      "package-lock.json",
+      ".nvmrc",
+      ".github/workflows/ci.yml",
+      "playwright.config.ts",
+      "vitest.config.ts",
+      "eslint.config.js",
+      "src/services/dictionary.ts",
+      "src/services/speechService.ts"
+    ],
+    "exit": 0,
+    "log": "final-11.txt"
+  }
+]
