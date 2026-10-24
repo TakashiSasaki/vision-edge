@@ -1,0 +1,46 @@
+{
+  "checkout_head": "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+  "checkout_tree": "85c621486eafb7eb2bdf95189fc89c059ba7dc83",
+  "base": "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+  "base_tree": "85c621486eafb7eb2bdf95189fc89c059ba7dc83",
+  "product_src_tree": "64ea1a41b3e8c176ee4a8ae25ba256f071a6b9aa",
+  "git_status": "M .github/workflows/ci.yml\n M README.md\n M e2e/smoke.spec.ts\n M package.json\n?? docs/verification/pr01-f01-css-smoke/\n?? scripts/smoke-css-controls.mjs",
+  "files": {
+    ".github/workflows/ci.yml": {
+      "git_blob": "a71705c427237ac5f20381380c6c77b736788e7b",
+      "sha256": "4339cfa58a62b375367a27ff0dbc55034336f4b1d552ebc03d022df625863fa1"
+    },
+    "README.md": {
+      "git_blob": "10dc50c89b42a64039fea88a3472ae38bbc0dd21",
+      "sha256": "9e77a66169bd184d5d8f6bd814420dae0009e6119ccfdf1e40c24ebdf62a19c9"
+    },
+    "e2e/smoke.spec.ts": {
+      "git_blob": "f112239b4fd78a1f4c48aa3f5759eb4252a10ec5",
+      "sha256": "bf4e327171ff4daa9cb88666be0aed6326f85dce7174d195cb4e9d6b7576c139"
+    },
+    "scripts/smoke-css-controls.mjs": {
+      "git_blob": "1ea5d4dd7f1772024fc6b92ff02ac9c5728443b4",
+      "sha256": "a338e3fd586f408da9729d2863b6c809525a5c05a416b92c4470b9ba5f1fe8ba"
+    },
+    "package.json": {
+      "git_blob": "ad4d0d70885d143b78b29b0d94a813415c22b05f",
+      "sha256": "d58b9ead5548b0ac8e6f10c153640b3d59c7a46b0569bb50a848a0a4b9ad7ca6"
+    },
+    "package-lock.json": {
+      "git_blob": "1db1427fab65c695e26bc70e4ad77b285f1d288f",
+      "sha256": "1501945de52bc26a7411bd139358604ab1a189b51608c011a93d3164baa6de5b"
+    },
+    "playwright.config.ts": {
+      "git_blob": "f49e47bf3b59fec9e916148dbb6afc6f682b1418",
+      "sha256": "e9b2737bd9c1b2363243b99163dbd028a74413f9b676718f480f7631e58dea12"
+    }
+  },
+  "build": {
+    "dist/assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+    "dist/assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+    "dist/assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+    "dist/assets/index-BGqVEvfJ.js": "efaf225fd4b17716d9aadaa9175df3b9506ee42fea5b126754519b9f28e82f27",
+    "dist/assets/index-Bohi0K68.css": "abeb729675715edc84fed25a8fbe450d424a14c2c6ad41011b2174cff7e017f4",
+    "dist/index.html": "b57b4a882348955982a21804fff015d904c32d4b808c0ed37c043a7279fb4a78"
+  }
+}

@@ -1,0 +1,7 @@
+Command: ["npm", "run", "lint"]
+Environment: npm_config_cache=/tmp/vision-edge-npm-cache npm_config_update_notifier=false PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+Exit: 0
+
+
+> vision-studio@1.0.0 lint
+> eslint . --max-warnings=0
