@@ -1,0 +1,87 @@
+
+ RUN  v5.0.5 /workspace/pr04-independent
+
+stdout | docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (false)
+F01 { native: false, consumedFrames: [ 2, 2 ] }
+
+stdout | docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (true)
+F01 { native: true, consumedFrames: [ 2, 2 ] }
+
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js (10 tests | 3 failed) 55ms
+   × F01: deferral must not infer the same live frame twice (false) 28ms
+   × F01: deferral must not infer the same live frame twice (true) 2ms
+   × F02: consumes an already ready first frame without waiting for a second native arrival 1ms
+stdout | docs/verification/pr04-independent/vectors/canvas.test.jsx > F01 production bridge: repeated live image reaches real engine and repeats TTS decisions
+F01 real canvas/engine { images: [ 2, 2 ], ttsDecisions: 2, fps: '推論: 2.0 FPS' }
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx (15 tests | 1 failed) 829ms
+   × F01 production bridge: repeated live image reaches real engine and repeats TTS decisions 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > F01 production bridge: repeated live image reaches real engine and repeats TTS decisions
+AssertionError: expected [ 2, 2 ] to deeply equal [ 2 ]
+
+- Expected
++ Received
+
+  [
+    2,
++   2,
+  ]
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx:159:18
+    157|   now = 500; drawTick(); flush(); flush(250);
+    158|   console.log('F01 real canvas/engine', { images, ttsDecisions: gate.m…
+    159|   expect(images).toEqual([2]);
+       |                  ^
+    160|   expect(gate).toHaveBeenCalledTimes(1);
+    161| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (false)
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (true)
+AssertionError: expected [ 2, 2 ] to deeply equal [ 2 ]
+
+- Expected
++ Received
+
+  [
+    2,
++   2,
+  ]
+
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:38:49
+     36|   console.log('F01', { native, consumedFrames: s.work.mock.results.map…
+     37|   s.stop();
+     38|   expect(s.work.mock.results.map(r => r.value)).toEqual([2]);
+       |                                                 ^
+     39| });
+     40| it.each([false, true])('first zero, equal new-session time, coarse tim…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F02: consumes an already ready first frame without waiting for a second native arrival
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:53:18
+     51|   vi.advanceTimersByTime(400);
+     52|   s.stop();
+     53|   expect(s.work).toHaveBeenCalledTimes(1);
+       |                  ^
+     54| });
+     55| it.each([false, true])('gate immediately before work, then accept same…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  4 failed | 24 passed (28)
+   Start at  06:52:57
+   Duration  2.50s (environment 66%, tests 19%, import 7%, transform 7%, worker 1%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

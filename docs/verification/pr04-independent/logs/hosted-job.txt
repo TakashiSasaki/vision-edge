@@ -1,0 +1,614 @@
+﻿2026-10-24T06:40:00.0537360Z Current runner version: '2.338.0'
+2026-10-24T06:40:00.0561559Z ##[group]Runner Image Provisioner
+2026-10-24T06:40:00.0562539Z Hosted Compute Agent
+2026-10-24T06:40:00.0563134Z Version: 20261012.601
+2026-10-24T06:40:00.0563754Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-24T06:40:00.0564545Z Build Date: 2026-10-12T17:48:21Z
+2026-10-24T06:40:00.0565550Z Worker ID: {832a2cf9-a708-4956-b453-0bb33ea03fcc}
+2026-10-24T06:40:00.0566341Z Region: centralus
+2026-10-24T06:40:00.0566991Z Cloud: Azure
+2026-10-24T06:40:00.0567574Z ##[endgroup]
+2026-10-24T06:40:00.0569204Z ##[group]Operating System
+2026-10-24T06:40:00.0569912Z Ubuntu
+2026-10-24T06:40:00.0570573Z 24.04.5
+2026-10-24T06:40:00.0571100Z LTS
+2026-10-24T06:40:00.0571609Z ##[endgroup]
+2026-10-24T06:40:00.0572209Z ##[group]Runner Image
+2026-10-24T06:40:00.0572881Z Image: ubuntu-24.04
+2026-10-24T06:40:00.0573543Z Version: 20261012.334.1
+2026-10-24T06:40:00.0575024Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-24T06:40:00.0576738Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-24T06:40:00.0577754Z ##[endgroup]
+2026-10-24T06:40:00.0578871Z ##[group]GITHUB_TOKEN Permissions
+2026-10-24T06:40:00.0581728Z Contents: read
+2026-10-24T06:40:00.0582447Z Metadata: read
+2026-10-24T06:40:00.0583041Z ##[endgroup]
+2026-10-24T06:40:00.0585906Z Secret source: Actions
+2026-10-24T06:40:00.0587049Z Cache mode: write
+2026-10-24T06:40:00.0588082Z Prepare workflow directory
+2026-10-24T06:40:00.0923985Z Prepare all required actions
+2026-10-24T06:40:00.0973627Z Getting action download info
+2026-10-24T06:40:00.4030636Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-24T06:40:00.5196131Z Download action repository 'actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1' (SHA:949feb2413d6458794dcd2491c4babbbce0c15c1)
+2026-10-24T06:40:01.1086810Z Download action repository 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-24T06:40:01.8813519Z Complete job name: verify
+2026-10-24T06:40:01.9900585Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-24T06:40:01.9902540Z with:
+2026-10-24T06:40:01.9903549Z   ref: 2f4cdea1bc3e6706f49e37116ede8b1881472f7f
+2026-10-24T06:40:01.9905119Z   repository: TakashiSasaki/vision-edge
+2026-10-24T06:40:01.9913881Z   token: ***
+2026-10-24T06:40:01.9914973Z   ssh-strict: true
+2026-10-24T06:40:01.9915968Z   ssh-user: git
+2026-10-24T06:40:01.9916926Z   persist-credentials: true
+2026-10-24T06:40:01.9917947Z   clean: true
+2026-10-24T06:40:01.9918993Z   sparse-checkout-cone-mode: true
+2026-10-24T06:40:01.9920106Z   fetch-depth: 1
+2026-10-24T06:40:01.9921057Z   fetch-tags: false
+2026-10-24T06:40:01.9922035Z   show-progress: true
+2026-10-24T06:40:01.9922996Z   lfs: false
+2026-10-24T06:40:01.9923963Z   submodules: false
+2026-10-24T06:40:01.9925141Z   set-safe-directory: true
+2026-10-24T06:40:01.9926269Z   allow-unsafe-pr-checkout: false
+2026-10-24T06:40:01.9927728Z ##[endgroup]
+2026-10-24T06:40:02.1129630Z Syncing repository: TakashiSasaki/vision-edge
+2026-10-24T06:40:02.1134176Z ##[group]Getting Git version info
+2026-10-24T06:40:02.1136872Z Working directory is '/home/runner/work/vision-edge/vision-edge'
+2026-10-24T06:40:02.1140623Z [command]/usr/bin/git version
+2026-10-24T06:40:02.1271502Z git version 2.55.0
+2026-10-24T06:40:02.1332627Z ##[endgroup]
+2026-10-24T06:40:02.1345169Z Temporarily overriding HOME='/home/runner/work/_temp/3de9497b-21ea-423c-ac34-d8b5f43e7a16' before making global git config changes
+2026-10-24T06:40:02.1352422Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T06:40:02.1357424Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vision-edge/vision-edge
+2026-10-24T06:40:02.1536595Z Deleting the contents of '/home/runner/work/vision-edge/vision-edge'
+2026-10-24T06:40:02.1539793Z ##[group]Determining repository object format
+2026-10-24T06:40:02.1541987Z ##[endgroup]
+2026-10-24T06:40:02.1543820Z ##[group]Initializing the repository
+2026-10-24T06:40:02.1545576Z [command]/usr/bin/git init /home/runner/work/vision-edge/vision-edge
+2026-10-24T06:40:02.1633016Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-24T06:40:02.1636823Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-24T06:40:02.1640008Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-24T06:40:02.1642030Z hint: call:
+2026-10-24T06:40:02.1643442Z hint:
+2026-10-24T06:40:02.1644560Z hint: 	git config --global init.defaultBranch <name>
+2026-10-24T06:40:02.1646342Z hint:
+2026-10-24T06:40:02.1647583Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-24T06:40:02.1650206Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-24T06:40:02.1651979Z hint:
+2026-10-24T06:40:02.1652891Z hint: 	git branch -m <name>
+2026-10-24T06:40:02.1653983Z hint:
+2026-10-24T06:40:02.1655672Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-24T06:40:02.1658045Z Initialized empty Git repository in /home/runner/work/vision-edge/vision-edge/.git/
+2026-10-24T06:40:02.1663886Z [command]/usr/bin/git remote add origin https://github.com/TakashiSasaki/vision-edge
+2026-10-24T06:40:02.1708440Z ##[endgroup]
+2026-10-24T06:40:02.1710438Z ##[group]Disabling automatic garbage collection
+2026-10-24T06:40:02.1712525Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-24T06:40:02.1746952Z ##[endgroup]
+2026-10-24T06:40:02.1749146Z ##[group]Setting up auth
+2026-10-24T06:40:02.1750297Z Removing SSH command configuration
+2026-10-24T06:40:02.1755104Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T06:40:02.1796331Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T06:40:02.2211287Z Removing HTTP extra header
+2026-10-24T06:40:02.2218048Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T06:40:02.2258092Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T06:40:02.2478122Z Removing includeIf entries pointing to credentials config files
+2026-10-24T06:40:02.2482389Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-24T06:40:02.2517276Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-24T06:40:02.2750586Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-24T06:40:02.2790705Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vision-edge/vision-edge/.git.path /home/runner/work/_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config
+2026-10-24T06:40:02.2867098Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vision-edge/vision-edge/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config
+2026-10-24T06:40:02.2877519Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config
+2026-10-24T06:40:02.2904741Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config
+2026-10-24T06:40:02.2937499Z ##[endgroup]
+2026-10-24T06:40:02.2938849Z ##[group]Fetching the repository
+2026-10-24T06:40:02.2944431Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 2f4cdea1bc3e6706f49e37116ede8b1881472f7f
+2026-10-24T06:40:02.9708394Z From https://github.com/TakashiSasaki/vision-edge
+2026-10-24T06:40:02.9709679Z  * branch            2f4cdea1bc3e6706f49e37116ede8b1881472f7f -> FETCH_HEAD
+2026-10-24T06:40:02.9718889Z [command]/usr/bin/git rev-parse --verify --quiet 2f4cdea1bc3e6706f49e37116ede8b1881472f7f^{object}
+2026-10-24T06:40:02.9747948Z 2f4cdea1bc3e6706f49e37116ede8b1881472f7f
+2026-10-24T06:40:02.9752453Z ##[endgroup]
+2026-10-24T06:40:02.9753269Z ##[group]Determining the checkout info
+2026-10-24T06:40:02.9754108Z ##[endgroup]
+2026-10-24T06:40:02.9758475Z [command]/usr/bin/git sparse-checkout disable
+2026-10-24T06:40:02.9817781Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-24T06:40:02.9850540Z ##[group]Checking out the ref
+2026-10-24T06:40:02.9854620Z [command]/usr/bin/git checkout --progress --force 2f4cdea1bc3e6706f49e37116ede8b1881472f7f
+2026-10-24T06:40:03.0141686Z Note: switching to '2f4cdea1bc3e6706f49e37116ede8b1881472f7f'.
+2026-10-24T06:40:03.0142015Z
+2026-10-24T06:40:03.0142268Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-24T06:40:03.0142771Z changes and commit them, and you can discard any commits you make in this
+2026-10-24T06:40:03.0143266Z state without impacting any branches by switching back to a branch.
+2026-10-24T06:40:03.0143701Z
+2026-10-24T06:40:03.0143913Z If you want to create a new branch to retain commits you create, you may
+2026-10-24T06:40:03.0144368Z do so (now or later) by using -c with the switch command. Example:
+2026-10-24T06:40:03.0144634Z
+2026-10-24T06:40:03.0145038Z   git switch -c <new-branch-name>
+2026-10-24T06:40:03.0145355Z
+2026-10-24T06:40:03.0145493Z Or undo this operation with:
+2026-10-24T06:40:03.0145665Z
+2026-10-24T06:40:03.0145757Z   git switch -
+2026-10-24T06:40:03.0145898Z
+2026-10-24T06:40:03.0146164Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-24T06:40:03.0146481Z
+2026-10-24T06:40:03.0146952Z HEAD is now at 2f4cdea docs: normalize verification log endings and check full diff
+2026-10-24T06:40:03.0153868Z ##[endgroup]
+2026-10-24T06:40:03.0198489Z [command]/usr/bin/git log -1 --format=%H
+2026-10-24T06:40:03.0227329Z 2f4cdea1bc3e6706f49e37116ede8b1881472f7f
+2026-10-24T06:40:03.0484453Z ##[group]Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+2026-10-24T06:40:03.0485192Z with:
+2026-10-24T06:40:03.0485417Z   node-version-file: .nvmrc
+2026-10-24T06:40:03.0485662Z   cache: npm
+2026-10-24T06:40:03.0485868Z   check-latest: false
+2026-10-24T06:40:03.0488268Z   token: ***
+2026-10-24T06:40:03.0488501Z   package-manager-cache: true
+2026-10-24T06:40:03.0488756Z ##[endgroup]
+2026-10-24T06:40:03.1715907Z Node version file is not JSON file
+2026-10-24T06:40:03.1735640Z Node version file is not TOML file
+2026-10-24T06:40:03.1745987Z Resolved .nvmrc as 24.19.0
+2026-10-24T06:40:03.1747791Z Attempting to download 24.19.0...
+2026-10-24T06:40:03.9571630Z Acquiring 24.19.0 - x64 from https://github.com/actions/node-versions/releases/download/24.19.0-30872449280/node-24.19.0-linux-x64.tar.gz
+2026-10-24T06:40:04.4741306Z Extracting ...
+2026-10-24T06:40:04.4858937Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/8f3996eb-7ecf-4591-a714-eb78888f3ad1 -f /home/runner/work/_temp/fb8cf9ef-67b0-4a50-906f-0edd39ca9f5d
+2026-10-24T06:40:05.7601123Z Adding to the cache ...
+2026-10-24T06:40:07.7561005Z ##[group]Environment details
+2026-10-24T06:40:07.9881655Z node: v24.19.0
+2026-10-24T06:40:07.9882111Z npm: 11.17.0
+2026-10-24T06:40:07.9882494Z yarn: 1.22.22
+2026-10-24T06:40:07.9883318Z ##[endgroup]
+2026-10-24T06:40:07.9901993Z [command]/opt/hostedtoolcache/node/24.19.0/x64/bin/npm config get cache
+2026-10-24T06:40:08.0858118Z /home/runner/.npm
+2026-10-24T06:40:08.2216007Z Cache hit for: node-cache-Linux-x64-npm-1679cf5362cabd1ede55054c727810ea8d7c2f758d5f5207d3f436a086a60f4d
+2026-10-24T06:40:09.3901102Z Received 73486012 of 77680316 (94.6%), 70.0 MBs/sec
+2026-10-24T06:40:09.4639189Z Received 77680316 of 77680316 (100.0%), 68.9 MBs/sec
+2026-10-24T06:40:09.4640563Z Cache Size: ~74 MB (77680316 B)
+2026-10-24T06:40:09.4699552Z [command]/usr/bin/tar -xf /home/runner/work/_temp/b807900a-e165-4e95-860d-edcada0bb948/cache.tzst -P -C /home/runner/work/vision-edge/vision-edge --use-compress-program unzstd
+2026-10-24T06:40:09.6502904Z Cache restored successfully
+2026-10-24T06:40:09.6544922Z Cache restored from key: node-cache-Linux-x64-npm-1679cf5362cabd1ede55054c727810ea8d7c2f758d5f5207d3f436a086a60f4d
+2026-10-24T06:40:09.6767865Z ##[group]Run npm ci
+2026-10-24T06:40:09.6768337Z [36;1mnpm ci[0m
+2026-10-24T06:40:10.3111854Z shell: /usr/bin/bash -e {0}
+2026-10-24T06:40:10.3112232Z ##[endgroup]
+2026-10-24T06:40:16.2842624Z
+2026-10-24T06:40:16.2852823Z added 265 packages, and audited 266 packages in 6s
+2026-10-24T06:40:16.2853224Z
+2026-10-24T06:40:16.2853555Z 62 packages are looking for funding
+2026-10-24T06:40:16.2853949Z   run `npm fund` for details
+2026-10-24T06:40:16.2858347Z
+2026-10-24T06:40:16.2858647Z found 0 vulnerabilities
+2026-10-24T06:40:16.2871902Z npm warn allow-scripts 1 package has install scripts not yet covered by allowScripts:
+2026-10-24T06:40:16.2873098Z npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+2026-10-24T06:40:16.2874123Z npm warn allow-scripts
+2026-10-24T06:40:16.2875683Z npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+2026-10-24T06:40:16.3807068Z ##[group]Run npm run typecheck
+2026-10-24T06:40:16.3807605Z [36;1mnpm run typecheck[0m
+2026-10-24T06:40:16.3888370Z shell: /usr/bin/bash -e {0}
+2026-10-24T06:40:16.3888823Z ##[endgroup]
+2026-10-24T06:40:16.4956572Z
+2026-10-24T06:40:16.4957487Z > vision-studio@1.0.0 typecheck
+2026-10-24T06:40:16.4958319Z > tsc --noEmit
+2026-10-24T06:40:16.4958720Z
+2026-10-24T06:40:20.0365699Z ##[group]Run npm run lint
+2026-10-24T06:40:20.0366077Z [36;1mnpm run lint[0m
+2026-10-24T06:40:20.0428061Z shell: /usr/bin/bash -e {0}
+2026-10-24T06:40:20.0428329Z ##[endgroup]
+2026-10-24T06:40:20.1437025Z
+2026-10-24T06:40:20.1437656Z > vision-studio@1.0.0 lint
+2026-10-24T06:40:20.1438306Z > eslint . --max-warnings=0
+2026-10-24T06:40:20.1438634Z
+2026-10-24T06:40:22.0787055Z ##[group]Run npm test
+2026-10-24T06:40:22.0787467Z [36;1mnpm test[0m
+2026-10-24T06:40:22.0878815Z shell: /usr/bin/bash -e {0}
+2026-10-24T06:40:22.0879270Z ##[endgroup]
+2026-10-24T06:40:22.1987509Z
+2026-10-24T06:40:22.1987948Z > vision-studio@1.0.0 test
+2026-10-24T06:40:22.1988451Z > vitest run
+2026-10-24T06:40:22.1988680Z
+2026-10-24T06:40:22.4970471Z
+2026-10-24T06:40:22.4974392Z [1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/home/runner/work/vision-edge/vision-edge[39m
+2026-10-24T06:40:22.4975515Z
+2026-10-24T06:40:23.6797146Z  [32m✓[39m src/services/visionEngine.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+2026-10-24T06:40:23.7998291Z  [32m✓[39m src/hooks/useCameraStream.test.tsx [2m([22m[2m17 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+2026-10-24T06:40:24.9034367Z [90mstderr[2m | src/components/VisionCanvas.test.tsx[2m > [22m[2mcounts valid empty inference completions and actual draws, excluding failed work and aging idle metrics
+2026-10-24T06:40:24.9054549Z [22m[39mVision frame failed; waiting for a new frame {
+2026-10-24T06:40:24.9055604Z   cause: Error: SDK fault
+2026-10-24T06:40:24.9106717Z       at Object.<anonymous> [90m(/home/runner/work/vision-edge/vision-edge/[39msrc/components/VisionCanvas.test.tsx:278:72[90m)[39m
+2026-10-24T06:40:24.9156614Z       at Object.Mock [as detectForVideo] [90m(file:///home/runner/work/vision-edge/vision-edge/[39mnode_modules/[4mvitest[24m/dist/chunks/spy.DDMXghXv.js:353:40[90m)[39m
+2026-10-24T06:40:24.9186563Z       at VisionEngine.detectVideoFrame [90m(/home/runner/work/vision-edge/vision-edge/[39msrc/services/visionEngine.ts:253:45[90m)[39m
+2026-10-24T06:40:24.9206471Z       at work [90m(/home/runner/work/vision-edge/vision-edge/[39msrc/components/VisionCanvas.tsx:138:31[90m)[39m
+2026-10-24T06:40:24.9211552Z       at [90m/home/runner/work/vision-edge/vision-edge/[39msrc/services/frameScheduler.ts:40:24
+2026-10-24T06:40:24.9227366Z       at callTimer [90m(file:///home/runner/work/vision-edge/vision-edge/[39mnode_modules/[4mvitest[24m/dist/chunks/index.aTZaPVhf.js:5167:25[90m)[39m
+2026-10-24T06:40:24.9230092Z       at runTimersInRange [90m(file:///home/runner/work/vision-edge/vision-edge/[39mnode_modules/[4mvitest[24m/dist/chunks/index.aTZaPVhf.js:5865:26[90m)[39m
+2026-10-24T06:40:24.9232915Z       at doTickInner [90m(file:///home/runner/work/vision-edge/vision-edge/[39mnode_modules/[4mvitest[24m/dist/chunks/index.aTZaPVhf.js:5960:22[90m)[39m
+2026-10-24T06:40:24.9267035Z       at doTick [90m(file:///home/runner/work/vision-edge/vision-edge/[39mnode_modules/[4mvitest[24m/dist/chunks/index.aTZaPVhf.js:5976:21[90m)[39m
+2026-10-24T06:40:24.9269748Z       at Object.tick [90m(file:///home/runner/work/vision-edge/vision-edge/[39mnode_modules/[4mvitest[24m/dist/chunks/index.aTZaPVhf.js:5984:21[90m)[39m
+2026-10-24T06:40:24.9275914Z }
+2026-10-24T06:40:24.9280952Z
+2026-10-24T06:40:24.9551064Z  [32m✓[39m src/components/VisionCanvas.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 901[2mms[22m[39m
+2026-10-24T06:40:24.9553487Z    [33m[2m✓[22m[39m runs the ready model through the real App/canvas bridge and removes old list/overlays on switch[33m 407[2mms[22m[39m
+2026-10-24T06:40:25.0461932Z  [32m✓[39m src/services/frameScheduler.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+2026-10-24T06:40:25.9433822Z  [32m✓[39m src/App.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 947[2mms[22m[39m
+2026-10-24T06:40:25.9436692Z    [33m[2m✓[22m[39m uses only the two implemented choices in both UI paths and shows read-only backend settings[33m 519[2mms[22m[39m
+2026-10-24T06:40:26.1257213Z  [32m✓[39m src/services/visionEngine.reentrancy.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+2026-10-24T06:40:26.3507079Z  [32m✓[39m src/services/performanceMetrics.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 59[2mms[22m[39m
+2026-10-24T06:40:26.9167616Z  [32m✓[39m src/services/speechService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+2026-10-24T06:40:27.0037898Z  [32m✓[39m src/services/dictionary.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+2026-10-24T06:40:27.0084704Z
+2026-10-24T06:40:27.0090025Z [2m Test Files [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+2026-10-24T06:40:27.0091292Z [2m      Tests [22m [1m[32m86 passed[39m[22m[90m (86)[39m
+2026-10-24T06:40:27.0092035Z [2m   Start at [22m 06:40:22
+2026-10-24T06:40:27.0097243Z [2m   Duration [22m 4.50s[2m (environment 63%, tests 18%, setup 11%, import 4%, transform 3%)[22m
+2026-10-24T06:40:27.0103294Z
+2026-10-24T06:40:27.0105444Z [2mEnvironment [22m [33mjsdom was created 9 times[39m[2m · 7.25s total, 63% of tracked time[22m
+2026-10-24T06:40:27.0106951Z [2m            [22m [2mcreate it once per worker with [22m[33mpool: 'vmThreads'[39m[2m (keeps per-file isolation) or [22m[33misolate: false[39m[2m (shares it across files)[22m
+2026-10-24T06:40:27.0108055Z [2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#test-environments[22m
+2026-10-24T06:40:27.0108511Z
+2026-10-24T06:40:27.0626230Z ##[group]Run npm run build
+2026-10-24T06:40:27.0626549Z [36;1mnpm run build[0m
+2026-10-24T06:40:27.0689019Z shell: /usr/bin/bash -e {0}
+2026-10-24T06:40:27.0689313Z ##[endgroup]
+2026-10-24T06:40:27.1663294Z
+2026-10-24T06:40:27.1663596Z > vision-studio@1.0.0 build
+2026-10-24T06:40:27.1663956Z > vite build
+2026-10-24T06:40:27.1664104Z
+2026-10-24T06:40:27.4502639Z [36mvite v8.3.5 [32mbuilding client environment for production...[36m[39m
+2026-10-24T06:40:27.4604950Z transforming...
+2026-10-24T06:40:27.6522925Z ✓ 1673 modules transformed.
+2026-10-24T06:40:27.6990150Z rendering chunks...
+2026-10-24T06:40:27.7501584Z computing gzip size...
+2026-10-24T06:40:27.7571389Z dist/index.html                   1.59 kB │ gzip:   0.77 kB
+2026-10-24T06:40:27.7573040Z dist/assets/index-CnXRt1Fa.css   26.30 kB │ gzip:   5.68 kB
+2026-10-24T06:40:27.7574498Z dist/assets/index-Brf-X9mM.js   406.07 kB │ gzip: 126.08 kB
+2026-10-24T06:40:27.7575417Z
+2026-10-24T06:40:27.7576142Z [32m✓ built in 306ms[39m
+2026-10-24T06:40:27.7919687Z ##[group]Run npx playwright install --with-deps chromium
+2026-10-24T06:40:27.7920158Z [36;1mnpx playwright install --with-deps chromium[0m
+2026-10-24T06:40:27.7982255Z shell: /usr/bin/bash -e {0}
+2026-10-24T06:40:27.7982519Z ##[endgroup]
+2026-10-24T06:40:28.5429275Z Installing dependencies...
+2026-10-24T06:40:28.5513206Z Switching to root user to install dependencies...
+2026-10-24T06:40:28.6566126Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-24T06:40:28.6872072Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-10-24T06:40:28.6895827Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-10-24T06:40:28.6926070Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-10-24T06:40:28.6938951Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-10-24T06:40:28.6975867Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-10-24T06:40:28.8151738Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [589 kB]
+2026-10-24T06:40:28.8326935Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [652 kB]
+2026-10-24T06:40:28.8388352Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+2026-10-24T06:40:28.8666516Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1400 kB]
+2026-10-24T06:40:28.8750577Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [310 kB]
+2026-10-24T06:40:28.8759357Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1706 kB]
+2026-10-24T06:40:28.8859588Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [342 kB]
+2026-10-24T06:40:28.8885682Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1805 kB]
+2026-10-24T06:40:28.9028041Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+2026-10-24T06:40:28.9668734Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1146 kB]
+2026-10-24T06:40:28.9727316Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+2026-10-24T06:40:28.9746506Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1222 kB]
+2026-10-24T06:40:28.9816074Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+2026-10-24T06:40:29.0258770Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+2026-10-24T06:40:29.0362925Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+2026-10-24T06:40:31.9187523Z Fetched 12.6 MB in 1s (10.1 MB/s)
+2026-10-24T06:40:32.8673547Z Reading package lists...
+2026-10-24T06:40:32.8911820Z Reading package lists...
+2026-10-24T06:40:33.0746119Z Building dependency tree...
+2026-10-24T06:40:33.0753948Z Reading state information...
+2026-10-24T06:40:33.2153712Z libasound2t64 is already the newest version (1.2.11-1ubuntu0.3).
+2026-10-24T06:40:33.2154630Z libasound2t64 set to manually installed.
+2026-10-24T06:40:33.2155749Z libatk-bridge2.0-0t64 is already the newest version (2.52.0-1build1).
+2026-10-24T06:40:33.2156611Z libatk-bridge2.0-0t64 set to manually installed.
+2026-10-24T06:40:33.2157445Z libatk1.0-0t64 is already the newest version (2.52.0-1build1).
+2026-10-24T06:40:33.2158162Z libatk1.0-0t64 set to manually installed.
+2026-10-24T06:40:33.2159450Z libatspi2.0-0t64 is already the newest version (2.52.0-1build1).
+2026-10-24T06:40:33.2160225Z libatspi2.0-0t64 set to manually installed.
+2026-10-24T06:40:33.2160946Z libcairo2 is already the newest version (1.18.0-3build1).
+2026-10-24T06:40:33.2161664Z libcairo2 set to manually installed.
+2026-10-24T06:40:33.2162462Z libcups2t64 is already the newest version (2.4.7-1.2ubuntu7.14).
+2026-10-24T06:40:33.2163592Z libcups2t64 set to manually installed.
+2026-10-24T06:40:33.2164421Z libdbus-1-3 is already the newest version (1.14.10-4ubuntu4.1).
+2026-10-24T06:40:33.2165438Z libdbus-1-3 set to manually installed.
+2026-10-24T06:40:33.2166162Z libdrm2 is already the newest version (2.4.125-1ubuntu0.1~24.04.2).
+2026-10-24T06:40:33.2166841Z libdrm2 set to manually installed.
+2026-10-24T06:40:33.2167535Z libgbm1 is already the newest version (25.2.8-0ubuntu0.24.04.4).
+2026-10-24T06:40:33.2167952Z libgbm1 set to manually installed.
+2026-10-24T06:40:33.2168348Z libnspr4 is already the newest version (2:4.35-1.1build1).
+2026-10-24T06:40:33.2168761Z libnspr4 set to manually installed.
+2026-10-24T06:40:33.2169190Z libpango-1.0-0 is already the newest version (1.52.1+ds-1build1).
+2026-10-24T06:40:33.2169600Z libpango-1.0-0 set to manually installed.
+2026-10-24T06:40:33.2170015Z libx11-6 is already the newest version (2:1.8.7-1ubuntu0.1).
+2026-10-24T06:40:33.2170645Z libx11-6 set to manually installed.
+2026-10-24T06:40:33.2171041Z libxcb1 is already the newest version (1.15-1ubuntu2).
+2026-10-24T06:40:33.2171414Z libxcb1 set to manually installed.
+2026-10-24T06:40:33.2171827Z libxcomposite1 is already the newest version (1:0.4.5-1build3).
+2026-10-24T06:40:33.2172245Z libxcomposite1 set to manually installed.
+2026-10-24T06:40:33.2172660Z libxdamage1 is already the newest version (1:1.1.6-1build1).
+2026-10-24T06:40:33.2173056Z libxdamage1 set to manually installed.
+2026-10-24T06:40:33.2173445Z libxext6 is already the newest version (2:1.3.4-1build2).
+2026-10-24T06:40:33.2173813Z libxext6 set to manually installed.
+2026-10-24T06:40:33.2174401Z libxfixes3 is already the newest version (1:6.0.0-2build1).
+2026-10-24T06:40:33.2175042Z libxfixes3 set to manually installed.
+2026-10-24T06:40:33.2175480Z libxkbcommon0 is already the newest version (1.6.0-1build1).
+2026-10-24T06:40:33.2175885Z libxkbcommon0 set to manually installed.
+2026-10-24T06:40:33.2176293Z libxrandr2 is already the newest version (2:1.5.2-2build1).
+2026-10-24T06:40:33.2176691Z libxrandr2 set to manually installed.
+2026-10-24T06:40:33.2177557Z fonts-noto-color-emoji is already the newest version (2.047-0ubuntu0.24.04.1).
+2026-10-24T06:40:33.2178601Z libfontconfig1 is already the newest version (2.15.0-1.1ubuntu2).
+2026-10-24T06:40:33.2179352Z libfontconfig1 set to manually installed.
+2026-10-24T06:40:33.2180030Z libfreetype6 is already the newest version (2.13.2+dfsg-1ubuntu0.2).
+2026-10-24T06:40:33.2180467Z libfreetype6 set to manually installed.
+2026-10-24T06:40:33.2180901Z fonts-liberation is already the newest version (1:2.1.5-3).
+2026-10-24T06:40:33.2181359Z fonts-liberation set to manually installed.
+2026-10-24T06:40:33.2181763Z The following additional packages will be installed:
+2026-10-24T06:40:33.2182197Z   gir1.2-glib-2.0 libglib2.0-bin libglib2.0-data libnss3-tools
+2026-10-24T06:40:33.2182614Z   xfonts-encodings xfonts-utils xserver-common
+2026-10-24T06:40:33.2183134Z Suggested packages:
+2026-10-24T06:40:33.2183550Z   low-memory-monitor
+2026-10-24T06:40:33.2183984Z Recommended packages:
+2026-10-24T06:40:33.2184530Z   fonts-ipafont-mincho fonts-tlwg-loma xfonts-base
+2026-10-24T06:40:33.2393110Z The following NEW packages will be installed:
+2026-10-24T06:40:33.2394048Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+2026-10-24T06:40:33.2399557Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+2026-10-24T06:40:33.2400258Z   xfonts-utils
+2026-10-24T06:40:33.2403410Z The following packages will be upgraded:
+2026-10-24T06:40:33.2405278Z   gir1.2-glib-2.0 libglib2.0-0t64 libglib2.0-bin libglib2.0-data libnss3
+2026-10-24T06:40:33.2409734Z   libnss3-tools xserver-common xvfb
+2026-10-24T06:40:33.2572796Z 8 upgraded, 9 newly installed, 0 to remove and 91 not upgraded.
+2026-10-24T06:40:33.2573580Z Need to get 25.9 MB of archives.
+2026-10-24T06:40:33.2574364Z After this operation, 79.5 MB of additional disk space will be used.
+2026-10-24T06:40:33.2575653Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-24T06:40:33.3042462Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-ipafont-gothic all 00303-21ubuntu1 [3513 kB]
+2026-10-24T06:40:33.3705565Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-data all 2.80.0-6ubuntu3.10 [50.2 kB]
+2026-10-24T06:40:33.4026135Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-bin amd64 2.80.0-6ubuntu3.10 [97.9 kB]
+2026-10-24T06:40:33.4356455Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 gir1.2-glib-2.0 amd64 2.80.0-6ubuntu3.10 [183 kB]
+2026-10-24T06:40:33.4682478Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-0t64 amd64 2.80.0-6ubuntu3.10 [1548 kB]
+2026-10-24T06:40:33.5146634Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-freefont-ttf all 20211204+svn4273-2 [5641 kB]
+2026-10-24T06:40:33.6025724Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-tlwg-loma-otf all 1:0.7.3-1 [107 kB]
+2026-10-24T06:40:33.6347433Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-unifont all 1:15.1.01-1build1 [2993 kB]
+2026-10-24T06:40:33.6960188Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-wqy-zenhei all 0.9.45-8 [7472 kB]
+2026-10-24T06:40:33.8035621Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libnss3 amd64 2:3.98-1ubuntu0.3 [1445 kB]
+2026-10-24T06:40:33.8487624Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libnss3-tools amd64 2:3.98-1ubuntu0.3 [615 kB]
+2026-10-24T06:40:33.8854235Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-encodings all 1:1.0.5-0ubuntu2 [578 kB]
+2026-10-24T06:40:33.9221509Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-utils amd64 1:7.7+6build3 [94.4 kB]
+2026-10-24T06:40:33.9543506Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 xfonts-cyrillic all 1:1.0.5+nmu1 [384 kB]
+2026-10-24T06:40:33.9891340Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-scalable all 1:1.0.3-1.3 [304 kB]
+2026-10-24T06:40:34.0230421Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 xserver-common all 2:21.1.12-1ubuntu1.9 [35.0 kB]
+2026-10-24T06:40:34.0556589Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 xvfb amd64 2:21.1.12-1ubuntu1.9 [877 kB]
+2026-10-24T06:40:34.3160100Z Fetched 25.9 MB in 1s (31.8 MB/s)
+2026-10-24T06:40:34.3431031Z Selecting previously unselected package fonts-ipafont-gothic.
+2026-10-24T06:40:34.3766104Z (Reading database ...
+2026-10-24T06:40:34.3766933Z (Reading database ... 5%
+2026-10-24T06:40:34.3767448Z (Reading database ... 10%
+2026-10-24T06:40:34.3767837Z (Reading database ... 15%
+2026-10-24T06:40:34.3768211Z (Reading database ... 20%
+2026-10-24T06:40:34.3768601Z (Reading database ... 25%
+2026-10-24T06:40:34.3768981Z (Reading database ... 30%
+2026-10-24T06:40:34.3769351Z (Reading database ... 35%
+2026-10-24T06:40:34.3769719Z (Reading database ... 40%
+2026-10-24T06:40:34.3770101Z (Reading database ... 45%
+2026-10-24T06:40:34.3770491Z (Reading database ... 50%
+2026-10-24T06:40:34.3825026Z (Reading database ... 55%
+2026-10-24T06:40:34.5188113Z (Reading database ... 60%
+2026-10-24T06:40:34.7103427Z (Reading database ... 65%
+2026-10-24T06:40:34.9168668Z (Reading database ... 70%
+2026-10-24T06:40:35.1082050Z (Reading database ... 75%
+2026-10-24T06:40:35.2702450Z (Reading database ... 80%
+2026-10-24T06:40:35.4779632Z (Reading database ... 85%
+2026-10-24T06:40:35.6408457Z (Reading database ... 90%
+2026-10-24T06:40:35.8328201Z (Reading database ... 95%
+2026-10-24T06:40:35.8329187Z (Reading database ... 100%
+2026-10-24T06:40:35.8329841Z (Reading database ... 203540 files and directories currently installed.)
+2026-10-24T06:40:35.8369251Z Preparing to unpack .../00-fonts-ipafont-gothic_00303-21ubuntu1_all.deb ...
+2026-10-24T06:40:35.8462519Z Unpacking fonts-ipafont-gothic (00303-21ubuntu1) ...
+2026-10-24T06:40:36.0884989Z Preparing to unpack .../01-libglib2.0-data_2.80.0-6ubuntu3.10_all.deb ...
+2026-10-24T06:40:36.0902242Z Unpacking libglib2.0-data (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+2026-10-24T06:40:36.1241647Z Preparing to unpack .../02-libglib2.0-bin_2.80.0-6ubuntu3.10_amd64.deb ...
+2026-10-24T06:40:36.1260942Z Unpacking libglib2.0-bin (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+2026-10-24T06:40:36.1881252Z Preparing to unpack .../03-gir1.2-glib-2.0_2.80.0-6ubuntu3.10_amd64.deb ...
+2026-10-24T06:40:36.1899973Z Unpacking gir1.2-glib-2.0:amd64 (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+2026-10-24T06:40:36.2280296Z Preparing to unpack .../04-libglib2.0-0t64_2.80.0-6ubuntu3.10_amd64.deb ...
+2026-10-24T06:40:36.2343472Z Unpacking libglib2.0-0t64:amd64 (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+2026-10-24T06:40:36.2744526Z Selecting previously unselected package fonts-freefont-ttf.
+2026-10-24T06:40:36.2868046Z Preparing to unpack .../05-fonts-freefont-ttf_20211204+svn4273-2_all.deb ...
+2026-10-24T06:40:36.2875746Z Unpacking fonts-freefont-ttf (20211204+svn4273-2) ...
+2026-10-24T06:40:36.3628743Z Selecting previously unselected package fonts-tlwg-loma-otf.
+2026-10-24T06:40:36.3752159Z Preparing to unpack .../06-fonts-tlwg-loma-otf_1%3a0.7.3-1_all.deb ...
+2026-10-24T06:40:36.3759128Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1) ...
+2026-10-24T06:40:36.3950360Z Selecting previously unselected package fonts-unifont.
+2026-10-24T06:40:36.4075255Z Preparing to unpack .../07-fonts-unifont_1%3a15.1.01-1build1_all.deb ...
+2026-10-24T06:40:36.4081223Z Unpacking fonts-unifont (1:15.1.01-1build1) ...
+2026-10-24T06:40:36.5092937Z Selecting previously unselected package fonts-wqy-zenhei.
+2026-10-24T06:40:36.5217875Z Preparing to unpack .../08-fonts-wqy-zenhei_0.9.45-8_all.deb ...
+2026-10-24T06:40:36.5318944Z Unpacking fonts-wqy-zenhei (0.9.45-8) ...
+2026-10-24T06:40:36.9960894Z Preparing to unpack .../09-libnss3_2%3a3.98-1ubuntu0.3_amd64.deb ...
+2026-10-24T06:40:36.9983029Z Unpacking libnss3:amd64 (2:3.98-1ubuntu0.3) over (2:3.98-1ubuntu0.2) ...
+2026-10-24T06:40:37.0459003Z Preparing to unpack .../10-libnss3-tools_2%3a3.98-1ubuntu0.3_amd64.deb ...
+2026-10-24T06:40:37.0477636Z Unpacking libnss3-tools (2:3.98-1ubuntu0.3) over (2:3.98-1ubuntu0.2) ...
+2026-10-24T06:40:37.0869554Z Selecting previously unselected package xfonts-encodings.
+2026-10-24T06:40:37.0997701Z Preparing to unpack .../11-xfonts-encodings_1%3a1.0.5-0ubuntu2_all.deb ...
+2026-10-24T06:40:37.1005984Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu2) ...
+2026-10-24T06:40:37.1280757Z Selecting previously unselected package xfonts-utils.
+2026-10-24T06:40:37.1402959Z Preparing to unpack .../12-xfonts-utils_1%3a7.7+6build3_amd64.deb ...
+2026-10-24T06:40:37.1409621Z Unpacking xfonts-utils (1:7.7+6build3) ...
+2026-10-24T06:40:37.1710715Z Selecting previously unselected package xfonts-cyrillic.
+2026-10-24T06:40:37.1832404Z Preparing to unpack .../13-xfonts-cyrillic_1%3a1.0.5+nmu1_all.deb ...
+2026-10-24T06:40:37.1839140Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1) ...
+2026-10-24T06:40:37.2224054Z Selecting previously unselected package xfonts-scalable.
+2026-10-24T06:40:37.2347916Z Preparing to unpack .../14-xfonts-scalable_1%3a1.0.3-1.3_all.deb ...
+2026-10-24T06:40:37.2353659Z Unpacking xfonts-scalable (1:1.0.3-1.3) ...
+2026-10-24T06:40:37.2688732Z Preparing to unpack .../15-xserver-common_2%3a21.1.12-1ubuntu1.9_all.deb ...
+2026-10-24T06:40:37.2707347Z Unpacking xserver-common (2:21.1.12-1ubuntu1.9) over (2:21.1.12-1ubuntu1.8) ...
+2026-10-24T06:40:37.3029954Z Preparing to unpack .../16-xvfb_2%3a21.1.12-1ubuntu1.9_amd64.deb ...
+2026-10-24T06:40:37.3049089Z Unpacking xvfb (2:21.1.12-1ubuntu1.9) over (2:21.1.12-1ubuntu1.8) ...
+2026-10-24T06:40:37.3589181Z Setting up fonts-wqy-zenhei (0.9.45-8) ...
+2026-10-24T06:40:37.3701637Z Setting up fonts-freefont-ttf (20211204+svn4273-2) ...
+2026-10-24T06:40:37.3720218Z Setting up libnss3:amd64 (2:3.98-1ubuntu0.3) ...
+2026-10-24T06:40:37.3738740Z Setting up libglib2.0-0t64:amd64 (2.80.0-6ubuntu3.10) ...
+2026-10-24T06:40:37.3846629Z Setting up libglib2.0-data (2.80.0-6ubuntu3.10) ...
+2026-10-24T06:40:37.3864018Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1) ...
+2026-10-24T06:40:37.3882065Z Setting up xfonts-encodings (1:1.0.5-0ubuntu2) ...
+2026-10-24T06:40:37.3902454Z Setting up gir1.2-glib-2.0:amd64 (2.80.0-6ubuntu3.10) ...
+2026-10-24T06:40:37.3920178Z Setting up fonts-ipafont-gothic (00303-21ubuntu1) ...
+2026-10-24T06:40:37.3984634Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+2026-10-24T06:40:37.3998969Z Setting up xserver-common (2:21.1.12-1ubuntu1.9) ...
+2026-10-24T06:40:37.4017930Z Setting up libnss3-tools (2:3.98-1ubuntu0.3) ...
+2026-10-24T06:40:37.4036522Z Setting up fonts-unifont (1:15.1.01-1build1) ...
+2026-10-24T06:40:37.4054297Z Setting up xvfb (2:21.1.12-1ubuntu1.9) ...
+2026-10-24T06:40:37.4219408Z Setting up libglib2.0-bin (2.80.0-6ubuntu3.10) ...
+2026-10-24T06:40:37.4237794Z Setting up xfonts-utils (1:7.7+6build3) ...
+2026-10-24T06:40:37.4297084Z Setting up xfonts-cyrillic (1:1.0.5+nmu1) ...
+2026-10-24T06:40:37.4595664Z Setting up xfonts-scalable (1:1.0.3-1.3) ...
+2026-10-24T06:40:37.4872596Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+2026-10-24T06:40:37.5220851Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-10-24T06:40:37.5251947Z Not building database; man-db/auto-update is not 'true'.
+2026-10-24T06:40:37.5264723Z Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+2026-10-24T06:40:38.1845721Z
+2026-10-24T06:40:38.1846469Z Running kernel seems to be up-to-date.
+2026-10-24T06:40:38.1846897Z
+2026-10-24T06:40:38.1847147Z Restarting services...
+2026-10-24T06:40:38.2311407Z  systemctl restart packagekit.service php8.3-fpm.service polkit.service udisks2.service
+2026-10-24T06:40:38.4031460Z
+2026-10-24T06:40:38.4032402Z Service restarts being deferred:
+2026-10-24T06:40:38.4033437Z  systemctl restart ModemManager.service
+2026-10-24T06:40:38.4034075Z  systemctl restart networkd-dispatcher.service
+2026-10-24T06:40:38.4034378Z
+2026-10-24T06:40:38.4034568Z No containers need to be restarted.
+2026-10-24T06:40:38.4045377Z
+2026-10-24T06:40:38.4045885Z No user sessions are running outdated binaries.
+2026-10-24T06:40:38.4046295Z
+2026-10-24T06:40:38.4046821Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-10-24T06:40:39.2640273Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+2026-10-24T06:40:39.6921781Z |                                                                                |   0% of 191.1 MiB
+2026-10-24T06:40:40.0537617Z |■■■■■■■■                                                                        |  10% of 191.1 MiB
+2026-10-24T06:40:40.1569171Z |■■■■■■■■■■■■■■■■                                                                |  20% of 191.1 MiB
+2026-10-24T06:40:40.2639402Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 191.1 MiB
+2026-10-24T06:40:40.3438514Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 191.1 MiB
+2026-10-24T06:40:40.4293450Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 191.1 MiB
+2026-10-24T06:40:40.5172034Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 191.1 MiB
+2026-10-24T06:40:40.6020388Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 191.1 MiB
+2026-10-24T06:40:40.6915030Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 191.1 MiB
+2026-10-24T06:40:40.7815057Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 191.1 MiB
+2026-10-24T06:40:40.8827199Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 191.1 MiB
+2026-10-24T06:40:44.1169371Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to /home/runner/.cache/ms-playwright/chromium-1248
+2026-10-24T06:40:44.1174150Z Downloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip
+2026-10-24T06:40:44.5812893Z |                                                                                |   0% of 2.2 MiB
+2026-10-24T06:40:44.6318096Z |■■■■■■■■                                                                        |  10% of 2.2 MiB
+2026-10-24T06:40:44.6587465Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.2 MiB
+2026-10-24T06:40:44.6789713Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.2 MiB
+2026-10-24T06:40:44.6962631Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.2 MiB
+2026-10-24T06:40:44.7138292Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.2 MiB
+2026-10-24T06:40:44.7200329Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.2 MiB
+2026-10-24T06:40:44.7308155Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.2 MiB
+2026-10-24T06:40:44.7393170Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.2 MiB
+2026-10-24T06:40:44.7432107Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.2 MiB
+2026-10-24T06:40:44.7469812Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.2 MiB
+2026-10-24T06:40:44.8088310Z FFmpeg (playwright ffmpeg v1013) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1013
+2026-10-24T06:40:44.8092312Z Downloading Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-headless-shell-linux64.zip
+2026-10-24T06:40:45.2600926Z |                                                                                |   0% of 120 MiB
+2026-10-24T06:40:45.6434613Z |■■■■■■■■                                                                        |  10% of 120 MiB
+2026-10-24T06:40:45.7342469Z |■■■■■■■■■■■■■■■■                                                                |  20% of 120 MiB
+2026-10-24T06:40:45.8028341Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 120 MiB
+2026-10-24T06:40:45.8793246Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 120 MiB
+2026-10-24T06:40:45.9179455Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 120 MiB
+2026-10-24T06:40:45.9701148Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 120 MiB
+2026-10-24T06:40:46.0471433Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 120 MiB
+2026-10-24T06:40:46.0947728Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 120 MiB
+2026-10-24T06:40:46.1580903Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 120 MiB
+2026-10-24T06:40:46.2307588Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 120 MiB
+2026-10-24T06:40:48.6048324Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+2026-10-24T06:40:48.6362039Z ##[group]Run npm run test:e2e
+2026-10-24T06:40:48.6362354Z [36;1mnpm run test:e2e[0m
+2026-10-24T06:40:48.6425447Z shell: /usr/bin/bash -e {0}
+2026-10-24T06:40:48.6425730Z ##[endgroup]
+2026-10-24T06:40:48.7471973Z
+2026-10-24T06:40:48.7472557Z > vision-studio@1.0.0 test:e2e
+2026-10-24T06:40:48.7473323Z > playwright test
+2026-10-24T06:40:48.7473784Z
+2026-10-24T06:40:52.4271705Z
+2026-10-24T06:40:52.4272293Z Running 4 tests using 1 worker
+2026-10-24T06:40:52.4272574Z
+2026-10-24T06:40:54.1617964Z   ✓  1 [chromium] › e2e/camera-lifecycle.spec.ts:10:1 › camera sessions survive UI renders and release stopped, replaced and late synthetic streams (1.1s)
+2026-10-24T06:40:59.7532515Z   ✓  2 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (rVFC) (5.6s)
+2026-10-24T06:41:05.3957536Z   ✓  3 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (RAF fallback) (5.6s)
+2026-10-24T06:41:06.1063227Z   ✓  4 [chromium] › e2e/smoke.spec.ts:3:1 › production app loads and model controls work without camera or external services (693ms)
+2026-10-24T06:41:06.1871911Z
+2026-10-24T06:41:06.1877951Z   4 passed (16.8s)
+2026-10-24T06:41:06.2495983Z ##[group]Run npm run test:e2e:controls
+2026-10-24T06:41:06.2496349Z [36;1mnpm run test:e2e:controls[0m
+2026-10-24T06:41:06.2559097Z shell: /usr/bin/bash -e {0}
+2026-10-24T06:41:06.2559368Z ##[endgroup]
+2026-10-24T06:41:06.3659332Z
+2026-10-24T06:41:06.3660016Z > vision-studio@1.0.0 test:e2e:controls
+2026-10-24T06:41:06.3660791Z > node scripts/smoke-css-controls.mjs
+2026-10-24T06:41:06.3661192Z
+2026-10-24T06:41:10.7052104Z intact: exit=0; passed=1; failed=0
+2026-10-24T06:41:14.5166960Z missing-css-html-fallback: exit=1; passed=0; failed=1
+2026-10-24T06:41:14.5167503Z   Expected failure confirmed: required stylesheet MIME
+2026-10-24T06:41:18.3194570Z absent-stylesheet-link: exit=1; passed=0; failed=1
+2026-10-24T06:41:18.3195404Z   Expected failure confirmed: required local stylesheet links
+2026-10-24T06:41:22.1246573Z empty-css: exit=1; passed=0; failed=1
+2026-10-24T06:41:22.1247782Z   Expected failure confirmed: required stylesheet parsed rules
+2026-10-24T06:41:30.9610886Z irrelevant-css: exit=1; passed=0; failed=1
+2026-10-24T06:41:30.9611434Z   Expected failure confirmed: required stylesheet applied body reset
+2026-10-24T06:41:35.2229667Z fatal-javascript: exit=1; passed=0; failed=1
+2026-10-24T06:41:35.2230484Z   Expected failure confirmed: F01 fatal JavaScript control
+2026-10-24T06:41:39.3500525Z intact-after-controls: exit=0; passed=1; failed=0
+2026-10-24T06:41:39.3684261Z ##[group]Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+2026-10-24T06:41:39.3684687Z with:
+2026-10-24T06:41:39.3685216Z   name: playwright-report
+2026-10-24T06:41:39.3685510Z   path: playwright-report/
+test-results/
+
+2026-10-24T06:41:39.3685807Z   retention-days: 14
+2026-10-24T06:41:39.3686043Z   if-no-files-found: warn
+2026-10-24T06:41:39.3686279Z   compression-level: 6
+2026-10-24T06:41:39.3686499Z   overwrite: false
+2026-10-24T06:41:39.3686721Z   include-hidden-files: false
+2026-10-24T06:41:39.3686983Z   archive: true
+2026-10-24T06:41:39.3687183Z ##[endgroup]
+2026-10-24T06:41:39.5157941Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-24T06:41:39.5159632Z The least common ancestor is /home/runner/work/vision-edge/vision-edge. This will be the root directory of the artifact
+2026-10-24T06:41:39.5160700Z With the provided path, there will be 1 file uploaded
+2026-10-24T06:41:39.5162659Z Artifact name is valid!
+2026-10-24T06:41:39.5174212Z Root directory input is valid!
+2026-10-24T06:41:39.8029861Z Uploading artifact: playwright-report.zip
+2026-10-24T06:41:39.8069516Z Beginning upload of artifact content to blob storage
+2026-10-24T06:41:40.0711292Z Uploaded bytes 228295
+2026-10-24T06:41:40.1079556Z Finished uploading artifact content to blob storage!
+2026-10-24T06:41:40.1081164Z SHA256 digest of uploaded artifact is 65238ab72d44cd344a0f8e22e007b2cd6e9e8df1e6ffec116f0c6588735d0d74
+2026-10-24T06:41:40.1082480Z Finalizing artifact upload
+2026-10-24T06:41:40.6013443Z Artifact playwright-report successfully finalized. Artifact ID 12551382365
+2026-10-24T06:41:40.6015217Z Artifact playwright-report has been successfully uploaded! Final size is 228295 bytes. Artifact ID is 12551382365
+2026-10-24T06:41:40.6019086Z Artifact download URL: https://github.com/TakashiSasaki/vision-edge/actions/runs/40071091971/artifacts/12551382365
+2026-10-24T06:41:40.6200329Z Post job cleanup.
+2026-10-24T06:41:40.7275912Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-1679cf5362cabd1ede55054c727810ea8d7c2f758d5f5207d3f436a086a60f4d, not saving cache.
+2026-10-24T06:41:40.7403613Z Post job cleanup.
+2026-10-24T06:41:40.8276401Z [command]/usr/bin/git version
+2026-10-24T06:41:40.8322396Z git version 2.55.0
+2026-10-24T06:41:40.8363132Z Temporarily overriding HOME='/home/runner/work/_temp/e813e700-2ab2-4b53-82c4-1872452280fc' before making global git config changes
+2026-10-24T06:41:40.8364428Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T06:41:40.8368981Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vision-edge/vision-edge
+2026-10-24T06:41:40.8400110Z Removing SSH command configuration
+2026-10-24T06:41:40.8407191Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T06:41:40.8446059Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T06:41:40.8699287Z Removing HTTP extra header
+2026-10-24T06:41:40.8706291Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T06:41:40.8745021Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T06:41:40.8995856Z Removing includeIf entries pointing to credentials config files
+2026-10-24T06:41:40.9002892Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-24T06:41:40.9032977Z includeif.gitdir:/home/runner/work/vision-edge/vision-edge/.git.path
+2026-10-24T06:41:40.9034227Z includeif.gitdir:/home/runner/work/vision-edge/vision-edge/.git/worktrees/*.path
+2026-10-24T06:41:40.9035553Z includeif.gitdir:/github/workspace/.git.path
+2026-10-24T06:41:40.9036637Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-24T06:41:40.9043211Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vision-edge/vision-edge/.git.path
+2026-10-24T06:41:40.9069664Z /home/runner/work/_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config
+2026-10-24T06:41:40.9091552Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vision-edge/vision-edge/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-1fe96be0\-4212\-430c\-929d\-9076666395e9\.config
+2026-10-24T06:41:40.9137829Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vision-edge/vision-edge/.git/worktrees/*.path
+2026-10-24T06:41:40.9191525Z /home/runner/work/_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config
+2026-10-24T06:41:40.9216310Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vision-edge/vision-edge/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-1fe96be0\-4212\-430c\-929d\-9076666395e9\.config
+2026-10-24T06:41:40.9253844Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-24T06:41:40.9291200Z /github/runner_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config
+2026-10-24T06:41:40.9302425Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-1fe96be0\-4212\-430c\-929d\-9076666395e9\.config
+2026-10-24T06:41:40.9341099Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-24T06:41:40.9368038Z /github/runner_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config
+2026-10-24T06:41:40.9377070Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-1fe96be0\-4212\-430c\-929d\-9076666395e9\.config
+2026-10-24T06:41:40.9416110Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-24T06:41:40.9659102Z Removing credentials config '/home/runner/work/_temp/git-credentials-1fe96be0-4212-430c-929d-9076666395e9.config'
+2026-10-24T06:41:40.9825499Z Cleaning up orphan processes

@@ -1,0 +1,262 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.006358623504638672,
+    "log": "docs/verification/pr04-independent/logs/check-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.11135506629943848,
+    "log": "docs/verification/pr04-independent/logs/check-01.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit": 0,
+    "seconds": 8.931841373443604,
+    "log": "docs/verification/pr04-independent/logs/check-02.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 3.701232433319092,
+    "log": "docs/verification/pr04-independent/logs/check-03.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 3.342477321624756,
+    "log": "docs/verification/pr04-independent/logs/check-04.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 7.494108438491821,
+    "log": "docs/verification/pr04-independent/logs/check-05.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 0.9503309726715088,
+    "log": "docs/verification/pr04-independent/logs/check-06.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "install",
+      "chromium"
+    ],
+    "exit": 1,
+    "seconds": 3.254631519317627,
+    "log": "docs/verification/pr04-independent/logs/check-07.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 1,
+    "seconds": 6.782865762710571,
+    "log": "docs/verification/pr04-independent/logs/check-08.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e:controls"
+    ],
+    "exit": 1,
+    "seconds": 4.732868432998657,
+    "log": "docs/verification/pr04-independent/logs/check-09.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+      "2f4cdea1bc3e6706f49e37116ede8b1881472f7f"
+    ],
+    "exit": 0,
+    "seconds": 0.018995046615600586,
+    "log": "docs/verification/pr04-independent/logs/check-10.txt"
+  },
+  {
+    "command": [
+      "chromium",
+      "--version"
+    ],
+    "environment": {
+      "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+    },
+    "exit": 0,
+    "seconds": 0.475691556930542,
+    "log": "system-browser-version.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "environment": {
+      "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+    },
+    "exit": 0,
+    "seconds": 20.95637559890747,
+    "log": "system-browser-e2e.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e:controls"
+    ],
+    "environment": {
+      "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+    },
+    "exit": 0,
+    "seconds": 51.87243413925171,
+    "log": "system-browser-controls.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--prefix",
+      "/workspace/pr04-baseline",
+      "test"
+    ],
+    "exit": 0,
+    "log": "logs/baseline-61.txt",
+    "note": "Clean frozen main checkout; same identical locked node_modules installation"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "docs/verification/pr04-independent/vectors/vitest.config.mjs"
+    ],
+    "exit": 1,
+    "expected_acceptance_exit": 0,
+    "observed": "four assertions fail for PR04-F01 (three) and PR04-F02 (one)",
+    "log": "logs/independent-acceptance.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-first-frame.mjs"
+    ],
+    "exit": 1,
+    "log": "logs/native-first-frame.json",
+    "stderr": "logs/native-first-frame.stderr.txt",
+    "reason": "PR04-F02 explicit contract assertion"
+  },
+  {
+    "command": [
+      "ffmpeg",
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-f",
+      "lavfi",
+      "-i",
+      "testsrc2=size=64x64:rate=20:duration=5",
+      "-c:v",
+      "libvpx",
+      "-y",
+      ".cache/review-video.webm"
+    ],
+    "exit": 0,
+    "output_sha256": "97f996da8f6ffe70ee82c61d353d655b4af68b05a11b71236e921417272002a5"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-frame-race.mjs"
+    ],
+    "exit": 1,
+    "log": "logs/native-frame-race-trials.json",
+    "stderr": "logs/native-frame-race-trials.stderr.txt",
+    "reason": "PR04-F01 explicit contract assertion, three fixed trials per path"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "log": "logs/evidence-typecheck.txt",
+    "note": "Includes evidence additions"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "log": "logs/evidence-lint.txt",
+    "note": "Includes evidence additions"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exit": 2,
+    "phase": "initial evidence staging",
+    "reason": "New review text log trailing whitespace/terminal blank lines only; product full diff check passed earlier"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exit": 0,
+    "phase": "after own log whitespace normalization"
+  },
+  {
+    "command": [
+      "python",
+      "source hash and artifact isolation checks"
+    ],
+    "exit": 0,
+    "note": "54 frozen non-evidence hashes match; marker isolation receipts retained"
+  }
+]

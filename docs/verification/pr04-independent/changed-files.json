@@ -1,0 +1,862 @@
+[
+  {
+    "path": "docs/verification/pr04.md",
+    "category": "evidence",
+    "bytes": 17308,
+    "lines": 250,
+    "sha256": "8a86ec1a0fa8b5a95c203b30099ea98ee30ae933d68a12fb12750551d38116ac",
+    "summary": [
+      "# PR-04: inference scheduling and measured performance",
+      "## Frozen starting point and scope",
+      "#4; neither is PR-04. All seven remote branches were read: main, foundation,",
+      "## Reproduced defects and baseline evidence",
+      "The untouched main checkout passed **61 tests / 7 files**, recorded in",
+      "  **21 SDK calls rather than 1**. `before-regressions.txt` records exit 1.",
+      "  remaining RAF callbacks. All three positive recovery expectations failed.",
+      "  probe is in `before-faults-ripple.txt` (exit 1: four new failures, four existing",
+      "## Production architecture and ownership",
+      "## Failure behavior",
+      "output, exclude failed work from successful inference counts, and permit the next",
+      "new frame to recover. An unchanged failed frame is not retried automatically.",
+      "frame, draw, timer and ripple callbacks. Tests cover StrictMode teardown and",
+      "## Measurement contract",
+      "| Overlay draw FPS (`\u63cf\u753b`) | Successful completed offscreen overlay and visible-copy operations, including successful empty overlays | Same event-span estimator;",
+      "## Tests, commands and environments",
+      "exercise real App/canvas/engine, bounded publication, empty successes, failed work,",
+      "`pr04/probes/verify.py` runs the required clean commands in order and stops at the",
+      "verified-source.json preserve commands, exit codes and product/test hashes.",
+      "All final required command exits are **0**. Commands: npm ci; npm run typecheck; npm run lint; npm test; npm run build;",
+      "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH override. The supported matched-browser command",
+      "Domain forbidden for Chromium v1248 / Chrome 156.0.8078.4. browser-install.txt",
+      "command. Its final-HEAD run, jobs, steps and actual logs must be verified before",
+      "Development logs disclose harness corrections: an early command ran before npm",
+      "blank lines only (command content is retained), extends the runner to check the"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/baseline-tests-ready.txt",
+    "category": "evidence",
+    "bytes": 756,
+    "lines": 22,
+    "sha256": "f8c43aace7ee063efe936a1d4c383cefe4c3391671816bce335bdb049234f3bf",
+    "summary": [
+      " Test Files  7 passed (7)",
+      "      Tests  61 passed (61)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/baseline-tests.txt",
+    "category": "evidence",
+    "bytes": 67,
+    "lines": 5,
+    "sha256": "6a5e731e7406f023c69055e05cb11633942013950383bd544bb69ea600a13841",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/before-faults-ripple.txt",
+    "category": "evidence",
+    "bytes": 2310,
+    "lines": 52,
+    "sha256": "11130efd94fd3b2adf9971dc99641bbb5ccf5f5aaa54196af0dc8a0281d01510",
+    "summary": [
+      " \u276f src/components/VisionCanvas.test.tsx (8 tests | 4 failed) 1083ms",
+      "\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 4 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+      " FAIL  src/components/VisionCanvas.test.tsx > baseline reservation survives injected draw exception",
+      " FAIL  src/components/VisionCanvas.test.tsx > baseline reservation survives injected notification exception",
+      " FAIL  src/components/VisionCanvas.test.tsx > baseline reservation survives injected tts exception",
+      "AssertionError: expected 0 to be greater than 0",
+      " FAIL  src/components/VisionCanvas.test.tsx > baseline draw closure uses the newly committed click ripple",
+      "AssertionError: expected \"vi.fn()\" to be called at least once",
+      " Test Files  1 failed (1)",
+      "      Tests  4 failed | 4 passed (8)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/before-regressions.txt",
+    "category": "evidence",
+    "bytes": 2789,
+    "lines": 75,
+    "sha256": "e2e5838434db81b76898407f31802fafae35764f159bfb093b04e04444e6c908",
+    "summary": [
+      " \u276f src/services/visionEngine.test.ts (22 tests | 1 failed) 37ms",
+      " \u276f src/components/VisionCanvas.test.tsx (5 tests | 1 failed) 598ms",
+      "\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+      " FAIL  src/components/VisionCanvas.test.tsx > does not infer the same fallback frame repeatedly, while still drawing and publishing at bounded frequency",
+      "AssertionError: expected \"vi.fn()\" to be called 1 times, but got 21 times",
+      " FAIL  src/services/visionEngine.test.ts > repairs temporary smoothing state after an SDK exception so empty recovery cannot resurrect old objects",
+      "AssertionError: expected { status: 'ready', \u2026(3) } to match object { status: 'ready', objects: [] }",
+      " Test Files  2 failed (2)",
+      "      Tests  2 failed | 25 passed (27)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/browser-install.txt",
+    "category": "evidence",
+    "bytes": 3542,
+    "lines": 36,
+    "sha256": "ac8e2457a0302f8195c5e15635744899a20a1ba68bbf977ee81eaf880ec12e46",
+    "summary": [
+      "Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip",
+      "Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip",
+      "Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip",
+      "Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip",
+      "Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip",
+      "Error: Failed to download Chrome for Testing 156.0.8078.4 (playwright chromium v1248), caused by",
+      "Error: Download failure, code=1",
+      "    at ChildProcess._handle.onexit (node:internal/child_process:295:12)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/build-dev6.txt",
+    "category": "evidence",
+    "bytes": 604,
+    "lines": 19,
+    "sha256": "e28bee9db88bded9ef9d583b1b955dde7498abe2e0aea68416a9c7513ea52849",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/checks.json",
+    "category": "evidence",
+    "bytes": 1255,
+    "lines": 98,
+    "sha256": "d98ebbe72a18ffb7fca01b6bb8bd8a6cd5aafef223953352584a15b426e74b5e",
+    "summary": [
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/controls-dev6.txt",
+    "category": "evidence",
+    "bytes": 912,
+    "lines": 21,
+    "sha256": "c89eca1b380efdef8eec003655672c850241a976412167165228b8fbd4271643",
+    "summary": [
+      "intact: exit=0; passed=1; failed=0",
+      "missing-css-html-fallback: exit=1; passed=0; failed=1",
+      "absent-stylesheet-link: exit=1; passed=0; failed=1",
+      "empty-css: exit=1; passed=0; failed=1",
+      "irrelevant-css: exit=1; passed=0; failed=1",
+      "fatal-javascript: exit=1; passed=0; failed=1",
+      "intact-after-controls: exit=0; passed=1; failed=0"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/e2e-dev.txt",
+    "category": "evidence",
+    "bytes": 2468,
+    "lines": 37,
+    "sha256": "891013217da9bb5914bb78ba2a5c9625cdf5ab33b7c83b32f964f34aae0e09c1",
+    "summary": [
+      "  4 passed (20.9s)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-00.txt",
+    "category": "evidence",
+    "bytes": 9,
+    "lines": 1,
+    "sha256": "b7677d3ec37ee1897ba07dc2cfe8292fe421c9ac93396cca5bbece486d1a2a41",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-01.txt",
+    "category": "evidence",
+    "bytes": 7,
+    "lines": 1,
+    "sha256": "d9f29f5aab43c8c1a8d6acc856e258b89735f541aa5e1f07b39a62f28bfa8d06",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-02.txt",
+    "category": "evidence",
+    "bytes": 26,
+    "lines": 2,
+    "sha256": "861d3cefb81894ea6963cd095764234a38a8a948f24b4432e2470aa471243598",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-03.txt",
+    "category": "evidence",
+    "bytes": 48,
+    "lines": 3,
+    "sha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-04.txt",
+    "category": "evidence",
+    "bytes": 56,
+    "lines": 3,
+    "sha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-05.txt",
+    "category": "evidence",
+    "bytes": 550,
+    "lines": 16,
+    "sha256": "3cda5513e7d2fcdd9bb4a6c8989e59877c36c9897943d619ece646566f783b21",
+    "summary": [
+      " Test Files  9 passed (9)",
+      "      Tests  86 passed (86)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-06.txt",
+    "category": "evidence",
+    "bytes": 396,
+    "lines": 14,
+    "sha256": "1d9883f4e1d96c69d328180642b94603334bd7c51db86c7e0ed7a5893bc1f3d9",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-07.txt",
+    "category": "evidence",
+    "bytes": 1435,
+    "lines": 21,
+    "sha256": "f060416c403aaa9d2aa7c01b1c7603e518a20e6fdebe1f502294621e33016e06",
+    "summary": [
+      "  4 passed (19.4s)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-08.txt",
+    "category": "evidence",
+    "bytes": 704,
+    "lines": 16,
+    "sha256": "08901eca0756db17de58cf982eb45118de8fc8fce821136bf57f1c796d138c45",
+    "summary": [
+      "intact: exit=0; passed=1; failed=0",
+      "missing-css-html-fallback: exit=1; passed=0; failed=1",
+      "absent-stylesheet-link: exit=1; passed=0; failed=1",
+      "empty-css: exit=1; passed=0; failed=1",
+      "irrelevant-css: exit=1; passed=0; failed=1",
+      "fatal-javascript: exit=1; passed=0; failed=1",
+      "intact-after-controls: exit=0; passed=1; failed=0"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-09.txt",
+    "category": "evidence",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/final-10.txt",
+    "category": "evidence",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/install.txt",
+    "category": "evidence",
+    "bytes": 234,
+    "lines": 7,
+    "sha256": "98959b013f0113aa46c7b853bb69ca60337cf3f9002c4a96fe542362e0eafe2b",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/lint-dev.txt",
+    "category": "evidence",
+    "bytes": 265,
+    "lines": 9,
+    "sha256": "c5a95402c85690aab1dd91cd1794a87b47f12b6ca6184ac98b55259d5625de10",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/lint-dev5.txt",
+    "category": "evidence",
+    "bytes": 682,
+    "lines": 15,
+    "sha256": "3058c661e18d67ea2b596415a7e7898f168862a8e70fe866f1a4c004cb3fd2bb",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/lint-dev6.txt",
+    "category": "evidence",
+    "bytes": 682,
+    "lines": 15,
+    "sha256": "3058c661e18d67ea2b596415a7e7898f168862a8e70fe866f1a4c004cb3fd2bb",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/checks.json",
+    "category": "evidence",
+    "bytes": 1117,
+    "lines": 88,
+    "sha256": "a64ac9894a2546912400fbcdfd3fb61d8031b9d2e020975b7b95020eb54463ee",
+    "summary": [
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-00.txt",
+    "category": "evidence",
+    "bytes": 9,
+    "lines": 1,
+    "sha256": "b7677d3ec37ee1897ba07dc2cfe8292fe421c9ac93396cca5bbece486d1a2a41",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-01.txt",
+    "category": "evidence",
+    "bytes": 7,
+    "lines": 1,
+    "sha256": "d9f29f5aab43c8c1a8d6acc856e258b89735f541aa5e1f07b39a62f28bfa8d06",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-02.txt",
+    "category": "evidence",
+    "bytes": 26,
+    "lines": 2,
+    "sha256": "861d3cefb81894ea6963cd095764234a38a8a948f24b4432e2470aa471243598",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-03.txt",
+    "category": "evidence",
+    "bytes": 48,
+    "lines": 3,
+    "sha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-04.txt",
+    "category": "evidence",
+    "bytes": 56,
+    "lines": 3,
+    "sha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-05.txt",
+    "category": "evidence",
+    "bytes": 539,
+    "lines": 16,
+    "sha256": "167a37bfd44f7c83683c34c95ca3ced13e1d66dfcfef212889a357a1152282e1",
+    "summary": [
+      " Test Files  9 passed (9)",
+      "      Tests  86 passed (86)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-06.txt",
+    "category": "evidence",
+    "bytes": 396,
+    "lines": 14,
+    "sha256": "8053b79deef804702ac58540dc2084f79f9674f169ecf7bf3fce08f31f83bab6",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-07.txt",
+    "category": "evidence",
+    "bytes": 1431,
+    "lines": 21,
+    "sha256": "0aada87049775bce80c001841f5220940c8055f46dda58060514824bb87dc24f",
+    "summary": [
+      "  4 passed (19.8s)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-08.txt",
+    "category": "evidence",
+    "bytes": 704,
+    "lines": 16,
+    "sha256": "08901eca0756db17de58cf982eb45118de8fc8fce821136bf57f1c796d138c45",
+    "summary": [
+      "intact: exit=0; passed=1; failed=0",
+      "missing-css-html-fallback: exit=1; passed=0; failed=1",
+      "absent-stylesheet-link: exit=1; passed=0; failed=1",
+      "empty-css: exit=1; passed=0; failed=1",
+      "irrelevant-css: exit=1; passed=0; failed=1",
+      "fatal-javascript: exit=1; passed=0; failed=1",
+      "intact-after-controls: exit=0; passed=1; failed=0"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/final-09.txt",
+    "category": "evidence",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-freeze/verified-source.json",
+    "category": "evidence",
+    "bytes": 5780,
+    "lines": 56,
+    "sha256": "1a08509930c0d9f4b68378023d02ee526411c50f5900a8ea2fc50f46b17c4124",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/checks.json",
+    "category": "evidence",
+    "bytes": 1117,
+    "lines": 88,
+    "sha256": "a64ac9894a2546912400fbcdfd3fb61d8031b9d2e020975b7b95020eb54463ee",
+    "summary": [
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,",
+      "    \"command\": [",
+      "    \"exit\": 0,"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-00.txt",
+    "category": "evidence",
+    "bytes": 9,
+    "lines": 1,
+    "sha256": "b7677d3ec37ee1897ba07dc2cfe8292fe421c9ac93396cca5bbece486d1a2a41",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-01.txt",
+    "category": "evidence",
+    "bytes": 7,
+    "lines": 1,
+    "sha256": "d9f29f5aab43c8c1a8d6acc856e258b89735f541aa5e1f07b39a62f28bfa8d06",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-02.txt",
+    "category": "evidence",
+    "bytes": 26,
+    "lines": 2,
+    "sha256": "779129bcea42e6f16124c5a430f7560c6d7e4543ff382bd027d834013346e5c8",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-03.txt",
+    "category": "evidence",
+    "bytes": 48,
+    "lines": 3,
+    "sha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-04.txt",
+    "category": "evidence",
+    "bytes": 56,
+    "lines": 3,
+    "sha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-05.txt",
+    "category": "evidence",
+    "bytes": 549,
+    "lines": 16,
+    "sha256": "25a904b5dd75959337704e416fbdf82a3a3310fb8fbeeb03d59b0eb5f250e10b",
+    "summary": [
+      " Test Files  9 passed (9)",
+      "      Tests  85 passed (85)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-06.txt",
+    "category": "evidence",
+    "bytes": 396,
+    "lines": 14,
+    "sha256": "d54b7b367d5cd6f14c84eae141a4898f38d5125e008c4897889aa0f7b121d9c6",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-07.txt",
+    "category": "evidence",
+    "bytes": 1431,
+    "lines": 21,
+    "sha256": "a433951faef2d757f0d9e30269f4e2fe42f0b97b779cd28f5e20109af9e6dd9c",
+    "summary": [
+      "  4 passed (20.0s)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-08.txt",
+    "category": "evidence",
+    "bytes": 704,
+    "lines": 16,
+    "sha256": "08901eca0756db17de58cf982eb45118de8fc8fce821136bf57f1c796d138c45",
+    "summary": [
+      "intact: exit=0; passed=1; failed=0",
+      "missing-css-html-fallback: exit=1; passed=0; failed=1",
+      "absent-stylesheet-link: exit=1; passed=0; failed=1",
+      "empty-css: exit=1; passed=0; failed=1",
+      "irrelevant-css: exit=1; passed=0; failed=1",
+      "fatal-javascript: exit=1; passed=0; failed=1",
+      "intact-after-controls: exit=0; passed=1; failed=0"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/final-09.txt",
+    "category": "evidence",
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/pre-isolation/verified-source.json",
+    "category": "evidence",
+    "bytes": 5780,
+    "lines": 56,
+    "sha256": "ba558938204078d963167cd346e56e79375937967571988d40d67fff3f721400",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/test-build-isolation.txt",
+    "category": "evidence",
+    "bytes": 154,
+    "lines": 3,
+    "sha256": "c47969f576b501ae0d1e26217d0c4f4353148ec29be29ea5776bdcb8a88366a4",
+    "summary": [
+      "Assertions: exit 0"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/tests-dev.txt",
+    "category": "evidence",
+    "bytes": 27790,
+    "lines": 605,
+    "sha256": "e61585769f7c0a91b4e0bb91cc6e76fe37159466a2bcf7971384d9932d1981ee",
+    "summary": [
+      " \u276f src/components/VisionCanvas.test.tsx (4 tests | 4 failed) 1220ms",
+      " \u276f src/App.test.tsx (6 tests | 1 failed) 1901ms",
+      "\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 5 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+      " FAIL  src/App.test.tsx > uses only the two implemented choices in both UI paths and shows read-only backend settings",
+      " FAIL  src/components/VisionCanvas.test.tsx > runs the ready model through the real App/canvas bridge and removes old list/overlays on switch",
+      " FAIL  src/components/VisionCanvas.test.tsx > cancels a queued old-generation inference and allows the replacement model to run",
+      "AssertionError: expected last \"vi.fn()\" call to have been called with [ ObjectContaining{\u2026} ]",
+      " FAIL  src/components/VisionCanvas.test.tsx > camera stop/restart clears the old scene and selection without recreating the ready model",
+      " FAIL  src/components/VisionCanvas.test.tsx > does not infer from stale video frames while camera acquisition or playback is pending",
+      "Error: Render loop stopped scheduling",
+      " Test Files  2 failed | 7 passed (9)",
+      "      Tests  5 failed | 65 passed (70)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/tests-dev2.txt",
+    "category": "evidence",
+    "bytes": 759,
+    "lines": 22,
+    "sha256": "586c40b9238404665bbf1f4df431daf6f7911efd0474ce2ea22a9c43f8d4e233",
+    "summary": [
+      " Test Files  9 passed (9)",
+      "      Tests  70 passed (70)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/tests-dev3.txt",
+    "category": "evidence",
+    "bytes": 759,
+    "lines": 22,
+    "sha256": "dcec431ee92845c2703f347f5fd0e752f13d6a3aab7c88d854d1c83b43c02a62",
+    "summary": [
+      " Test Files  9 passed (9)",
+      "      Tests  78 passed (78)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/tests-dev4.txt",
+    "category": "evidence",
+    "bytes": 1738,
+    "lines": 46,
+    "sha256": "eab5e47d1c24f055367d5f3aacb692cf6e98f836c1752a6f1694d45d77fd7eae",
+    "summary": [
+      " \u276f src/components/VisionCanvas.test.tsx (14 tests | 1 failed) 970ms",
+      "\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+      " FAIL  src/components/VisionCanvas.test.tsx > rejects a result invalidated synchronously during inference by camera generation",
+      "AssertionError: expected [ [ { status: 'ready', \u2026(3) } ] ] to have a length of +0 but got 1",
+      " Test Files  1 failed | 8 passed (9)",
+      "      Tests  1 failed | 81 passed (82)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/tests-dev5.txt",
+    "category": "evidence",
+    "bytes": 1738,
+    "lines": 46,
+    "sha256": "983335e1179cab3bedc8d29f0be555d3e9bb096e323a041d8415d86eb8c26275",
+    "summary": [
+      " \u276f src/components/VisionCanvas.test.tsx (14 tests | 1 failed) 937ms",
+      "\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+      " FAIL  src/components/VisionCanvas.test.tsx > rejects a result invalidated synchronously during inference by camera generation",
+      "AssertionError: expected [ [ { status: 'ready', \u2026(3) } ] ] to have a length of +0 but got 1",
+      " Test Files  1 failed | 8 passed (9)",
+      "      Tests  1 failed | 81 passed (82)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/tests-dev6.txt",
+    "category": "evidence",
+    "bytes": 759,
+    "lines": 22,
+    "sha256": "acd9d372d84b00df1e9aeb7fbe5f12eda4c569c630ddda2c4b8dc689b1b27878",
+    "summary": [
+      " Test Files  9 passed (9)",
+      "      Tests  83 passed (83)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/tests-dev7.txt",
+    "category": "evidence",
+    "bytes": 2013,
+    "lines": 43,
+    "sha256": "35a670b8580ce2464384108aca3cbd86dd77471741ebf0f181a28bb227570eec",
+    "summary": [
+      " \u276f src/services/frameScheduler.test.ts (8 tests | 1 failed) 30ms",
+      "\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+      " FAIL  src/services/frameScheduler.test.ts > uses presented-frame identity with coarse media timestamps and ignores invalid metadata",
+      " Test Files  1 failed | 8 passed (9)",
+      "      Tests  1 failed | 84 passed (85)"
+    ]
+  },
+  {
+    "path": "docs/verification/pr04/logs/typecheck-dev.txt",
+    "category": "evidence",
+    "bytes": 257,
+    "lines": 9,
+    "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/typecheck-dev4.txt",
+    "category": "evidence",
+    "bytes": 257,
+    "lines": 9,
+    "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/typecheck-dev5.txt",
+    "category": "evidence",
+    "bytes": 257,
+    "lines": 9,
+    "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/typecheck-dev6.txt",
+    "category": "evidence",
+    "bytes": 257,
+    "lines": 9,
+    "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/logs/verified-source.json",
+    "category": "evidence",
+    "bytes": 5780,
+    "lines": 56,
+    "sha256": "e33474e2ce97764e4b0d0d9cace52602220fb63592b1ca96a00a52f73929e6b8",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/preflight-branches.txt",
+    "category": "evidence",
+    "bytes": 563,
+    "lines": 7,
+    "sha256": "0b20b89c1e1aed25f0c9fb06457ef7f41d9c733b5266e6c7d0e3255f6b4c06da",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/preflight.json",
+    "category": "evidence",
+    "bytes": 1585,
+    "lines": 47,
+    "sha256": "56770e16056b6214d73931526b044fd3b74521c9b8cb5971b6825313e1d951a8",
+    "summary": []
+  },
+  {
+    "path": "docs/verification/pr04/probes/verify.py",
+    "category": "evidence",
+    "bytes": 1641,
+    "lines": 33,
+    "sha256": "df23554f35215d0b7809ae89c9a9b05f0201190df08481917c57f5e109c488e8",
+    "summary": [
+      "\"\"\"Required local checks; stop at the first failure. Receipts bind source hashes.\"\"\"",
+      "import hashlib",
+      "import json",
+      "import os",
+      "import pathlib",
+      "import subprocess",
+      "commands = [",
+      "for i, cmd in enumerate(commands):",
+      "    records.append({'command': cmd, 'exit': result.returncode, 'log': path.name})",
+      "    print(f'{cmd}: exit {result.returncode}', flush=True)"
+    ]
+  },
+  {
+    "path": "e2e/fixtures/visionSdk.ts",
+    "category": "test",
+    "bytes": 1289,
+    "lines": 24,
+    "sha256": "33444c3d28758a841523110069557ab6e5349ffa5f26ba489e9c72015a971ca1"
+  },
+  {
+    "path": "e2e/inference-metrics.spec.ts",
+    "category": "test",
+    "bytes": 4535,
+    "lines": 59,
+    "sha256": "2fc4ee8ad6d8e9be69aa6dfa972029117ca75dfdaaeda4ba8e92896d1eb81f5f"
+  },
+  {
+    "path": "e2e/smoke.spec.ts",
+    "category": "test",
+    "bytes": 6236,
+    "lines": 100,
+    "sha256": "864289033b329d124e5b5d526bf0dc35a319e0c324d5e223b55ec7dec6926dbb"
+  },
+  {
+    "path": "eslint.config.js",
+    "category": "configuration/control",
+    "bytes": 666,
+    "lines": 21,
+    "sha256": "14261138da65798399e102b9da482b5243b028346cf9f704e563e47f915328e8"
+  },
+  {
+    "path": "playwright.config.ts",
+    "category": "configuration/control",
+    "bytes": 989,
+    "lines": 28,
+    "sha256": "087cf75c3e18abc52082eb67a4aa8f7e220f6ca4394eaaf86b654de5e021ab57"
+  },
+  {
+    "path": "scripts/smoke-css-controls.mjs",
+    "category": "configuration/control",
+    "bytes": 4581,
+    "lines": 79,
+    "sha256": "0fa08103b019025d0e8638f26a3e6e04fd69112d6f867665f3bd54c30215f5b0"
+  },
+  {
+    "path": "src/App.test.tsx",
+    "category": "test",
+    "bytes": 7921,
+    "lines": 136,
+    "sha256": "8b900a0a446379bdb4b13756f7f22f6133a99353f27a489956b89f5515fa646a"
+  },
+  {
+    "path": "src/components/VisionCanvas.test.tsx",
+    "category": "test",
+    "bytes": 18659,
+    "lines": 303,
+    "sha256": "b499f059fe87c6e0bc8375f1a1cd7852be08e847f3f8929bcc8af09de7244da5"
+  },
+  {
+    "path": "src/components/VisionCanvas.tsx",
+    "category": "source",
+    "bytes": 19405,
+    "lines": 451,
+    "sha256": "170b1a77ca710cf473cfb255d93dcf0abdd0219705af6440ef089ad2bac0ef58"
+  },
+  {
+    "path": "src/services/frameScheduler.test.ts",
+    "category": "test",
+    "bytes": 5777,
+    "lines": 91,
+    "sha256": "91a5cf133d215f8fb79bfef447e2d9cafacddbbafe15405f5ac997f151b11d1f"
+  },
+  {
+    "path": "src/services/frameScheduler.ts",
+    "category": "source",
+    "bytes": 3609,
+    "lines": 82,
+    "sha256": "e0566a973b5dc6e8252b952597d751cb4ea82353650d8974cf1262a7a370d03d"
+  },
+  {
+    "path": "src/services/performanceMetrics.test.ts",
+    "category": "test",
+    "bytes": 2735,
+    "lines": 43,
+    "sha256": "f42235e5e546b6781c4696e93618127fb7d0af930a52ed1dd4e451cc2c277417"
+  },
+  {
+    "path": "src/services/performanceMetrics.ts",
+    "category": "source",
+    "bytes": 3174,
+    "lines": 66,
+    "sha256": "d14a5a19e8f03dfb025c9748e66ccbfa433778d71d8c24602e11c1767c1fa351"
+  },
+  {
+    "path": "src/services/visionEngine.test.ts",
+    "category": "test",
+    "bytes": 14568,
+    "lines": 272,
+    "sha256": "966414bccee6125c253653f60415104688c2ba2dbc1921e51d3a4dffb6b75177"
+  },
+  {
+    "path": "src/services/visionEngine.ts",
+    "category": "source",
+    "bytes": 16570,
+    "lines": 409,
+    "sha256": "8fc665b582a11642ab9f240b419d0310578ad4e20fdc29a2746c52287e52dc90"
+  },
+  {
+    "path": "vite.config.ts",
+    "category": "configuration/control",
+    "bytes": 611,
+    "lines": 20,
+    "sha256": "5d1c39a3dc2a764c55479a7329c75ec54970f4cf3bb52e94fc0ff5d2b291e8f2"
+  }
+]

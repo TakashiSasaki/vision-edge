@@ -1,0 +1,112 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.006358623504638672,
+    "log": "docs/verification/pr04-independent/logs/check-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.11135506629943848,
+    "log": "docs/verification/pr04-independent/logs/check-01.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit": 0,
+    "seconds": 8.931841373443604,
+    "log": "docs/verification/pr04-independent/logs/check-02.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 3.701232433319092,
+    "log": "docs/verification/pr04-independent/logs/check-03.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 3.342477321624756,
+    "log": "docs/verification/pr04-independent/logs/check-04.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 7.494108438491821,
+    "log": "docs/verification/pr04-independent/logs/check-05.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 0.9503309726715088,
+    "log": "docs/verification/pr04-independent/logs/check-06.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "install",
+      "chromium"
+    ],
+    "exit": 1,
+    "seconds": 3.254631519317627,
+    "log": "docs/verification/pr04-independent/logs/check-07.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 1,
+    "seconds": 6.782865762710571,
+    "log": "docs/verification/pr04-independent/logs/check-08.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e:controls"
+    ],
+    "exit": 1,
+    "seconds": 4.732868432998657,
+    "log": "docs/verification/pr04-independent/logs/check-09.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+      "2f4cdea1bc3e6706f49e37116ede8b1881472f7f"
+    ],
+    "exit": 0,
+    "seconds": 0.018995046615600586,
+    "log": "docs/verification/pr04-independent/logs/check-10.txt"
+  }
+]

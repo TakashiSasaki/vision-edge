@@ -1,0 +1,13 @@
+{
+  "command": [
+    "npx",
+    "--no-install",
+    "vitest",
+    "run",
+    "--config",
+    "docs/verification/pr04-independent/vectors/vitest.config.mjs"
+  ],
+  "exit": 1,
+  "expected_acceptance_exit": 0,
+  "observed": "four assertions fail for PR04-F01 (three) and PR04-F02 (one)"
+}

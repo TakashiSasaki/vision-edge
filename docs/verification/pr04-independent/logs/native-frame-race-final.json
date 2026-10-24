@@ -1,0 +1,104 @@
+[
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.49676,
+        "total": 15,
+        "hash": 2868025055,
+        "identicalPixelsToPrevious": false,
+        "at": 1012.7000000000116
+      },
+      {
+        "time": 0.496903,
+        "total": 15,
+        "hash": 2731204653,
+        "identicalPixelsToPrevious": false,
+        "at": 1023.5
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.05,
+        "count": 2,
+        "at": 573.9000000000233
+      },
+      {
+        "time": 0.5,
+        "count": 11,
+        "at": 1020.7000000000116
+      }
+    ]
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.423884,
+        "total": 9,
+        "hash": 1748242162,
+        "identicalPixelsToPrevious": false,
+        "at": 771.5999999999767
+      },
+      {
+        "time": 0.423949,
+        "total": 9,
+        "hash": 1748242162,
+        "identicalPixelsToPrevious": true,
+        "at": 775.5
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.011944,
+        "count": 4,
+        "at": 359.5999999999767
+      },
+      {
+        "time": 0.423949,
+        "count": 9,
+        "at": 772.8999999999651
+      },
+      {
+        "time": 0.423949,
+        "count": 9,
+        "at": 776.1999999999534
+      },
+      {
+        "time": 0.423949,
+        "count": 9,
+        "at": 793.3999999999651
+      },
+      {
+        "time": 0.423949,
+        "count": 9,
+        "at": 817.2999999999884
+      },
+      {
+        "time": 0.423949,
+        "count": 9,
+        "at": 826.5
+      },
+      {
+        "time": 0.423949,
+        "count": 9,
+        "at": 843
+      },
+      {
+        "time": 0.423949,
+        "count": 9,
+        "at": 860.6999999999534
+      },
+      {
+        "time": 0.423949,
+        "count": 9,
+        "at": 876.5
+      },
+      {
+        "time": 0.423949,
+        "count": 9,
+        "at": 892.7999999999884
+      }
+    ]
+  }
+]

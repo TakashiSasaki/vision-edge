@@ -1,0 +1,69 @@
+
+ RUN  v5.0.5 /workspace/pr04-independent
+
+stdout | docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (false)
+F01 { native: false, consumedFrames: [ 2, 2 ] }
+
+stdout | docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (true)
+F01 { native: true, consumedFrames: [ 2, 2 ] }
+
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js (9 tests | 2 failed) 40ms
+   × F01: deferral must not infer the same live frame twice (false) 22ms
+   × F01: deferral must not infer the same live frame twice (true) 3ms
+ ❯ docs/verification/pr04-independent/vectors/metrics.test.js (3 tests | 1 failed) 24ms
+   × independent irregular-event arithmetic, retention boundaries, idle aging and resume 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/metrics.test.js > independent irregular-event arithmetic, retention boundaries, idle aging and resume
+AssertionError: expected 2.5641025641025643 to be 2.564102564102564 // Object.is equality
+
+- Expected
++ Received
+
+- 2.564102564102564
++ 2.5641025641025643
+
+ ❯ docs/verification/pr04-independent/vectors/metrics.test.js:15:33
+     13|     now = time; m.input(); m.inferenceCompleted(now - 7, now); m.drawC…
+     14|     const result = m.snapshot();
+     15|     expect(result.inferenceFps).toBe(oracle(events, now));
+       |                                 ^
+     16|     expect(result.drawFps).toBe(oracle(events, now)); expect(result.pr…
+     17|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (false)
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (true)
+AssertionError: expected [ 2, 2 ] to deeply equal [ 2 ]
+
+- Expected
++ Received
+
+  [
+    2,
++   2,
+  ]
+
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:38:49
+     36|   console.log('F01', { native, consumedFrames: s.work.mock.results.map…
+     37|   s.stop();
+     38|   expect(s.work.mock.results.map(r => r.value)).toEqual([2]);
+       |                                                 ^
+     39| });
+     40| it.each([false, true])('first zero, equal new-session time, coarse tim…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  3 failed | 23 passed (26)
+   Start at  06:51:59
+   Duration  2.24s (environment 74%, tests 15%, import 7%, transform 3%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

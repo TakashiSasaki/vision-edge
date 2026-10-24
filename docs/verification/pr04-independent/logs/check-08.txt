@@ -1,0 +1,120 @@
+
+> vision-studio@1.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:1038) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:1075) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:1118) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:1142) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › e2e/camera-lifecycle.spec.ts:10:1 › camera sessions survive UI renders and release stopped, replaced and late synthetic streams (7ms)
+(node:1154) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (rVFC) (3ms)
+(node:1166) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (RAF fallback) (2ms)
+(node:1178) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [chromium] › e2e/smoke.spec.ts:3:1 › production app loads and model controls work without camera or external services (2ms)
+
+
+  1) [chromium] › e2e/camera-lifecycle.spec.ts:10:1 › camera sessions survive UI renders and release stopped, replaced and late synthetic streams
+
+    Error: browserType.launch: Executable doesn't exist at /workspace/pr04-browsers/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/camera-lifecycle-camera-se-7d9fa--and-late-synthetic-streams-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/camera-lifecycle-camera-se-7d9fa--and-late-synthetic-streams-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/camera-lifecycle-camera-se-7d9fa--and-late-synthetic-streams-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (rVFC)
+
+    Error: browserType.launch: Executable doesn't exist at /workspace/pr04-browsers/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/inference-metrics-successf-7ad6d-ery-with-native-video-rVFC--chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/inference-metrics-successf-7ad6d-ery-with-native-video-rVFC--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/inference-metrics-successf-7ad6d-ery-with-native-video-rVFC--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (RAF fallback)
+
+    Error: browserType.launch: Executable doesn't exist at /workspace/pr04-browsers/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/inference-metrics-successf-1232f--native-video-RAF-fallback--chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/inference-metrics-successf-1232f--native-video-RAF-fallback--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/inference-metrics-successf-1232f--native-video-RAF-fallback--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › e2e/smoke.spec.ts:3:1 › production app loads and model controls work without camera or external services
+
+    Error: browserType.launch: Executable doesn't exist at /workspace/pr04-browsers/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/smoke-production-app-loads-db693-camera-or-external-services-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-production-app-loads-db693-camera-or-external-services-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-production-app-loads-db693-camera-or-external-services-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › e2e/camera-lifecycle.spec.ts:10:1 › camera sessions survive UI renders and release stopped, replaced and late synthetic streams
+    [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (rVFC)
+    [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (RAF fallback)
+    [chromium] › e2e/smoke.spec.ts:3:1 › production app loads and model controls work without camera or external services

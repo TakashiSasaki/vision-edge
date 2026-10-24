@@ -1,0 +1,1 @@
+PR04-F01: native browser consumed byte-for-byte identical video frames twice

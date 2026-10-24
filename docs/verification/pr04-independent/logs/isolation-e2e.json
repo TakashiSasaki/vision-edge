@@ -1,0 +1,12 @@
+{
+  "directory": ".cache/vision-edge-e2e",
+  "files": {
+    ".cache/vision-edge-e2e/assets/index-OKJyM3qo.js": "94f8a8475e290b4f99ed83c8107d1944af5d966d0d8fc7d23b18dc14f1405a30"
+  },
+  "markers": {
+    "visionSdkProbe": true,
+    "Test-only SDK fault": true,
+    "efficientdet_lite0.tflite": true,
+    "selfie_segmenter.tflite": true
+  }
+}

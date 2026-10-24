@@ -1,0 +1,40 @@
+[
+  {
+    "command": [
+      "chromium",
+      "--version"
+    ],
+    "environment": {
+      "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+    },
+    "exit": 0,
+    "seconds": 0.475691556930542,
+    "log": "system-browser-version.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "environment": {
+      "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+    },
+    "exit": 0,
+    "seconds": 20.95637559890747,
+    "log": "system-browser-e2e.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e:controls"
+    ],
+    "environment": {
+      "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+    },
+    "exit": 0,
+    "seconds": 51.87243413925171,
+    "log": "system-browser-controls.txt"
+  }
+]

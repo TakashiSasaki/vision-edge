@@ -1,0 +1,135 @@
+{
+  "reviewed_head": "2f4cdea1bc3e6706f49e37116ede8b1881472f7f",
+  "reviewed_tree": "aaf506b0b70499da4a9474fc39b062841ed06965",
+  "verdict": "FAIL",
+  "findings": [
+    {
+      "id": "PR04-F01",
+      "classification": "proven defect",
+      "severity": "medium",
+      "priority": "P2",
+      "blocking_acceptance": true,
+      "contract": [
+        1,
+        6
+      ],
+      "title": "Deferred work consumes a different live frame than the identity recorded for it",
+      "location": {
+        "file": "src/services/frameScheduler.ts",
+        "line": 40
+      },
+      "related_locations": [
+        {
+          "file": "src/services/frameScheduler.ts",
+          "line": 30
+        },
+        {
+          "file": "src/services/frameScheduler.ts",
+          "line": 52
+        },
+        {
+          "file": "src/components/VisionCanvas.tsx",
+          "line": 138
+        }
+      ],
+      "trigger": "A new decoded image becomes available between an arrival callback and its deferred timer. The next callback reports that image, which has already been inferred by the first timer. Main-thread contention and subsequent input pause/stall make this readily observable.",
+      "minimal_reproduction": [
+        "Start the real scheduler with a ready video at frame 1; deliver its arrival callback but do not execute the timer yet.",
+        "Advance the live video to frame 2 without delivering its callback, then execute the queued timer.",
+        "Deliver frame 2's callback and execute its queued timer.",
+        "Observe SDK consumption [2, 2], rather than [2]."
+      ],
+      "commands": [
+        "npx --no-install vitest run --config docs/verification/pr04-independent/vectors/vitest.config.mjs",
+        "ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=size=64x64:rate=20:duration=5 -c:v libvpx -y .cache/review-video.webm",
+        "node docs/verification/pr04-independent/vectors/native-frame-race.mjs"
+      ],
+      "observed": "Both deterministic scheduler paths fail. The actual VisionCanvas plus VisionEngine reproduces two SDK reads of frame 2, two TTS decisions, and a reported 2.0 successful inference FPS from the duplicate image. Six fixed native-video trials (three rVFC, three fallback) each consumed byte-for-byte identical pixel arrays twice.",
+      "expected": "The identity used for deduplication corresponds to the exact input consumed by inference; a later callback cannot resubmit an already-consumed frame.",
+      "impact": "Repeated expensive main-thread inference, duplicated adoption/TTS decisions, and inflated new-frame inference measurements under contention or stalled input.",
+      "evidence": [
+        "vectors/scheduler.test.js",
+        "vectors/canvas.test.jsx",
+        "vectors/native-frame-race.mjs",
+        "logs/independent-acceptance.txt",
+        "logs/native-frame-race-trials.json"
+      ],
+      "correction_acceptance": [
+        "Bind or reconcile consumed input identity at execution, preserving latest-only bounded work and readiness/generation/token checks.",
+        "Make both deterministic path assertions and the real canvas/engine duplicate-input assertion pass without weakening their single-consumption expectation.",
+        "Add native delayed-execution coverage which observes consumed pixels/frame identity, with rVFC and fallback.",
+        "Retain successful empty frames, failed-frame no-retry, fresh-session equal timestamps and all baseline checks; provide exact-new-HEAD hosted validation."
+      ]
+    },
+    {
+      "id": "PR04-F02",
+      "classification": "proven defect",
+      "severity": "medium",
+      "priority": "P2",
+      "blocking_acceptance": true,
+      "contract": [
+        1,
+        9
+      ],
+      "title": "rVFC startup never processes an already-presented ready first frame",
+      "location": {
+        "file": "src/services/frameScheduler.ts",
+        "line": 72
+      },
+      "related_locations": [
+        {
+          "file": "src/services/frameScheduler.ts",
+          "line": 57
+        }
+      ],
+      "trigger": "The camera presents its first frame before the model/scheduler becomes ready, then produces no further frames. This also occurs when a new scheduler session starts on an already available still image.",
+      "minimal_reproduction": [
+        "Create a native canvas.captureStream(0), attach it to a real video and explicitly request one frame.",
+        "Wait for native rVFC to confirm mediaTime 0, presentedFrames 1; keep video readyState 4 with positive dimensions.",
+        "Start the production scheduler, without producing another frame.",
+        "After 400 ms, rVFC work count is 0. The paired fallback control processes that same first frame once."
+      ],
+      "commands": [
+        "node docs/verification/pr04-independent/vectors/native-first-frame.mjs",
+        "npx --no-install vitest run --config docs/verification/pr04-independent/vectors/vitest.config.mjs"
+      ],
+      "observed": "Native stream: rVFC calls 0, RAF fallback calls 1. Deterministic already-ready native startup assertion also fails.",
+      "expected": "Process the first usable image once after readiness/session startup, even if it was presented before callback registration; later arrivals remain deduplicated.",
+      "impact": "No inference result, overlay or duration is ever produced for an available first image until another video frame arrives; the UI eventually reports stalled input.",
+      "evidence": [
+        "vectors/native-first-frame.mjs",
+        "vectors/scheduler.test.js",
+        "logs/native-first-frame.json",
+        "logs/native-first-frame.stderr.txt",
+        "logs/independent-acceptance.txt"
+      ],
+      "correction_acceptance": [
+        "Bootstrap an already-ready first frame once in the rVFC path without introducing polling duplicates or bypassing readiness/generation ownership.",
+        "Retain a native one-frame MediaStream test with readiness achieved before scheduler startup and a new-session equal timestamp case.",
+        "Verify no duplicate when an rVFC arrival races the bootstrap; address PR04-F01 jointly.",
+        "Provide the ordinary full suite plus exact-new-HEAD hosted Chromium evidence for independent re-review."
+      ]
+    }
+  ],
+  "nonblocking_observations": [
+    {
+      "id": "PR04-R01",
+      "classification": "static future-path risk, independently reproduced with Promise work",
+      "severity": "low",
+      "blocking_acceptance": false,
+      "location": {
+        "file": "src/services/frameScheduler.ts",
+        "line": 34
+      },
+      "description": "A replacement rVFC session whose candidate encounters an old job's lock has no wakeup when that old job finishes. It needs another arrival. This is reproduced and logged by scheduler.test.js. The current real engine call is synchronous, so asynchronous overlapping jobs are not a normal production path. Do not expand PR-04 into a Worker migration to resolve this observation.",
+      "future_acceptance": "Before making the production job asynchronous, wake the latest pending replacement candidate on lock release or explicitly document/drop it; preserve token ownership."
+    },
+    {
+      "id": "PR04-C01",
+      "classification": "coverage gap explaining the defects",
+      "severity": "informational",
+      "blocking_acceptance": false,
+      "description": "The author's scheduler tests advance frame identity before callbacks and execute timers immediately, so they never separate candidate identity from the live SDK input. The positive native browser tests use continuous 10 FPS input while the scheduler starts; they do not test a pre-presented first frame. Their successful synthetic SDK measurements do not certify physical camera/model/GPU behavior."
+    }
+  ]
+}

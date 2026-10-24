@@ -1,0 +1,12 @@
+{
+  "directory": "dist",
+  "files": {
+    "dist/assets/index-BDFATmAY.js": "408c2e541ce91d9c0ef62b016fdbe11c51b09c2fcd3bdd3589e588b65246734b"
+  },
+  "markers": {
+    "visionSdkProbe": false,
+    "Test-only SDK fault": false,
+    "efficientdet_lite0.tflite": true,
+    "selfie_segmenter.tflite": true
+  }
+}

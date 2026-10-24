@@ -1,0 +1,30 @@
+{
+  "operation": "Only new review text logs: strip trailing line whitespace and terminal blank lines. Diagnostics, timestamps and commands retained. hosted-job.raw.json preserves exact decoded hosted log text separately. No historical evidence touched.",
+  "files": [
+    {
+      "file": "logs/check-03.txt",
+      "before_sha256": "24d0874c683ef121c05f0f2fde6df107483f0565962673234d1b422c8f4dd16c",
+      "after_sha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda"
+    },
+    {
+      "file": "logs/check-04.txt",
+      "before_sha256": "8254c57afd7e6f2c88036baa9a2ad81d75fda7aeea4a3877684e35157794fc2b",
+      "after_sha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c"
+    },
+    {
+      "file": "logs/check-05.txt",
+      "before_sha256": "2e16b2ddfe655422ac4eeef1640a41f54a15b3c5d81da61dfe6e1a61babf3147",
+      "after_sha256": "03a4ec56a2ebe0089411f841163e8883887e6b99ebebc9f20a6c0816e65cf3de"
+    },
+    {
+      "file": "logs/check-08.txt",
+      "before_sha256": "6d6e2bd7a9ac827f04022cad7f5721440502b7ce83bb8ad3e4743c25853bfb42",
+      "after_sha256": "61a6353ad11456b28157f4419314f0176e9a7da10ac1df4802faaa0e23b347da"
+    },
+    {
+      "file": "logs/hosted-job.txt",
+      "before_sha256": "2131d5b1c0efd95e21da9518aa607e477f84bbd1a3f4036114e91576a2f26ce0",
+      "after_sha256": "28199c8bcaeb2b07f79e3421ec7e082b5c7dc9b8e5626c2809337e523bace73a"
+    }
+  ]
+}

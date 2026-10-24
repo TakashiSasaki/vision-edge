@@ -1,0 +1,48 @@
+
+ RUN  v5.0.5 /workspace/pr04-independent
+
+stdout | docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (false)
+F01 { native: false, consumedFrames: [ 2, 2 ] }
+
+stdout | docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (true)
+F01 { native: true, consumedFrames: [ 2, 2 ] }
+
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js (9 tests | 2 failed) 119ms
+   × F01: deferral must not infer the same live frame twice (false) 44ms
+   × F01: deferral must not infer the same live frame twice (true) 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (false)
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (true)
+AssertionError: expected [ 2, 2 ] to deeply equal [ 2 ]
+
+- Expected
++ Received
+
+  [
+    2,
++   2,
+  ]
+
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:38:49
+     36|   console.log('F01', { native, consumedFrames: s.work.mock.results.map…
+     37|   s.stop();
+     38|   expect(s.work.mock.results.map(r => r.value)).toEqual([2]);
+       |                                                 ^
+     39| });
+     40| it.each([false, true])('first zero, equal new-session time, coarse tim…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 10 passed (12)
+   Start at  06:48:47
+   Duration  2.94s (environment 91%, transform 3%, tests 3%, import 2%, worker 1%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
