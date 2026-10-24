@@ -1,0 +1,219 @@
+{
+  "product": {
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/11",
+    "number": 11,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "draft": true,
+    "body": "Video and overlay drawing already matched, but clicks on letterboxed video normalized against the full Canvas CSS rectangle. Pointer input now maps through the current centered contained video image. Selection/ripple coordinates agree, margins are silent, invalid geometry is rejected, and camera/model/scheduler behavior is preserved.\n\n**Correction checkpoint frozen; independent F01 closure is pending re-review.** The separate [PR #12 review](https://github.com/TakashiSasaki/vision-edge/pull/12), evidence `57ee68bc503cfc1633039d948d1b39fcf341caa5`, assessed prior product `be1402c793616788e81a746b6a21b03a25a5a3ec` as scoped PASS WITH CONDITIONS, with F01 P3/nonblocking and no P0/P1/P2. Author verification below is not an independent PASS.\n\n| Binding | Frozen value |\n| --- | --- |\n| Branch → base | `fix/overlay-coordinate-mapping` → main `f97e19ac5f9f07eca23732003844b5082cd27d37` |\n| Final public HEAD | `c9d68eeb5923e14eb7043f64fda3e1edf10d629f` |\n| Final public tree | `f8e78b24e0bf27393ca9266c4d64bf039d232516` |\n| Corrective executable commit | `c585a09a7642fa21d68967dfe3a5a00be2038652`, tree `bb93e151d9316d4e4022a05773acf83b19f366d6` |\n\n**PR05-F01 response:** reproduced all 36 strict rational failures: expected edge `3779/24` is 157.45833333333334, while the old computation gives 157.45833333333337 and rejects it. Contained edges now use combined quotients and strict client-rectangle comparisons before normalization. No epsilon, ULP band, outside-point clamping, DPR multiplication or hit-box widening is introduced. The unchanged reviewer oracle passes **1616/1616**. All **2400** additional exact-rational/adjacent-float controls pass, including all **480 immediately adjacent outside floats** and 960 other outside controls. Ordinary binary64 limits and the exact tested boundary contract are explicit in the report.\n\nThe 25 new ordinary regressions fail against the old helper (63 pass / 25 fail in the focused suite) and pass after correction (88/88). They cover rational horizontal/vertical edges, corners, DPR and viewport offsets, adjacent inside/outside floats, silent margins, selection and exact ripple positions, without camera/model recreation. Only the helper and its unit/component tests change relative to the reviewed product; all old assertions and historical evidence remain.\n\n**Local full validation:** Node 24.19.0 / npm 11.9.0; locked npm ci, typecheck, lint, **187/187** unit/component tests, build, **16/16** browser tests, **7/7** controls, staged/full-base diff checks pass. Counts include all prior 162 tests plus 25 correction cases. Local Chromium is explicit system 154.0.8037.57 / Playwright 1.64.1. The known matched-browser HTTP 403 was not retried or bypassed.\n\n**Author replays of unchanged frozen reviewer scripts:** 3 component cases, 24 actual-app browser cases, one native intrinsic-resize race and 26 image cases pass. Fresh corrected after screenshots are compared by the original image oracle with preserved frozen baseline images. These results remain author replays, not independent closure. Exact source/input hashes, original failure/output bytes, rational vectors, adjacent-float controls and fresh screenshots are preserved in the new correction directory; PR #12 itself was untouched.\n\n**Final-head hosted CI:** [run 40094223325 / verify job 120873001838](https://github.com/TakashiSasaki/vision-edge/actions/runs/40094223325/job/120873001838) **completed/success**. Downloaded actual job logs verify checkout of exactly `c9d68eeb5923e14eb7043f64fda3e1edf10d629f`, Node **24.19.0**, npm **11.17.0**, matched **Chromium/headless shell 156.0.8078.4 / v1248**, **187 tests**, **16 browser passes**, and **7 controls**. [Browser artifact 12560595409](https://github.com/TakashiSasaki/vision-edge/actions/runs/40094223325/artifacts/12560595409) is bound to that same HEAD, digest `sha256:13bcbf242e56aff971efa664b814f9fbe79d92d6ca181ed5791d5afcecb0c623`. Decoded downloaded job-log receipt SHA-256: `5debce1ffc9415953d0cb9e7436f5651979d44284344b5006571585136190103`. Hosted CI used its normal matched browser; no system-browser override.\n\n[F01 response, numerical contract and reproduction](https://github.com/TakashiSasaki/vision-edge/blob/c9d68eeb5923e14eb7043f64fda3e1edf10d629f/docs/verification/pr05-f01/README.md) · [Correction evidence and exact inputs](https://github.com/TakashiSasaki/vision-edge/tree/c9d68eeb5923e14eb7043f64fda3e1edf10d629f/docs/verification/pr05-f01) · [Original pointer repair evidence](https://github.com/TakashiSasaki/vision-edge/blob/be1402c793616788e81a746b6a21b03a25a5a3ec/docs/verification/pr05.md).\n\nGit readback confirms the final SHA/tree, unchanged executable source relative to c585a09, and a clean author checkout. Main, PR #12 and all other remote heads remain unchanged. The earlier c585a09 CI is intermediate; the receipt above targets the evidence-bearing final HEAD. Return that frozen target to the parent's same independent reviewer for finding-by-finding re-review.\n\nRetained limits: centered contain/no-transform CSS contract; unchanged transparent-mask fallback semantics; physical camera/model/GPU, audible audio, mobile orientation/background and public-deployment equality remain unverified. PR04 identical-content coalescing does not prove physical camera stop; full RGBA comparison remains O(pixels) on the main thread and outside the processing-duration HUD. Its future async lock-wakeup concern remains nonblocking for a later phase. No image-identity optimization, later-phase work, merge, auto-merge or deployment occurred or is requested.\n",
+    "title": "fix: align video overlay and pointer coordinates (PR-05)",
+    "base": "main",
+    "base_sha": "f97e19ac5f9f07eca23732003844b5082cd27d37",
+    "head": "fix/overlay-coordinate-mapping",
+    "head_sha": "c9d68eeb5923e14eb7043f64fda3e1edf10d629f",
+    "head_repo_id": 1431627643,
+    "head_repo_full_name": "TakashiSasaki/vision-edge",
+    "merge_commit_sha": "5531c1ca94cc3678aeb873ae1d31ad4d999b6ce0",
+    "user": {
+      "login": "TakashiSasaki",
+      "name": "TakashiSasaki",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/556958?v=4",
+      "id": 556958
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-10-24T11:44:34Z",
+    "updated_at": "2026-10-24T12:33:52Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 5,
+    "changed_files": 123,
+    "additions": 9254,
+    "deletions": 7,
+    "display_url": "https://github.com/TakashiSasaki/vision-edge/pull/11",
+    "display_title": "fix: align video overlay and pointer coordinates (PR-05)"
+  },
+  "previous_review": {
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/12",
+    "number": 12,
+    "state": "open",
+    "merged": false,
+    "mergeable": false,
+    "draft": true,
+    "body": "Independent non-author review of product Draft PR #11. The baseline falsely selects/speaks on letterbox margins and misses visible object clicks; the frozen repair passes the independent native-video and rendered-image checks. This Draft evidence PR is directly stacked on the verified product branch and changes only `docs/verification/pr05-independent/`. Product implementation, existing tests/workflow and historical review evidence are unchanged.\n\n**Verdict: scoped PASS WITH CONDITIONS.** No P0/P1/P2 findings. **F01 (P3, nonblocking):** exact fractional left edges can be rejected due to about 2.84e-14 CSS pixels of floating-point rounding. The independent exact-rational oracle truthfully exits 1: **1,580/1,616 checks pass; 36 strict boundary mismatches**. No native user-visible failure was observed in the browser sweep. Author action: optionally harden the representational boundary comparison and add the rational regression, or explicitly document the precision limit before claiming inclusive every exact fractional boundary. Any implementation correction needs a new author checkpoint and re-review.\n\n| Binding | SHA / tree |\n| --- | --- |\n| Reviewed product HEAD | `be1402c793616788e81a746b6a21b03a25a5a3ec` |\n| Reviewed product tree | `a6c4f4eaa0d3db02a85861653d27bfcfdb53005d` |\n| Actual main / base | `f97e19ac5f9f07eca23732003844b5082cd27d37` |\n| Base tree | `e357f512a371df5c86950913cf3a43208f0321ce` |\n| Evidence HEAD | `57ee68bc503cfc1633039d948d1b39fcf341caa5` |\n| Evidence tree | `a73fd0734d0358de0bbf1a70653f780a3637c659` |\n\n[Report, finding, matrix and replay commands](https://github.com/TakashiSasaki/vision-edge/blob/57ee68bc503cfc1633039d948d1b39fcf341caa5/docs/verification/pr05-independent/README.md) · [source bindings](https://github.com/TakashiSasaki/vision-edge/blob/57ee68bc503cfc1633039d948d1b39fcf341caa5/docs/verification/pr05-independent/source-binding.json) · [independent command/exit ledger](https://github.com/TakashiSasaki/vision-edge/blob/57ee68bc503cfc1633039d948d1b39fcf341caa5/docs/verification/pr05-independent/independent-checks.json).\n\nValidation: locked install, typecheck, lint, **162 unit / 16 browser / 7 controls**, build and whitespace checks pass. Unmodified baseline independently passes **116 / 14 / 7**. Additional independent checks pass **24 native-video/browser scenarios**, **26 rendered-image cases**, **three BBox/pixel-mask/polygon component cases**, and a native intrinsic-resize-before-click race with stale Canvas backing. Numeric references use Python Fraction, not the production helper. Raw before/after output, all screenshots, complete rational vectors/results, original CI receipt and ordinary browser reports are archived. Preserved source hashes bind all 59 non-document product files to the reviewed SHA.\n\n[Exact product-head CI run 40091330111 / job 120864445166](https://github.com/TakashiSasaki/vision-edge/actions/runs/40091330111/job/120864445166) is independently confirmed completed/success. Downloaded job logs explicitly check out `be1402c...` and pass 162/16/7; artifact metadata independently binds the same SHA and digest. Any CI for this evidence PR is separate and is not substituted for product-head CI.\n\nEnvironment: Node 24.19.0 / npm 11.9.0 / system Chromium 154.0.8037.57 locally. The supported matched-browser download was denied HTTP 403, retained without bypass; product hosted CI used matched Chromium 156.0.8078.4/v1248 successfully. Initial harness cleanup/sampling issues and failed command output remain disclosed.\n\nConditions: centered contain/no-transform geometry; F01 numerical boundary limit; prior PR04 identical-content coalescing and O(pixels) main-thread comparison outside the processing HUD remain nonblocking. Physical camera, real SDK/model/GPU, audible audio, mobile orientation/background behavior and public-deployment equality are unexecuted. Synthetic evidence is not real-device evidence. No merge, author-branch edit, rebase/force-push, deploy or later phase is authorized or performed.",
+    "title": "docs: independent PR-05 coordinate review — scoped PASS with conditions",
+    "base": "fix/overlay-coordinate-mapping",
+    "base_sha": "be1402c793616788e81a746b6a21b03a25a5a3ec",
+    "head": "review/pr05-coordinate-independent",
+    "head_sha": "57ee68bc503cfc1633039d948d1b39fcf341caa5",
+    "head_repo_id": 1431627643,
+    "head_repo_full_name": "TakashiSasaki/vision-edge",
+    "merge_commit_sha": "ee9ae8fbc06d6fe5baf3e80890db94c216e5b019",
+    "user": {
+      "login": "TakashiSasaki",
+      "name": "TakashiSasaki",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/556958?v=4",
+      "id": 556958
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-10-24T12:14:26Z",
+    "updated_at": "2026-10-24T12:14:26Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 1,
+    "changed_files": 118,
+    "additions": 29413,
+    "deletions": 0,
+    "display_url": "https://github.com/TakashiSasaki/vision-edge/pull/12",
+    "display_title": "docs: independent PR-05 coordinate review — scoped PASS with conditions"
+  },
+  "previous_review_ci": {
+    "workflow_runs": [
+      {
+        "id": 40093113503,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 28,
+        "jobs_url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/runs/40093113503/jobs",
+        "logs_url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/runs/40093113503/logs",
+        "workflow_id": 394724408
+      }
+    ]
+  },
+  "jobs": {
+    "jobs": [
+      {
+        "id": 120873001838,
+        "name": "verify",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 40094223325,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Install locked dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Typecheck",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "ESLint",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Unit and component tests",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Production build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Install Chromium",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "Browser smoke tests",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Stylesheet smoke controls",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "Upload browser evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 23
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 24
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 25
+          }
+        ]
+      }
+    ]
+  },
+  "artifacts": {
+    "artifacts": [
+      {
+        "id": 12560595409,
+        "name": "playwright-report",
+        "size_in_bytes": 714683,
+        "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/artifacts/12560595409",
+        "archive_download_url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/artifacts/12560595409/zip",
+        "expired": false,
+        "created_at": "2026-10-24T12:32:57Z",
+        "expires_at": "2026-11-07T12:32:55Z",
+        "updated_at": "2026-10-24T12:32:57Z",
+        "digest": "sha256:13bcbf242e56aff971efa664b814f9fbe79d92d6ca181ed5791d5afcecb0c623",
+        "workflow_run": {
+          "id": 40094223325,
+          "repository_id": 1431627643,
+          "head_repository_id": 1431627643,
+          "head_branch": "fix/overlay-coordinate-mapping",
+          "head_sha": "c9d68eeb5923e14eb7043f64fda3e1edf10d629f"
+        }
+      }
+    ]
+  }
+}

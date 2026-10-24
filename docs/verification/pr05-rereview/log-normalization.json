@@ -1,0 +1,27 @@
+[
+  {
+    "path": "logs/product-ci.txt",
+    "original_sha256": "ffaa8b0ec69e3cdd63e3b29c90dd8223db5fa5ba6a15d404ae3c8d08f35612d0",
+    "readable_sha256": "7b4916b188ea13371388e601c564c4a1d845272b54dff3b5d9d10870bfe1940c"
+  },
+  {
+    "path": "logs/standard-04.txt",
+    "original_sha256": "8254c57afd7e6f2c88036baa9a2ad81d75fda7aeea4a3877684e35157794fc2b",
+    "readable_sha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c"
+  },
+  {
+    "path": "logs/standard-03.txt",
+    "original_sha256": "24d0874c683ef121c05f0f2fde6df107483f0565962673234d1b422c8f4dd16c",
+    "readable_sha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda"
+  },
+  {
+    "path": "logs/standard-07.txt",
+    "original_sha256": "f5145d3bfa67cfd11077f939857f5cc59dd9badda3b053643e767277bd15599f",
+    "readable_sha256": "5c02fe204a25ea698d3aaf87894e8c3becb24c58e2cf53318dfc7f53b1e21f1c"
+  },
+  {
+    "path": "logs/standard-05.txt",
+    "original_sha256": "49ab477aef14fc21f035ff4dd2f485b504a442b0a2695402615eaa4946535d24",
+    "readable_sha256": "e6367a56c39450bdacf158d872a1efbbf4f5277145df14b05791240da4edc4d0"
+  }
+]

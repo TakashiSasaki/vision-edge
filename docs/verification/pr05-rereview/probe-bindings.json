@@ -1,0 +1,30 @@
+[
+  {
+    "name": "generate-vectors.py",
+    "sha256": "d1a00ee9dfb81912cda667d0f5dc41a979b9f74354bee61e16314ae969bc265b"
+  },
+  {
+    "name": "vitest.config.mjs",
+    "sha256": "feb943c538f0f55f9e2663bb815543fd9a22099ed551c6fa9dbb23a49634cd1f"
+  },
+  {
+    "name": "intrinsic-oracle.mjs",
+    "sha256": "15f4371d9b5e9b028104d18f3d995eca1fee0194eb9683b3d0a2e7b831736699"
+  },
+  {
+    "name": "browser-oracle.mjs",
+    "sha256": "a474034f61be8c8875b9560b9140d8b16da46e515fdfe839150b71d291d02847"
+  },
+  {
+    "name": "component-oracle.test.tsx",
+    "sha256": "2a949c432883e45bc05ea8875b623a14323a81f14e76b0053bfc553b22e4b9db"
+  },
+  {
+    "name": "image-oracle.py",
+    "sha256": "ea3e5619ba3059044485b3583784a2ab924fe2522aaf3ef87b4fa36fc215c7b8"
+  },
+  {
+    "name": "numeric-oracle.mjs",
+    "sha256": "b33e3ae1415c2cfcc661d3802ab072b36a688e8cb0965bd0b37bcfca025fb470"
+  }
+]

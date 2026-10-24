@@ -1,0 +1,2 @@
+26 image cases, 0 unexpected failures
+Baseline rings at intended click: [False, False] (expected false)

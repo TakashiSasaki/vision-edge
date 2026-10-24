@@ -1,0 +1,1 @@
+25020 representable-boundary checks; 0 mismatches; 36 invalid/overflow/collapse checks passed; {"corner":3456,"edge":3456,"center":864,"adjacent-outside":3456,"adjacent-inside":3456,"outside-1e-9":3420,"outside-0.001":3456,"adjacent-outside-corner":3456}

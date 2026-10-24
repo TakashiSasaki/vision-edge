@@ -1,0 +1,68 @@
+[
+  {
+    "command": "node --version",
+    "exit": 0,
+    "seconds": 0.0237884521484375,
+    "output": "standard-00.txt"
+  },
+  {
+    "command": "npm --version",
+    "exit": 0,
+    "seconds": 0.37285304069519043,
+    "output": "standard-01.txt"
+  },
+  {
+    "command": "chromium --version",
+    "exit": 0,
+    "seconds": 0.29396581649780273,
+    "output": "standard-02.txt"
+  },
+  {
+    "command": "npm run typecheck",
+    "exit": 0,
+    "seconds": 7.168914556503296,
+    "output": "standard-03.txt"
+  },
+  {
+    "command": "npm run lint",
+    "exit": 0,
+    "seconds": 10.91798186302185,
+    "output": "standard-04.txt"
+  },
+  {
+    "command": "npm test",
+    "exit": 0,
+    "seconds": 17.326094388961792,
+    "output": "standard-05.txt"
+  },
+  {
+    "command": "npm run build",
+    "exit": 0,
+    "seconds": 2.008985757827759,
+    "output": "standard-06.txt"
+  },
+  {
+    "command": "npm run test:e2e",
+    "exit": 1,
+    "seconds": 163.2595272064209,
+    "output": "standard-07.txt"
+  },
+  {
+    "command": "npm run test:e2e:controls",
+    "exit": 0,
+    "seconds": 107.43790864944458,
+    "output": "standard-08.txt"
+  },
+  {
+    "command": "git diff --check",
+    "exit": 0,
+    "seconds": 0.011494159698486328,
+    "output": "standard-09.txt"
+  },
+  {
+    "command": "git diff --check origin/main...HEAD",
+    "exit": 0,
+    "seconds": 0.11307573318481445,
+    "output": "standard-10.txt"
+  }
+]

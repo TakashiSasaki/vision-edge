@@ -1,0 +1,336 @@
+pillarbox 1 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+pillarbox 1.25 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+pillarbox 2 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+pillarbox 3 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+letterbox 1 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+letterbox 1.25 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+letterbox 2 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+letterbox 3 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+equal 1 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+equal 1.25 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+equal 2 false {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: false,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+equal 3 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+square-source 1 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+square-source 1.25 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+square-source 2 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+square-source 3 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+square-box 1 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+square-box 1.25 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+square-box 2 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+square-box 3 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+fractional 1 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+fractional 1.25 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+fractional 2 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}
+fractional 3 true {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: true,
+  selected: true,
+  ripple: true,
+  box: true,
+  lifecycle: true,
+  noError: true,
+  immediate: true,
+  invalid: true
+}

@@ -1,0 +1,228 @@
+{
+  "count": 25020,
+  "counts": {
+    "corner": 3456,
+    "edge": 3456,
+    "center": 864,
+    "adjacent-outside": 3456,
+    "adjacent-inside": 3456,
+    "outside-1e-9": 3420,
+    "outside-0.001": 3456,
+    "adjacent-outside-corner": 3456
+  },
+  "failures": [],
+  "invalid": [
+    {
+      "field": "width",
+      "bad": "0",
+      "actual": null
+    },
+    {
+      "field": "height",
+      "bad": "0",
+      "actual": null
+    },
+    {
+      "field": "vw",
+      "bad": "0",
+      "actual": null
+    },
+    {
+      "field": "vh",
+      "bad": "0",
+      "actual": null
+    },
+    {
+      "field": "width",
+      "bad": "-1",
+      "actual": null
+    },
+    {
+      "field": "height",
+      "bad": "-1",
+      "actual": null
+    },
+    {
+      "field": "vw",
+      "bad": "-1",
+      "actual": null
+    },
+    {
+      "field": "vh",
+      "bad": "-1",
+      "actual": null
+    },
+    {
+      "field": "width",
+      "bad": "NaN",
+      "actual": null
+    },
+    {
+      "field": "height",
+      "bad": "NaN",
+      "actual": null
+    },
+    {
+      "field": "vw",
+      "bad": "NaN",
+      "actual": null
+    },
+    {
+      "field": "vh",
+      "bad": "NaN",
+      "actual": null
+    },
+    {
+      "field": "width",
+      "bad": "Infinity",
+      "actual": null
+    },
+    {
+      "field": "height",
+      "bad": "Infinity",
+      "actual": null
+    },
+    {
+      "field": "vw",
+      "bad": "Infinity",
+      "actual": null
+    },
+    {
+      "field": "vh",
+      "bad": "Infinity",
+      "actual": null
+    },
+    {
+      "field": "width",
+      "bad": "-Infinity",
+      "actual": null
+    },
+    {
+      "field": "height",
+      "bad": "-Infinity",
+      "actual": null
+    },
+    {
+      "field": "vw",
+      "bad": "-Infinity",
+      "actual": null
+    },
+    {
+      "field": "vh",
+      "bad": "-Infinity",
+      "actual": null
+    },
+    {
+      "field": "x",
+      "bad": "NaN",
+      "actual": null
+    },
+    {
+      "field": "y",
+      "bad": "NaN",
+      "actual": null
+    },
+    {
+      "field": "left",
+      "bad": "NaN",
+      "actual": null
+    },
+    {
+      "field": "top",
+      "bad": "NaN",
+      "actual": null
+    },
+    {
+      "field": "x",
+      "bad": "Infinity",
+      "actual": null
+    },
+    {
+      "field": "y",
+      "bad": "Infinity",
+      "actual": null
+    },
+    {
+      "field": "left",
+      "bad": "Infinity",
+      "actual": null
+    },
+    {
+      "field": "top",
+      "bad": "Infinity",
+      "actual": null
+    },
+    {
+      "field": "x",
+      "bad": "-Infinity",
+      "actual": null
+    },
+    {
+      "field": "y",
+      "bad": "-Infinity",
+      "actual": null
+    },
+    {
+      "field": "left",
+      "bad": "-Infinity",
+      "actual": null
+    },
+    {
+      "field": "top",
+      "bad": "-Infinity",
+      "actual": null
+    },
+    {
+      "rect": {
+        "left": 1e+308,
+        "top": 1e+308,
+        "width": 1e+308,
+        "height": 1e+308
+      },
+      "video": [
+        640,
+        480
+      ],
+      "actual": null
+    },
+    {
+      "rect": {
+        "left": 1e+308,
+        "top": 1e+308,
+        "width": 1,
+        "height": 1
+      },
+      "video": [
+        640,
+        480
+      ],
+      "actual": null
+    },
+    {
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 5e-324,
+        "height": 5e-324
+      },
+      "video": [
+        1.7976931348623157e+308,
+        1
+      ],
+      "actual": null
+    },
+    {
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 960,
+        "height": 540
+      },
+      "video": [
+        1.7976931348623157e+308,
+        1.7976931348623157e+308
+      ],
+      "actual": null
+    }
+  ]
+}

@@ -1,0 +1,2978 @@
+[
+  {
+    "name": "pillarbox",
+    "dpr": 1,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        640,
+        480
+      ],
+      "intrinsic": [
+        640,
+        480
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.33333333333334,
+        129.33333333333331,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 640,
+      "height": 480,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "pillarbox",
+    "dpr": 1.25,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        640,
+        480
+      ],
+      "intrinsic": [
+        640,
+        480
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1.25,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.33333333333334,
+        129.33333333333331,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 640,
+      "height": 480,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "pillarbox",
+    "dpr": 2,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        640,
+        480
+      ],
+      "intrinsic": [
+        640,
+        480
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 2,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.33333333333334,
+        129.33333333333331,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 640,
+      "height": 480,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "pillarbox",
+    "dpr": 3,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        640,
+        480
+      ],
+      "intrinsic": [
+        640,
+        480
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 3,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.33333333333334,
+        129.33333333333331,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 640,
+      "height": 480,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "letterbox",
+    "dpr": 1,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 800,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 800,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        178.79999999999998,
+        128.79999999999998,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "letterbox",
+    "dpr": 1.25,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 800,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 800,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1.25,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        178.79999999999998,
+        128.79999999999998,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "letterbox",
+    "dpr": 2,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 800,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 800,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 2,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        178.79999999999998,
+        128.79999999999998,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "letterbox",
+    "dpr": 3,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 800,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 800,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 3,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        178.79999999999998,
+        128.79999999999998,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "equal",
+    "dpr": 1,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.66666666666666,
+        130,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "equal",
+    "dpr": 1.25,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1.25,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.66666666666666,
+        130,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "equal",
+    "dpr": 2,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 2,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.66666666666666,
+        130,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "equal",
+    "dpr": 3,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 3,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.66666666666666,
+        130,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "square-source",
+    "dpr": 1,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        600,
+        600
+      ],
+      "intrinsic": [
+        600,
+        600
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.72222222222223,
+        129.44444444444443,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 600,
+      "height": 600,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "square-source",
+    "dpr": 1.25,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        600,
+        600
+      ],
+      "intrinsic": [
+        600,
+        600
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1.25,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.72222222222223,
+        129.44444444444443,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 600,
+      "height": 600,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "square-source",
+    "dpr": 2,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        600,
+        600
+      ],
+      "intrinsic": [
+        600,
+        600
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 2,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.72222222222223,
+        129.44444444444443,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 600,
+      "height": 600,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "square-source",
+    "dpr": 3,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960,
+        "height": 540,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        600,
+        600
+      ],
+      "intrinsic": [
+        600,
+        600
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 3,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.72222222222223,
+        129.44444444444443,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 600,
+      "height": 600,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "square-box",
+    "dpr": 1,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 600,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 600,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        178.66666666666669,
+        128.53333333333333,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "square-box",
+    "dpr": 1.25,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 600,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 600,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1.25,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        178.66666666666669,
+        128.53333333333333,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "square-box",
+    "dpr": 2,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 600,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 600,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 2,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        178.66666666666669,
+        128.53333333333333,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "square-box",
+    "dpr": 3,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 600,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 600,
+        "height": 600,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        1280,
+        720
+      ],
+      "intrinsic": [
+        1280,
+        720
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 3,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        178.66666666666669,
+        128.53333333333333,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 1280,
+      "height": 720,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "fractional",
+    "dpr": 1,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960.75,
+        "height": 540.25,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960.75,
+        "height": 540.25,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        640,
+        480
+      ],
+      "intrinsic": [
+        640,
+        480
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.95372512725592,
+        129.27348449791762,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 640,
+      "height": 480,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "fractional",
+    "dpr": 1.25,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960.75,
+        "height": 540.25,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960.75,
+        "height": 540.25,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        640,
+        480
+      ],
+      "intrinsic": [
+        640,
+        480
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 1.25,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.95372512725592,
+        129.27348449791762,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 640,
+      "height": 480,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "fractional",
+    "dpr": 2,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960.75,
+        "height": 540.25,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960.75,
+        "height": 540.25,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        640,
+        480
+      ],
+      "intrinsic": [
+        640,
+        480
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 2,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.95372512725592,
+        129.27348449791762,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 640,
+      "height": 480,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  },
+  {
+    "name": "fractional",
+    "dpr": 3,
+    "geometry": {
+      "video": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960.75,
+        "height": 540.25,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "canvas": {
+        "left": 37.25,
+        "top": 82.5,
+        "width": 960.75,
+        "height": 540.25,
+        "fit": "contain",
+        "position": "50% 50%",
+        "transform": "none",
+        "padding": "0px",
+        "border": "0px"
+      },
+      "backing": [
+        640,
+        480
+      ],
+      "intrinsic": [
+        640,
+        480
+      ],
+      "scroll": [
+        0,
+        400
+      ],
+      "dpr": 3,
+      "pixels": {
+        "background": [
+          12,
+          34,
+          56,
+          255
+        ],
+        "object": [
+          240,
+          180,
+          40,
+          255
+        ]
+      },
+      "creates": 2
+    },
+    "checks": {
+      "css": true,
+      "sameRect": true,
+      "backing": true,
+      "scrolled": true,
+      "margin": true,
+      "selected": true,
+      "ripple": true,
+      "box": true,
+      "lifecycle": true,
+      "noError": true,
+      "immediate": true,
+      "invalid": true
+    },
+    "pass_": true,
+    "margin_speech": [],
+    "margin_selected": false,
+    "click_speech": [
+      "\u300c\u72ac\u300d\u3001\u4fe1\u983c\u5ea690%"
+    ],
+    "last_arc": [
+      [
+        179.95372512725592,
+        129.27348449791762,
+        24
+      ]
+    ],
+    "immediate": {
+      "width": 640,
+      "height": 480,
+      "speech": 1,
+      "rect": [
+        960,
+        540
+      ]
+    },
+    "invalid": [
+      {
+        "property": "readyState",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "0",
+        "speech": 0
+      },
+      {
+        "property": "videoWidth",
+        "value": "NaN",
+        "speech": 0
+      },
+      {
+        "property": "videoHeight",
+        "value": "Infinity",
+        "speech": 0
+      },
+      {
+        "property": "CSS size",
+        "value": "0",
+        "speech": 0
+      }
+    ]
+  }
+]

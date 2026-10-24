@@ -1,0 +1,43 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "cwd": "/workspace/vision-edge",
+    "exit": 0,
+    "seconds": 139.0837848186493,
+    "output": "serial-standard-browser.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr05-independent/browser-oracle.mjs"
+    ],
+    "cwd": "/workspace/pr05-rereview-probes",
+    "exit": 0,
+    "seconds": 73.03621339797974,
+    "output": "serial-original-browser.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr05-independent/intrinsic-oracle.mjs"
+    ],
+    "cwd": "/workspace/pr05-rereview-probes",
+    "exit": 0,
+    "seconds": 4.678131818771362,
+    "output": "serial-original-intrinsic.txt"
+  },
+  {
+    "command": [
+      "python3",
+      "docs/verification/pr05-independent/image-oracle.py"
+    ],
+    "cwd": "/workspace/pr05-rereview-probes",
+    "exit": 0,
+    "seconds": 2.2803900241851807,
+    "output": "serial-original-image.txt"
+  }
+]

@@ -1,0 +1,22 @@
+1616 independent numeric checks; 36 strict boundary mismatches
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: [{"name":"fractional","video":[640,480],"rect":{"left":37.25,"top":82.5,"width":960.75,"height":540.25},"dpr":1,"point":[157.45833333333334,82.5],"expected":[0,0],"kind":"boundary","actual":null},{"name":"fractional","video":[640,480],"rect":{"left":37.25,"top":82.5,"width":960.75,"height":540.25},"dpr":1,"point":[157.45833333333334,622.75],"expected":[0,1],"kind":"boundary","actual":null}]
+
+36 !== 0
+
+    at file:///workspace/pr05-rereview-probes/docs/verification/pr05-independent/numeric-oracle.mjs:33:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 36,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

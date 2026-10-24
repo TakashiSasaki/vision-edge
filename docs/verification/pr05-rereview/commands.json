@@ -1,0 +1,18 @@
+[
+  {"command":"npm ci --cache /workspace/npm-cache","exit":0,"output":"logs/npm-ci.txt"},
+  {"command":"original frozen numeric-oracle.mjs against be1402c","exit":1,"passed":1580,"failed":36,"output":"logs/original-rational-before.txt"},
+  {"command":"original frozen numeric-oracle.mjs against c9d68ee","exit":0,"passed":1616,"failed":0,"output":"logs/original-rational-after.txt"},
+  {"command":"python3 docs/verification/pr05-rereview/generate-controls.py","exit":0,"vectors":25020},
+  {"command":"node --import tsx docs/verification/pr05-rereview/boundary-controls.mjs","exit":0,"passed":25020,"additional_invalid_passed":36,"output":"logs/independent-controls.txt"},
+  {"command":"original frozen component-oracle.test.tsx, unchanged config","exit":0,"passed":3,"output":"logs/original-component.txt"},
+  {"command":"npx --no-install vitest run --config docs/verification/pr05-rereview/vitest.config.mjs","exit":0,"passed":2,"output":"logs/independent-edge-component.txt"},
+  {"command":"author supplemental generator and near-boundaries.mjs replay","exit":0,"passed":2400,"output":"logs/author-controls-replay.txt"},
+  {"command":"npm run test:e2e, initial concurrent run","exit":1,"passed":15,"failed":1,"output":"logs/standard-07.txt","artifacts":"standard-concurrent.zip"},
+  {"command":"original frozen browser-oracle.mjs, initial concurrent run","exit":1,"passed":23,"failed":1,"output":"logs/original-browser.txt","artifacts":"replay-concurrent.zip"},
+  {"command":"npm run test:e2e, serial unchanged rerun","exit":0,"passed":16,"output":"logs/serial-standard-browser.txt","artifacts":"standard-serial.zip"},
+  {"command":"original frozen browser-oracle.mjs, serial unchanged rerun","exit":0,"passed":24,"output":"logs/serial-original-browser.txt"},
+  {"command":"original frozen intrinsic-oracle.mjs, serial unchanged rerun","exit":0,"passed":1,"output":"logs/serial-original-intrinsic.txt"},
+  {"command":"original frozen image-oracle.py, serial unchanged rerun","exit":0,"passed":26,"output":"logs/serial-original-image.txt"},
+  {"command":"npm run typecheck, evidence-inclusive","exit":0,"output":"logs/evidence-typecheck.txt"},
+  {"command":"npm run lint, evidence-inclusive","exit":0,"output":"logs/evidence-lint.txt"}
+]
