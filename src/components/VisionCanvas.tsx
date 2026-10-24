@@ -15,6 +15,7 @@ import { JobLock, startFrameScheduler } from '../services/frameScheduler';
 import { HUD_INTERVAL_MS, PerformanceMetrics, type PerformanceSnapshot } from '../services/performanceMetrics';
 import { modelMetadata } from '../services/modelRegistry';
 import { useCameraStream } from '../hooks/useCameraStream';
+import { clientPointToVideo } from '../services/videoCoordinates';
 
 interface VisionCanvasProps {
   activeModel: RunnableModelType;
@@ -341,12 +342,13 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   useEffect(() => () => { if (rippleTimer.current !== null) clearTimeout(rippleTimer.current); }, []);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const clickX = (e.clientX - rect.left) / rect.width;
-    const clickY = (e.clientY - rect.top) / rect.height;
+    const video = videoRef.current;
+    if (!video || video.readyState < 2) return;
+    // Read current geometry at input time, including a resize or new source size
+    // that has not reached the next overlay drawing frame yet.
+    const point = clientPointToVideo(e.clientX, e.clientY, video.getBoundingClientRect(), video.videoWidth, video.videoHeight);
+    if (!point) return;
+    const { x: clickX, y: clickY } = point;
 
     const hit = engine.findObjectAtPoint(clickX, clickY, currentObjects);
 

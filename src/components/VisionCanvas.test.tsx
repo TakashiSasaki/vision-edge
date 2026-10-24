@@ -40,7 +40,7 @@ function step(advanceVideo = true) {
 }
 function makeVideoReady(container: HTMLElement) {
   Object.defineProperties(container.querySelector('video')!, {
-    videoWidth: { value: 640 }, videoHeight: { value: 480 }, readyState: { value: 2 },
+    videoWidth: { configurable: true, value: 640 }, videoHeight: { configurable: true, value: 480 }, readyState: { configurable: true, value: 2 },
   });
 }
 beforeEach(() => {
@@ -247,6 +247,7 @@ it('keeps latest callbacks, appearance and ripple without restarting frame acqui
   step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); }); step();
   const canvas = view.container.querySelector('canvas')!; const ctx = canvas.getContext('2d')!;
   vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({ left: 0, top: 0, width: 640, height: 480 } as DOMRect);
+  vi.spyOn(view.container.querySelector('video')!, 'getBoundingClientRect').mockReturnValue({ left: 0, top: 0, width: 640, height: 480 } as DOMRect);
   act(() => { fireEvent.click(canvas, { clientX: 100, clientY: 100 }); }); step();
   expect(ctx.arc).toHaveBeenCalled();
   const callback = vi.fn(); const pendingIds = [...raf.keys()];
@@ -257,6 +258,110 @@ it('keeps latest callbacks, appearance and ripple without restarting frame acqui
   act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); });
   expect(callback).toHaveBeenCalledWith(expect.objectContaining({ model: 'mediapipe' }));
   expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+});
+
+it.each([
+  { name: 'horizontal', rect: { left: 20, top: 40, width: 960, height: 540 }, margin: [120, 148], point: [351.5, 195.25] },
+  { name: 'vertical', rect: { left: 20, top: 40, width: 360, height: 640 }, margin: [92, 200], point: [125.75, 302.625] },
+])('selects the visible BBox and ignores $name margins without selection, ripple or speech', async ({ rect, margin, point }) => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const props = canvasProps(f);
+  const speak = vi.spyOn(speechService, 'speak').mockReturnValue(true);
+  const find = vi.spyOn(f.engine, 'findObjectAtPoint');
+  const view = render(<VisionCanvas {...props} />); await act(async () => {}); makeVideoReady(view.container);
+  step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); }); step();
+  const video = view.container.querySelector('video')!; const canvas = view.container.querySelector('canvas')!;
+  const ctx = canvas.getContext('2d')!;
+  vi.spyOn(video, 'getBoundingClientRect').mockReturnValue(rect as DOMRect);
+  // A stale backing size or different Canvas CSS box must not supply video geometry.
+  vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({ left: 0, top: 0, width: 300, height: 150 } as DOMRect);
+  act(() => { fireEvent.click(canvas, { clientX: margin[0], clientY: margin[1] }); }); step(false);
+  expect(find).not.toHaveBeenCalled(); expect(props.onSelectObject).not.toHaveBeenCalled();
+  expect(speak).not.toHaveBeenCalled(); expect(ctx.arc).not.toHaveBeenCalled();
+  act(() => { fireEvent.click(canvas, { clientX: point[0], clientY: point[1] }); }); step(false);
+  expect(find).toHaveBeenLastCalledWith(0.29375, 0.2875, expect.any(Array));
+  expect(props.onSelectObject).toHaveBeenCalledWith(expect.objectContaining({ label: 'dog' }));
+  expect(ctx.arc).toHaveBeenLastCalledWith(188, 138, 24, 0, Math.PI * 2);
+  expect(speak).toHaveBeenCalledTimes(1);
+  // A margin click preserves an existing selection/ripple and never speaks again.
+  act(() => { fireEvent.click(canvas, { clientX: margin[0], clientY: margin[1] }); }); step(false);
+  expect(props.onSelectObject).toHaveBeenCalledTimes(1); expect(speak).toHaveBeenCalledTimes(1);
+  const callbacks = [...raf.keys()];
+  view.rerender(<VisionCanvas {...props} selectedObjectId="det-0-dog" renderOptions={{ ...props.renderOptions, maskOpacity: 0.6 }} />);
+  expect([...raf.keys()]).toEqual(callbacks);
+  expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  expect(f.factory.detector).toHaveBeenCalledTimes(1); expect(f.detector.close).not.toHaveBeenCalled();
+});
+
+it.each(['maskCanvas', 'maskPolygon'] as const)('passes video-normalized coordinates to existing %s hit testing and drawing', async kind => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const props = canvasProps(f);
+  vi.spyOn(speechService, 'speak').mockReturnValue(true);
+  const view = render(<VisionCanvas {...props} />); await act(async () => {}); makeVideoReady(view.container);
+  step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); }); step();
+  const frame = props.onFrame.mock.calls.at(-1)![0]!;
+  const object = frame.objects[0]; object.bbox = { x: 0.8, y: 0.8, width: 0.1, height: 0.1 };
+  const canvas = view.container.querySelector('canvas')!; const ctx = canvas.getContext('2d')!;
+  const pixel = vi.fn(() => ({ data: new Uint8ClampedArray([0, 0, 0, 255]) }));
+  if (kind === 'maskCanvas') {
+    const mask = document.createElement('canvas'); mask.width = 320; mask.height = 240;
+    Object.defineProperty(mask, 'getContext', { value: () => ({ getImageData: pixel }) });
+    object.maskCanvas = mask;
+  } else {
+    object.maskPolygon = [{ x: 0.1, y: 0.1 }, { x: 0.3, y: 0.1 }, { x: 0.3, y: 0.3 }, { x: 0.1, y: 0.3 }];
+    Object.assign(ctx, { moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn() });
+  }
+  vi.spyOn(view.container.querySelector('video')!, 'getBoundingClientRect').mockReturnValue({ left: 0, top: 0, width: 960, height: 540 } as DOMRect);
+  act(() => { fireEvent.click(canvas, { clientX: 331.5, clientY: 155.25 }); }); step(false);
+  expect(props.onSelectObject).toHaveBeenCalledWith(object);
+  expect(ctx.arc).toHaveBeenLastCalledWith(188, 138, 24, 0, Math.PI * 2);
+  if (kind === 'maskCanvas') {
+    expect(pixel).toHaveBeenCalledWith(94, 69, 1, 1);
+    expect(ctx.drawImage).toHaveBeenCalledWith(object.maskCanvas, 0, 0, 640, 480);
+  } else expect(ctx.moveTo).toHaveBeenCalledWith(64, 48);
+});
+
+it('reads resized/scrolled boxes and changed intrinsic dimensions immediately before input without recreating resources', async () => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const props = canvasProps(f);
+  const speak = vi.spyOn(speechService, 'speak').mockReturnValue(true);
+  const find = vi.spyOn(f.engine, 'findObjectAtPoint');
+  const view = render(<VisionCanvas {...props} />); await act(async () => {}); makeVideoReady(view.container);
+  step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); }); step();
+  const video = view.container.querySelector('video')!; const canvas = view.container.querySelector('canvas')!;
+  const rect = vi.spyOn(video, 'getBoundingClientRect').mockReturnValue({ left: 50, top: -100, width: 960, height: 540 } as DOMRect);
+  const callbacks = [...raf.keys()];
+  // Intrinsic resize precedes both a render and the next drawing frame.
+  Object.defineProperties(video, { videoWidth: { value: 1280 }, videoHeight: { value: 720 } });
+  act(() => { fireEvent.click(canvas, { clientX: 242, clientY: 8 }); });
+  expect(find).toHaveBeenLastCalledWith(0.2, 0.2, expect.any(Array));
+  expect(canvas.width).toBe(640); expect(canvas.height).toBe(480);
+  expect([...raf.keys()]).toEqual(callbacks); step(false);
+  expect(canvas.width).toBe(1280); expect(canvas.height).toBe(720);
+  expect(canvas.getContext('2d')!.arc).toHaveBeenLastCalledWith(256, 144, 24, 0, Math.PI * 2);
+  rect.mockReturnValue({ left: -20, top: 80, width: 800, height: 600 } as DOMRect);
+  act(() => { fireEvent.click(canvas, { clientX: 140, clientY: 245 }); }); step(false);
+  expect(find).toHaveBeenLastCalledWith(0.2, 0.2, expect.any(Array));
+  expect(props.onSelectObject).toHaveBeenCalledTimes(2); expect(speak).toHaveBeenCalledTimes(2);
+  expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  expect(f.factory.detector).toHaveBeenCalledTimes(1); expect(f.detector.close).not.toHaveBeenCalled();
+});
+
+it('ignores unavailable/zero/nonfinite video geometry before hit testing or speech', async () => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const props = canvasProps(f);
+  const speak = vi.spyOn(speechService, 'speak').mockReturnValue(true);
+  const find = vi.spyOn(f.engine, 'findObjectAtPoint');
+  const view = render(<VisionCanvas {...props} />); await act(async () => {}); makeVideoReady(view.container);
+  step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); }); step();
+  const video = view.container.querySelector('video')!; const canvas = view.container.querySelector('canvas')!;
+  const rect = vi.spyOn(video, 'getBoundingClientRect');
+  for (const width of [0, NaN, Infinity]) {
+    rect.mockReturnValue({ left: 0, top: 0, width, height: 540 } as DOMRect);
+    fireEvent.click(canvas, { clientX: 200, clientY: 100 });
+  }
+  rect.mockReturnValue({ left: 0, top: 0, width: 960, height: 540 } as DOMRect);
+  Object.defineProperty(video, 'videoWidth', { value: 0 }); fireEvent.click(canvas, { clientX: 200, clientY: 100 });
+  Object.defineProperty(video, 'videoWidth', { value: 640 });
+  Object.defineProperty(video, 'readyState', { value: 0 }); fireEvent.click(canvas, { clientX: 200, clientY: 100 });
+  expect(find).not.toHaveBeenCalled(); expect(props.onSelectObject).not.toHaveBeenCalled();
+  expect(speak).not.toHaveBeenCalled(); expect(canvas.getContext('2d')!.arc).not.toHaveBeenCalled();
 });
 it('cancels both loops and pending execution on StrictMode teardown without duplicated callbacks', async () => {
   const f = fixture(); await f.engine.initialize('mediapipe');
