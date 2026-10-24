@@ -1,0 +1,14 @@
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+   Start at  15:30:13
+   Duration  924ms (environment 64%, tests 27%, transform 5%, import 3%, worker 1%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

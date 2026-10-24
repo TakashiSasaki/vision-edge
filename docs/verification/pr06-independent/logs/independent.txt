@@ -1,0 +1,43 @@
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ docs/verification/pr06-independent/independent.test.ts (23 tests | 1 failed) 191ms
+   × overflow coverage follows exact newest eviction time, no 100ms bucket approximation 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/verification/pr06-independent/independent.test.ts > overflow coverage follows exact newest eviction time, no 100ms bucket approximation
+AssertionError: expected { count: 2048, measured: 2048, …(8) } to match object { count: 2048, truncated: true, …(1) }
+(7 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "count": 2048,
+    "totalMs": 2048,
+-   "truncated": true,
++   "truncated": false,
+  }
+
+ ❯ docs/verification/pr06-independent/independent.test.ts:18:58
+     16| it('overflow coverage follows exact newest eviction time, no 100ms buc…
+     17|  let now=0;const m=new PipelineMetrics(()=>now);for(let i=0;i<2050;i++…
+     18|  now=5000.1;expect(m.snapshot()!.stages.capture.success).toMatchObject…
+       |                                                          ^
+     19|  now=5000.10001;expect(m.snapshot()!.stages.capture.success.truncated)…
+     20|  now=5204.9001;expect(m.snapshot()!.stages.capture.success.count).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 22 passed (23)
+   Start at  15:29:53
+   Duration  915ms (environment 62%, tests 24%, transform 11%, import 3%, worker 1%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

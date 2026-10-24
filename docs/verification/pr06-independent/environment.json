@@ -1,0 +1,8 @@
+{
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "node": "v24.19.0",
+  "npm": "11.9.0",
+  "browser": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+  "localMatchedDownload": "not retried: prior 403 restriction respected",
+  "instructions": "No AGENTS.md or .agents/skills instructions found in /workspace or repository; /workspace/.agents empty. Coordination skill read. Separate reviewer cloud environment."
+}

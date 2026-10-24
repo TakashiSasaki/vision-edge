@@ -1,0 +1,13 @@
+{"input": "docs/verification/pr06-independent/review-overhead.json", "configurations": 12, "trials": 96, "warmups": 24, "jobs": 1152, "all_work_and_raw_statistics_valid": true}
+640x480/rgba/mediapipe total paired median/p95 -0.27499999999417923 1.3499999999985448
+640x480/rgba/selfie-segmenter total paired median/p95 2.4500000000007276 4.950000000004366
+640x480/video-frame/mediapipe total paired median/p95 0.08437500000218279 0.4312499999978172
+640x480/video-frame/selfie-segmenter total paired median/p95 0.1156250000003638 0.1812500000014552
+1280x720/rgba/mediapipe total paired median/p95 -0.47500000000582077 1.0249999999941792
+1280x720/rgba/selfie-segmenter total paired median/p95 3.2062499999956344 11.775000000008731
+1280x720/video-frame/mediapipe total paired median/p95 0.09375000000363798 0.40000000000873115
+1280x720/video-frame/selfie-segmenter total paired median/p95 0.21874999999636202 0.38125000000582077
+1920x1080/rgba/mediapipe total paired median/p95 1.5687500000058208 12.28750000000582
+1920x1080/rgba/selfie-segmenter total paired median/p95 3.2624999999970896 15.937500000014552
+1920x1080/video-frame/mediapipe total paired median/p95 0.11250000000291038 0.21874999999272404
+1920x1080/video-frame/selfie-segmenter total paired median/p95 0.1687500000007276 1.1437499999883585

@@ -1,0 +1,12 @@
+
+> vision-studio@1.0.0 typecheck
+> tsc --noEmit
+
+docs/verification/pr06-independent/independent.test.ts(40,165): error TS2345: Argument of type '{ readonly generation: void; readonly now: void; readonly record: void; }' is not assignable to parameter of type 'PipelineObserver'.
+  Types of property 'generation' are incompatible.
+    Type 'void' is not assignable to type 'symbol | undefined'.
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

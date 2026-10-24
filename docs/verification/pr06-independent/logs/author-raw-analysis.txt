@@ -1,0 +1,13 @@
+{"input": "/workspace/vision-edge/docs/verification/pr06/overhead.json", "configurations": 12, "trials": 288, "warmups": 24, "jobs": 6912, "all_work_and_raw_statistics_valid": true}
+640x480/rgba/mediapipe total paired median/p95 0.7906249999941792 5.150000000008731
+640x480/rgba/selfie-segmenter total paired median/p95 0.12187499998981366 3.381249999991269
+640x480/video-frame/mediapipe total paired median/p95 0.04531250000218279 0.19062499999563443
+640x480/video-frame/selfie-segmenter total paired median/p95 0.11875000000145519 0.24687500000436557
+1280x720/rgba/mediapipe total paired median/p95 0.140625 7.812499999985448
+1280x720/rgba/selfie-segmenter total paired median/p95 -0.5187500000174623 7.2625000000116415
+1280x720/video-frame/mediapipe total paired median/p95 0.07500000000436557 0.19687499999417923
+1280x720/video-frame/selfie-segmenter total paired median/p95 0.0031249999956344254 1.0281250000116415
+1920x1080/rgba/mediapipe total paired median/p95 3.071875000023283 19.21875
+1920x1080/rgba/selfie-segmenter total paired median/p95 -2.462500000008731 11.46875
+1920x1080/video-frame/mediapipe total paired median/p95 0.12968749999708962 0.20000000001164153
+1920x1080/video-frame/selfie-segmenter total paired median/p95 -0.36562499999126885 1.1531249999970896

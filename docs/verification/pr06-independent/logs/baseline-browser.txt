@@ -1,0 +1,61 @@
+
+> vision-studio@1.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:4424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4437) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4485) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:4516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4529) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 16 tests using 1 worker
+
+(node:4553) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e/camera-lifecycle.spec.ts:10:1 › camera sessions survive UI renders and release stopped, replaced and late synthetic streams (1.4s)
+COMPATIBILITY {"mode":"immutable","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"計測中","sourceKind":"video-frame"}
+  ✓   2 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (immutable) (1.6s)
+COMPATIBILITY {"mode":"quality","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"計測中","sourceKind":"live-video"}
+  ✓   3 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (quality) (1.6s)
+COMPATIBILITY {"mode":"pixels-rvfc","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"canvas"}
+  ✓   4 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (pixels-rvfc) (3.5s)
+COMPATIBILITY {"mode":"pixels-raf","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"canvas"}
+  ✓   5 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (pixels-raf) (3.3s)
+COMPATIBILITY {"mode":"zero-quality-rvfc","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"canvas"}
+  ✓   6 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (zero-quality-rvfc) (3.4s)
+COMPATIBILITY {"mode":"zero-quality-raf","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"canvas"}
+  ✓   7 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (zero-quality-raf) (3.4s)
+coordinate observation {"scenario":{"name":"4x3 in wide display","width":640,"height":480,"viewport":{"width":1600,"height":550}},"geometry":{"pixels":{"videoBackground":[24,50,79,255],"videoObject":[199,230,164,255],"sdkBackground":[24,50,79,255],"sdkObject":[199,230,164,255],"sdkPixelLength":1228800,"sdkSourceKind":"video-frame"},"video":{"left":177,"top":97,"width":826,"height":436,"objectFit":"contain","objectPosition":"50% 50%","transform":"none"},"canvas":{"left":177,"top":97,"width":826,"height":436,"objectFit":"contain","objectPosition":"50% 50%","transform":"none"},"intrinsic":[640,480],"backing":[640,480],"dpr":2},"content":{"left":299.3333333333333,"top":97,"width":581.3333333333334,"height":436},"point":{"x":470.09999999999997,"y":222.35},"margin":{"x":297.3333333333333,"y":187.83333333333331},"marginObservation":{"speech":[],"arcs":[]},"marginSelected":false,"observations":{"speech":["「犬」、信頼度90%"],"arcs":[[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24],[187.88990825688077,137.61467889908258,24]],"requests":1,"creates":2}}
+  ✓   8 [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display (1.4s)
+coordinate observation {"scenario":{"name":"16x9 in narrow display","width":1280,"height":720,"viewport":{"width":550,"height":900}},"geometry":{"pixels":{"videoBackground":[24,50,79,255],"videoObject":[199,230,164,255],"sdkBackground":[24,50,79,255],"sdkObject":[199,230,164,255],"sdkPixelLength":3686400,"sdkSourceKind":"video-frame"},"video":{"left":11,"top":91,"width":528,"height":518.25,"objectFit":"contain","objectPosition":"50% 50%","transform":"none"},"canvas":{"left":11,"top":91,"width":528,"height":518.25,"objectFit":"contain","objectPosition":"50% 50%","transform":"none"},"intrinsic":[1280,720],"backing":[1280,720],"dpr":2},"content":{"left":11,"top":201.625,"width":528,"height":297},"point":{"x":88.55,"y":258.55},"margin":{"x":52.25,"y":199.625},"marginObservation":{"speech":[],"arcs":[]},"marginSelected":false,"observations":{"speech":["「犬」、信頼度90%"],"arcs":[[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24]],"requests":1,"creates":2}}
+  ✓   9 [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display (1.4s)
+F01 native input {"inputs":[{"sourceKind":"video-frame","time":0.906237,"qualityFrames":12,"pixelSha256":"e849c9b5c8361c34a17ceaddb02e2cf8710224eae0d4899b9e0ffebc4d07013c"}],"calls":1,"reservedImageTimestamp":464126,"reservedFrames":8,"delayed":1,"blocked":1,"requests":1,"samePixelsAcrossInputs":[],"reservedPixelSha256":"434d4291c6af51b4463be21132f0ce47b8d7ffa7bd1b80f56320a79cb2fa9dd0"}
+  ✓  10 [chromium] › e2e/frame-identity.spec.ts:136:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (rVFC) (3.6s)
+F02 native scenes {"inputs":[{"time":0,"qualityFrames":1},{"time":0,"qualityFrames":1},{"time":0.058792,"qualityFrames":2}],"first":[{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1}],"creates":1,"requests":3,"delayed":1}
+  ✓  11 [chromium] › e2e/frame-identity.spec.ts:170:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC) (2.3s)
+F01 native input {"inputs":[{"sourceKind":"video-frame","time":0.895462,"qualityFrames":11,"pixelSha256":"e849c9b5c8361c34a17ceaddb02e2cf8710224eae0d4899b9e0ffebc4d07013c"}],"calls":1,"reservedImageTimestamp":415444,"reservedFrames":7,"delayed":1,"blocked":1,"requests":1,"samePixelsAcrossInputs":[],"reservedPixelSha256":"88869c3e617129dd124576440fd8f91f4a18e4f411eea2516d84e53de11bc6f1"}
+  ✓  12 [chromium] › e2e/frame-identity.spec.ts:136:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (fallback) (3.6s)
+F02 native scenes {"inputs":[{"time":0,"qualityFrames":1},{"time":0,"qualityFrames":1},{"time":0.058864,"qualityFrames":2}],"first":[{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1}],"creates":1,"requests":3,"delayed":1}
+  ✓  13 [chromium] › e2e/frame-identity.spec.ts:170:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (fallback) (2.4s)
+  ✓  14 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (rVFC) (5.8s)
+  ✓  15 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (RAF fallback) (5.7s)
+  ✓  16 [chromium] › e2e/smoke.spec.ts:3:1 › production app loads and model controls work without camera or external services (898ms)
+
+  16 passed (49.2s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

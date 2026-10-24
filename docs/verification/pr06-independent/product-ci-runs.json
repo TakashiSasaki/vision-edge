@@ -1,0 +1,26 @@
+{
+  "status": "fulfilled",
+  "value": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "workflow_runs": [
+        {
+          "id": 40106484147,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 33,
+          "jobs_url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/runs/40106484147/jobs",
+          "logs_url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/runs/40106484147/logs",
+          "workflow_id": 394724408
+        }
+      ]
+    },
+    "isError": false
+  }
+}

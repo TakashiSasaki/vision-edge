@@ -1,0 +1,38 @@
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+stdout | docs/verification/pr06-independent/ui-adversarial.test.tsx > invalid statistics result must not unmount the camera/engine component
+PR06-F01 {"error":"Cannot read properties of null (reading 'capture')","videoMounted":false,"pendingRAF":0,"cameraRequests":1,"sdkCalls":1}
+
+ ❯ docs/verification/pr06-independent/ui-adversarial.test.tsx (2 tests | 1 failed) 143ms
+   × invalid statistics result must not unmount the camera/engine component 39ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/verification/pr06-independent/ui-adversarial.test.tsx > invalid statistics result must not unmount the camera/engine component
+AssertionError: expected TypeError: Cannot read properties of null… to be undefined
+
+- Expected:
+undefined
+
++ Received:
+TypeError {
+  "message": "Cannot read properties of null (reading 'capture')",
+}
+
+ ❯ docs/verification/pr06-independent/ui-adversarial.test.tsx:26:640
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 30 passed (31)
+   Start at  15:35:02
+   Duration  962ms (environment 70%, tests 17%, import 9%, transform 4%, worker 1%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

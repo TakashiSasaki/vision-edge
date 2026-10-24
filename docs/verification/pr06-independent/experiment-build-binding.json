@@ -1,0 +1,11 @@
+{
+  "authorBundleEqualsRebuild": true,
+  "rebuiltFiles": {
+    ".cache/pr06-overhead/assets/index-Bzu7-GKo.css": "636f892da7cd35700d405bd02ddaee2a3fed4fca1b6351c05ead7500176976e0",
+    ".cache/pr06-overhead/assets/index-1gdvDoXf.js": "8cfd084e4b6753571b3202982fc55bf861fb4850aadf0eef5ed950ed78538b65",
+    ".cache/pr06-overhead/docs/verification/pr06/experiment/index.html": "d81fd06489c09217f75085d55c8ac3874aaacd935b7fa7c75a0cae67094684d9",
+    ".cache/pr06-overhead/assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+    ".cache/pr06-overhead/assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+    ".cache/pr06-overhead/assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+  }
+}

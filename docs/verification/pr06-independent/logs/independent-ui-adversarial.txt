@@ -1,0 +1,33 @@
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ docs/verification/pr06-independent/ui-adversarial.test.tsx (2 tests | 1 failed) 124ms
+   × invalid statistics result must not unmount the camera/engine component 42ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/verification/pr06-independent/ui-adversarial.test.tsx > invalid statistics result must not unmount the camera/engine component
+AssertionError: expected [Function] to not throw an error but 'TypeError: Cannot convert undefined o…' was thrown
+
+- Expected:
+undefined
+
++ Received:
+"TypeError: Cannot convert undefined or null to object"
+
+ ❯ docs/verification/pr06-independent/ui-adversarial.test.tsx:26:186
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  15:33:08
+   Duration  991ms (environment 58%, import 17%, tests 14%, transform 11%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

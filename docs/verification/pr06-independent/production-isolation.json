@@ -1,0 +1,17 @@
+{
+  "foundTestMarkers": [],
+  "markers": [
+    "visionSdkProbe",
+    "runPipelineTrial",
+    "pipelineCameraProbe",
+    "Test-only SDK fault"
+  ],
+  "files": {
+    "/tmp/pr06-product/dist/index.html": "6aafd638912b551d51e0a6b6b8da025a8dcb883632a5055a342c22fd08e1485b",
+    "/tmp/pr06-product/dist/assets/index-Bzu7-GKo.css": "636f892da7cd35700d405bd02ddaee2a3fed4fca1b6351c05ead7500176976e0",
+    "/tmp/pr06-product/dist/assets/index-BtTrhLIH.js": "87533eee9b386278aab138d79c130ac76bcdd3ddf97a76a3838bd259d48094cd",
+    "/tmp/pr06-product/dist/assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+    "/tmp/pr06-product/dist/assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+    "/tmp/pr06-product/dist/assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+  }
+}

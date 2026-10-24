@@ -1,0 +1,20 @@
+[
+  {
+    "id": "PR06-F01",
+    "severity": "P2 / medium",
+    "status": "open",
+    "title": "Malformed statistics escape telemetry isolation and unmount the camera pipeline",
+    "targetHead": "04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9",
+    "targetTree": "7edc57e2c004d8a85502209b0e2541bd8b11ec07",
+    "locations": ["src/components/VisionCanvas.tsx:230", "src/components/PipelineDetails.tsx:21"],
+    "requirement": "Required acceptance 5: inject invalid statistics and ensure measurement errors cannot alter product execution/resource ownership; acceptance 8: HUD failures/lifecycle",
+    "trigger": "In the actual VisionCanvas camera/engine bridge, preserve the genuine PipelineMetrics.snapshot() object except replace stages with null at the 250ms publication. This is explicit synthetic fault injection, not a naturally observed collector output.",
+    "expected": "Treat the invalid statistics as unavailable or contain a details-render failure; retain the video, scheduler, SDK and their existing lifecycle.",
+    "actual": "TypeError: Cannot read properties of null (reading 'capture'). React unmounts VisionCanvas: videoMounted=false, pendingRAF=0, cameraRequests=1, sdkCalls=1. A throwing snapshot computation control remains mounted.",
+    "cause": "telemetry catches computation exceptions only. A non-null malformed result reaches setPipelineStats, then unguarded stages indexing during child React rendering, outside telemetry and without a details-only error boundary.",
+    "reproducer": "npx vitest run --config docs/verification/pr06-independent/vitest.config.ts docs/verification/pr06-independent/ui-adversarial.test.tsx",
+    "evidence": ["ui-adversarial.test.tsx", "logs/independent-all.txt", "logs/independent-ui-adversarial.txt"],
+    "limits": "No spontaneous path from valid PipelineMetrics events to stages=null was found. Ordinary and throwing-clock/observer/computation paths pass. Finding concerns the explicitly requested invalid-statistics fault tolerance, not a claimed normal-use crash.",
+    "authorAction": "Contain malformed statistics/render failures within the details telemetry feature, retain the existing pipeline, add a regression preserving a live camera/SDK/ownership, publish a new frozen HEAD/tree and validation, return to the same independent reviewer. No repair is made by this review."
+  }
+]
