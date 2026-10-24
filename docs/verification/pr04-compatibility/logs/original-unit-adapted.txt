@@ -1,0 +1,8 @@
+
+ RUN  v5.0.5 /workspace/vision-edge-pr04-r2
+
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  09:15:37
+   Duration  1.75s (environment 65%, tests 18%, transform 9%, import 7%, setup 1%, worker 1%)

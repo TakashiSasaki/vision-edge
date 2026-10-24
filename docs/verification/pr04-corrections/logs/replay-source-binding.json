@@ -1,0 +1,19 @@
+{
+  "review_evidence_head": "c632cf0cbce82b48503540651120c88fff75c8ef",
+  "corrective_commit": "89e444820b6befbd333236e65697b5bcf8f5e15a",
+  "unchanged_vectors": {
+    "vectors/vitest.config.mjs": "43c34e0ee88ea30c21e6955f398b5728e040475827303830033fc9d82e7e5fce",
+    "vectors/canvas.test.jsx": "3fcd94fca5db5c6ed8e808d55f59f38499cae51862ec2a22d2a242288dab1aa2",
+    "vectors/scheduler.test.js": "9a7bafa6519b9901551714143aa735589f195f00b1d06ae995a2d6af90549ed2",
+    "vectors/metrics.test.js": "0bfe3f398e1c0f5c8ed38bcca8d1d844c39cc38d7970acc8c5ffd699af10904e",
+    "vectors/native-frame-race.mjs": "f8a224b07c0f1521b472fc56ae6ec92345ca1857963bd548a4d9f6d70c0be42c",
+    "vectors/run-checks.py": "ce87f33a0eeb6c58d4d205a4c16bddaa3f65a1fbc89d6020351916e51dcfac36",
+    "vectors/native-first-frame.mjs": "f84c1b00ce011995453e54d4dc26a5dba63f0b68ef43632fd342f7b1ae3b1b7c"
+  },
+  "copied_corrected_products": {
+    "src/services/frameScheduler.ts": "8b5b827ee9f2e229c384690109a6a90fedff90c5f2aeb89b34d59a77090f3018",
+    "src/components/VisionCanvas.tsx": "9d668d4483cb42cc64440bafa1f8b22ee60d3083f62a096e0e8856b755146c00",
+    "src/services/visionEngine.ts": "f1fa34853dc5c7ea44e2110739a14a3a03da98cdf2d530d2f4ffb9b620287f52",
+    "src/types/vision.ts": "53907788c4e8f4b14991a8cbd59fb98725e73da4e6800b5da9b94cc9ef54fb4b"
+  }
+}

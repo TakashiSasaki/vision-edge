@@ -1,0 +1,25 @@
+[
+  {
+    "native": true,
+    "first": {
+      "mediaTime": 0,
+      "presentedFrames": 1
+    },
+    "readyState": 4,
+    "width": 64,
+    "height": 64,
+    "calls": 0
+  },
+  {
+    "native": false,
+    "first": {
+      "mediaTime": 0,
+      "presentedFrames": 1
+    },
+    "readyState": 4,
+    "width": 64,
+    "height": 64,
+    "calls": 1
+  }
+]
+PR04-F02: existing ready first frame was not processed once in both paths

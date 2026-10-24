@@ -1,0 +1,253 @@
+[
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.002204,
+        "total": 4,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 426.8000000002794
+      }
+    ],
+    "arrivals": []
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.006618,
+        "total": 5,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 487.90000000037253
+      },
+      {
+        "time": 0.07537,
+        "total": 5,
+        "hash": 4035140493,
+        "identicalPixelsToPrevious": false,
+        "at": 850.3000000002794
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 490.60000000009313
+      },
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 850.5
+      },
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 850.9000000003725
+      },
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 871.4000000003725
+      },
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 891.1000000000931
+      },
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 898.1000000000931
+      },
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 917
+      },
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 931.9000000003725
+      },
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 963.3000000002794
+      },
+      {
+        "time": 0.07537,
+        "count": 5,
+        "at": 965.1000000000931
+      }
+    ]
+  },
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.00627,
+        "total": 5,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 415.3000000002794
+      },
+      {
+        "time": 0.033213,
+        "total": 5,
+        "hash": 4035140493,
+        "identicalPixelsToPrevious": false,
+        "at": 752.4000000003725
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.05,
+        "count": 2,
+        "at": 430.10000000009313
+      }
+    ]
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.001599,
+        "total": 4,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 728.5
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 729.0999999996275
+      },
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 1050.7999999998137
+      },
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 1059.0999999996275
+      },
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 1075.5
+      },
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 1092.0999999996275
+      },
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 1109
+      },
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 1125.5
+      },
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 1142.0999999996275
+      },
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 1158.7999999998137
+      },
+      {
+        "time": 0.008733,
+        "count": 4,
+        "at": 1175.5
+      }
+    ]
+  },
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.002701,
+        "total": 4,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 353.60000000009313
+      }
+    ],
+    "arrivals": []
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.009938,
+        "total": 4,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 145
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 145.5
+      },
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 467.8000000002794
+      },
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 474
+      },
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 491
+      },
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 507.3000000002794
+      },
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 524.4000000003725
+      },
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 540.8000000002794
+      },
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 557.6000000000931
+      },
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 574.1000000000931
+      },
+      {
+        "time": 0.019086,
+        "count": 4,
+        "at": 590.7000000001863
+      }
+    ]
+  }
+]

@@ -1,0 +1,3 @@
+Normal production JS contains neither test SDK sentinel nor probe.
+Separate .cache/vision-edge-e2e JS contains both test-only markers.
+Assertions: exit 0

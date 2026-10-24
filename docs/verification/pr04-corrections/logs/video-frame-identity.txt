@@ -1,0 +1,47 @@
+[
+  {
+    "meta": {
+      "mediaTime": 0.05,
+      "presentedFrames": 2
+    },
+    "currentTime": 0.071229,
+    "qualityTotalVideoFrames": 6,
+    "imageTimestamp": 50000
+  },
+  {
+    "meta": {
+      "mediaTime": 0.1,
+      "presentedFrames": 3
+    },
+    "currentTime": 0.123146,
+    "qualityTotalVideoFrames": 7,
+    "imageTimestamp": 100000
+  },
+  {
+    "meta": {
+      "mediaTime": 0.15,
+      "presentedFrames": 4
+    },
+    "currentTime": 0.154561,
+    "qualityTotalVideoFrames": 8,
+    "imageTimestamp": 150000
+  },
+  {
+    "meta": {
+      "mediaTime": 0.2,
+      "presentedFrames": 5
+    },
+    "currentTime": 0.205208,
+    "qualityTotalVideoFrames": 9,
+    "imageTimestamp": 200000
+  },
+  {
+    "meta": {
+      "mediaTime": 0.25,
+      "presentedFrames": 6
+    },
+    "currentTime": 0.253686,
+    "qualityTotalVideoFrames": 10,
+    "imageTimestamp": 250000
+  }
+]

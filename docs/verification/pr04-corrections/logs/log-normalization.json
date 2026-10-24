@@ -1,0 +1,32 @@
+[
+  {
+    "path": "docs/verification/pr04-corrections/logs/before-browser-frozen-input.txt",
+    "before_sha256": "1615e49aa0fd6c3e49b1cbfa8ff04991e562a6265bae665a385b854fb387cca8",
+    "after_sha256": "12aef315e29ac0faca92a2436260f76a9e57fe8af247e804cc36c318e0c9f4a6"
+  },
+  {
+    "path": "docs/verification/pr04-corrections/logs/before-browser-acceptance.txt",
+    "before_sha256": "03842eccf5a00c0de917ccfe6538ab45f3f6be488862e6c5dd24daf74d985585",
+    "after_sha256": "c45501ccb2ed5f327cec3489068346e56a813d323c8ceb9f065f9e6ccb067781"
+  },
+  {
+    "path": "docs/verification/pr04-corrections/logs/browser-dev-01.txt",
+    "before_sha256": "e54d1b949cf61fbf53073d57b6704de857cbe622bc85f226b13f1784f379184f",
+    "after_sha256": "d77af27967741952b0c4834a53235788dc8812a45d26c0a634e886bf635471c9"
+  },
+  {
+    "path": "docs/verification/pr04-corrections/logs/before-browser-final.txt",
+    "before_sha256": "a78d3f06f2c2ffca245bffa63aa7945699ade77ea569f95ad6dad8888af48f06",
+    "after_sha256": "7b432b9b5539389ae4ffafc6022978fd336bcb93d395a50dc93d29c32095eedf"
+  },
+  {
+    "path": "docs/verification/pr04-corrections/logs/before-browser-01.txt",
+    "before_sha256": "043746c35aaba077e9e8bc0fcc9b3a640712e3af18f1aad3de809c3235735c42",
+    "after_sha256": "870f27fd7c9d18a334cb7995c33d0e8338b8cc2fc630e0ec44e0b582827bff11"
+  },
+  {
+    "path": "docs/verification/pr04-corrections/logs/browser-dev-03.txt",
+    "before_sha256": "153f1b6b691fc506d1c43f120607a239397c7c7418391aece699f0bf1c2b232a",
+    "after_sha256": "25167b6a7242842e8308631597dfb20c0a90a21bfa644590d31f2adf3a7924ff"
+  }
+]

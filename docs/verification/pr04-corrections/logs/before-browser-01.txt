@@ -1,0 +1,141 @@
+
+> vision-studio@1.0.0 test:e2e
+> playwright test e2e/frame-identity.spec.ts
+
+
+Running 4 tests using 1 worker
+
+  ✘  1 [chromium] › e2e/frame-identity.spec.ts:97:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (rVFC) (4.2s)
+  ✘  2 [chromium] › e2e/frame-identity.spec.ts:127:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC) (6.9s)
+  ✘  3 [chromium] › e2e/frame-identity.spec.ts:97:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (fallback) (4.1s)
+  ✓  4 [chromium] › e2e/frame-identity.spec.ts:127:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (fallback) (3.0s)
+
+
+  1) [chromium] › e2e/frame-identity.spec.ts:97:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (rVFC)
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 2
+
+      113 |         reservedPixels: window.nativeFrameProbe.reservedPixels, reservedFrames: window.nativeFrameProbe.reservedFrames, delayed: window.nativeFrameProbe.delayed, blocked: window.nativeFrameProbe.blocked, requests: window.nativeFrameProbe.requests }));
+      114 |       expect(result.delayed).toBe(1); expect(result.blocked).toBe(1);
+    > 115 |       expect(result.calls).toBe(1); expect(result.inputs).toHaveLength(1);
+          |                            ^
+      116 |       expect(result.inputs[0].pixels).toHaveLength(64 * 64 * 4);
+      117 |       expect(result.inputs[0].decodedFrames).toBeGreaterThan(result.reservedFrames);
+      118 |       expect(result.inputs[0].pixels.every((value, i) => value === result.reservedPixels[i])).toBe(false);
+        at /workspace/vision-edge-pr04-before/e2e/frame-identity.spec.ts:115:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/frame-identity-F01-actual--30d14-ter-delayed-execution-rVFC--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/frame-identity-F01-actual--30d14-ter-delayed-execution-rVFC--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/frame-identity-F01-actual--30d14-ter-delayed-execution-rVFC--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/frame-identity-F01-actual--30d14-ter-delayed-execution-rVFC--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e/frame-identity.spec.ts:127:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC)
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      133 |       expect(await page.evaluate(() => window.visionSdkProbe.calls)).toBe(0);
+      134 |       await page.evaluate(() => { window.visionSdkProbe.observeInputs = true; window.nativeFrameProbe.releaseModel(); });
+    > 135 |       await expect.poll(() => page.evaluate(() => window.visionSdkProbe.calls)).toBe(1);
+          |                                                                                 ^
+      136 |       await page.waitForTimeout(400); expect(await page.evaluate(() => window.visionSdkProbe.calls)).toBe(1);
+      137 |       const creates = await page.evaluate(() => window.visionSdkProbe.creates);
+      138 |       for (const session of [2, 3]) {
+        at /workspace/vision-edge-pr04-before/e2e/frame-identity.spec.ts:135:81
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/frame-identity-F02-pre-pre-fc15a-ootstrap-arrival-race-rVFC--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/frame-identity-F02-pre-pre-fc15a-ootstrap-arrival-race-rVFC--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/frame-identity-F02-pre-pre-fc15a-ootstrap-arrival-race-rVFC--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/frame-identity-F02-pre-pre-fc15a-ootstrap-arrival-race-rVFC--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › e2e/frame-identity.spec.ts:97:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (fallback)
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 2
+
+      113 |         reservedPixels: window.nativeFrameProbe.reservedPixels, reservedFrames: window.nativeFrameProbe.reservedFrames, delayed: window.nativeFrameProbe.delayed, blocked: window.nativeFrameProbe.blocked, requests: window.nativeFrameProbe.requests }));
+      114 |       expect(result.delayed).toBe(1); expect(result.blocked).toBe(1);
+    > 115 |       expect(result.calls).toBe(1); expect(result.inputs).toHaveLength(1);
+          |                            ^
+      116 |       expect(result.inputs[0].pixels).toHaveLength(64 * 64 * 4);
+      117 |       expect(result.inputs[0].decodedFrames).toBeGreaterThan(result.reservedFrames);
+      118 |       expect(result.inputs[0].pixels.every((value, i) => value === result.reservedPixels[i])).toBe(false);
+        at /workspace/vision-edge-pr04-before/e2e/frame-identity.spec.ts:115:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/frame-identity-F01-actual--97bc1-delayed-execution-fallback--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/frame-identity-F01-actual--97bc1-delayed-execution-fallback--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/frame-identity-F01-actual--97bc1-delayed-execution-fallback--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/frame-identity-F01-actual--97bc1-delayed-execution-fallback--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › e2e/frame-identity.spec.ts:97:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (rVFC)
+    [chromium] › e2e/frame-identity.spec.ts:127:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC)
+    [chromium] › e2e/frame-identity.spec.ts:97:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (fallback)
+  1 passed (26.1s)
+[WebServer] (node:15677) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:15690) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:15715) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:15728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:15759) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:15772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+(node:15796) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15931) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16062) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16198) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

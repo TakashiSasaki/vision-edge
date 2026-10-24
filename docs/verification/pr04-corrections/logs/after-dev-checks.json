@@ -1,0 +1,29 @@
+[
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-independent/vectors/vitest.config.mjs"
+    ],
+    "exit": 1,
+    "log": "after-dev-00.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-first-frame.mjs"
+    ],
+    "exit": 0,
+    "log": "after-dev-01.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-frame-race.mjs"
+    ],
+    "exit": 0,
+    "log": "after-dev-02.txt"
+  }
+]

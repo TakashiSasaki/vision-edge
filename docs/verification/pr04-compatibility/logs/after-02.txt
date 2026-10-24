@@ -1,0 +1,26 @@
+
+Running 3 tests using 1 worker
+
+INDEPENDENT actual app immutable {"calls":1,"inputs":[{"timestamp":0,"pixel":[255,0,0,255],"kind":"immutable"}],"first":{"time":0,"count":1},"inference":"推論: 未計測","status":"計測中"}
+  ✓  1 docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs:3:2 › real app static source retains single inference: immutable (1.6s)
+INDEPENDENT actual app live-quality {"calls":1,"inputs":[{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"}],"first":{"time":0,"count":1},"inference":"推論: 未計測","status":"計測中"}
+  ✓  2 docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs:3:2 › real app static source retains single inference: live-quality (1.4s)
+INDEPENDENT actual app live-time {"calls":1,"inputs":[{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"}],"first":{"time":0,"count":1},"inference":"推論: 未計測","status":"映像入力停滞"}
+  ✓  3 docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs:3:2 › real app static source retains single inference: live-time (3.0s)
+
+  3 passed (8.9s)
+[WebServer] (node:27725) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:27738) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:27769) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:27782) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+(node:27806) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

@@ -1,0 +1,11 @@
+
+> vision-studio@1.0.0 typecheck
+> tsc --noEmit
+
+src/services/frameScheduler.test.ts(204,123): error TS2304: Cannot find name 'dimensions'.
+src/services/frameScheduler.test.ts(204,185): error TS2304: Cannot find name 'dimensions'.
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

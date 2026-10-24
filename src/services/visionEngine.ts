@@ -1,5 +1,5 @@
 import { FilesetResolver, ObjectDetector, ImageSegmenter, type ImageSegmenterResult } from '@mediapipe/tasks-vision';
-import type { DetectedObject, RunnableModelType, ModelState, FrameResult } from '../types/vision';
+import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput } from '../types/vision';
 import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 
@@ -38,6 +38,7 @@ export class VisionEngine {
   private maskImageData: ImageData | null = null;
   private lastStableObjects: DetectedObject[] = [];
   private emptyFrameBufferCount = 0;
+  private outputGeneration = 0;
 
   constructor(private readonly factory: VisionTaskFactory = defaultFactory) {}
 
@@ -51,6 +52,7 @@ export class VisionEngine {
     this.listeners.forEach(listener => listener());
   }
   private resetOutputs(): void {
+    this.outputGeneration++;
     this.lastStableObjects = [];
     this.emptyFrameBufferCount = 0;
     this.offscreenMaskCanvas = null;
@@ -127,202 +129,221 @@ export class VisionEngine {
   }
 
   public detectVideoFrame(
-    videoElement: HTMLVideoElement,
+    videoElement: InferenceInput,
     model: RunnableModelType,
     confidenceThreshold: number
   ): FrameResult {
     requireRunnableModel(model);
     const state = this.state;
     const active = this.activeTask;
-    if (state.status !== 'ready' || state.model !== model || active?.model !== model || videoElement.readyState < 2) {
+    const outputGeneration = this.outputGeneration;
+    const videoReady = 'readyState' in videoElement ? videoElement.readyState >= 2 : 'displayWidth' in videoElement
+      ? videoElement.displayWidth > 0 && videoElement.displayHeight > 0 : videoElement.width > 0 && videoElement.height > 0;
+    if (state.status !== 'ready' || state.model !== model || active?.model !== model || !videoReady) {
       return { status: 'not-ready', model, requestId: state.requestId };
     }
-    const startTime = performance.now();
-    let rawObjects: DetectedObject[] = [];
+    try {
+      const frameTimestamp = performance.now();
+      let rawObjects: DetectedObject[] = [];
 
-    const vW = videoElement.videoWidth || 640;
-    const vH = videoElement.videoHeight || 480;
+      const vW = ('videoWidth' in videoElement ? videoElement.videoWidth : 'displayWidth' in videoElement ? videoElement.displayWidth : videoElement.width) || 640;
+      const vH = ('videoHeight' in videoElement ? videoElement.videoHeight : 'displayHeight' in videoElement ? videoElement.displayHeight : videoElement.height) || 480;
 
-    // 1. SELFIE SEGMENTER: Real pixel-accurate segmentation mask + tight bounding box
-    if (active.model === 'selfie-segmenter') {
-      let segResult: ImageSegmenterResult | null = null;
-      try {
-        segResult = active.task.segmentForVideo(videoElement, startTime);
-        const confMask = segResult.confidenceMasks?.[0];
-
-        if (confMask) {
-          const mW = confMask.width;
-          const mH = confMask.height;
-          const maskFloats = confMask.getAsFloat32Array();
-
-          if (!this.offscreenMaskCanvas) {
-            this.offscreenMaskCanvas = document.createElement('canvas');
+      // 1. SELFIE SEGMENTER: Real pixel-accurate segmentation mask + tight bounding box
+      if (active.model === 'selfie-segmenter') {
+        let segResult: ImageSegmenterResult | null = null;
+        try {
+          segResult = active.task.segmentForVideo(videoElement, frameTimestamp);
+          if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+            return { status: 'not-ready', model, requestId: state.requestId };
           }
-          if (this.offscreenMaskCanvas.width !== mW || this.offscreenMaskCanvas.height !== mH) {
-            this.offscreenMaskCanvas.width = mW;
-            this.offscreenMaskCanvas.height = mH;
-            this.maskImageData = null;
-          }
+          const confMask = segResult.confidenceMasks?.[0];
 
-          const maskCtx = this.offscreenMaskCanvas.getContext('2d');
-          if (maskCtx) {
-            if (!this.maskImageData) {
-              this.maskImageData = maskCtx.createImageData(mW, mH);
+          if (confMask) {
+            const mW = confMask.width;
+            const mH = confMask.height;
+            const maskFloats = confMask.getAsFloat32Array();
+
+            if (!this.offscreenMaskCanvas) {
+              this.offscreenMaskCanvas = document.createElement('canvas');
             }
-            const data = this.maskImageData.data;
-            const threshold = Math.max(0.25, confidenceThreshold);
+            if (this.offscreenMaskCanvas.width !== mW || this.offscreenMaskCanvas.height !== mH) {
+              this.offscreenMaskCanvas.width = mW;
+              this.offscreenMaskCanvas.height = mH;
+              this.maskImageData = null;
+            }
 
-            let minX = mW;
-            let maxX = 0;
-            let minY = mH;
-            let maxY = 0;
-            let count = 0;
-            let sumScore = 0;
+            const maskCtx = this.offscreenMaskCanvas.getContext('2d');
+            if (maskCtx) {
+              if (!this.maskImageData) {
+                this.maskImageData = maskCtx.createImageData(mW, mH);
+              }
+              const data = this.maskImageData.data;
+              const threshold = Math.max(0.25, confidenceThreshold);
 
-            for (let i = 0; i < maskFloats.length; i++) {
-              const conf = maskFloats[i];
-              const pIdx = i * 4;
-              if (conf >= threshold) {
-                const px = i % mW;
-                const py = Math.floor(i / mW);
-                if (px < minX) minX = px;
-                if (px > maxX) maxX = px;
-                if (py < minY) minY = py;
-                if (py > maxY) maxY = py;
-                count++;
-                sumScore += conf;
+              let minX = mW;
+              let maxX = 0;
+              let minY = mH;
+              let maxY = 0;
+              let count = 0;
+              let sumScore = 0;
 
-                // High-visibility cyan/teal neon glow with dynamic alpha
-                data[pIdx] = 20;       // R
-                data[pIdx + 1] = 184;   // G (vivid teal/emerald)
-                data[pIdx + 2] = 166;   // B
-                data[pIdx + 3] = Math.min(255, Math.floor(conf * 210)); // Alpha
-              } else {
-                data[pIdx + 3] = 0;
+              for (let i = 0; i < maskFloats.length; i++) {
+                const conf = maskFloats[i];
+                const pIdx = i * 4;
+                if (conf >= threshold) {
+                  const px = i % mW;
+                  const py = Math.floor(i / mW);
+                  if (px < minX) minX = px;
+                  if (px > maxX) maxX = px;
+                  if (py < minY) minY = py;
+                  if (py > maxY) maxY = py;
+                  count++;
+                  sumScore += conf;
+
+                  // High-visibility cyan/teal neon glow with dynamic alpha
+                  data[pIdx] = 20;       // R
+                  data[pIdx + 1] = 184;   // G (vivid teal/emerald)
+                  data[pIdx + 2] = 166;   // B
+                  data[pIdx + 3] = Math.min(255, Math.floor(conf * 210)); // Alpha
+                } else {
+                  data[pIdx + 3] = 0;
+                }
+              }
+
+              // If a person is present in the frame (> 0.5% of total pixels)
+              if (count > (mW * mH * 0.005)) {
+                maskCtx.putImageData(this.maskImageData, 0, 0);
+
+                const normX = Math.max(0, minX / mW);
+                const normY = Math.max(0, minY / mH);
+                const normW = Math.min(1, Math.max(0.04, (maxX - minX) / mW));
+                const normH = Math.min(1, Math.max(0.04, (maxY - minY) / mH));
+                const avgConf = sumScore / count;
+
+                rawObjects = [{
+                  id: 'det-selfie-person',
+                  label: 'person',
+                  labelJa: '人物 (セルフィー)',
+                  category: '人物',
+                  confidence: Math.min(0.99, avgConf),
+                  bbox: {
+                    x: normX,
+                    y: normY,
+                    width: normW,
+                    height: normH
+                  },
+                  color: '#10b981',
+                  maskCanvas: this.offscreenMaskCanvas
+                }];
               }
             }
-
-            // If a person is present in the frame (> 0.5% of total pixels)
-            if (count > (mW * mH * 0.005)) {
-              maskCtx.putImageData(this.maskImageData, 0, 0);
-
-              const normX = Math.max(0, minX / mW);
-              const normY = Math.max(0, minY / mH);
-              const normW = Math.min(1, Math.max(0.04, (maxX - minX) / mW));
-              const normH = Math.min(1, Math.max(0.04, (maxY - minY) / mH));
-              const avgConf = sumScore / count;
-
-              rawObjects = [{
-                id: 'det-selfie-person',
-                label: 'person',
-                labelJa: '人物 (セルフィー)',
-                category: '人物',
-                confidence: Math.min(0.99, avgConf),
-                bbox: {
-                  x: normX,
-                  y: normY,
-                  width: normW,
-                  height: normH
-                },
-                color: '#10b981',
-                maskCanvas: this.offscreenMaskCanvas
-              }];
+          }
+        } finally {
+          if (segResult) {
+            try {
+              segResult.close();
+            } catch (cause) {
+              console.warn('Vision result cleanup failed', { cause });
             }
           }
         }
-      } finally {
-        if (segResult) {
-          try {
-            segResult.close();
-          } catch (cause) {
-            console.warn('Vision result cleanup failed', { cause });
-          }
-        }
       }
-    }
 
-    // EfficientDet-Lite0 produces boxes only; no substitute segmentation.
-    if (active.model === 'mediapipe') {
-      const detectionResult = active.task.detectForVideo(videoElement, startTime);
+      // EfficientDet-Lite0 produces boxes only; no substitute segmentation.
+      if (active.model === 'mediapipe') {
+        const detectionResult = active.task.detectForVideo(videoElement, frameTimestamp);
 
-      if (detectionResult.detections && detectionResult.detections.length > 0) {
-        rawObjects = detectionResult.detections.map((det, idx) => {
-          const cat = det.categories[0];
-          const label = cat ? cat.categoryName : 'object';
-          const score = cat ? cat.score : 0.8;
-          const bbox = det.boundingBox || { originX: 0, originY: 0, width: 0, height: 0 };
-          const labelInfo = getLabelInfo(label);
+        if (detectionResult.detections && detectionResult.detections.length > 0) {
+          rawObjects = detectionResult.detections.map((det, idx) => {
+            const cat = det.categories[0];
+            const label = cat ? cat.categoryName : 'object';
+            const score = cat ? cat.score : 0.8;
+            const bbox = det.boundingBox || { originX: 0, originY: 0, width: 0, height: 0 };
+            const labelInfo = getLabelInfo(label);
 
-          const normX = Math.max(0, bbox.originX / vW);
-          const normY = Math.max(0, bbox.originY / vH);
-          const normW = Math.min(1, bbox.width / vW);
-          const normH = Math.min(1, bbox.height / vH);
+            const normX = Math.max(0, bbox.originX / vW);
+            const normY = Math.max(0, bbox.originY / vH);
+            const normW = Math.min(1, bbox.width / vW);
+            const normH = Math.min(1, bbox.height / vH);
 
-          return {
-            id: `det-${idx}-${label}`,
-            label,
-            labelJa: labelInfo.ja,
-            category: labelInfo.category,
-            confidence: score,
-            bbox: {
-              x: normX,
-              y: normY,
-              width: normW,
-              height: normH
-            },
-            color: getCategoryColor(label)
-          };
-        });
-      }
-    }
-
-    // Filter by user confidence threshold (only for object detector; segmenter already filtered)
-    const filteredObjects = model === 'selfie-segmenter'
-      ? rawObjects
-      : rawObjects.filter(obj => obj.confidence >= confidenceThreshold);
-
-    // Existing within-model smoothing; cross-model state is reset on initialization.
-    let finalObjects: DetectedObject[];
-
-    if (filteredObjects.length > 0) {
-      if (model === 'selfie-segmenter') {
-        // Immediate 1:1 real-time tracking for selfie segmenter (0 latency)
-        finalObjects = filteredObjects;
-      } else {
-        // Exponential Moving Average (EMA) smoothing for bounding boxes to avoid jitter
-        finalObjects = filteredObjects.map(obj => {
-          const prev = this.lastStableObjects.find(p => p.label === obj.label);
-          if (prev) {
             return {
-              ...obj,
+              id: `det-${idx}-${label}`,
+              label,
+              labelJa: labelInfo.ja,
+              category: labelInfo.category,
+              confidence: score,
               bbox: {
-                x: prev.bbox.x * 0.2 + obj.bbox.x * 0.8,
-                y: prev.bbox.y * 0.2 + obj.bbox.y * 0.8,
-                width: prev.bbox.width * 0.2 + obj.bbox.width * 0.8,
-                height: prev.bbox.height * 0.2 + obj.bbox.height * 0.8
-              }
+                x: normX,
+                y: normY,
+                width: normW,
+                height: normH
+              },
+              color: getCategoryColor(label)
             };
-          }
-          return obj;
-        });
+          });
+        }
       }
-      this.lastStableObjects = finalObjects;
-      this.emptyFrameBufferCount = 0;
-    } else {
-      this.emptyFrameBufferCount++;
-      // Never freeze old positions on screen! Limit stale retention to max 2 frames
-      if (this.emptyFrameBufferCount <= 2 && this.lastStableObjects.length > 0) {
-        finalObjects = this.lastStableObjects.map(obj => ({
-          ...obj,
-          confidence: obj.confidence * 0.85
-        }));
-      } else {
-        this.lastStableObjects = [];
-        finalObjects = [];
-      }
-    }
 
-    return { status: 'ready', model, requestId: state.requestId, objects: finalObjects };
+      if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        return { status: 'not-ready', model, requestId: state.requestId };
+      }
+
+      // Filter by user confidence threshold (only for object detector; segmenter already filtered)
+      const filteredObjects = model === 'selfie-segmenter'
+        ? rawObjects
+        : rawObjects.filter(obj => obj.confidence >= confidenceThreshold);
+
+      // Existing within-model smoothing; cross-model state is reset on initialization.
+      let finalObjects: DetectedObject[];
+
+      if (filteredObjects.length > 0) {
+        if (model === 'selfie-segmenter') {
+          // Immediate 1:1 real-time tracking for selfie segmenter (0 latency)
+          finalObjects = filteredObjects;
+        } else {
+          // Exponential Moving Average (EMA) smoothing for bounding boxes to avoid jitter
+          finalObjects = filteredObjects.map(obj => {
+            const prev = this.lastStableObjects.find(p => p.label === obj.label);
+            if (prev) {
+              return {
+                ...obj,
+                bbox: {
+                  x: prev.bbox.x * 0.2 + obj.bbox.x * 0.8,
+                  y: prev.bbox.y * 0.2 + obj.bbox.y * 0.8,
+                  width: prev.bbox.width * 0.2 + obj.bbox.width * 0.8,
+                  height: prev.bbox.height * 0.2 + obj.bbox.height * 0.8
+                }
+              };
+            }
+            return obj;
+          });
+        }
+        this.lastStableObjects = finalObjects;
+        this.emptyFrameBufferCount = 0;
+      } else {
+        this.emptyFrameBufferCount++;
+        // Never freeze old positions on screen! Limit stale retention to max 2 frames
+        if (this.emptyFrameBufferCount <= 2 && this.lastStableObjects.length > 0) {
+          finalObjects = this.lastStableObjects.map(obj => ({
+            ...obj,
+            confidence: obj.confidence * 0.85
+          }));
+        } else {
+          this.lastStableObjects = [];
+          finalObjects = [];
+        }
+      }
+
+      // Synchronous SDK doubles/subscribers can reenter lifecycle methods too.
+      if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        return { status: 'not-ready', model, requestId: state.requestId };
+      }
+      return { status: 'ready', model, requestId: state.requestId, objects: finalObjects };
+    } catch (cause) {
+      if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) this.resetOutputs();
+      throw cause;
+    }
   }
 
   public findObjectAtPoint(

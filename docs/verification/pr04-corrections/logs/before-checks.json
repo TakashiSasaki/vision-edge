@@ -1,0 +1,59 @@
+[
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-independent/vectors/vitest.config.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-before",
+    "head": "2f4cdea1bc3e6706f49e37116ede8b1881472f7f",
+    "exit": 1,
+    "expected": 1,
+    "log": "before-00.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-first-frame.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-before",
+    "head": "2f4cdea1bc3e6706f49e37116ede8b1881472f7f",
+    "exit": 1,
+    "expected": 1,
+    "log": "before-01.txt"
+  },
+  {
+    "command": [
+      "ffmpeg",
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-f",
+      "lavfi",
+      "-i",
+      "testsrc2=size=64x64:rate=20:duration=5",
+      "-c:v",
+      "libvpx",
+      "-y",
+      ".cache/review-video.webm"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-before",
+    "head": "2f4cdea1bc3e6706f49e37116ede8b1881472f7f",
+    "exit": 0,
+    "expected": 0,
+    "log": "before-02.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-frame-race.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-before",
+    "head": "2f4cdea1bc3e6706f49e37116ede8b1881472f7f",
+    "exit": 1,
+    "expected": 1,
+    "log": "before-03.txt"
+  }
+]

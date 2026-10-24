@@ -1,0 +1,52 @@
+
+> vision-studio@1.0.0 test
+> vitest run src/components/VisionCanvas.test.tsx
+
+
+ RUN  v5.0.5 /workspace/vision-edge-baseline
+
+ ❯ src/components/VisionCanvas.test.tsx (8 tests | 4 failed) 1083ms
+   × baseline reservation survives injected draw exception 39ms
+   × baseline reservation survives injected notification exception 18ms
+   × baseline reservation survives injected tts exception 29ms
+   × baseline draw closure uses the newly committed click ripple 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > baseline reservation survives injected draw exception
+ FAIL  src/components/VisionCanvas.test.tsx > baseline reservation survives injected notification exception
+ FAIL  src/components/VisionCanvas.test.tsx > baseline reservation survives injected tts exception
+AssertionError: expected 0 to be greater than 0
+ ❯ src/components/VisionCanvas.test.tsx:209:20
+    207|   act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); …
+    208|   if (raf.size) { try { step(); } catch { /* Record reservation state.…
+    209|   expect(raf.size).toBeGreaterThan(0);
+       |                    ^
+    210| });
+    211| it('baseline draw closure uses the newly committed click ripple', asyn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > baseline draw closure uses the newly committed click ripple
+AssertionError: expected "vi.fn()" to be called at least once
+ ❯ src/components/VisionCanvas.test.tsx:218:19
+    216|   vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({ left: 0,…
+    217|   act(() => { fireEvent.click(canvas, { clientX: 100, clientY: 100 });…
+    218|   expect(ctx.arc).toHaveBeenCalled();
+       |                   ^
+    219| });
+    220|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 4 passed (8)
+   Start at  06:29:56
+   Duration  3.40s (environment 47%, tests 35%, setup 7%, transform 6%, import 4%, worker 1%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

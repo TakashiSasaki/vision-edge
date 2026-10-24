@@ -1,0 +1,22 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "log": "before-browser-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e",
+      "--",
+      "e2e/frame-identity.spec.ts"
+    ],
+    "exit": 1,
+    "log": "before-browser-01.txt"
+  }
+]

@@ -1,0 +1,83 @@
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ src/services/frameScheduler.test.ts (34 tests | 5 failed) 2507ms
+   × capture exceptions stop acquisition deliberately without leaking callbacks or locks; a fresh retry can run 7ms
+   × pixel-only input ignores playhead/metadata drift, accepts changed images and releases owned canvases (false) 773ms
+   × pixel-only input ignores playhead/metadata drift, accepts changed images and releases owned canvases (true) 720ms
+   × pixel snapshot binds late B exactly and never retries a failed unchanged B (false) 31ms
+   × pixel snapshot binds late B exactly and never retries a failed unchanged B (true) 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/services/frameScheduler.test.ts > capture exceptions stop acquisition deliberately without leaking callbacks or locks; a fresh retry can run
+ReferenceError: dimensions is not defined
+ ❯ src/services/frameScheduler.test.ts:204:123
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/services/frameScheduler.test.ts > pixel-only input ignores playhead/metadata drift, accepts changed images and releases owned canvases (false)
+ FAIL  src/services/frameScheduler.test.ts > pixel-only input ignores playhead/metadata drift, accepts changed images and releases owned canvases (true)
+AssertionError: expected [ +0, +0 ] to deeply equal [ +0, 7 ]
+
+- Expected
++ Received
+
+  [
+    0,
+-   7,
++   0,
+  ]
+
+ ❯ src/services/frameScheduler.test.ts:248:18
+    246|   expect(images).toEqual([0]); expect(f.input).toHaveBeenCalledTimes(1…
+    247|   pixelIds.set(f.video, 7); f.frame(6, 60); vi.runOnlyPendingTimers();
+    248|   expect(images).toEqual([0, 7]); expect(f.input).toHaveBeenCalledTime…
+       |                  ^
+    249|   f.stop(); expect(owned.every(canvas => canvas.width === 0 && canvas.…
+    250| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/services/frameScheduler.test.ts > pixel snapshot binds late B exactly and never retries a failed unchanged B (false)
+ FAIL  src/services/frameScheduler.test.ts > pixel snapshot binds late B exactly and never retries a failed unchanged B (true)
+AssertionError: expected [ +0 ] to deeply equal [ 2 ]
+
+- Expected
++ Received
+
+  [
+-   2,
++   0,
+  ]
+
+ ❯ src/services/frameScheduler.test.ts:261:18
+    259|   pixelIds.set(f.video, 2); f.video.currentTime = 2; vi.runOnlyPending…
+    260|   f.frame(2.1, 2); vi.runOnlyPendingTimers(); f.frame(3, 3); vi.runOnl…
+    261|   expect(pixels).toEqual([2]); expect(f.error).toHaveBeenCalledTimes(1…
+       |                  ^
+    262| });
+    263| it('pixel comparison checks every byte and dimensions rather than a sp…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  5 failed | 111 passed (116)
+   Start at  08:57:08
+   Duration  6.03s (environment 54%, tests 32%, setup 8%, import 3%, transform 3%)
+
+Environment  jsdom was created 9 times · 7.99s total, 54% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

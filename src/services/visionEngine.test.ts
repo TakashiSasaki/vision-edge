@@ -251,3 +251,41 @@ it.each(['mediapipe', 'selfie-segmenter'] as const)('passes the reported delegat
   expect(engine.getState()).toMatchObject({ status: 'ready', delegate: 'GPU' });
   engine.dispose();
 });
+
+it('repairs temporary smoothing state after an SDK exception so empty recovery cannot resurrect old objects', async () => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const v = video();
+  expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [expect.objectContaining({ label: 'dog' })] });
+  f.detect.mockImplementationOnce(() => { throw new Error('SDK failure'); });
+  expect(() => f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toThrow('SDK failure');
+  f.detect.mockReturnValue({ detections: [] });
+  expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [] });
+  expect(f.factory.detector).toHaveBeenCalledTimes(1); expect(f.detector.close).not.toHaveBeenCalled();
+});
+it('does not refill smoothing state if the scene is cleared reentrantly during SDK execution', async () => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const v = video();
+  const detect = f.detect.getMockImplementation()!;
+  f.detect.mockImplementationOnce(() => { f.engine.clearDetections(); return detect(); });
+  expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject({ status: 'not-ready' });
+  f.detect.mockReturnValue({ detections: [] });
+  expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [] });
+  expect(f.engine.getState()).toMatchObject({ status: 'ready', requestId: 1 });
+});
+it('routes an immutable VideoFrame input to the correct SDK task using its intrinsic dimensions without closing its caller-owned handle', async () => {
+  const f = fixture(); const close = vi.fn();
+  const frame = { displayWidth: 640, displayHeight: 480, timestamp: 0, close } as unknown as VideoFrame;
+  await f.engine.initialize('mediapipe');
+  expect(f.engine.detectVideoFrame(frame, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [expect.objectContaining({ bbox: { x: 0.1, y: 0.1, width: 0.2, height: 0.2 } })] });
+  expect(f.detect).toHaveBeenCalledWith(frame, expect.any(Number));
+  await f.engine.initialize('selfie-segmenter');
+  expect(f.engine.detectVideoFrame(frame, 'selfie-segmenter', 0.3)).toMatchObject({ status: 'ready', objects: [] });
+  expect(f.segment).toHaveBeenCalledWith(frame, expect.any(Number)); expect(close).not.toHaveBeenCalled();
+});
+it('uses a caller-owned compatibility canvas as the actual SDK image with its own dimensions', async () => {
+  const f = fixture(); const canvas = document.createElement('canvas'); canvas.width = 640; canvas.height = 480;
+  await f.engine.initialize('mediapipe');
+  expect(f.engine.detectVideoFrame(canvas, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [expect.objectContaining({ bbox: { x: 0.1, y: 0.1, width: 0.2, height: 0.2 } })] });
+  expect(f.detect).toHaveBeenCalledWith(canvas, expect.any(Number)); expect(canvas.width).toBe(640);
+  await f.engine.initialize('selfie-segmenter');
+  expect(f.engine.detectVideoFrame(canvas, 'selfie-segmenter', 0.3)).toMatchObject({ status: 'ready', objects: [] });
+  expect(f.segment).toHaveBeenCalledWith(canvas, expect.any(Number)); expect(canvas.width).toBe(640);
+});
