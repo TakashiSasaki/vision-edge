@@ -84,5 +84,15 @@
     ],
     "exit": 0,
     "log": "final-09.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "origin/main",
+      "--check"
+    ],
+    "exit": 0,
+    "log": "final-10.txt"
   }
 ]

@@ -13,12 +13,16 @@ commands = [
     ['npm', 'run', 'typecheck'], ['npm', 'run', 'lint'], ['npm', 'test'],
     ['npm', 'run', 'build'], ['npm', 'run', 'test:e2e'],
     ['npm', 'run', 'test:e2e:controls'], ['git', 'diff', '--check'],
+    ['git', 'diff', 'origin/main', '--check'],
 ]
 records = []
 for i, cmd in enumerate(commands):
     path = logs / f'final-{i:02d}.txt'
     with path.open('w') as out:
         result = subprocess.run(cmd, cwd=root, env=env, stdout=out, stderr=subprocess.STDOUT)
+    captured = path.read_bytes()
+    if captured:
+        path.write_bytes(captured.rstrip(b'\n') + b'\n')
     records.append({'command': cmd, 'exit': result.returncode, 'log': path.name})
     (logs / 'checks.json').write_text(json.dumps(records, indent=2) + '\n')
     print(f'{cmd}: exit {result.returncode}', flush=True)
