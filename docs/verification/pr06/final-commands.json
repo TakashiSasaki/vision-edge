@@ -1,0 +1,152 @@
+{
+  "head": "9865050bd1ee025ecc3e39021dfcd103b6f7acc7",
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "start": "2026-10-24T15:13:26.668Z",
+      "end": "2026-10-24T15:13:30.564Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/validated-9865050-0-npm-run.log"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "start": "2026-10-24T15:13:30.567Z",
+      "end": "2026-10-24T15:13:32.544Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/validated-9865050-1-npm-run.log"
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "start": "2026-10-24T15:13:32.544Z",
+      "end": "2026-10-24T15:13:38.393Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/validated-9865050-2-npm-test.log"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "start": "2026-10-24T15:13:38.393Z",
+      "end": "2026-10-24T15:13:39.086Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/validated-9865050-3-npm-run.log"
+    },
+    {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "--run",
+        "src/services/pipelineMetrics.test.ts",
+        "src/services/frameScheduler.test.ts",
+        "src/services/visionEngine.metrics.test.ts",
+        "src/components/VisionCanvas.test.tsx"
+      ],
+      "start": "2026-10-24T15:13:39.087Z",
+      "end": "2026-10-24T15:13:42.775Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/validated-9865050-4-npm-test.log"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "start": "2026-10-24T15:13:42.776Z",
+      "end": "2026-10-24T15:13:42.779Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/validated-9865050-5-git-diff.log"
+    }
+  ],
+  "otherObservedCommands": [
+    {
+      "command": "npm ci",
+      "exit": "failed (npm failure code not separately captured by initial shell)",
+      "log": "logs/npm-ci.log",
+      "reason": "default cache ENOENT outside writable roots"
+    },
+    {
+      "command": "npm ci --cache /tmp/vision-edge-npm-cache",
+      "exit": 0,
+      "log": "logs/npm-ci-workspace-cache.log"
+    },
+    {
+      "command": "npm test -- --root /tmp/vision-edge-pr06-baseline",
+      "exit": 0,
+      "tests": 187,
+      "head": "18e94a4508a0fa316cf31171789c3c10a0a041c3",
+      "log": "logs/baseline-unit.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e",
+      "exit": 0,
+      "tests": 19,
+      "head": "9865050bd1ee025ecc3e39021dfcd103b6f7acc7",
+      "log": "logs/e2e-9865050.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node docs/verification/pr06/experiment/run-overhead.mjs",
+      "exit": 0,
+      "measuredTrials": 288,
+      "log": "logs/overhead-frozen.log"
+    },
+    {
+      "command": "python3 docs/verification/pr06/experiment/summarize-overhead.py",
+      "exit": 0,
+      "validatedConfigurations": 12
+    },
+    {
+      "command": "production bundle marker and unchanged contracts audit",
+      "exit": 0,
+      "receipts": [
+        "production-isolation.json",
+        "unchanged-contracts.json"
+      ]
+    },
+    {
+      "command": "rebuild experiment after final UI correction; compare bundle hashes",
+      "exit": 0,
+      "log": "logs/overhead-rebuild-9865050.log",
+      "receipt": "source-binding.json"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e:controls",
+      "exit": 0,
+      "controls": 7,
+      "positive": 2,
+      "expectedFaultDetections": 5,
+      "head": "9865050bd1ee025ecc3e39021dfcd103b6f7acc7",
+      "log": "logs/controls-9865050.log"
+    },
+    {
+      "command": "npm run typecheck (evidence-inclusive publication check)",
+      "exit": 0,
+      "log": "logs/typecheck-publication.log"
+    },
+    {
+      "command": "npm run lint (evidence-inclusive publication check)",
+      "exit": 0,
+      "log": "logs/lint-publication.log"
+    }
+  ]
+}

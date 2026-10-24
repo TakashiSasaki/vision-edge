@@ -1,0 +1,81 @@
+{
+  "head": "c4ce53557e0e74798ff69dddf529ba2c5a447ad6",
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "start": "2026-10-24T15:04:08.375Z",
+      "end": "2026-10-24T15:04:11.438Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/frozen-0-npm-run.log"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "start": "2026-10-24T15:04:11.439Z",
+      "end": "2026-10-24T15:04:13.293Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/frozen-1-npm-run.log"
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "start": "2026-10-24T15:04:13.293Z",
+      "end": "2026-10-24T15:04:18.836Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/frozen-2-npm-test.log"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "start": "2026-10-24T15:04:18.837Z",
+      "end": "2026-10-24T15:04:19.483Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/frozen-3-npm-run.log"
+    },
+    {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "--run",
+        "src/services/pipelineMetrics.test.ts",
+        "src/services/frameScheduler.test.ts",
+        "src/services/visionEngine.metrics.test.ts",
+        "src/components/VisionCanvas.test.tsx"
+      ],
+      "start": "2026-10-24T15:04:19.484Z",
+      "end": "2026-10-24T15:04:22.988Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/frozen-4-npm-test.log"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "start": "2026-10-24T15:04:22.989Z",
+      "end": "2026-10-24T15:04:22.992Z",
+      "exit": 0,
+      "signal": null,
+      "log": "docs/verification/pr06/logs/frozen-5-git-diff.log"
+    }
+  ]
+}
