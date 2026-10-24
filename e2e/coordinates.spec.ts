@@ -18,7 +18,8 @@ for (const scenario of [
     await context.route('**/*', route => new URL(route.request().url()).origin === 'http://127.0.0.1:4174' ? route.continue() : route.abort());
     await context.addInitScript(({ width, height }) => {
       const streams: MediaStream[] = [];
-      const probe: CoordinateProbe = window.coordinateProbe = { requests: 0, speech: [], arcs: [], dispose() { streams.forEach(s => s.getTracks().forEach(t => t.stop())); } };
+      const sources: HTMLCanvasElement[] = [];
+      const probe: CoordinateProbe = window.coordinateProbe = { requests: 0, speech: [], arcs: [], dispose() { streams.forEach(s => s.getTracks().forEach(t => t.stop())); sources.length = 0; } };
       const arc = CanvasRenderingContext2D.prototype.arc;
       CanvasRenderingContext2D.prototype.arc = function(...args: Parameters<typeof arc>) { probe.arcs.push([args[0], args[1], args[2]]); if (probe.arcs.length > 20) probe.arcs.shift(); return arc.apply(this, args); };
       window.speechSynthesis.speak = utterance => { probe.speech.push(utterance.text); };
@@ -27,17 +28,25 @@ for (const scenario of [
         const source = document.createElement('canvas'); source.width = width; source.height = height;
         const ctx = source.getContext('2d')!; ctx.fillStyle = '#18324f'; ctx.fillRect(0, 0, width, height);
         ctx.fillStyle = '#c7e6a4'; ctx.fillRect(64, 48, 128, 96);
+        sources.push(source); // Keep the actual image alive for the whole test.
         const stream = source.captureStream(0); streams.push(stream); return stream;
       } } });
     }, scenario);
     await page.goto('/');
     try {
+      await page.evaluate(() => { window.visionSdkProbe.observeInputs = true; });
       await page.getByRole('banner').getByRole('combobox', { name: 'モデル', exact: true }).selectOption('mediapipe');
       await expect(page.getByText('(dog)')).toBeVisible();
       const geometry = await page.evaluate(() => {
         const video = document.querySelector('video')!; const canvas = document.querySelector('canvas')!;
         const box = (element: Element) => { const r = element.getBoundingClientRect(); const s = getComputedStyle(element); return { left: r.left, top: r.top, width: r.width, height: r.height, objectFit: s.objectFit, objectPosition: s.objectPosition, transform: s.transform }; };
-        return { video: box(video), canvas: box(canvas), intrinsic: [video.videoWidth, video.videoHeight], backing: [canvas.width, canvas.height], dpr: devicePixelRatio };
+        const snapshot = document.createElement('canvas'); snapshot.width = video.videoWidth; snapshot.height = video.videoHeight;
+        const ctx = snapshot.getContext('2d')!; ctx.drawImage(video, 0, 0);
+        const input = window.visionSdkProbe.inputs.at(-1)!;
+        const sample = (x: number, y: number) => input.pixels.slice((y * video.videoWidth + x) * 4, (y * video.videoWidth + x) * 4 + 4);
+        const pixels = { videoBackground: Array.from(ctx.getImageData(0, 0, 1, 1).data), videoObject: Array.from(ctx.getImageData(100, 100, 1, 1).data),
+          sdkBackground: sample(0, 0), sdkObject: sample(100, 100), sdkPixelLength: input.pixels.length, sdkSourceKind: input.sourceKind };
+        return { pixels, video: box(video), canvas: box(canvas), intrinsic: [video.videoWidth, video.videoHeight], backing: [canvas.width, canvas.height], dpr: devicePixelRatio };
       });
       const scale = Math.min(geometry.video.width / scenario.width, geometry.video.height / scenario.height);
       const left = geometry.video.left + (geometry.video.width - scenario.width * scale) / 2;
@@ -52,6 +61,13 @@ for (const scenario of [
       expect(margin.x).toBeGreaterThan(geometry.video.left); expect(margin.x).toBeLessThan(geometry.video.left + geometry.video.width);
       expect(margin.y).toBeGreaterThan(geometry.video.top); expect(margin.y).toBeLessThan(geometry.video.top + geometry.video.height);
       expect(Math.abs(geometry.video.width / geometry.video.height - scenario.width / scenario.height)).toBeGreaterThan(0.1);
+      expect(geometry.pixels.sdkPixelLength).toBe(scenario.width * scenario.height * 4);
+      for (const pixels of [geometry.pixels.videoBackground, geometry.pixels.sdkBackground]) {
+        [24, 50, 79, 255].forEach((value, i) => expect(Math.abs(pixels[i] - value)).toBeLessThanOrEqual(2));
+      }
+      for (const pixels of [geometry.pixels.videoObject, geometry.pixels.sdkObject]) {
+        [199, 230, 164, 255].forEach((value, i) => expect(Math.abs(pixels[i] - value)).toBeLessThanOrEqual(2));
+      }
       const creates = await page.evaluate(() => window.visionSdkProbe.creates);
       await page.mouse.click(margin.x, margin.y);
       await page.waitForTimeout(100);
@@ -81,7 +97,7 @@ for (const scenario of [
       await page.mouse.click(resized!.x + (resized!.width - scenario.width * nextScale) / 2 + 90 * nextScale,
         resized!.y + (resized!.height - scenario.height * nextScale) / 2 + 90 * nextScale);
       await expect.poll(() => page.evaluate(() => window.coordinateProbe.speech.length)).toBe(2);
-      await expect.poll(() => page.evaluate(() => window.coordinateProbe.arcs.at(-1)?.[0] ?? -1)).toBeGreaterThan(80);
+      await expect.poll(() => page.evaluate(() => Math.abs((window.coordinateProbe.arcs.at(-1)?.[0] ?? -1) - 90))).toBeLessThanOrEqual(1 / nextScale);
       const ripple = await page.evaluate(() => window.coordinateProbe.arcs.at(-1)![0]);
       expect(Math.abs(ripple - 90)).toBeLessThanOrEqual(1 / nextScale);
       const afterResize = await page.evaluate(() => ({ arcs: window.coordinateProbe.arcs, requests: window.coordinateProbe.requests, creates: window.visionSdkProbe.creates }));
