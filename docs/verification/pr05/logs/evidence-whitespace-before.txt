@@ -1,0 +1,42 @@
+docs/verification/pr05/logs/before-dpr1-e2e.txt:35: trailing whitespace.
++  1) [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display
+docs/verification/pr05/logs/before-dpr1-e2e.txt:74: trailing whitespace.
++  2) [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display
+docs/verification/pr05/logs/before-dpr1-e2e.txt:114: trailing whitespace.
++    [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display
+docs/verification/pr05/logs/before-dpr1-e2e.txt:115: trailing whitespace.
++    [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display
+docs/verification/pr05/logs/before-e2e.txt:35: trailing whitespace.
++  1) [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display
+docs/verification/pr05/logs/before-e2e.txt:70: trailing whitespace.
++  2) [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display
+docs/verification/pr05/logs/before-e2e.txt:110: trailing whitespace.
++    [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display
+docs/verification/pr05/logs/before-e2e.txt:111: trailing whitespace.
++    [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display
+docs/verification/pr05/logs/before-initial-e2e.txt:35: trailing whitespace.
++  1) [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display
+docs/verification/pr05/logs/before-initial-e2e.txt:74: trailing whitespace.
++  2) [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display
+docs/verification/pr05/logs/before-initial-e2e.txt:114: trailing whitespace.
++    [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display
+docs/verification/pr05/logs/before-initial-e2e.txt:115: trailing whitespace.
++    [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display
+docs/verification/pr05/logs/before-observer-e2e.txt:35: trailing whitespace.
++  1) [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display
+docs/verification/pr05/logs/before-observer-e2e.txt:70: trailing whitespace.
++  2) [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display
+docs/verification/pr05/logs/before-observer-e2e.txt:110: trailing whitespace.
++    [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display
+docs/verification/pr05/logs/before-observer-e2e.txt:111: trailing whitespace.
++    [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display
+docs/verification/pr05/logs/final-03.txt:4: new blank line at EOF.
+docs/verification/pr05/logs/final-04.txt:4: new blank line at EOF.
+docs/verification/pr05/logs/final-05.txt:17: new blank line at EOF.
+docs/verification/pr05/logs/pre-resize-race-fix/final-03.txt:4: new blank line at EOF.
+docs/verification/pr05/logs/pre-resize-race-fix/final-04.txt:4: new blank line at EOF.
+docs/verification/pr05/logs/pre-resize-race-fix/final-05.txt:17: new blank line at EOF.
+docs/verification/pr05/logs/pre-resize-race-fix/final-07.txt:48: trailing whitespace.
++  1) [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display
+docs/verification/pr05/logs/pre-resize-race-fix/final-07.txt:79: trailing whitespace.
++    [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display

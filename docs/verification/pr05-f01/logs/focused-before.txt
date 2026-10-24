@@ -1,0 +1,158 @@
+
+> vision-studio@1.0.0 test
+> vitest run src/services/videoCoordinates.test.ts src/components/VisionCanvas.test.tsx
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ src/services/videoCoordinates.test.ts (64 tests | 24 failed) 22ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=1, origin=37.25) 4ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=1, origin=500) 1ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=1, origin=-20) 1ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=1.25, origin=37.25) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=1.25, origin=500) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=1.25, origin=-20) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=2, origin=37.25) 1ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=2, origin=500) 1ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=2, origin=-20) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=3, origin=37.25) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=3, origin=500) 1ms
+   × accepts rational edges and rejects the next outside float (transpose=false, DPR=3, origin=-20) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=1, origin=37.25) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=1, origin=500) 1ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=1, origin=-20) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=1.25, origin=37.25) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=1.25, origin=500) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=1.25, origin=-20) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=2, origin=37.25) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=2, origin=500) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=2, origin=-20) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=3, origin=37.25) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=3, origin=500) 0ms
+   × accepts rational edges and rejects the next outside float (transpose=true, DPR=3, origin=-20) 0ms
+ ❯ src/components/VisionCanvas.test.tsx (24 tests | 1 failed) 511ms
+   × selects exact rational content edges but keeps adjacent fractional margins silent (PR05-F01) 11ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > selects exact rational content edges but keeps adjacent fractional margins silent (PR05-F01)
+AssertionError: expected last "findObjectAtPoint" call to have been called with [ +0, 0.5, Any<Array> ]
+
+- Expected:
+[
+  0,
+  0.5,
+  Any<Array>,
+]
+
++ Received:
+undefined
+
+ ❯ src/components/VisionCanvas.test.tsx:383:18
+    381|   for (const [clientX, x] of [[3779 / 24, 0], [21067 / 24, 1]]) {
+    382|     act(() => { fireEvent.click(canvas, { clientX, clientY: 352.625 })…
+    383|     expect(find).toHaveBeenLastCalledWith(x, 0.5, expect.any(Array));
+       |                  ^
+    384|     expect(canvas.getContext('2d')!.arc).toHaveBeenLastCalledWith(x * …
+    385|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/25]⎯
+
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=1, origin=37.25)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=1, origin=-20)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=1.25, origin=37.25)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=1.25, origin=-20)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=2, origin=37.25)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=2, origin=-20)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=3, origin=37.25)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=3, origin=-20)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=1, origin=37.25)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=1, origin=-20)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=1.25, origin=37.25)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=1.25, origin=-20)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=2, origin=37.25)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=2, origin=-20)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=3, origin=37.25)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=3, origin=-20)
+AssertionError: expected null to deeply equal { x: +0, y: +0 }
+
+- Expected:
+{
+  "x": 0,
+  "y": 0,
+}
+
++ Received:
+null
+
+ ❯ src/services/videoCoordinates.test.ts:104:31
+    102|       for (const [x, nx] of [[c.lo, 0], [c.hi, 1]]) {
+    103|         for (const [y, ny] of [[c.top, 0], [c.top + 540.25, 1], [c.top…
+    104|           expect(point(x, y)).toEqual(transpose ? { x: ny, y: nx } : {…
+       |                               ^
+    105|         }
+    106|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/25]⎯
+
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=1, origin=500)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=1.25, origin=500)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=2, origin=500)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=false, DPR=3, origin=500)
+AssertionError: expected null to deeply equal { x: 1, y: +0 }
+
+- Expected:
+{
+  "x": 1,
+  "y": 0,
+}
+
++ Received:
+null
+
+ ❯ src/services/videoCoordinates.test.ts:104:31
+    102|       for (const [x, nx] of [[c.lo, 0], [c.hi, 1]]) {
+    103|         for (const [y, ny] of [[c.top, 0], [c.top + 540.25, 1], [c.top…
+    104|           expect(point(x, y)).toEqual(transpose ? { x: ny, y: nx } : {…
+       |                               ^
+    105|         }
+    106|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/25]⎯
+
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=1, origin=500)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=1.25, origin=500)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=2, origin=500)
+ FAIL  src/services/videoCoordinates.test.ts > accepts rational edges and rejects the next outside float (transpose=true, DPR=3, origin=500)
+AssertionError: expected null to deeply equal { x: +0, y: 1 }
+
+- Expected:
+{
+  "x": 0,
+  "y": 1,
+}
+
++ Received:
+null
+
+ ❯ src/services/videoCoordinates.test.ts:104:31
+    102|       for (const [x, nx] of [[c.lo, 0], [c.hi, 1]]) {
+    103|         for (const [y, ny] of [[c.top, 0], [c.top + 540.25, 1], [c.top…
+    104|           expect(point(x, y)).toEqual(transpose ? { x: ny, y: nx } : {…
+       |                               ^
+    105|         }
+    106|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/25]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  25 failed | 63 passed (88)
+   Start at  12:23:22
+   Duration  1.40s (environment 49%, tests 28%, import 11%, setup 9%, transform 3%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

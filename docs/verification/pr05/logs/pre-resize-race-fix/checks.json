@@ -1,0 +1,100 @@
+{
+  "environment": {
+    "npm_config_cache": "/workspace/.npm-cache",
+    "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+  },
+  "checks": [
+    {
+      "command": [
+        "node",
+        "--version"
+      ],
+      "exit": 0,
+      "start": "2026-10-24T11:40:27.646802+00:00",
+      "end": "2026-10-24T11:40:27.650691+00:00",
+      "log": "final-00.txt",
+      "sha256": "b7677d3ec37ee1897ba07dc2cfe8292fe421c9ac93396cca5bbece486d1a2a41"
+    },
+    {
+      "command": [
+        "npm",
+        "--version"
+      ],
+      "exit": 0,
+      "start": "2026-10-24T11:40:27.650795+00:00",
+      "end": "2026-10-24T11:40:27.711760+00:00",
+      "log": "final-01.txt",
+      "sha256": "d9f29f5aab43c8c1a8d6acc856e258b89735f541aa5e1f07b39a62f28bfa8d06"
+    },
+    {
+      "command": [
+        "npm",
+        "ci"
+      ],
+      "exit": 0,
+      "start": "2026-10-24T11:40:27.711987+00:00",
+      "end": "2026-10-24T11:40:31.605443+00:00",
+      "log": "final-02.txt",
+      "sha256": "914dd990afac6f350bd524969c97bfbe74e024b131ff3675bceb8ffcd2d73a27"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "start": "2026-10-24T11:40:31.605659+00:00",
+      "end": "2026-10-24T11:40:34.053490+00:00",
+      "log": "final-03.txt",
+      "sha256": "24d0874c683ef121c05f0f2fde6df107483f0565962673234d1b422c8f4dd16c"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit": 0,
+      "start": "2026-10-24T11:40:34.053715+00:00",
+      "end": "2026-10-24T11:40:35.495238+00:00",
+      "log": "final-04.txt",
+      "sha256": "8254c57afd7e6f2c88036baa9a2ad81d75fda7aeea4a3877684e35157794fc2b"
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit": 0,
+      "start": "2026-10-24T11:40:35.495477+00:00",
+      "end": "2026-10-24T11:40:39.463550+00:00",
+      "log": "final-05.txt",
+      "sha256": "dc09ff09ccf7e2a3add560febef418bb34a940b82c8cc9b3b45f25e6f19dd749"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "start": "2026-10-24T11:40:39.463797+00:00",
+      "end": "2026-10-24T11:40:39.980733+00:00",
+      "log": "final-06.txt",
+      "sha256": "7fdfd7617569a30d90dec3532061d23922002ebd84734b8e95e7225cf882748d"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "exit": 1,
+      "start": "2026-10-24T11:40:39.980986+00:00",
+      "end": "2026-10-24T11:41:27.939009+00:00",
+      "log": "final-07.txt",
+      "sha256": "cd1f5170856fd44b4073ddf585b72aec7e6e66e0b6d7aeec07e6ef8e09aa8250"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+
+ Test Files  10 passed (10)
+      Tests  187 passed (187)
+   Start at  12:25:25
+   Duration  3.97s (environment 49%, tests 35%, setup 7%, transform 5%, import 3%)
+
+Environment  jsdom was created 10 times · 5.19s total, 49% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments

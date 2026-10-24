@@ -1,0 +1,13 @@
+f20474be156522ee6141cde9c2b3a958db8d2457	refs/heads/chore/build-ci-test-foundation
+1b4db0a98605d403994c2f6b34e10720de30c7cd	refs/heads/fix/camera-lifecycle
+d92b7b40c7d2dc11572147d052f69f11657540e2	refs/heads/fix/inference-scheduler-metrics
+5ed8109f67768f7684af91104868fc0e0678adbd	refs/heads/fix/model-capabilities-and-initialization
+c585a09a7642fa21d68967dfe3a5a00be2038652	refs/heads/fix/overlay-coordinate-mapping
+27a5c034cdc7f1e367b704a5f38c6998077d7de7	refs/heads/fix/pr01-css-smoke-validation
+f97e19ac5f9f07eca23732003844b5082cd27d37	refs/heads/main
+67e0c15e652d88c773a82b06f615b2befa27a695	refs/heads/review/pr01-build-ci-test-foundation
+fc0e643afef17fdcd7ab888e59e34991b85cd2a7	refs/heads/review/pr01-css-smoke-validation
+c632cf0cbce82b48503540651120c88fff75c8ef	refs/heads/review/pr04-independent-acceptance
+232b2104a2564d96a01e354bf7aeee7a380733f2	refs/heads/review/pr04-independent-rereview
+aecb10979c6e691b4347d7fa1fa07db6a7af7eb9	refs/heads/review/pr04-independent-rereview2
+57ee68bc503cfc1633039d948d1b39fcf341caa5	refs/heads/review/pr05-coordinate-independent

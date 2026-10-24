@@ -1,0 +1,66 @@
+{
+  "reason": "Make git diff --check pass for captured tool formatting only; original bytes are preserved in raw-command-logs.zip. checks.json hashes refer to raw command output.",
+  "initialStagedDiffCheckExit": 2,
+  "changed": [
+    {
+      "file": "logs/before-dpr1-e2e.txt",
+      "rawSha256": "13e5ee2f669a69a37f2e7754c1696c1e34eb54d00c1e78ac01e9e4a14cba6b28",
+      "normalizedSha256": "1274ae2e4757e2d178da9a450e89f09a27b9188cf077f7ea01f9a874f32554a6"
+    },
+    {
+      "file": "logs/before-e2e.txt",
+      "rawSha256": "1532111148f398916c8d03fb2af040ef8d08505e068f18023c6915e138e9c6e6",
+      "normalizedSha256": "9dee54b03590c9ef33a4960fc899ed9492fef7c1e8520ac58897a7f7ef8bead1"
+    },
+    {
+      "file": "logs/before-initial-e2e.txt",
+      "rawSha256": "f8dc6263b23df127b4c8f8b4f8546a563ea02e16e6f62ad862790fe2fb797bff",
+      "normalizedSha256": "213e337b7219c7cb16eff7ba028c341a1bfcce9eb85b901a18df7bde0992700b"
+    },
+    {
+      "file": "logs/before-observer-e2e.txt",
+      "rawSha256": "2bf2aa8fae0dd0edbd64b0971c8882734ffe1870f17cbc52b712f590a4b5f0e2",
+      "normalizedSha256": "ebce17b009ced636dbef35dc43bf9789c1bd42acf3d86b82b053b73e29e21df8"
+    },
+    {
+      "file": "logs/evidence-whitespace-before.txt",
+      "rawSha256": "1052e665e876318e889a592cfade1b6ccfbfc7f106582982bbf1006f9c212769",
+      "normalizedSha256": "38379c02dffaab94a712a740f16d32dd2dd4788176a13cab7e878b4d66ef88ad"
+    },
+    {
+      "file": "logs/final-03.txt",
+      "rawSha256": "24d0874c683ef121c05f0f2fde6df107483f0565962673234d1b422c8f4dd16c",
+      "normalizedSha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda"
+    },
+    {
+      "file": "logs/final-04.txt",
+      "rawSha256": "8254c57afd7e6f2c88036baa9a2ad81d75fda7aeea4a3877684e35157794fc2b",
+      "normalizedSha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c"
+    },
+    {
+      "file": "logs/final-05.txt",
+      "rawSha256": "675374d85f2b203256c28c33de704d424830587fbd3c7a7b15ca63d228123a52",
+      "normalizedSha256": "648e5d9986aa0d261b008ca4031de7cff79b38a6c957d3b7a503a8655415a328"
+    },
+    {
+      "file": "logs/pre-resize-race-fix/final-03.txt",
+      "rawSha256": "24d0874c683ef121c05f0f2fde6df107483f0565962673234d1b422c8f4dd16c",
+      "normalizedSha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda"
+    },
+    {
+      "file": "logs/pre-resize-race-fix/final-04.txt",
+      "rawSha256": "8254c57afd7e6f2c88036baa9a2ad81d75fda7aeea4a3877684e35157794fc2b",
+      "normalizedSha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c"
+    },
+    {
+      "file": "logs/pre-resize-race-fix/final-05.txt",
+      "rawSha256": "dc09ff09ccf7e2a3add560febef418bb34a940b82c8cc9b3b45f25e6f19dd749",
+      "normalizedSha256": "2bfe0bc52b8ff3cca74ad664cac85171c479cb31d9c7d8bc4722a66d982ec22e"
+    },
+    {
+      "file": "logs/pre-resize-race-fix/final-07.txt",
+      "rawSha256": "cd1f5170856fd44b4073ddf585b72aec7e6e66e0b6d7aeec07e6ef8e09aa8250",
+      "normalizedSha256": "f078db5b0b047384ebd003b70ccb3401e3e1c4dc87cca2817b21f429e403aa34"
+    }
+  ]
+}
