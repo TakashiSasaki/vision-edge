@@ -4,7 +4,7 @@ import { speechService } from '../services/speechService';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from '../App';
-import { PipelineMetrics } from '../services/pipelineMetrics';
+import { PipelineMetrics, type PipelineSnapshot } from '../services/pipelineMetrics';
 import { VisionCanvas } from './VisionCanvas';
 import { VisionEngine, type SegmenterTask, type VisionTaskFactory } from '../services/visionEngine';
 
@@ -534,4 +534,47 @@ it('invalidates the published detail snapshot when a fatal draw fault stops its 
   expect(count()).toMatch(/[1-9]\d* \/ [1-9]\d* \/ 0/);
   vi.mocked(container.querySelector('canvas')!.getContext('2d')!.drawImage).mockImplementationOnce(() => { throw Error('copy'); });
   step(false); expect(screen.getByRole('alert')).toHaveTextContent('描画エラー'); expect(count()).toBe('未計測');
+});
+
+const malformedSnapshots: Array<[string, (snapshot: PipelineSnapshot) => unknown]> = [
+  ['null stages', snapshot => ({ ...snapshot, stages: null })],
+  ['missing stages', snapshot => { const broken: Record<string, unknown> = { ...snapshot }; delete broken.stages; return broken; }],
+  ['missing nested outcome', snapshot => ({ ...snapshot, stages: { ...snapshot.stages, sdk: { success: null } } })],
+  ['invalid times', snapshot => ({ ...snapshot, stages: { ...snapshot.stages, sdk: { ...snapshot.stages.sdk, success: { ...snapshot.stages.sdk.success, mean: NaN, p95: {} } } } })],
+  ['invalid counters', snapshot => ({ ...snapshot, results: { hidden: {} }, pendingResults: {}, unclocked: {} })],
+  ['throwing statistics getter', snapshot => Object.defineProperty({ ...snapshot }, 'stages', { get() { throw Error('statistics shape'); } })],
+];
+it.each(malformedSnapshots)('PR06-F01: %s remains unavailable while inference, ownership and recovery survive', async (_name, malformed) => {
+  const original = PipelineMetrics.prototype.snapshot;
+  let broken = true;
+  vi.spyOn(PipelineMetrics.prototype, 'snapshot').mockImplementation(function(this: PipelineMetrics) {
+    const snapshot = original.call(this)!;
+    return (broken ? malformed(snapshot) : snapshot) as PipelineSnapshot;
+  });
+  const track = Object.assign(new EventTarget(), { stop: vi.fn() });
+  vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValue({ getTracks: () => [track] } as unknown as MediaStream);
+  const f = fixture(); let view!: ReturnType<typeof render>;
+  await act(async () => { view = render(<App engine={f.engine} />); });
+  makeVideoReady(view.container); const video = view.container.querySelector('video')!;
+  step(); act(() => { vi.advanceTimersByTime(0); });
+  expect(f.segment).toHaveBeenCalledTimes(1);
+  const requestId = f.engine.getState().requestId;
+  for (let i = 0; i < 3; i++) {
+    expect(() => act(() => { vi.advanceTimersByTime(250); })).not.toThrow();
+    step(); act(() => { vi.advanceTimersByTime(0); }); step(false);
+  }
+  expect(view.container.querySelector('video')).toBe(video); expect(video.isConnected).toBe(true);
+  expect(raf.size).toBe(2); expect(f.segment).toHaveBeenCalledTimes(4);
+  expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  expect(f.factory.segmenter).toHaveBeenCalledTimes(1); expect(f.segmenter.close).not.toHaveBeenCalled();
+  expect(track.stop).not.toHaveBeenCalled(); expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  expect(f.engine.getState()).toMatchObject({ status: 'ready', requestId });
+  expect(f.segment.mock.results.every(result => result.value.close.mock.calls.length === 1)).toBe(true);
+  broken = false; act(() => { vi.advanceTimersByTime(250); });
+  const rows = view.container.querySelectorAll('table[aria-label="success interval statistics"] tbody tr');
+  expect(rows[0].querySelector('td')!.textContent).toMatch(/[1-9]\d* \/ [1-9]\d* \/ 0/);
+  expect([...rows].find(row => row.querySelector('th')!.textContent === 'sdk')!.querySelectorAll('td')[1].textContent).toBe('0.00');
+  step(); act(() => { vi.advanceTimersByTime(0); }); expect(f.segment).toHaveBeenCalledTimes(5);
+  expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1); expect(f.factory.segmenter).toHaveBeenCalledTimes(1);
+  view.unmount(); expect(track.stop).toHaveBeenCalledTimes(1); expect(f.segmenter.close).toHaveBeenCalledTimes(1);
 });

@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { PIPELINE_STAGES, type AttemptOutcome, type PipelineSnapshot, type StageStatistics } from '../services/pipelineMetrics';
+import { PIPELINE_STAGES, type AttemptOutcome } from '../services/pipelineMetrics';
+import { readPipelineSnapshot, type PipelineSnapshotView } from '../services/pipelineSnapshotView';
 const meanings = {
   capture: 'captureInputの全試行 (bootstrap/到着/実行時)。RGBA読出・所有コピーを含む。',
   comparison: 'samePixelsの全呼出。推論しない重複入力の比較も含む。',
@@ -13,12 +14,12 @@ const meanings = {
   latency: '実行時の不変入力取得開始から最初のCanvasコピー完了。queueは範囲外。live-video入力は適用不可。',
 };
 const format = (value: number | null | undefined) => value == null ? '未計測' : value.toFixed(2);
-function StatisticsTable({ snapshot, outcome }: { snapshot: PipelineSnapshot | null; outcome: AttemptOutcome }) {
+function StatisticsTable({ snapshot, outcome }: { snapshot: PipelineSnapshotView | null; outcome: AttemptOutcome }) {
   return <table className="border-separate border-spacing-1" aria-label={`${outcome} interval statistics`}>
     <caption>{outcome} 区間 (ms)</caption>
     <thead><tr>{['stage / 意味', 'count / 有効 / 欠測', 'mean ms', 'median ms', 'p95 ms', 'max ms', '合計 ms', '分位標本 / 有効標本 / coverage'].map(label => <th scope="col" key={label}>{label}</th>)}</tr></thead>
     <tbody>{PIPELINE_STAGES.map(stage => {
-      const row: StageStatistics | undefined = snapshot?.stages[stage][outcome];
+      const row = snapshot?.stages[stage][outcome];
       return <tr key={stage}>
         <th scope="row" title={meanings[stage]}>{stage}</th>
         <td>{row ? `${row.count} / ${row.measured} / ${row.missing}` : '未計測'}</td>
@@ -29,7 +30,8 @@ function StatisticsTable({ snapshot, outcome }: { snapshot: PipelineSnapshot | n
   </table>;
 }
 // Native details state stays in the DOM and never participates in pipeline effects.
-export const PipelineDetails = memo(function PipelineDetails({ snapshot }: { snapshot: PipelineSnapshot | null }) {
+export const PipelineDetails = memo(function PipelineDetails({ snapshot: value }: { snapshot: unknown }) {
+  const snapshot = readPipelineSnapshot(value);
   return <details aria-label="パイプライン計測詳細" className="absolute top-12 right-2 z-30 max-h-[65%] max-w-[95%] overflow-auto rounded bg-slate-950/95 p-2 text-[10px] text-slate-200">
     <summary className="cursor-pointer">計測詳細 (JS wall time)</summary>
     <p>直近5秒・完了時刻基準。CPU/GPU使用率、カメラFPS、物理画面表示は未計測。</p>
@@ -39,7 +41,7 @@ export const PipelineDetails = memo(function PipelineDetails({ snapshot }: { sna
     <p>captureDuty: {snapshot?.captureDutyPercent == null ? '未計測' : `${snapshot.captureDutyPercent.toFixed(2)} % (JS wall)`}。captureInputのみの完了区間合計 ÷ 5000 ms (窓境界で区間を分割しない)。外部比較はcomparisonに表示。</p>
     <p>jobは実行時capture/engine/結果採用/入力cleanupを包含。engineはSDK/postprocess/結果cleanupを包含。captureは入力コピーを包含。comparison/queue/入力cleanup/drawは別区間。包含区間を合算しない。</p>
     <p>latencyは実際にSDKへ渡した不変入力の取得開始 → 最初のCanvasコピー完了。queueは範囲外。live-videoは適用不可。物理表示/カメラから画面の遅延は不明。</p>
-    <p>結果 outcomes (件 / 5秒): {snapshot ? (Object.entries(snapshot.results).map(([key, count]) => `${key}: ${count}`).join(', ') || '観測なし') : '未計測'}{snapshot?.resultsTruncated ? ' (切捨あり・部分集計)' : ''}。未描画保持: {snapshot?.pendingResults ?? '未計測'} (最大64件/5秒)。</p>
+    <p>結果 outcomes (件 / 5秒): {snapshot?.results ? (Object.entries(snapshot.results).map(([key, count]) => `${key}: ${count}`).join(', ') || '観測なし') : '未計測'}{snapshot?.resultsTruncated ? ' (切捨あり・部分集計)' : snapshot && snapshot.resultsTruncated === null ? ' (coverage未計測)' : ''}。未描画保持: {snapshot?.pendingResults ?? '未計測'} (最大64件/5秒)。</p>
     <p>未描画: overwritten=更新前に上書き、cancelled=停止/無効化、hidden=非表示、draw-failed=描画例外、expired=保持期限、capacity=上限。unbound=描画成功・不変入力時刻なし。繰返しRAFはlatency標本を追加しない。</p>
     <p>世代変更で統計を破棄。時刻欠測 (世代累計): {snapshot?.unclocked ?? '未計測'}。無効/逆行時刻は欠測となり、時刻が追いつくまで統計を表示しない。</p>
     <details><summary>区間の意味</summary><dl>{PIPELINE_STAGES.map(stage => <div key={stage}><dt>{stage} (ms)</dt><dd>{meanings[stage]}</dd></div>)}</dl></details>
