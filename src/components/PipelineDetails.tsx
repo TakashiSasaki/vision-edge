@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { PIPELINE_STAGES, type AttemptOutcome } from '../services/pipelineMetrics';
-import { readPipelineSnapshot, type PipelineSnapshotView } from '../services/pipelineSnapshotView';
+import { type PipelineSnapshotView } from '../services/pipelineSnapshotView';
 const meanings = {
   capture: 'captureInputの全試行 (bootstrap/到着/実行時)。RGBA読出・所有コピーを含む。',
   comparison: 'samePixelsの全呼出。推論しない重複入力の比較も含む。',
@@ -30,8 +30,7 @@ function StatisticsTable({ snapshot, outcome }: { snapshot: PipelineSnapshotView
   </table>;
 }
 // Native details state stays in the DOM and never participates in pipeline effects.
-export const PipelineDetails = memo(function PipelineDetails({ snapshot: value }: { snapshot: unknown }) {
-  const snapshot = readPipelineSnapshot(value);
+export const PipelineDetails = memo(function PipelineDetails({ snapshot }: { snapshot: PipelineSnapshotView | null }) {
   return <details aria-label="パイプライン計測詳細" className="absolute top-12 right-2 z-30 max-h-[65%] max-w-[95%] overflow-auto rounded bg-slate-950/95 p-2 text-[10px] text-slate-200">
     <summary className="cursor-pointer">計測詳細 (JS wall time)</summary>
     <p>直近5秒・完了時刻基準。CPU/GPU使用率、カメラFPS、物理画面表示は未計測。</p>

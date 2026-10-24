@@ -13,7 +13,8 @@ import { speechService } from '../services/speechService';
 import { VisionEngine } from '../services/visionEngine';
 import { JobLock, startFrameScheduler } from '../services/frameScheduler';
 import { HUD_INTERVAL_MS, PerformanceMetrics, type PerformanceSnapshot } from '../services/performanceMetrics';
-import { PipelineMetrics, PipelineProbe, telemetry, type PipelineSnapshot, type InferenceMeasurement } from '../services/pipelineMetrics';
+import { PipelineMetrics, PipelineProbe, telemetry, type InferenceMeasurement } from '../services/pipelineMetrics';
+import { readPipelineSnapshot, type PipelineSnapshotView } from '../services/pipelineSnapshotView';
 import { modelMetadata } from '../services/modelRegistry';
 import { useCameraStream } from '../hooks/useCameraStream';
 import { drawCanvasFrame } from '../services/canvasRenderer';
@@ -72,7 +73,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   const [fault, setFault] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
   const [stats, setStats] = useState<PerformanceSnapshot>({ inferenceFps: null, drawFps: null, processingMs: null, stalled: false });
-  const [pipelineStats, setPipelineStats] = useState<PipelineSnapshot | null>(null);
+  const [pipelineStats, setPipelineStats] = useState<PipelineSnapshotView | null>(null);
   const latest = useRef({ onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel });
   useLayoutEffect(() => {
     latest.current = { onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel };
@@ -227,7 +228,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     const hud = setInterval(() => {
       if (!current()) return;
       setStats(metrics.snapshot());
-      const snapshot = telemetry(() => pipeline.snapshot());
+      const snapshot = telemetry(() => readPipelineSnapshot(pipeline.snapshot()));
       setPipelineStats(snapshot ?? null);
       setInferenceError(inferenceFailed);
       if (dirty) {

@@ -578,3 +578,25 @@ it.each(malformedSnapshots)('PR06-F01: %s remains unavailable while inference, o
   expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1); expect(f.factory.segmenter).toHaveBeenCalledTimes(1);
   view.unmount(); expect(track.stop).toHaveBeenCalledTimes(1); expect(f.segmenter.close).toHaveBeenCalledTimes(1);
 });
+
+it('PR06-F01: publication owns the display snapshot and recovers when a producer reuses its raw object', async () => {
+  const original = PipelineMetrics.prototype.snapshot; let cached: PipelineSnapshot | undefined; let broken = true;
+  vi.spyOn(PipelineMetrics.prototype, 'snapshot').mockImplementation(function(this: PipelineMetrics) {
+    const actual = original.call(this)!; cached ??= actual;
+    Object.assign(cached, actual, { stages: broken ? null : actual.stages });
+    return cached;
+  });
+  const f = fixture(); let view!: ReturnType<typeof render>;
+  await act(async () => { view = render(<App engine={f.engine} />); });
+  makeVideoReady(view.container); const video = view.container.querySelector('video');
+  step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); });
+  const sdkMean = () => [...view.container.querySelectorAll('table[aria-label="success interval statistics"] tbody tr')].find(row => row.querySelector('th')!.textContent === 'sdk')!.querySelectorAll('td')[1].textContent;
+  expect(sdkMean()).toBe('未計測');
+  broken = false; act(() => { vi.advanceTimersByTime(250); }); expect(sdkMean()).toBe('0.00');
+  // Mutation after publication cannot change the owned React display value.
+  Object.assign(cached!, { stages: null });
+  fireEvent.click(screen.getByText('計測詳細 (JS wall time)')); expect(sdkMean()).toBe('0.00');
+  step(); act(() => { vi.advanceTimersByTime(0); }); expect(f.segment).toHaveBeenCalledTimes(2);
+  expect(view.container.querySelector('video')).toBe(video); expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  expect(f.factory.segmenter).toHaveBeenCalledTimes(1); expect(f.segmenter.close).not.toHaveBeenCalled();
+});
