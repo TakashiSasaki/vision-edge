@@ -1,0 +1,96 @@
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ src/services/frameScheduler.test.ts (8 tests | 2 failed) 28ms
+   × deduplicates true frames, processes first zero timestamp and cancels paired callbacks 6ms
+   × uses presented-frame identity with coarse media timestamps and ignores invalid metadata 4ms
+ ❯ src/components/VisionCanvas.test.tsx (15 tests | 2 failed) 9798ms
+   × cancels a queued old-generation inference and allows the replacement model to run 265ms
+   × rejects a result invalidated synchronously during inference by threshold generation 228ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > cancels a queued old-generation inference and allows the replacement model to run
+AssertionError: expected "vi.fn()" to be called 1 times, but got 2 times
+ ❯ src/components/VisionCanvas.test.tsx:119:21
+    117|   step();
+    118|   act(() => { vi.advanceTimersByTime(0); });
+    119|   expect(f.segment).toHaveBeenCalledTimes(1);
+       |                     ^
+    120|   act(() => { vi.advanceTimersByTime(250); });
+    121|   step();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > rejects a result invalidated synchronously during inference by threshold generation
+AssertionError: expected [ [ { status: 'ready', …(3) } ] ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ src/components/VisionCanvas.test.tsx:301:72
+    299|   });
+    300|   step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTim…
+    301|   expect(props.onFrame.mock.calls.filter(([frame]) => frame !== null))…
+       |                                                                        ^
+    302|   expect(screen.queryByText('(dog)')).not.toBeInTheDocument();
+    303| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/services/frameScheduler.test.ts > deduplicates true frames, processes first zero timestamp and cancels paired callbacks
+AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+ ❯ src/services/frameScheduler.test.ts:38:57
+     36|   for (let i = 0; i < 10; i++) f.frame(0);
+     37|   vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenCalledTimes(1);
+     38|   f.frame(1); vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenCall…
+       |                                                         ^
+     39|   f.stop(); expect(raf.size + rvfc.size).toBe(0);
+     40|   const next = setup(native); next.frame(0); vi.runOnlyPendingTimers()…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/services/frameScheduler.test.ts > uses presented-frame identity with coarse media timestamps and ignores invalid metadata
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array []
+
+
+Number of calls: 1
+
+ ❯ src/services/frameScheduler.test.ts:87:66
+     85| it('uses presented-frame identity with coarse media timestamps and ign…
+     86|   const f = setup(true);
+     87|   f.frame(NaN, 1); vi.runOnlyPendingTimers(); expect(f.work).not.toHav…
+       |                                                                  ^
+     88|   f.frame(0, 1); vi.runOnlyPendingTimers();
+     89|   f.frame(0, 2); vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenC…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 7 passed (9)
+      Tests  4 failed | 82 passed (86)
+   Start at  07:11:34
+   Duration  12.01s (tests 60%, environment 31%, setup 5%, import 2%, transform 1%)
+
+Environment  jsdom was created 9 times · 9.45s total, 31% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

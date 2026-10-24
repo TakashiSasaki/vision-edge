@@ -1,0 +1,32 @@
+[
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-independent/vectors/vitest.config.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-before",
+    "exit": 0,
+    "log": "after-00.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-first-frame.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-before",
+    "exit": 0,
+    "log": "after-01.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-frame-race.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-before",
+    "exit": 0,
+    "log": "after-02.txt"
+  }
+]

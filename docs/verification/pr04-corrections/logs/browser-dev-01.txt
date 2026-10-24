@@ -1,0 +1,103 @@
+
+> vision-studio@1.0.0 test:e2e
+> playwright test e2e/frame-identity.spec.ts
+
+[WebServer] (node:14646) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14659) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14684) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14697) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:14728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14741) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:14765) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › e2e/frame-identity.spec.ts:89:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (rVFC) (3.9s)
+  ✘  2 [chromium] › e2e/frame-identity.spec.ts:118:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC) (2.8s)
+(node:14929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [chromium] › e2e/frame-identity.spec.ts:89:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (fallback) (3.7s)
+  ✘  4 [chromium] › e2e/frame-identity.spec.ts:118:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (fallback) (2.7s)
+
+
+  1) [chromium] › e2e/frame-identity.spec.ts:118:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC)
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0.012573
+    Received: 0.094654
+
+      135 |       const result = await page.evaluate(() => ({ inputs: window.visionSdkProbe.inputs.map(input => ({ time: input.time, decodedFrames: input.decodedFrames })),
+      136 |         first: window.nativeFrameProbe.first, creates: window.visionSdkProbe.creates, requests: window.nativeFrameProbe.requests, delayed: window.nativeFrameProbe.delayed }));
+    > 137 |       expect(result.inputs[0].time).toBe(result.inputs[1].time); expect(result.first.slice(0, 2).map(first => first.mediaTime)).toEqual([0, 0]);
+          |                                     ^
+      138 |       expect(result.creates).toBe(creates); expect(result.requests).toBe(3); expect(result.delayed).toBe(1);
+      139 |       await expect(page.getByLabel('推論FPS')).toHaveText('推論: 未計測');
+      140 |       await testInfo.attach('first-frame-scenes.json', { body: JSON.stringify(result, null, 2), contentType: 'application/json' });
+        at /workspace/vision-edge/e2e/frame-identity.spec.ts:137:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/frame-identity-F02-pre-pre-fc15a-ootstrap-arrival-race-rVFC--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/frame-identity-F02-pre-pre-fc15a-ootstrap-arrival-race-rVFC--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/frame-identity-F02-pre-pre-fc15a-ootstrap-arrival-race-rVFC--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/frame-identity-F02-pre-pre-fc15a-ootstrap-arrival-race-rVFC--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e/frame-identity.spec.ts:118:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (fallback)
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0.001068
+    Received: 0.116
+
+      135 |       const result = await page.evaluate(() => ({ inputs: window.visionSdkProbe.inputs.map(input => ({ time: input.time, decodedFrames: input.decodedFrames })),
+      136 |         first: window.nativeFrameProbe.first, creates: window.visionSdkProbe.creates, requests: window.nativeFrameProbe.requests, delayed: window.nativeFrameProbe.delayed }));
+    > 137 |       expect(result.inputs[0].time).toBe(result.inputs[1].time); expect(result.first.slice(0, 2).map(first => first.mediaTime)).toEqual([0, 0]);
+          |                                     ^
+      138 |       expect(result.creates).toBe(creates); expect(result.requests).toBe(3); expect(result.delayed).toBe(1);
+      139 |       await expect(page.getByLabel('推論FPS')).toHaveText('推論: 未計測');
+      140 |       await testInfo.attach('first-frame-scenes.json', { body: JSON.stringify(result, null, 2), contentType: 'application/json' });
+        at /workspace/vision-edge/e2e/frame-identity.spec.ts:137:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/frame-identity-F02-pre-pre-0a3c2-trap-arrival-race-fallback--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/frame-identity-F02-pre-pre-0a3c2-trap-arrival-race-fallback--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/frame-identity-F02-pre-pre-0a3c2-trap-arrival-race-fallback--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/frame-identity-F02-pre-pre-0a3c2-trap-arrival-race-fallback--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › e2e/frame-identity.spec.ts:118:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC)
+    [chromium] › e2e/frame-identity.spec.ts:118:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (fallback)
+  2 passed (18.5s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,0 +1,309 @@
+[
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.388367,
+        "total": 12,
+        "hash": 1881698669,
+        "identicalPixelsToPrevious": false,
+        "at": 602.2000000001863
+      },
+      {
+        "time": 0.38848,
+        "total": 12,
+        "hash": 1881698669,
+        "identicalPixelsToPrevious": true,
+        "at": 627.1000000000931
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.05,
+        "count": 2,
+        "at": 269.8000000002794
+      },
+      {
+        "time": 0.35,
+        "count": 8,
+        "at": 609.3000000002794
+      }
+    ]
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.342626,
+        "total": 9,
+        "hash": 1748242162,
+        "identicalPixelsToPrevious": false,
+        "at": 564.8000000002794
+      },
+      {
+        "time": 0.342695,
+        "total": 9,
+        "hash": 1748242162,
+        "identicalPixelsToPrevious": true,
+        "at": 567.3999999999069
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.014542,
+        "count": 4,
+        "at": 236.89999999990687
+      },
+      {
+        "time": 0.342695,
+        "count": 9,
+        "at": 565.3999999999069
+      },
+      {
+        "time": 0.342695,
+        "count": 9,
+        "at": 568.5
+      },
+      {
+        "time": 0.342695,
+        "count": 9,
+        "at": 585.3000000002794
+      },
+      {
+        "time": 0.342695,
+        "count": 9,
+        "at": 601.8999999999069
+      },
+      {
+        "time": 0.342695,
+        "count": 9,
+        "at": 618.5
+      },
+      {
+        "time": 0.342695,
+        "count": 9,
+        "at": 635.2000000001863
+      },
+      {
+        "time": 0.342695,
+        "count": 9,
+        "at": 652.1000000000931
+      },
+      {
+        "time": 0.342695,
+        "count": 9,
+        "at": 668.5
+      },
+      {
+        "time": 0.342695,
+        "count": 9,
+        "at": 685.1000000000931
+      }
+    ]
+  },
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.398189,
+        "total": 12,
+        "hash": 1881698669,
+        "identicalPixelsToPrevious": false,
+        "at": 537.1000000000931
+      },
+      {
+        "time": 0.398281,
+        "total": 12,
+        "hash": 1881698669,
+        "identicalPixelsToPrevious": true,
+        "at": 541.3999999999069
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.05,
+        "count": 2,
+        "at": 209.39999999990687
+      },
+      {
+        "time": 0.35,
+        "count": 8,
+        "at": 538.2999999998137
+      }
+    ]
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.36564,
+        "total": 12,
+        "hash": 882506059,
+        "identicalPixelsToPrevious": false,
+        "at": 702.2999999998137
+      },
+      {
+        "time": 0.365694,
+        "total": 12,
+        "hash": 1881698669,
+        "identicalPixelsToPrevious": false,
+        "at": 711.6999999997206
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.015459,
+        "count": 4,
+        "at": 352.79999999981374
+      },
+      {
+        "time": 0.365694,
+        "count": 12,
+        "at": 706
+      },
+      {
+        "time": 0.365694,
+        "count": 12,
+        "at": 715.1999999997206
+      },
+      {
+        "time": 0.365694,
+        "count": 12,
+        "at": 718.8999999999069
+      },
+      {
+        "time": 0.365694,
+        "count": 12,
+        "at": 735.3999999999069
+      },
+      {
+        "time": 0.365694,
+        "count": 12,
+        "at": 752.6999999997206
+      },
+      {
+        "time": 0.365694,
+        "count": 12,
+        "at": 768.7999999998137
+      },
+      {
+        "time": 0.365694,
+        "count": 12,
+        "at": 785.3999999999069
+      },
+      {
+        "time": 0.365694,
+        "count": 12,
+        "at": 802.3999999999069
+      },
+      {
+        "time": 0.365694,
+        "count": 12,
+        "at": 818.7999999998137
+      }
+    ]
+  },
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.393331,
+        "total": 12,
+        "hash": 1881698669,
+        "identicalPixelsToPrevious": false,
+        "at": 539.2000000001863
+      },
+      {
+        "time": 0.393442,
+        "total": 12,
+        "hash": 1881698669,
+        "identicalPixelsToPrevious": true,
+        "at": 541.8000000002794
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.05,
+        "count": 2,
+        "at": 210.20000000018626
+      },
+      {
+        "time": 0.35,
+        "count": 8,
+        "at": 539.8000000002794
+      }
+    ]
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.338043,
+        "total": 9,
+        "hash": 1748242162,
+        "identicalPixelsToPrevious": false,
+        "at": 483.5
+      },
+      {
+        "time": 0.338098,
+        "total": 9,
+        "hash": 1748242162,
+        "identicalPixelsToPrevious": true,
+        "at": 486.5
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.009061,
+        "count": 4,
+        "at": 154.5
+      },
+      {
+        "time": 0.338098,
+        "count": 9,
+        "at": 484.60000000009313
+      },
+      {
+        "time": 0.338098,
+        "count": 9,
+        "at": 487.70000000018626
+      },
+      {
+        "time": 0.338098,
+        "count": 9,
+        "at": 504.29999999981374
+      },
+      {
+        "time": 0.338098,
+        "count": 9,
+        "at": 521
+      },
+      {
+        "time": 0.338098,
+        "count": 9,
+        "at": 537.7000000001863
+      },
+      {
+        "time": 0.338098,
+        "count": 9,
+        "at": 554.5
+      },
+      {
+        "time": 0.338098,
+        "count": 9,
+        "at": 571.2000000001863
+      },
+      {
+        "time": 0.338098,
+        "count": 9,
+        "at": 587.7000000001863
+      },
+      {
+        "time": 0.338098,
+        "count": 9,
+        "at": 604.2999999998137
+      }
+    ]
+  }
+]
+PR04-F01: native browser consumed byte-for-byte identical video frames twice

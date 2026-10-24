@@ -1,0 +1,12 @@
+
+> vision-studio@1.0.0 typecheck
+> tsc --noEmit
+
+e2e/fixtures/visionSdk.ts(17,23): error TS2345: Argument of type '{ time: number; decodedFrames: number; pixels: number[]; }' is not assignable to parameter of type 'never'.
+e2e/fixtures/visionSdk.ts(20,11): error TS2339: Property 'afterInput' does not exist on type '{ calls: number; failures: number; creates: number; empty: false; observeInputs: false; inputs: never[]; }'.
+e2e/frame-identity.spec.ts(83,29): error TS2339: Property 'captureStream' does not exist on type 'HTMLVideoElement'.
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

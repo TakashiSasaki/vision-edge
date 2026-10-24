@@ -1,0 +1,14 @@
+{
+  "normal_production_markers_present": {
+    "visionSdkProbe": false,
+    "visionSdkGate": false,
+    "Test-only SDK fault": false
+  },
+  "explicit_test_build_markers_present": {
+    "visionSdkProbe": true,
+    "visionSdkGate": true,
+    "Test-only SDK fault": true
+  },
+  "native_timing_probe_bundled": false,
+  "result": "pass"
+}

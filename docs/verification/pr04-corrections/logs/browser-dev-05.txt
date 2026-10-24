@@ -1,0 +1,41 @@
+
+> vision-studio@1.0.0 test:e2e
+> playwright test e2e/frame-identity.spec.ts
+
+[WebServer] (node:18626) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:18639) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:18664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:18677) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:18708) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:18721) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:18745) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F01 native input {"inputs":[{"time":1.0045,"qualityFrames":9,"pixelSha256":"e849c9b5c8361c34a17ceaddb02e2cf8710224eae0d4899b9e0ffebc4d07013c"}],"calls":1,"reservedFrames":6,"delayed":1,"blocked":1,"requests":1,"samePixelsAcrossInputs":[],"reservedPixelSha256":"88869c3e617129dd124576440fd8f91f4a18e4f411eea2516d84e53de11bc6f1"}
+  ✓  1 [chromium] › e2e/frame-identity.spec.ts:131:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (rVFC) (4.4s)
+F02 native scenes {"inputs":[{"time":0,"qualityFrames":1},{"time":0,"qualityFrames":1},{"time":0.057777,"qualityFrames":2}],"first":[{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1}],"creates":1,"requests":3,"delayed":1}
+  ✓  2 [chromium] › e2e/frame-identity.spec.ts:163:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC) (2.5s)
+F01 native input {"inputs":[{"time":0.945521,"qualityFrames":8,"pixelSha256":"e849c9b5c8361c34a17ceaddb02e2cf8710224eae0d4899b9e0ffebc4d07013c"}],"calls":1,"reservedFrames":5,"delayed":1,"blocked":1,"requests":1,"samePixelsAcrossInputs":[],"reservedPixelSha256":"0a617f87f4618238c6a940068e1e7801d77088241da3c48d75cc0a1162fd0658"}
+  ✓  3 [chromium] › e2e/frame-identity.spec.ts:131:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (fallback) (4.2s)
+F02 native scenes {"inputs":[{"time":0,"qualityFrames":1},{"time":0,"qualityFrames":1},{"time":0.057947,"qualityFrames":2}],"first":[{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1}],"creates":1,"requests":3,"delayed":1}
+  ✓  4 [chromium] › e2e/frame-identity.spec.ts:163:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (fallback) (2.6s)
+
+  4 passed (18.7s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

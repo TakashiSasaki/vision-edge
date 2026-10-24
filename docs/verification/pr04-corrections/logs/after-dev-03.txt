@@ -1,0 +1,41 @@
+
+ RUN  v5.0.5 /workspace/vision-edge-pr04-before
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx (16 tests | 1 failed) 1044ms
+   × stale SDK reentry cannot publish metrics, parent result or speech: threshold 44ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > stale SDK reentry cannot publish metrics, parent result or speech: threshold
+AssertionError: expected [ [ { status: 'ready', …(3) } ] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [
++     {
++       "model": "mediapipe",
++       "objects": [],
++       "requestId": 1,
++       "status": "ready",
++     },
++   ],
++ ]
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx:121:74
+    119|   });
+    120|   drawTick(); flush(); now = 250; flush(250);
+    121|   expect(f.props.onFrame.mock.calls.filter(([frame]) => frame !== null…
+       |                                                                          ^
+    122|   expect(gate).not.toHaveBeenCalled();
+    123|   if (kind !== 'unmount') expect(screen.getByLabelText('推論FPS').textCo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 28 passed (29)
+   Start at  07:16:40
+   Duration  2.60s (environment 74%, tests 18%, import 6%, transform 2%)
