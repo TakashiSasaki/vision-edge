@@ -1,0 +1,86 @@
+{
+  "model": "mediapipe",
+  "requests": [
+    {
+      "url": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
+      "status": "external network blocked"
+    },
+    {
+      "url": "http://127.0.0.1:4175/fixtures/astronaut.png",
+      "status": "verified local bytes"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.js",
+      "status": "verified local bytes"
+    },
+    {
+      "url": "http://127.0.0.1:4175/fixtures/coffee.png",
+      "status": "verified local bytes"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.wasm",
+      "status": "verified local bytes"
+    },
+    {
+      "url": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite",
+      "status": "controlled HTTP503"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.js",
+      "status": "verified local bytes"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.wasm",
+      "status": "verified local bytes"
+    },
+    {
+      "url": "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
+      "status": "controlled HTTP503"
+    }
+  ],
+  "runtime": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+    "platform": "Linux x86_64",
+    "webgl": true,
+    "vendor": "Google Inc. (Google)",
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "physicalGpu": "unknown; GPU delegate request is not hardware proof",
+    "physicalCamera": "not-run",
+    "videoFrame": "function",
+    "resolution": [
+      512,
+      512
+    ],
+    "nativeQuality": 0,
+    "browserVersion": "154.0.8037.57"
+  },
+  "observation": {
+    "marker": "PR07_REAL_SDK_OBSERVATION",
+    "creates": [
+      {
+        "model": "selfie-segmenter",
+        "delegate": "GPU",
+        "at": 180.5,
+        "ms": 305.69999999995343,
+        "error": "Error: Failed to fetch model: https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite (503)"
+      },
+      {
+        "model": "mediapipe",
+        "delegate": "GPU",
+        "at": 483.5999999999767,
+        "ms": 286,
+        "error": "Error: Failed to fetch model: https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite (503)"
+      }
+    ],
+    "closes": 0,
+    "resultCloses": 0,
+    "calls": 0,
+    "rawDropped": 0,
+    "raw": [],
+    "processed": [],
+    "draws": [],
+    "snapshots": [],
+    "invalidateAfterNextSdk": false
+  },
+  "errors": []
+}

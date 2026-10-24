@@ -1,0 +1,38 @@
+
+> vision-studio@1.0.0 typecheck
+> tsc --noEmit
+
+e2e-real-sdk/fixtures.ts(12,40): error TS7006: Parameter 'asset' implicitly has an 'any' type.
+e2e-real-sdk/integration.spec.ts(25,113): error TS2345: Argument of type '(obj: { label: string; }) => boolean' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => unknown'.
+  Types of parameters 'obj' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type '{ label: string; }'.
+e2e-real-sdk/integration.spec.ts(37,52): error TS2345: Argument of type '(d: { categories: { label: string; score: number; }[]; }) => boolean' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => unknown'.
+  Types of parameters 'd' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type '{ categories: { label: string; score: number; }[]; }'.
+e2e-real-sdk/integration.spec.ts(47,141): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Record<"capture" | "comparison" | "queue" | "job" | "sdk" | "postprocess" | "cleanup" | "engine" | "draw" | "latency", Record<AttemptOutcome, StageStatistics>>'.
+  No index signature with a parameter of type 'string' was found on type 'Record<"capture" | "comparison" | "queue" | "job" | "sdk" | "postprocess" | "cleanup" | "engine" | "draw" | "latency", Record<AttemptOutcome, StageStatistics>>'.
+e2e-real-sdk/integration.spec.ts(69,40): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: unknown, index: number, array: unknown[]) => value is unknown, thisArg?: any): unknown[]', gave the following error.
+    Argument of type '(obj: { label: string; }) => boolean' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => value is unknown'.
+      Types of parameters 'obj' and 'value' are incompatible.
+        Type 'unknown' is not assignable to type '{ label: string; }'.
+  Overload 2 of 2, '(predicate: (value: unknown, index: number, array: unknown[]) => unknown, thisArg?: any): unknown[]', gave the following error.
+    Argument of type '(obj: { label: string; }) => boolean' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => unknown'.
+      Types of parameters 'obj' and 'value' are incompatible.
+        Type 'unknown' is not assignable to type '{ label: string; }'.
+e2e-real-sdk/observer.ts(53,20): error TS7053: Element implicitly has an 'any' type because expression of type '"detectForVideo" | "segmentForVideo"' can't be used to index type 'ObjectDetector | ImageSegmenter'.
+  Property 'detectForVideo' does not exist on type 'ObjectDetector | ImageSegmenter'.
+e2e-real-sdk/observer.ts(61,53): error TS18046: 'result' is of type 'unknown'.
+e2e-real-sdk/observer.ts(61,75): error TS7006: Parameter 'det' implicitly has an 'any' type.
+e2e-real-sdk/observer.ts(61,116): error TS7006: Parameter 'cat' implicitly has an 'any' type.
+e2e-real-sdk/observer.ts(63,23): error TS18046: 'result' is of type 'unknown'.
+e2e-real-sdk/observer.ts(64,11): error TS18046: 'result' is of type 'unknown'.
+e2e-real-sdk/observer.ts(64,36): error TS18046: 'result' is of type 'unknown'.
+e2e-real-sdk/observer.ts(80,63): error TS7006: Parameter 'obj' implicitly has an 'any' type.
+vite.real-sdk.config.ts(12,17): error TS7006: Parameter 'code' implicitly has an 'any' type.
+vite.real-sdk.config.ts(12,23): error TS7006: Parameter 'id' implicitly has an 'any' type.
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,0 +1,15 @@
+✔ asset pin verified (4.279821ms)
+✔ asset pin tampered (1.738503ms)
+✔ asset pin missing (1.039395ms)
+✔ asset pin unpinned (0.576507ms)
+✔ changed latest bytes cannot replace an existing verified cache (13.743166ms)
+✔ HTTP403 is one request, with no cache acceptance or retry (0.645599ms)
+✔ oversized body is stopped before writing (0.649936ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.47104

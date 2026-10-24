@@ -1,0 +1,219 @@
+
+> vision-studio@1.0.0 test:e2e:real-sdk
+> node scripts/real-sdk/run.mjs
+
+Real SDK run: /workspace/vision-edge/.cache/real-sdk-runs/2026-10-24T17-23-56.970Z-b91de9b5
+Prerequisites: BLOCKED or corrupt; running asset diagnostics only
+[WebServer] (node:1050) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:1063) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "./vite.config" without a file extension (vite.real-sdk.config.ts:3:18). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:1094) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:1107) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:1131) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e-real-sdk/integration.spec.ts:90:3 › asset diagnostic mediapipe (1.2s)
+  ✓  2 e2e-real-sdk/integration.spec.ts:90:3 › asset diagnostic selfie-segmenter (860ms)
+
+  2 passed (3.6s)
+{
+  "start": "2026-10-24T17:23:57.036Z",
+  "end": "2026-10-24T17:24:01.003Z",
+  "childExit": 0,
+  "exit": 2,
+  "complete": false,
+  "matrix": [
+    {
+      "model": "mediapipe",
+      "input": "VideoFrame",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "blocked",
+      "reason": [
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "mediapipe",
+      "input": "Canvas",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "blocked",
+      "reason": [
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "mediapipe",
+      "input": "HTMLVideoElement",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "blocked",
+      "reason": [
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "selfie-segmenter",
+      "input": "VideoFrame",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "blocked",
+      "reason": [
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "selfie-segmenter",
+      "input": "Canvas",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "blocked",
+      "reason": [
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "selfie-segmenter",
+      "input": "HTMLVideoElement",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "blocked",
+      "reason": [
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "mediapipe",
+      "input": "controlled asset HTTP503",
+      "runtime": "cloud Chromium actual SDK",
+      "status": "pass",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1200,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "model": "selfie-segmenter",
+      "input": "controlled asset HTTP503",
+      "runtime": "cloud Chromium actual SDK",
+      "status": "pass",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 860,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "runtime": "physical desktop camera/GPU/audio",
+      "model": "both",
+      "status": "not-run",
+      "reason": "Outside this cloud run; separate authorization/environment needed"
+    },
+    {
+      "runtime": "physical mobile camera/GPU/audio",
+      "model": "both",
+      "status": "not-run",
+      "reason": "Outside this cloud run; separate authorization/environment needed"
+    },
+    {
+      "runtime": "public application code equality",
+      "model": "both",
+      "status": "not-run",
+      "reason": "Outside this cloud run; separate authorization/environment needed"
+    },
+    {
+      "runtime": "CPU diagnostic (product delegate unchanged)",
+      "model": "both",
+      "status": "not-run",
+      "reason": "Outside this cloud run; separate authorization/environment needed"
+    }
+  ]
+}
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,0 +1,73 @@
+
+> vision-studio@1.0.0 test:e2e:real-sdk:acquire
+> node scripts/real-sdk/assets.mjs --acquire
+
+{
+  "mode": "direct-production-URL-acquisition",
+  "at": "2026-10-24T17:27:28.020Z",
+  "rows": [
+    {
+      "id": "vision_wasm_internal.js",
+      "status": "blocked",
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.js",
+      "started": "2026-10-24T17:27:12.968Z",
+      "reason": "TypeError: fetch failed"
+    },
+    {
+      "id": "vision_wasm_internal.wasm",
+      "status": "blocked",
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.wasm",
+      "started": "2026-10-24T17:27:12.994Z",
+      "reason": "TypeError: fetch failed"
+    },
+    {
+      "id": "vision_wasm_nosimd_internal.js",
+      "status": "blocked",
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_nosimd_internal.js",
+      "started": "2026-10-24T17:27:18.001Z",
+      "reason": "TypeError: fetch failed"
+    },
+    {
+      "id": "vision_wasm_nosimd_internal.wasm",
+      "status": "blocked",
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_nosimd_internal.wasm",
+      "started": "2026-10-24T17:27:18.003Z",
+      "reason": "TypeError: fetch failed"
+    },
+    {
+      "id": "astronaut.png",
+      "status": "blocked",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.24.0/skimage/data/astronaut.png",
+      "started": "2026-10-24T17:27:23.010Z",
+      "reason": "TypeError: fetch failed"
+    },
+    {
+      "id": "coffee.png",
+      "status": "blocked",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.24.0/skimage/data/coffee.png",
+      "started": "2026-10-24T17:27:23.013Z",
+      "reason": "TypeError: fetch failed"
+    },
+    {
+      "id": "efficientdet_lite0.tflite",
+      "status": "blocked",
+      "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+    },
+    {
+      "id": "selfie_segmenter.tflite",
+      "status": "blocked",
+      "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+    },
+    {
+      "id": "vision_bundle.mjs",
+      "status": "pass",
+      "size": 136870,
+      "sha256": "e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669"
+    }
+  ]
+}
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

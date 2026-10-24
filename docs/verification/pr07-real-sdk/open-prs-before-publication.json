@@ -1,0 +1,47 @@
+[
+  {
+    "number": 16,
+    "title": "review: PR06 F01 closed — scoped PASS with conditions",
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/16"
+  },
+  {
+    "number": 15,
+    "title": "review: PR06 independent acceptance — FAIL (invalid statistics isolation)",
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/15"
+  },
+  {
+    "number": 13,
+    "title": "docs: independent PR05 re-review — F01 closed, PASS with conditions",
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/13"
+  },
+  {
+    "number": 12,
+    "title": "docs: independent PR-05 coordinate review — scoped PASS with conditions",
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/12"
+  },
+  {
+    "number": 10,
+    "title": "review: PR-04 compatibility correction — PASS WITH CONDITIONS",
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/10"
+  },
+  {
+    "number": 9,
+    "title": "review: PR-04 corrections — F02 closed, F01 compatibility defect remains",
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/9"
+  },
+  {
+    "number": 8,
+    "title": "review: independently assess PR-04 — FAIL (duplicate input and missing first frame)",
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/8"
+  },
+  {
+    "number": 4,
+    "title": "review: independently validate PR-01 F01 CSS smoke correction — PASS",
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/4"
+  },
+  {
+    "number": 2,
+    "title": "review: PR-01 foundation — PASS WITH CONDITIONS",
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/2"
+  }
+]
