@@ -1,0 +1,41 @@
+Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+    at IncomingMessage.handleError (/workspace/vision-edge/node_modules/playwright-core/lib/coreBundle.js:33897:23)
+    at IncomingMessage.emit (node:events:521:24)
+    at endReadableNT (node:internal/streams/readable:1736:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+    at IncomingMessage.handleError (/workspace/vision-edge/node_modules/playwright-core/lib/coreBundle.js:33897:23)
+    at IncomingMessage.emit (node:events:521:24)
+    at endReadableNT (node:internal/streams/readable:1736:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+    at IncomingMessage.handleError (/workspace/vision-edge/node_modules/playwright-core/lib/coreBundle.js:33897:23)
+    at IncomingMessage.emit (node:events:521:24)
+    at endReadableNT (node:internal/streams/readable:1736:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+    at IncomingMessage.handleError (/workspace/vision-edge/node_modules/playwright-core/lib/coreBundle.js:33897:23)
+    at IncomingMessage.emit (node:events:521:24)
+    at endReadableNT (node:internal/streams/readable:1736:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+Error: Download failed: server returned code 403 body 'Domain forbidden'. URL: https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+    at IncomingMessage.handleError (/workspace/vision-edge/node_modules/playwright-core/lib/coreBundle.js:33897:23)
+    at IncomingMessage.emit (node:events:521:24)
+    at endReadableNT (node:internal/streams/readable:1736:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Failed to install browsers
+Error: Failed to download Chrome for Testing 156.0.8078.4 (playwright chromium v1248), caused by
+Error: Download failure, code=1
+    at ChildProcess.<anonymous> (/workspace/vision-edge/node_modules/playwright-core/lib/coreBundle.js:33774:32)
+    at ChildProcess.emit (node:events:509:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

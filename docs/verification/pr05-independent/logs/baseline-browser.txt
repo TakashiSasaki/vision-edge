@@ -1,0 +1,41 @@
+
+> vision-studio@1.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:5488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5525) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 14 tests using 1 worker
+
+(node:5592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e/camera-lifecycle.spec.ts:10:1 › camera sessions survive UI renders and release stopped, replaced and late synthetic streams (6.5s)
+COMPATIBILITY {"mode":"immutable","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"計測中","sourceKind":"video-frame"}
+  ✓   2 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (immutable) (3.1s)
+COMPATIBILITY {"mode":"quality","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"計測中","sourceKind":"live-video"}
+  ✓   3 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (quality) (3.5s)
+COMPATIBILITY {"mode":"pixels-rvfc","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"canvas"}
+  ✓   4 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (pixels-rvfc) (4.7s)
+COMPATIBILITY {"mode":"pixels-raf","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"canvas"}
+  ✓   5 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (pixels-raf) (5.2s)
+COMPATIBILITY {"mode":"zero-quality-rvfc","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"canvas"}
+  ✓   6 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (zero-quality-rvfc) (6.2s)
+COMPATIBILITY {"mode":"zero-quality-raf","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"canvas"}
+  ✓   7 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (zero-quality-raf) (5.0s)
+F01 native input {"inputs":[{"sourceKind":"video-frame","time":1.182163,"qualityFrames":6,"pixelSha256":"9410966d6b88beec8f0a700ad5631c21ff13501ca9a278b4be6592653391abaf"}],"calls":1,"reservedImageTimestamp":788109,"reservedFrames":4,"delayed":1,"blocked":1,"requests":1,"samePixelsAcrossInputs":[],"reservedPixelSha256":"37e014c598c39f7ef6740415afcb19b467720b2aeae7580fe54ebc3c894670b6"}
+  ✓   8 [chromium] › e2e/frame-identity.spec.ts:136:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (rVFC) (5.7s)
+F02 native scenes {"inputs":[{"time":0,"qualityFrames":1},{"time":0,"qualityFrames":1},{"time":0.053893,"qualityFrames":2}],"first":[{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1}],"creates":1,"requests":3,"delayed":1}
+  ✓   9 [chromium] › e2e/frame-identity.spec.ts:170:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC) (3.7s)
+F01 native input {"inputs":[{"sourceKind":"video-frame","time":1.03771,"qualityFrames":6,"pixelSha256":"c2bf452063a7ca3e90b2861b7caf23b515f53de158e427ece3bbcf62d2f14ab1"}],"calls":1,"reservedImageTimestamp":471398,"reservedFrames":3,"delayed":1,"blocked":1,"requests":1,"samePixelsAcrossInputs":[],"reservedPixelSha256":"3d558540e8c59a9e6915aaa700c8d714c8927167920bf0bcf84c4ece2589f368"}
+  ✓  10 [chromium] › e2e/frame-identity.spec.ts:136:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (fallback) (5.2s)
+F02 native scenes {"inputs":[{"time":0,"qualityFrames":1},{"time":0,"qualityFrames":1},{"time":0.057873,"qualityFrames":2}],"first":[{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1}],"creates":1,"requests":3,"delayed":1}
+  ✓  11 [chromium] › e2e/frame-identity.spec.ts:170:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (fallback) (3.8s)
+  ✓  12 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (rVFC) (6.5s)
+  ✓  13 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (RAF fallback) (7.2s)
+  ✓  14 [chromium] › e2e/smoke.spec.ts:3:1 › production app loads and model controls work without camera or external services (2.0s)
+
+  14 passed (1.5m)

@@ -1,0 +1,50 @@
+{
+  "pr": {
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/11",
+    "number": 11,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "draft": true,
+    "body": "Clicks on letterboxed video previously used the full Canvas element rectangle. The displayed box could be missed, and a margin click could select an object and speak. Pointer input now uses the current centered `object-contain` video content rectangle; selection and ripple share the same normalized point. Invalid/unavailable geometry and margins return before hit testing.\n\n**Author checkpoint frozen; separate independent review pending.** This is author verification, not independent PASS. No merge, auto-merge or deployment is authorized by this PR.\n\n| Binding | Value |\n| --- | --- |\n| Branch → base | `fix/overlay-coordinate-mapping` → `main` |\n| Verified base | `f97e19ac5f9f07eca23732003844b5082cd27d37` |\n| Base tree | `e357f512a371df5c86950913cf3a43208f0321ce` |\n| Final published HEAD | `be1402c793616788e81a746b6a21b03a25a5a3ec` |\n| Final published tree | `a6c4f4eaa0d3db02a85861653d27bfcfdb53005d` |\n| Locally validated executable checkpoint | `a76d9cb20744a834db1b1ae5a106625f267f17b2`, tree `efadfa771b61732b3353b76b881acc84dcf55a04` |\n\nOnly five executable files change: the pure conversion helper, click-handler wiring, fixed-reference unit tests, component regressions and real-app browser cases. Final evidence commit changes documentation/artifacts only; its executable files exactly match the validated checkpoint. BBox/mask interfaces, drawing, transparent-pixel fallback, camera/model lifecycle, scheduler/input identity, JobLock/generations, metrics and all prior assertions are preserved. No mirroring or DPR multiplication is introduced.\n\n**Reproduction:** the unchanged final browser vectors fail twice on unmodified main and pass after repair. Native synthetic 640×480 in a wide CSS box reproduces a false margin selection/speech/ripple; native 1280×720 in a narrow CSS box reproduces a missed visible object. Final fixtures retain their colored source and verify actual video/SDK pixel samples, native DOM/CSS geometry, selection, speech interception, Canvas arcs, DPR 2 and responsive resize. A single camera acquisition and stable model creation counts are required. Independent numeric reference: 640×480 in 960×540 displays 720×540 with horizontal offset 120.\n\n**Local validation:** Node 24.19.0 / npm 11.9.0; npm ci, typecheck, lint, **162/162** Vitest tests, build, **16/16** Playwright tests, **7/7** controls (two intact successes and five specific fault detections), staged/full-base whitespace checks all pass. Of these, 46 unit/component cases and two browser cases are new. Actual locked scripts were used. Local browser is explicit system Chromium 154.0.8037.57: matched local installation was blocked by CDN HTTP 403, with no bypass. Captured original output is archived; readable TXT whitespace normalization and earlier test-fixture failures are disclosed.\n\n**Final-head hosted CI:** [run 40091330111 / verify job 120864445166](https://github.com/TakashiSasaki/vision-edge/actions/runs/40091330111/job/120864445166) **completed/success**. Actual downloaded job logs confirm checkout of exactly `be1402c793616788e81a746b6a21b03a25a5a3ec`, Node **24.19.0**, npm **11.17.0**, matched **Chromium/headless shell 156.0.8078.4 / v1248**, **162 tests**, **16 browser passes** and all **7 controls**. No local system-browser override was used in hosted CI. [Browser artifact 12558654673](https://github.com/TakashiSasaki/vision-edge/actions/runs/40091330111/artifacts/12558654673) uploaded successfully; digest `sha256:b7e9778fed656cb61c0891d00ad7239b8bef75d7c4c668bc59014607d392252b`. Downloaded decoded job-log receipt SHA-256: `f899b6a62d91c4bea9f0291874db69af5c0a99341222629d29fcac3761a283d1`.\n\n[Verification report and reviewer targets](https://github.com/TakashiSasaki/vision-edge/blob/be1402c793616788e81a746b6a21b03a25a5a3ec/docs/verification/pr05.md) · [Before/after artifacts, raw logs, exact source bindings and replay scripts](https://github.com/TakashiSasaki/vision-edge/tree/be1402c793616788e81a746b6a21b03a25a5a3ec/docs/verification/pr05) · [Validated source hashes](https://github.com/TakashiSasaki/vision-edge/blob/be1402c793616788e81a746b6a21b03a25a5a3ec/docs/verification/pr05/logs/validated-source.json).\n\nAll other remote heads, main and historical evidence PRs remain unchanged. Git fetch/readback confirms the final branch SHA/tree and a clean author checkout. The executable checkpoint's earlier successful CI is recorded only as intermediate evidence; the final receipt above targets the evidence-bearing HEAD.\n\nRemaining limits: centered contain/no-transform CSS is the explicit geometry contract. Physical camera, real model/GPU, audible audio, mobile orientation/background behavior and public deployment equality are unverified. Existing mask fallback semantics are intentionally unchanged. PR-04 identical-content compatibility coalescing still does not prove physical camera stop; full RGBA comparison remains O(pixels) on the main thread and outside the processing-duration HUD. No identity optimization or later-phase work was started. The earlier future async lock-wakeup risk remains a later-phase nonblocking consideration.\n\nReturn this frozen HEAD/tree to the parent's separately assigned reviewer. Subsequent findings will be handled on this branch with a finding-by-finding response and a new verified checkpoint.\n",
+    "title": "fix: align video overlay and pointer coordinates (PR-05)",
+    "base": "main",
+    "base_sha": "f97e19ac5f9f07eca23732003844b5082cd27d37",
+    "head": "fix/overlay-coordinate-mapping",
+    "head_sha": "be1402c793616788e81a746b6a21b03a25a5a3ec",
+    "head_repo_id": 1431627643,
+    "head_repo_full_name": "TakashiSasaki/vision-edge",
+    "merge_commit_sha": "929945f43107d777acf41e8ad9d8b0c11d1a45b2",
+    "user": {
+      "login": "TakashiSasaki",
+      "name": "TakashiSasaki",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/556958?v=4",
+      "id": 556958
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-10-24T11:44:34Z",
+    "updated_at": "2026-10-24T11:51:59Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 3,
+    "changed_files": 83,
+    "additions": 4488,
+    "deletions": 7,
+    "display_url": "https://github.com/TakashiSasaki/vision-edge/pull/11",
+    "display_title": "fix: align video overlay and pointer coordinates (PR-05)"
+  },
+  "reviews": {
+    "reviews": []
+  },
+  "comments": {
+    "comments": [],
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/11",
+    "title": "TakashiSasaki/vision-edge PR #11 comments",
+    "display_url": "https://github.com/TakashiSasaki/vision-edge/pull/11",
+    "display_title": "TakashiSasaki/vision-edge PR #11 comments"
+  }
+}

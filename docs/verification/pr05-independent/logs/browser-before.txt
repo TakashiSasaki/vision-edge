@@ -1,0 +1,24 @@
+pillarbox 2 false {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: false,
+  selected: false,
+  ripple: false,
+  box: true,
+  lifecycle: true,
+  noError: true
+}
+letterbox 2 false {
+  css: true,
+  sameRect: true,
+  backing: true,
+  scrolled: true,
+  margin: false,
+  selected: false,
+  ripple: false,
+  box: true,
+  lifecycle: true,
+  noError: true
+}

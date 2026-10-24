@@ -1,0 +1,2394 @@
+[
+  {
+    "phase": "before",
+    "name": "pillarbox-2",
+    "samples": {
+      "object": {
+        "point": [
+          314.75,
+          178.125
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          494.75,
+          420.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": false,
+      "distance": 192,
+      "location": [
+        382,
+        224
+      ],
+      "pixel": [
+        12,
+        34,
+        56
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "before",
+    "name": "letterbox-2",
+    "samples": {
+      "object": {
+        "point": [
+          124.75,
+          210.625
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          224.75,
+          345.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.36000000000001364,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        216,
+        220,
+        223
+      ],
+      "alpha": 0.84,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.36000000000001364,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        216,
+        220,
+        223
+      ],
+      "alpha": 0.84,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": false,
+      "distance": 192,
+      "location": [
+        160,
+        234
+      ],
+      "pixel": [
+        12,
+        34,
+        56
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "pillarbox-1",
+    "samples": {
+      "object": {
+        "point": [
+          314.75,
+          178.125
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          494.75,
+          420.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        385,
+        224
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "pillarbox-1.25",
+    "samples": {
+      "object": {
+        "point": [
+          314.75,
+          178.125
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          494.75,
+          420.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        385,
+        224
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "pillarbox-2",
+    "samples": {
+      "object": {
+        "point": [
+          314.75,
+          178.125
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          494.75,
+          420.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        385,
+        224
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "pillarbox-3",
+    "samples": {
+      "object": {
+        "point": [
+          314.75,
+          178.125
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          494.75,
+          420.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        228,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        385,
+        224
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "letterbox-1",
+    "samples": {
+      "object": {
+        "point": [
+          124.75,
+          210.625
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          224.75,
+          345.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.23999999999999488,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        71,
+        80,
+        182
+      ],
+      "alpha": 0.68,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.36000000000001364,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        216,
+        220,
+        223
+      ],
+      "alpha": 0.84,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        163,
+        234
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "letterbox-1.25",
+    "samples": {
+      "object": {
+        "point": [
+          124.75,
+          210.625
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          224.75,
+          345.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.23999999999999488,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        71,
+        80,
+        182
+      ],
+      "alpha": 0.68,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.36000000000001364,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        216,
+        220,
+        223
+      ],
+      "alpha": 0.84,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        163,
+        234
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "letterbox-2",
+    "samples": {
+      "object": {
+        "point": [
+          124.75,
+          210.625
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          224.75,
+          345.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.23999999999999488,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        71,
+        80,
+        182
+      ],
+      "alpha": 0.68,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.36000000000001364,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        216,
+        220,
+        223
+      ],
+      "alpha": 0.84,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        163,
+        234
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "letterbox-3",
+    "samples": {
+      "object": {
+        "point": [
+          124.75,
+          210.625
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          224.75,
+          345.0
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.23999999999999488,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        71,
+        80,
+        182
+      ],
+      "alpha": 0.68,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.36000000000001364,
+      "location": [
+        76,
+        217
+      ],
+      "pixel": [
+        216,
+        220,
+        223
+      ],
+      "alpha": 0.84,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        163,
+        234
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "equal-1",
+    "samples": {
+      "object": {
+        "point": [
+          142.25,
+          146.25
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          262.25,
+          307.5
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 1.0,
+      "location": [
+        84,
+        155
+      ],
+      "pixel": [
+        82,
+        88,
+        205
+      ],
+      "alpha": 0.8,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.20000000000000284,
+      "location": [
+        86,
+        155
+      ],
+      "pixel": [
+        244,
+        201,
+        100
+      ],
+      "alpha": 0.28,
+      "base": [
+        240,
+        180,
+        40
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        189,
+        176
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "equal-1.25",
+    "samples": {
+      "object": {
+        "point": [
+          142.25,
+          146.25
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          262.25,
+          307.5
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 1.0,
+      "location": [
+        84,
+        155
+      ],
+      "pixel": [
+        82,
+        88,
+        205
+      ],
+      "alpha": 0.8,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.20000000000000284,
+      "location": [
+        86,
+        155
+      ],
+      "pixel": [
+        244,
+        201,
+        100
+      ],
+      "alpha": 0.28,
+      "base": [
+        240,
+        180,
+        40
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        189,
+        176
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "equal-2",
+    "samples": {
+      "object": {
+        "point": [
+          142.25,
+          146.25
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          262.25,
+          307.5
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 1.0,
+      "location": [
+        84,
+        155
+      ],
+      "pixel": [
+        82,
+        88,
+        205
+      ],
+      "alpha": 0.8,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.20000000000000284,
+      "location": [
+        86,
+        155
+      ],
+      "pixel": [
+        244,
+        201,
+        100
+      ],
+      "alpha": 0.28,
+      "base": [
+        240,
+        180,
+        40
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        189,
+        176
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "equal-3",
+    "samples": {
+      "object": {
+        "point": [
+          142.25,
+          146.25
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          262.25,
+          307.5
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 1.0,
+      "location": [
+        84,
+        155
+      ],
+      "pixel": [
+        82,
+        88,
+        205
+      ],
+      "alpha": 0.8,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.20000000000000284,
+      "location": [
+        86,
+        155
+      ],
+      "pixel": [
+        244,
+        201,
+        100
+      ],
+      "alpha": 0.28,
+      "base": [
+        240,
+        180,
+        40
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        189,
+        176
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "square-source-1",
+    "samples": {
+      "object": {
+        "point": [
+          373.25,
+          159.0
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          517.25,
+          352.5
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        304,
+        169
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        304,
+        169
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        429,
+        195
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "square-source-1.25",
+    "samples": {
+      "object": {
+        "point": [
+          373.25,
+          159.0
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          517.25,
+          352.5
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        304,
+        169
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        304,
+        169
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        429,
+        195
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "square-source-2",
+    "samples": {
+      "object": {
+        "point": [
+          373.25,
+          159.0
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          517.25,
+          352.5
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        304,
+        169
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        304,
+        169
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        429,
+        195
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "square-source-3",
+    "samples": {
+      "object": {
+        "point": [
+          373.25,
+          159.0
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          517.25,
+          352.5
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        304,
+        169
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        304,
+        169
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        429,
+        195
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "square-box-1",
+    "samples": {
+      "object": {
+        "point": [
+          102.875,
+          253.59375
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          177.875,
+          354.375
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.5499999999999972,
+      "location": [
+        66,
+        258
+      ],
+      "pixel": [
+        44,
+        59,
+        125
+      ],
+      "alpha": 0.37,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.7599999999999909,
+      "location": [
+        66,
+        258
+      ],
+      "pixel": [
+        178,
+        185,
+        192
+      ],
+      "alpha": 0.68,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        131,
+        271
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "square-box-1.25",
+    "samples": {
+      "object": {
+        "point": [
+          102.875,
+          253.59375
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          177.875,
+          354.375
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.5499999999999972,
+      "location": [
+        66,
+        258
+      ],
+      "pixel": [
+        44,
+        59,
+        125
+      ],
+      "alpha": 0.37,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.7599999999999909,
+      "location": [
+        66,
+        258
+      ],
+      "pixel": [
+        178,
+        185,
+        192
+      ],
+      "alpha": 0.68,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        131,
+        271
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "square-box-2",
+    "samples": {
+      "object": {
+        "point": [
+          102.875,
+          253.59375
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          177.875,
+          354.375
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.5499999999999972,
+      "location": [
+        66,
+        258
+      ],
+      "pixel": [
+        44,
+        59,
+        125
+      ],
+      "alpha": 0.37,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.7599999999999909,
+      "location": [
+        66,
+        258
+      ],
+      "pixel": [
+        178,
+        185,
+        192
+      ],
+      "alpha": 0.68,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        131,
+        271
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "square-box-3",
+    "samples": {
+      "object": {
+        "point": [
+          102.875,
+          253.59375
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          177.875,
+          354.375
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.5499999999999972,
+      "location": [
+        66,
+        258
+      ],
+      "pixel": [
+        44,
+        59,
+        125
+      ],
+      "alpha": 0.37,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.7599999999999909,
+      "location": [
+        66,
+        258
+      ],
+      "pixel": [
+        178,
+        185,
+        192
+      ],
+      "alpha": 0.68,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        131,
+        271
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "fractional-1",
+    "samples": {
+      "object": {
+        "point": [
+          315.03125,
+          178.16927083333331
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          495.1145833333333,
+          420.15625
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        229,
+        192
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        229,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        386,
+        224
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "fractional-1.25",
+    "samples": {
+      "object": {
+        "point": [
+          315.03125,
+          178.16927083333331
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          495.1145833333333,
+          420.15625
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        229,
+        192
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        229,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        386,
+        224
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "fractional-2",
+    "samples": {
+      "object": {
+        "point": [
+          315.03125,
+          178.16927083333331
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          495.1145833333333,
+          420.15625
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        229,
+        192
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        229,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        386,
+        224
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  },
+  {
+    "phase": "after",
+    "name": "fractional-3",
+    "samples": {
+      "object": {
+        "point": [
+          315.03125,
+          178.16927083333331
+        ],
+        "pixel": [
+          240,
+          180,
+          40
+        ],
+        "expected": [
+          240,
+          180,
+          40
+        ],
+        "pass_": true
+      },
+      "background": {
+        "point": [
+          495.1145833333333,
+          420.15625
+        ],
+        "pixel": [
+          12,
+          34,
+          56
+        ],
+        "expected": [
+          12,
+          34,
+          56
+        ],
+        "pass_": true
+      }
+    },
+    "bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        229,
+        192
+      ],
+      "pixel": [
+        99,
+        102,
+        241
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "selected_bbox": {
+      "pass_": true,
+      "distance": 0.0,
+      "location": [
+        229,
+        192
+      ],
+      "pixel": [
+        255,
+        255,
+        255
+      ],
+      "alpha": 1.0,
+      "base": [
+        12,
+        34,
+        56
+      ]
+    },
+    "ripple": {
+      "pass_": true,
+      "distance": 0,
+      "location": [
+        386,
+        224
+      ],
+      "pixel": [
+        56,
+        189,
+        248
+      ]
+    },
+    "pass": true
+  }
+]

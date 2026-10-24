@@ -1,0 +1,27 @@
+[
+  {
+    "path": "logs/standard-04.txt",
+    "original_sha256": "8254c57afd7e6f2c88036baa9a2ad81d75fda7aeea4a3877684e35157794fc2b",
+    "readable_sha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c"
+  },
+  {
+    "path": "logs/matched-browser-install.txt",
+    "original_sha256": "4f1b97836738c9efcdad351f823c93204289616ae7a638a5f8fc3d8c6b59470f",
+    "readable_sha256": "f4282a7e0c9edfc60d4f70c9c5a3687d3d9851c9c2340ba7ef0d875eeff883aa"
+  },
+  {
+    "path": "logs/standard-03.txt",
+    "original_sha256": "24d0874c683ef121c05f0f2fde6df107483f0565962673234d1b422c8f4dd16c",
+    "readable_sha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda"
+  },
+  {
+    "path": "logs/baseline-unit.txt",
+    "original_sha256": "620858c3f1babd09e1431b664134b4e6afd065304dcb2dda0774e59c6a13da01",
+    "readable_sha256": "0f2343bab06ba1b055b4480f68880556f5edf23efd81f69abbc4016d549a4f3a"
+  },
+  {
+    "path": "logs/standard-05.txt",
+    "original_sha256": "abec65d1c85895a9038a31e67fa9327c54491d0ce1a6664f0da85a5dd77781ec",
+    "readable_sha256": "96e8b8993d903462cf395a59f1a2903825ef710ff09b01d1aa34827e6a29f1b3"
+  }
+]

@@ -1,0 +1,16 @@
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/pr05-baseline
+
+
+ Test Files  9 passed (9)
+      Tests  116 passed (116)
+   Start at  12:02:34
+   Duration  17.50s (environment 45%, tests 37%, setup 11%, transform 4%, import 3%)
+
+Environment  jsdom was created 9 times · 20.27s total, 45% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments

@@ -1,0 +1,17 @@
+[
+  {"command":"npm ci", "exit":254, "output":"logs/npm-ci.log in raw-evidence.zip", "status":"initial environment failure"},
+  {"command":"npm ci --cache /workspace/npm-cache", "exit":0, "output":"logs/npm-ci-workspace.log in raw-evidence.zip"},
+  {"command":"PLAYWRIGHT_BROWSERS_PATH=/workspace/pr05-browser-cache npx --no-install playwright install chromium", "exit":1, "output":"logs/matched-browser-install.txt", "status":"HTTP 403, not bypassed"},
+  {"command":"node docs/verification/pr05-independent/browser-oracle.mjs", "exit":0, "output":"logs/browser-after.txt", "cases":24},
+  {"command":"REVIEW_URL=http://127.0.0.1:4186 REVIEW_BASELINE=1 REVIEW_OUTPUT=docs/verification/pr05-independent/before node docs/verification/pr05-independent/browser-oracle.mjs", "exit":1, "output":"logs/browser-before.txt", "status":"two expected product failures"},
+  {"command":"REVIEW_URL=http://127.0.0.1:4186 REVIEW_BASELINE=1 REVIEW_NO_MARGIN=1 REVIEW_OUTPUT=docs/verification/pr05-independent/before-visible-fresh node docs/verification/pr05-independent/browser-oracle.mjs", "exit":1, "output":"logs/browser-before-visible-fresh.txt", "status":"two expected fresh-scene product failures"},
+  {"command":"npx --no-install vitest run --config docs/verification/pr05-independent/vitest.config.mjs", "exit":0, "output":"logs/independent-component.txt", "cases":3},
+  {"command":"node docs/verification/pr05-independent/intrinsic-oracle.mjs", "exit":0, "output":"logs/intrinsic-oracle.txt"},
+  {"command":"python3 docs/verification/pr05-independent/image-oracle.py", "exit":0, "output":"logs/image-oracle.txt", "cases":26},
+  {"command":"python3 docs/verification/pr05-independent/generate-vectors.py", "exit":0, "vectors":1584},
+  {"command":"node --import tsx docs/verification/pr05-independent/numeric-oracle.mjs", "exit":1, "output":"logs/numeric-rational.txt", "checks":1616, "passed":1580, "failed":36, "status":"F01, nonblocking strict numerical boundary failure"},
+  {"command":"npm run typecheck", "exit":0, "output":"logs/evidence-final-typecheck.txt", "status":"including all new evidence instrumentation"},
+  {"command":"npm run lint", "exit":0, "output":"logs/evidence-final-lint.txt", "status":"including all new evidence instrumentation"},
+  {"command":"git diff --cached --check", "exit":0, "status":"full new evidence staged"},
+  {"command":"git diff --name-only be1402c793616788e81a746b6a21b03a25a5a3ec -- src e2e scripts .github package.json package-lock.json vite.config.ts playwright.config.ts", "exit":0, "status":"empty: no reviewed product/test/workflow/config changes"}
+]

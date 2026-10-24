@@ -1,0 +1,19 @@
+
+> vision-studio@1.0.0 build
+> vite build --mode e2e --outDir .cache/independent-e2e
+
+vite v8.3.5 building client environment for e2e...
+transforming...
+✓ 1673 modules transformed.
+rendering chunks...
+computing gzip size...
+.cache/independent-e2e/index.html                   1.59 kB │ gzip:  0.77 kB
+.cache/independent-e2e/assets/index-BJEPg8TI.css   26.32 kB │ gzip:  5.69 kB
+.cache/independent-e2e/assets/index-DDM_Vpfz.js   275.26 kB │ gzip: 86.78 kB
+
+✓ built in 863ms
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,0 +1,866 @@
+[
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1,
+    "point": [
+      157.45833333333334,
+      82.5
+    ],
+    "expected": [
+      0,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1,
+    "point": [
+      157.45833333333334,
+      622.75
+    ],
+    "expected": [
+      0,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1,
+    "point": [
+      157.45833333333334,
+      352.625
+    ],
+    "expected": [
+      0,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1.25,
+    "point": [
+      157.45833333333334,
+      82.5
+    ],
+    "expected": [
+      0,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1.25,
+    "point": [
+      157.45833333333334,
+      622.75
+    ],
+    "expected": [
+      0,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1.25,
+    "point": [
+      157.45833333333334,
+      352.625
+    ],
+    "expected": [
+      0,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 2,
+    "point": [
+      157.45833333333334,
+      82.5
+    ],
+    "expected": [
+      0,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 2,
+    "point": [
+      157.45833333333334,
+      622.75
+    ],
+    "expected": [
+      0,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 2,
+    "point": [
+      157.45833333333334,
+      352.625
+    ],
+    "expected": [
+      0,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 3,
+    "point": [
+      157.45833333333334,
+      82.5
+    ],
+    "expected": [
+      0,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 3,
+    "point": [
+      157.45833333333334,
+      622.75
+    ],
+    "expected": [
+      0,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 37.25,
+      "top": 82.5,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 3,
+    "point": [
+      157.45833333333334,
+      352.625
+    ],
+    "expected": [
+      0,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1,
+    "point": [
+      1340.5416666666667,
+      250
+    ],
+    "expected": [
+      1,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1,
+    "point": [
+      1340.5416666666667,
+      790.25
+    ],
+    "expected": [
+      1,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1,
+    "point": [
+      1340.5416666666667,
+      520.125
+    ],
+    "expected": [
+      1,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1.25,
+    "point": [
+      1340.5416666666667,
+      250
+    ],
+    "expected": [
+      1,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1.25,
+    "point": [
+      1340.5416666666667,
+      790.25
+    ],
+    "expected": [
+      1,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1.25,
+    "point": [
+      1340.5416666666667,
+      520.125
+    ],
+    "expected": [
+      1,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 2,
+    "point": [
+      1340.5416666666667,
+      250
+    ],
+    "expected": [
+      1,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 2,
+    "point": [
+      1340.5416666666667,
+      790.25
+    ],
+    "expected": [
+      1,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 2,
+    "point": [
+      1340.5416666666667,
+      520.125
+    ],
+    "expected": [
+      1,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 3,
+    "point": [
+      1340.5416666666667,
+      250
+    ],
+    "expected": [
+      1,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 3,
+    "point": [
+      1340.5416666666667,
+      790.25
+    ],
+    "expected": [
+      1,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": 500,
+      "top": 250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 3,
+    "point": [
+      1340.5416666666667,
+      520.125
+    ],
+    "expected": [
+      1,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1,
+    "point": [
+      100.20833333333333,
+      -250
+    ],
+    "expected": [
+      0,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1,
+    "point": [
+      100.20833333333333,
+      290.25
+    ],
+    "expected": [
+      0,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1,
+    "point": [
+      100.20833333333333,
+      20.125
+    ],
+    "expected": [
+      0,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1.25,
+    "point": [
+      100.20833333333333,
+      -250
+    ],
+    "expected": [
+      0,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1.25,
+    "point": [
+      100.20833333333333,
+      290.25
+    ],
+    "expected": [
+      0,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 1.25,
+    "point": [
+      100.20833333333333,
+      20.125
+    ],
+    "expected": [
+      0,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 2,
+    "point": [
+      100.20833333333333,
+      -250
+    ],
+    "expected": [
+      0,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 2,
+    "point": [
+      100.20833333333333,
+      290.25
+    ],
+    "expected": [
+      0,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 2,
+    "point": [
+      100.20833333333333,
+      20.125
+    ],
+    "expected": [
+      0,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 3,
+    "point": [
+      100.20833333333333,
+      -250
+    ],
+    "expected": [
+      0,
+      0
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 3,
+    "point": [
+      100.20833333333333,
+      290.25
+    ],
+    "expected": [
+      0,
+      1
+    ],
+    "kind": "boundary",
+    "actual": null
+  },
+  {
+    "name": "fractional",
+    "video": [
+      640,
+      480
+    ],
+    "rect": {
+      "left": -20,
+      "top": -250,
+      "width": 960.75,
+      "height": 540.25
+    },
+    "dpr": 3,
+    "point": [
+      100.20833333333333,
+      20.125
+    ],
+    "expected": [
+      0,
+      0.5
+    ],
+    "kind": "boundary",
+    "actual": null
+  }
+]

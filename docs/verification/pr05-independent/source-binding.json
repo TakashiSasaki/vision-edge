@@ -1,0 +1,321 @@
+{
+  "head": "be1402c793616788e81a746b6a21b03a25a5a3ec",
+  "tree": "a6c4f4eaa0d3db02a85861653d27bfcfdb53005d",
+  "base": "f97e19ac5f9f07eca23732003844b5082cd27d37",
+  "base_tree": "e357f512a371df5c86950913cf3a43208f0321ce",
+  "non_document_files": [
+    {
+      "path": ".aistudio/artifacts/brain/d89eef6f-0d28-43fa-801e-deeaafa8c7d1/.tempmediaStorage/media_1792748754759_cacb22b4.png",
+      "sha256": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "git_blob": "ffaae8553d40c0cf7ad30c53a188d79faba85f70"
+    },
+    {
+      "path": ".aistudio/artifacts/brain/d89eef6f-0d28-43fa-801e-deeaafa8c7d1/.tempmediaStorage/media_1792748755354_d7868432.png",
+      "sha256": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+      "git_blob": "0b2fe3900355ec54292231cd1060b0fc7f129f9b"
+    },
+    {
+      "path": ".aistudio/artifacts/brain/d89eef6f-0d28-43fa-801e-deeaafa8c7d1/.tempmediaStorage/media_1792751612901_51108950.png",
+      "sha256": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+      "git_blob": "e03a0d3dae4ff419250adc740fd424d28dfd3db3"
+    },
+    {
+      "path": ".aistudio/artifacts/brain/d89eef6f-0d28-43fa-801e-deeaafa8c7d1/implementation_plan.md",
+      "sha256": "ab113227cf2011b03b5e958c9b8d7f876c4197c0a9446a25fa03347ffd33f914",
+      "git_blob": "339858dc235d499a5f618000e7860101a749fda2"
+    },
+    {
+      "path": ".aistudio/artifacts/brain/d89eef6f-0d28-43fa-801e-deeaafa8c7d1/implementation_plan.md.metadata.json",
+      "sha256": "8d46cd6c6623480309b91d0b5518af12d2e552faab6728c3a9e919711b75a7c8",
+      "git_blob": "0af2749af6c5af50a9d00608d219748a38e8ded6"
+    },
+    {
+      "path": ".env.example",
+      "sha256": "f5bc37a2a478d5fcbe6bedcca14e8f22c4e8f847e38e2bc7c40ca116e5aab503",
+      "git_blob": "2e1ab998d889f617dfed11a0671ea5b395068d95"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "4339cfa58a62b375367a27ff0dbc55034336f4b1d552ebc03d022df625863fa1",
+      "git_blob": "a71705c427237ac5f20381380c6c77b736788e7b"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "2027b897dc2569409bc9facb623cb455e2c9841faed105f902e0d84df57ba16d",
+      "git_blob": "df3b4810f409e5593e4060c064873fae37210e89"
+    },
+    {
+      "path": ".nvmrc",
+      "sha256": "7e8a2fa94951112b894a3dbe3d05efef5e9263741fa49125f0a70f40fedab4cc",
+      "git_blob": "60ade1ae01e833a5c291c47883bf26fb031f7727"
+    },
+    {
+      "path": "README.md",
+      "sha256": "16c02a04c876eb0b0c4d2a130aba53d4dcfe79182db29d506130b043edb4dba1",
+      "git_blob": "a4fe63945ca780f3eacdc145d468193a7b1d020d"
+    },
+    {
+      "path": "e2e/camera-lifecycle.spec.ts",
+      "sha256": "a191608102fd1fe28b823bc61bbcc3a7c9353e7e84c9f741631802440bc9205b",
+      "git_blob": "c5cecd238e0854cb7e3b9647b4437c53593aebcc"
+    },
+    {
+      "path": "e2e/compatibility.spec.ts",
+      "sha256": "90dbf1f583ef8d6b36ff87b0f2858f75030a7ae331cfc1d62bd32e13599aff0e",
+      "git_blob": "8eac5a45d8bd78b230d73c328844665783618475"
+    },
+    {
+      "path": "e2e/coordinates.spec.ts",
+      "sha256": "1591fd1e8c992d44e936dc1af7020bc6b7992b83dac268d7464a2ce4d491927b",
+      "git_blob": "cdba3377dc3f6c392cc0b6c84766dd023f91e47e"
+    },
+    {
+      "path": "e2e/fixtures/visionSdk.ts",
+      "sha256": "412d511b18585b59dff7adaee4c69ed85867fcb395f7ce6b834d7f14cc3af633",
+      "git_blob": "d921421a97e6809dfa0505d4c5b2c749a65ab70b"
+    },
+    {
+      "path": "e2e/frame-identity.spec.ts",
+      "sha256": "12f048adeea3efed0676739cd8ec1d0b180bacf4960337753cefb698a93f825d",
+      "git_blob": "5796be9ae706966b03ccbf061aaca5896b6b9207"
+    },
+    {
+      "path": "e2e/inference-metrics.spec.ts",
+      "sha256": "2fc4ee8ad6d8e9be69aa6dfa972029117ca75dfdaaeda4ba8e92896d1eb81f5f",
+      "git_blob": "5295c49de6ba60e44e216bed7eb4eed5a5c49e15"
+    },
+    {
+      "path": "e2e/smoke.spec.ts",
+      "sha256": "864289033b329d124e5b5d526bf0dc35a319e0c324d5e223b55ec7dec6926dbb",
+      "git_blob": "8b60545e932949914392aec3de8c32cdb835255e"
+    },
+    {
+      "path": "eslint.config.js",
+      "sha256": "14261138da65798399e102b9da482b5243b028346cf9f704e563e47f915328e8",
+      "git_blob": "96a743d79732f31e48c0d334bd3710851ef0329d"
+    },
+    {
+      "path": "index.html",
+      "sha256": "37388c217b688b3bc5f973a4e6ecdc52ebdb2a20ccadc024a1940ee34a7b3b21",
+      "git_blob": "9e125b2676003302b32cd8c6b37a07fefa70301c"
+    },
+    {
+      "path": "metadata.json",
+      "sha256": "27636efd1503627908eb5e223b32dffd57b339c5f8a605e2e27caade75a2f385",
+      "git_blob": "126f5b32a787567e08139b0e6ceac3d5c859afc7"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "1501945de52bc26a7411bd139358604ab1a189b51608c011a93d3164baa6de5b",
+      "git_blob": "1db1427fab65c695e26bc70e4ad77b285f1d288f"
+    },
+    {
+      "path": "package.json",
+      "sha256": "d58b9ead5548b0ac8e6f10c153640b3d59c7a46b0569bb50a848a0a4b9ad7ca6",
+      "git_blob": "ad4d0d70885d143b78b29b0d94a813415c22b05f"
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "087cf75c3e18abc52082eb67a4aa8f7e220f6ca4394eaaf86b654de5e021ab57",
+      "git_blob": "dd033538c82f17500a1ed21f28b301351958b2b3"
+    },
+    {
+      "path": "public/assets/aistudio/Screenshot_20261023-184437_91894f37.png",
+      "sha256": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+      "git_blob": "0b2fe3900355ec54292231cd1060b0fc7f129f9b"
+    },
+    {
+      "path": "public/assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png",
+      "sha256": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "git_blob": "ffaae8553d40c0cf7ad30c53a188d79faba85f70"
+    },
+    {
+      "path": "public/assets/aistudio/Screenshot_20261023-193223_8ec61247.png",
+      "sha256": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+      "git_blob": "e03a0d3dae4ff419250adc740fd424d28dfd3db3"
+    },
+    {
+      "path": "scripts/clean.mjs",
+      "sha256": "2323d5b91b1a82cd9f1fb7993bc917d096d6febb428a1448b0918cbea6b295b8",
+      "git_blob": "232ef2608b1257aa3df731548df8fd3a757fc15c"
+    },
+    {
+      "path": "scripts/smoke-css-controls.mjs",
+      "sha256": "0fa08103b019025d0e8638f26a3e6e04fd69112d6f867665f3bd54c30215f5b0",
+      "git_blob": "dff7877535bdafaf12810e005641cd5b41ffbad6"
+    },
+    {
+      "path": "src/App.test.tsx",
+      "sha256": "8b900a0a446379bdb4b13756f7f22f6133a99353f27a489956b89f5515fa646a",
+      "git_blob": "e0221dfd2826e79d9a4e8adaa3eb10fb5882b677"
+    },
+    {
+      "path": "src/App.tsx",
+      "sha256": "cb6f7ac9672f5d08350563e6e29fece95992e92b73d81d58c79c162ea7eab5e1",
+      "git_blob": "8c05c491f2be8e288b8e7856226673273a2c42e2"
+    },
+    {
+      "path": "src/components/ControlPanel.tsx",
+      "sha256": "0cf0305e42b1c74e533963a1968d2e65c71b56b9af5e02417364be53b9d618f4",
+      "git_blob": "1ff81cc660c36de5fb230e5d6e52d06d4023d925"
+    },
+    {
+      "path": "src/components/Header.tsx",
+      "sha256": "657ae0c41ca4fe2eb039f26a02bc2b2ca91c889431b19c79e40ff4e3da40c53c",
+      "git_blob": "83e18fa03dbfba5db612db1a61955b9353d143c3"
+    },
+    {
+      "path": "src/components/ModelComparisonTable.tsx",
+      "sha256": "32a90954bf524900ba6386605de2a30f4f4990cb25baeacbec2f9e5e6044be94",
+      "git_blob": "80f2991821958a3ea44dd8944436a83ea5a7f271"
+    },
+    {
+      "path": "src/components/ModelStatus.tsx",
+      "sha256": "41b3d020147bd8a035c7b18f95a8c60dbd226bbe3040f9cc7ed4821f61a44354",
+      "git_blob": "d9edc88c030b374f85165384f1a34d74d8425276"
+    },
+    {
+      "path": "src/components/VisionCanvas.test.tsx",
+      "sha256": "bdf43e8e0af053bc081d98cc65408808c848c91401e7fc4cc5ea5cda795c3378",
+      "git_blob": "b7da5736e9f2c8b84dafdc92d0f246b763078f35"
+    },
+    {
+      "path": "src/components/VisionCanvas.tsx",
+      "sha256": "8fe4f28a15579d1863c54fadb9e1f0760b405b4b25f41158d789396e429236f9",
+      "git_blob": "dbe9ea5cce48efb3c8c969f827c3c3aa85ca6e79"
+    },
+    {
+      "path": "src/hooks/useCameraStream.test.tsx",
+      "sha256": "e7667ed17caa504c2774c296903d4d1fadc550f65ba73b4e34d4625993ccc43a",
+      "git_blob": "23504cf981c68cc6fbe20fc84753e2a898bfc717"
+    },
+    {
+      "path": "src/hooks/useCameraStream.ts",
+      "sha256": "69ef9ec6891dee3ed0e8c6822405d72fea3f1d8061edab40f5e5ea73158edc73",
+      "git_blob": "528c9873f27a8f9449068304bb2d2bb9a8a238e0"
+    },
+    {
+      "path": "src/index.css",
+      "sha256": "76f6a5812150a612c363c9105a8dfc4eb5a068b1ff3296a4100a3a2f0f765087",
+      "git_blob": "6c01ff49cc3eebe0fe9c7342d23a2905747e5e4c"
+    },
+    {
+      "path": "src/main.tsx",
+      "sha256": "6d84ef84ce96b80b0909622959c17d795c60b3d7fed05154e00d027645143476",
+      "git_blob": "35f6c8fabd48c305a4b78a530131150c09a1b91e"
+    },
+    {
+      "path": "src/services/dictionary.test.ts",
+      "sha256": "9eed4caf65533f764f51bb16c3041d3e07d5e160cba17ebe436e255c3ed0cf8b",
+      "git_blob": "1d28d4f26839ea5849f55a0ebe60bc09e0383009"
+    },
+    {
+      "path": "src/services/dictionary.ts",
+      "sha256": "e5333b12898b7be3becaaf9d9daab4e704f9fc43549decee6e9dab68b2c6e3a2",
+      "git_blob": "58dd5e5de9cc9e151d47a97eb481f6f5857f270b"
+    },
+    {
+      "path": "src/services/frameScheduler.test.ts",
+      "sha256": "a60de90be389a0699f83828c83b5c46d8eb3cc68cf00da234bd31b81a2b8c705",
+      "git_blob": "e6faed8006967b5369749bcd1ca535c75f598577"
+    },
+    {
+      "path": "src/services/frameScheduler.ts",
+      "sha256": "94d55842fc6a20868c9b9a2b2c4ca5b38c2f7a10d53dc5f8570cd8f4be209477",
+      "git_blob": "9c4caf5055722621dac06e188ea3e429de7eb965"
+    },
+    {
+      "path": "src/services/modelRegistry.ts",
+      "sha256": "d12effee6c147a1404d846bdd44a381c9f9d61bd085f4df085fdb5e472c22d3b",
+      "git_blob": "7829ef99cb1f740f2a9d43153bd29998ea08491d"
+    },
+    {
+      "path": "src/services/performanceMetrics.test.ts",
+      "sha256": "f42235e5e546b6781c4696e93618127fb7d0af930a52ed1dd4e451cc2c277417",
+      "git_blob": "8e4f3ec0c7f9eaaee37911406b2936079338acc3"
+    },
+    {
+      "path": "src/services/performanceMetrics.ts",
+      "sha256": "d14a5a19e8f03dfb025c9748e66ccbfa433778d71d8c24602e11c1767c1fa351",
+      "git_blob": "cffe604ae98133f8c487d659c39722f26165ac16"
+    },
+    {
+      "path": "src/services/speechService.test.ts",
+      "sha256": "14e03176957ef8f331208d9ae89ea33054dc56a30409f5789e3d5c884000389a",
+      "git_blob": "b643579995ad97becb123194550d5b1e4ea7577b"
+    },
+    {
+      "path": "src/services/speechService.ts",
+      "sha256": "36bc30c2d510fb0336f0ef24ab0bf08a4c124e94a773cd94d22fbd27c1c2f8f9",
+      "git_blob": "fa8a14f3e0357d7aec3142dba06d08a65ddb479f"
+    },
+    {
+      "path": "src/services/videoCoordinates.test.ts",
+      "sha256": "ec1875896b01adb0de22ea35d54bd50a4ef5f1c44888458e2d8446d69c630a28",
+      "git_blob": "ebedd1d696441d5be0ba5204d603c8bf73fd009c"
+    },
+    {
+      "path": "src/services/videoCoordinates.ts",
+      "sha256": "cbc177d373790a27e4efe7b291bbca24006c8cc1c05d633caac66e639e9fc00e",
+      "git_blob": "8d7244baeb98938adf2dd2d231017b75a3d7e7a8"
+    },
+    {
+      "path": "src/services/visionEngine.reentrancy.test.ts",
+      "sha256": "de8af55125a4ad272a3ec9cf8d39b268fdbed4b4f788264e4e8ea96c0ebe6592",
+      "git_blob": "6e49cdc0fec1eaea42516c336fc64457f0fc7ad3"
+    },
+    {
+      "path": "src/services/visionEngine.test.ts",
+      "sha256": "45aef3ef5c572f7c1e17a642cb326c9bd938ce24305251cf48f92ddecb644c5e",
+      "git_blob": "fe21d9250ad636343878aac0ac3fdd5e13b29c02"
+    },
+    {
+      "path": "src/services/visionEngine.ts",
+      "sha256": "d6fef5b413d4d1eddd7bbc339f956c58f98ede99fe7be5a6656758bc9644b36c",
+      "git_blob": "b2d2ccf23e03dc4b70046fca5d7c8df31fa52faa"
+    },
+    {
+      "path": "src/test/setup.ts",
+      "sha256": "268e7200d092daa3225eb06790ed72842e5d3234a53980c90ff463d7b81528d3",
+      "git_blob": "1d55db90d079dcc27035dd9acce0c86b8be5829b"
+    },
+    {
+      "path": "src/types/vision.ts",
+      "sha256": "1634ef6981db2cf5161b029b63b7aa0c44b8ad31e5857954094bb9385cb93e70",
+      "git_blob": "9bfae17ee24cb471ebfcfcbb01bdd299f098c0e3"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "56baf34fe9e208cd7e937508c1dbe5e946396779fb4e013436e380b20677d6be",
+      "git_blob": "40cc7ece30d0bd276e000e40139af3f0c902689e"
+    },
+    {
+      "path": "vite.config.ts",
+      "sha256": "5d1c39a3dc2a764c55479a7329c75ec54970f4cf3bb52e94fc0ff5d2b291e8f2",
+      "git_blob": "386e3a4fa057297ebd95fd1f2725083fbc0d45da"
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "653f8490e9ec6a1b4ab25353ba3ae019fd89b6b542a41e8ec95912a9323b49cd",
+      "git_blob": "18fa747362452bf215191f364671b3fe2d350614"
+    }
+  ],
+  "baseline_tracked_files_unchanged": 337,
+  "bundle_marker_checks": {
+    "visionSdkProbe": {
+      "production_present": false,
+      "e2e_present": true
+    },
+    "visionSdkGate": {
+      "production_present": false,
+      "e2e_present": true
+    },
+    "Test-only SDK fault": {
+      "production_present": false,
+      "e2e_present": true
+    }
+  },
+  "product_ci_log_sha256": "bf7396a9dc715667a47a2b64302275018fd2fd79cc42b93ea08c31660f8aa940",
+  "git_status": "?? docs/verification/pr05-independent/\n",
+  "product_ci_log_member": "logs/product-ci-original.log in raw-evidence.zip"
+}

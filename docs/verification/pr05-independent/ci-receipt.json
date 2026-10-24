@@ -1,0 +1,129 @@
+{
+  "jobs": {
+    "jobs": [
+      {
+        "id": 120864445166,
+        "name": "verify",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 40091330111,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Install locked dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Typecheck",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "ESLint",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Unit and component tests",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Production build",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Install Chromium",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "Browser smoke tests",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 10
+          },
+          {
+            "name": "Stylesheet smoke controls",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11
+          },
+          {
+            "name": "Upload browser evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 23
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 24
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 25
+          }
+        ]
+      }
+    ]
+  },
+  "artifacts": {
+    "artifacts": [
+      {
+        "id": 12558654673,
+        "name": "playwright-report",
+        "size_in_bytes": 715733,
+        "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/artifacts/12558654673",
+        "archive_download_url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/artifacts/12558654673/zip",
+        "expired": false,
+        "created_at": "2026-10-24T11:50:15Z",
+        "expires_at": "2026-11-07T11:50:14Z",
+        "updated_at": "2026-10-24T11:50:15Z",
+        "digest": "sha256:b7e9778fed656cb61c0891d00ad7239b8bef75d7c4c668bc59014607d392252b",
+        "workflow_run": {
+          "id": 40091330111,
+          "repository_id": 1431627643,
+          "head_repository_id": 1431627643,
+          "head_branch": "fix/overlay-coordinate-mapping",
+          "head_sha": "be1402c793616788e81a746b6a21b03a25a5a3ec"
+        }
+      }
+    ]
+  }
+}
