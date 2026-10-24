@@ -1,0 +1,14 @@
+{
+  "productHead": "9865050bd1ee025ecc3e39021dfcd103b6f7acc7",
+  "checked": {
+    "dist/assets/index-BtTrhLIH.js": "87533eee9b386278aab138d79c130ac76bcdd3ddf97a76a3838bd259d48094cd"
+  },
+  "markers": {
+    "Test-only SDK fault": [],
+    "pipelineCameraProbe": [],
+    "visionSdkProbe": [],
+    "runPipelineTrial": [],
+    "synthetic instrumentation experiment": []
+  },
+  "normalBuildOnly": true
+}

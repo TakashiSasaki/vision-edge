@@ -1,4 +1,5 @@
 import type { InferenceInput } from '../types/vision';
+import { PipelineProbe, type PipelineObserver, type InferenceMeasurement, type AttemptOutcome } from './pipelineMetrics';
 
 // An execution owns its token across cancellation and replacement sessions.
 export class JobLock {
@@ -10,8 +11,9 @@ interface SchedulerOptions<T> {
   video: HTMLVideoElement;
   bootstrap?: boolean;
   current: () => boolean;
-  work: (input: InferenceInput) => T | Promise<T>;
-  adopt: (result: T) => void;
+  work: (input: InferenceInput, measurement?: InferenceMeasurement) => T | Promise<T>;
+  adopt: (result: T, measurement?: InferenceMeasurement) => void;
+  instrumentation?: PipelineObserver;
   error: (cause: unknown) => void;
   captureError?: (cause: unknown) => void;
   input: () => void;
@@ -21,16 +23,25 @@ interface SchedulerOptions<T> {
 // The timer yields to the browser; synchronous MediaPipe still runs on main.
 export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void {
   const { video, current, work, adopt, error, input, lock } = options;
+  const probe = options.instrumentation ? new PipelineProbe(options.instrumentation) : undefined;
+  const measurementGeneration = probe?.generation ?? (probe ? Symbol('scheduler-generation') : undefined);
+  let captureId = 0;
+  let jobId = 0;
   let stopped = false;
   let callback: number | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  let reserved: ReturnType<PipelineProbe['start']>;
   let pending = false;
   let latestArrival: { key: string; mediaTime: number } | null = null;
   type Pixels = { width: number; height: number; data: Uint8ClampedArray };
   type Progress = { time: number; qualityFrames: number | null; frameTime: number | null; pixels: Pixels | null };
-  const samePixels = (a: Pixels | null, b: Pixels | null) => a !== null && b !== null
-    && a.width === b.width && a.height === b.height && a.data.length === b.data.length
-    && a.data.every((value, index) => value === b.data[index]);
+  const samePixels = (a: Pixels | null, b: Pixels | null) => {
+    const start = probe?.start();
+    try { return a !== null && b !== null
+      && a.width === b.width && a.height === b.height && a.data.length === b.data.length
+      && a.data.every((value, index) => value === b.data[index]); }
+    finally { probe?.end('comparison', start); }
+  };
   let observedPixels: Pixels | null = null;
   let pixelCanvas: HTMLCanvasElement | null = null;
   let pixelContext: CanvasRenderingContext2D | null = null;
@@ -43,7 +54,7 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
     stopped = true; pending = false; consumed = null; observedPixels = null;
     if (pixelCanvas) { pixelCanvas.width = 0; pixelCanvas.height = 0; }
     pixelCanvas = null; pixelContext = null;
-    if (timer !== null) clearTimeout(timer);
+    if (timer !== null) { clearTimeout(timer); probe?.end('queue', reserved, 'cancelled'); timer = null; }
     if (callback !== null) {
       if (useVideoCallback) video.cancelVideoFrameCallback(callback);
       else cancelAnimationFrame(callback);
@@ -58,7 +69,7 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
   // A VideoFrame carries the source image's own timestamp, unlike currentTime
   // (playhead) and playback-quality totals (which can include decoded-ahead data).
   // Keep this immutable image alive until its owning job finishes.
-  const captureInput = (ownInput = false): { source: InferenceInput; progress: Progress; release: () => void } | null => {
+  const captureRaw = (ownInput = false): { source: InferenceInput; progress: Progress; release: () => void } | null => {
     const time = video.currentTime;
     if (!Number.isFinite(time) || time < 0) return null;
     if (typeof VideoFrame === 'function') {
@@ -91,6 +102,28 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
       return { source: owned, progress, release() { owned.width = 0; owned.height = 0; } };
     } catch (cause) { owned.width = 0; owned.height = 0; throw cause; }
   };
+  const captureInput = (ownInput = false): (NonNullable<ReturnType<typeof captureRaw>> & { measurement?: InferenceMeasurement }) | null => {
+    const start = probe?.start();
+    const id = probe ? ++captureId : 0;
+    let outcome: AttemptOutcome = 'failed';
+    let captured: ReturnType<typeof captureRaw>;
+    let end: number | undefined;
+    try { captured = captureRaw(ownInput); outcome = captured ? 'success' : 'cancelled'; }
+    finally { end = probe?.end('capture', start, outcome); }
+    if (!captured) return null;
+    if (!probe) return captured;
+    return { ...captured, measurement: {
+      generation: measurementGeneration!, jobId: 0, captureId: id, captureStart: start?.at ?? null, captureEnd: end ?? null,
+      immutable: captured.source !== video,
+    } satisfies InferenceMeasurement };
+  };
+  const release = (captured: ReturnType<typeof captureInput>) => {
+    if (!captured) return;
+    const start = probe?.start();
+    let outcome: AttemptOutcome = 'failed';
+    try { captured.release(); outcome = 'success'; }
+    finally { probe?.end('cleanup', start, outcome); }
+  };
   const arrivalKey = (progress: Progress) => latestArrival?.mediaTime === progress.time ? latestArrival.key : null;
   const alreadyConsumed = (progress: Progress): boolean => {
     if (!consumed) return false;
@@ -121,23 +154,37 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
   };
   const reserve = () => {
     if (!pending || running || timer !== null || !valid()) return;
+    reserved = probe?.start();
     timer = setTimeout(() => {
       timer = null;
-      if (!pending || !valid()) return;
+      if (!pending || !valid()) { probe?.end('queue', reserved, 'cancelled'); return; }
       const token = lock.acquire();
+      probe?.end('queue', reserved, token ? 'success' : 'cancelled');
       if (!token) return; // Next acquisition tick retries only the latest candidate.
       pending = false; running = true;
+      const jobStart = probe?.start();
+      let jobOutcome: AttemptOutcome = 'cancelled';
+      let jobMeasured = false;
       let captured: ReturnType<typeof captureInput> = null;
       const finish = () => {
         const owned = captured; captured = null;
-        try { owned?.release(); }
-        finally { running = false; lock.release(token); if (!stopped) reserve(); }
+        try { release(owned); }
+        finally {
+          if (!jobMeasured) { probe?.end('job', jobStart, stopped && jobOutcome !== 'failed' ? 'cancelled' : jobOutcome); jobMeasured = true; }
+          running = false; lock.release(token); if (!stopped) reserve();
+        }
       };
-      const failed = (cause: unknown) => { if (valid()) error(cause); };
+      const failed = (cause: unknown) => { jobOutcome = 'failed'; if (valid()) error(cause); };
+      const completed = (value: T, measurement?: InferenceMeasurement) => {
+        if (valid()) {
+          if (measurement) adopt(value, measurement); else adopt(value);
+          jobOutcome = 'success';
+        } else jobOutcome = stopped ? 'cancelled' : 'stale';
+      };
       try {
         if (!valid()) { finish(); return; }
         try { captured = captureInput(true); }
-        catch (cause) { captureFailed(cause); finish(); return; }
+        catch (cause) { jobOutcome = 'failed'; captureFailed(cause); finish(); return; }
         if (!captured || !valid() || alreadyConsumed(captured.progress)) { finish(); return; }
         const { progress, source } = captured;
         observe(progress);
@@ -145,11 +192,13 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
         // Attempts, including failed work, consume this live input. Mark before
         // the call so reentry or a later callback cannot submit it again.
         consumed = { progress, arrivalKey: arrivalKey(progress) };
-        const result = work(source);
+        const measurement = captured.measurement;
+        if (measurement) measurement.jobId = ++jobId;
+        const result = measurement ? work(source, measurement) : work(source);
         if (result instanceof Promise) {
-          void result.then(value => { if (valid()) adopt(value); }, failed).catch(failed).finally(finish);
+          void result.then(value => completed(value, measurement), failed).catch(failed).finally(finish);
         } else {
-          if (valid()) adopt(result);
+          completed(result, measurement);
           finish();
         }
       } catch (cause) { try { failed(cause); } finally { finish(); } }
@@ -165,7 +214,7 @@ export function startFrameScheduler<T>(options: SchedulerOptions<T>): () => void
       observe(sampled.progress);
       reserve();
     } catch (cause) { captureFailed(cause); }
-    finally { sampled?.release(); }
+    finally { release(sampled); }
   };
   const next = () => {
     if (stopped) return;

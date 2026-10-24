@@ -1,0 +1,8 @@
+
+ RUN  v5.0.5 /tmp/vision-edge-pr06-f01-replay
+
+
+ Test Files  3 passed (3)
+      Tests  31 passed (31)
+   Start at  16:08:21
+   Duration  1.15s (environment 63%, tests 16%, transform 11%, import 9%, worker 1%)

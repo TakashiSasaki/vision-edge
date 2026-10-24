@@ -1,0 +1,59 @@
+# PR06-F01 author correction
+
+Phase: correction of independent PR15 finding, pending independent re-review by the same reviewer. This is an author response, not an independent PASS or finding closure. PR14 remains Draft; no main push, merge, auto-merge, deploy or later roadmap work is authorized or performed here.
+
+## Binding and reproduced failure
+
+- Reviewed PR14 HEAD `04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9`, tree `7edc57e2c004d8a85502209b0e2541bd8b11ec07`.
+- Independent PR15 evidence `3d6bf05fcef72ede7d66d03a2ef34185ea802f86`, tree `6fe9a2806e377804ea7c99aee828e24fd632b999`.
+- Corrected product commit `1678f8c23f0fdc96cc666600ae1ec3b910743ad2`, tree `9463090735f5e9c4816286159235b5ba129c68da`. Initial bounded-reader implementation `7f7e82544205bfe5fa6ea371b60440bac96d9b64` is preserved in history; the next commit places ownership at publication and adds same-object recovery.
+- Main is still `18e94a4508a0fa316cf31171789c3c10a0a041c3`. Same author branch `feat/pipeline-performance-instrumentation` / PR14. No PR15 file, body, branch or historical evidence is changed.
+
+The original reviewer UI reproducer was extracted unmodified into a disposable replay root and pointed at the actual author source through a src symlink. Before correction it exits 1: **one pass / one fail**, with the same observed TypeError, `videoMounted=false`, `pendingRAF=0`, `cameraRequests=1`, `sdkCalls=1`. Its computation-throws control passes. The raw log is `logs/reviewer-ui-before.txt`. The initial temporary root lacked package.json and emitted a Vite module-format warning; linking the unchanged repository package.json removed that setup warning without changing any test. The real error/observations are preserved, not attributed to the warning.
+
+After correction the exact UI reproducer exits 0, **2/2 pass**. All **31 original independent probes pass unchanged** in author replay (`logs/reviewer-all-after.txt`). Source hashes bind the reviewer probes to the immutable PR15 evidence; replay is not independent re-review.
+
+**Qualification preserved:** the reproducer injects malformed output by replacing stages with null after calling the real collector. It intentionally violates the TypeScript return shape. Neither the reviewer nor this correction establishes a naturally occurring collector route to stages=null or an ordinary-use production incidence. The defense implements the approved invalid-statistics isolation contract without inventing an external attack path.
+
+## Small measurement-to-display boundary
+
+Only the HUD publication/`PipelineDetails` path and a new pure `pipelineSnapshotView` reader change product behavior. Publication reads runtime statistics as unknown and constructs a bounded owned display projection **before React state**. The details component renders only those known primitive values, preserving its existing memoization. JSX never indexes or coerces the raw measurement object. A faulty producer can reuse/mutate its raw object: each publication still produces a new owned view, and mutations after publication cannot affect deferred React rendering or prevent recovery. Throwing getters/proxies become unavailable data. No broad App error boundary or catch around product rendering is added. Lifecycle effects, camera/model acquisition, SDK arguments/timestamps, collector arithmetic, image identity, resource ownership and algorithms are unchanged.
+
+The reader checks 10 known stages × 4 outcomes and eight known result counters. It does not enumerate arbitrary raw keys or retain raw objects. It reads each validated counter once, preventing a changing getter from providing an object after validation. All stores remain in the unchanged collector; the new projection has only fixed-size maps/rows at the existing 250 ms HUD publication cadence, with no work added per capture/comparison/SDK/draw/RAF operation.
+
+Rules:
+
+- Null/missing/non-object stages, nested containers or rows become unavailable cells; valid neighboring sections/rows remain. A top-level non-record or unmeasurable accessor becomes an unavailable snapshot.
+- Counts must be finite safe nonnegative integers within the documented caps. measured + missing must equal count; quantileCount must fit both measured and 300. Invalid count/coverage metadata makes that row unavailable, rather than guessing a zero or complete coverage.
+- Duration fields accept finite nonnegative numbers including **actual 0 ms**. Invalid fields become null individually; healthy neighboring duration columns remain. Null sum/mean on overflow and null statistics on missing durations remain valid partial states. Times on unexecuted stages/quantiles cannot acquire a fabricated 0 ms observation. No aggregate is recalculated, rounded differently or forced to satisfy brittle floating-point arithmetic equalities.
+- Truncated windows/latest-300 coverage remain visible and unchanged. Results use only known counters, each bounded by 2048 and collectively within the outcome ring cap; invalid results are unavailable, never falsely shown as an empty observed dictionary. Missing outcome keys in a legitimate partial dictionary are allowed.
+- pendingResults is bounded by 64; unclocked is a safe saturating counter; flags are actual booleans. An invalid result coverage flag explicitly shows unknown coverage. captureDuty remains unavailable without complete measured capture coverage. Valid finite duty above 100 is not clamped: the original completion-window boundary semantics allow straddling intervals.
+- No last-good cache hides the fault. Each invalid publication becomes unavailable; the next valid snapshot restores the original valid display without restarting the product pipeline or changing native disclosure state.
+
+## Regression and adversarial tests
+
+New pure-reader/details tests exercise stages null/missing, malformed nested objects/counts/flags, NaN/Infinity/negative/string/object/BigInt/Symbol durations, invalid result counters, throwing/changing getters and copied ownership. They compare valid zero, null/no-execution, missing-duration/overflow states, >300 coverage and 2048-cap truncation with real collector snapshots.
+
+Six payload-specific actual App/engine/Canvas regressions inject null/missing stages, missing outcomes, malformed time/counter values and throwing accessors at publication. Each verifies: the same video node remains mounted; two RAF callbacks remain active; five SDK calls occur as new input advances; camera request and model creation stay at one; model request/generation stays ready; input/result cleanup and lock progress continue; tracks/tasks remain open until the ordinary unmount; valid snapshots recover including measured 0.00 ms; ordinary unmount releases the track and model exactly once. A seventh App regression specifically verifies publication ownership and recovery with the same reused raw object. No assertion in the existing tests was weakened or removed.
+
+## Validation and limits
+
+Commands/exits/timestamps and new raw output are in `commands.jsonl` and `logs/`. Local cloud environment remains Node24.19.0/npm11.9.0/system Chromium154.0.8037.57. The previous matched-browser download restriction is respected without retry/bypass; hosted matched-browser CI is separate. Browser regression runs use a disposable corrected-source checkout so the existing screenshot-producing specs cannot overwrite historical author evidence. New screenshots/report archives are copied only into this new correction directory.
+
+The inference collector/probe, scheduler, engine, Canvas renderer, existing FPS estimator, camera hook, coordinates, dictionary, speech, SDK factory/version, package/lock and workflow are byte-identical to the reviewed head. Their exact bindings are recorded. Historical author 288-trial and independent 96-trial experiments remain valid observations at their original heads, not relabelled full corrected-head end-to-end measurements. The changed HUD reader/preparation path is measured directly against the frozen prior component with the same React/DOM/statistics service, closed/open disclosure, fresh/300/truncated profiles and balanced alternating order. Its results and rationale for retaining the unchanged pipeline experiments are in the new HUD report.
+
+Real physical camera/model/GPU/audio/mobile/background and public/deployed-code equality remain unverified. Prior PR04 RGBA/coalescing limits and PR05 T01 timing sensitivity remain; no broad stabilization, retries, sleep/timeout increases or failure reclassification is introduced. Final public HEAD/tree, exact-head completed CI/checkout evidence and pending independent closure will be recorded in PR14 and the handoff after publication.
+
+## HUD experiment setup history
+
+The first HUD harness stopped at the 300-event profile because the previous before-component instance retained native open disclosure state, while the newly mounted after-component was closed. `hud-setup-difference.json` demonstrates fresh comparison true, carried-state comparison false, and the **only** HTML difference being the native open attribute. This is a verified harness comparison mismatch, not a reformatted statistic or a product failure. Its failed command/log remains. That initial failed runner did not checkpoint its earlier fresh-profile timing samples, so those are not available or used in any quantitative claim. The corrected runner sets equal native disclosure state and checkpoints every trial, including partial data on errors. Earlier complete render-boundary sweeps remain separate from the final publication-boundary sweep. The frozen before component is copied into the new evidence entry with only its metrics import relocated; this avoids a generated-cache dependency in fresh-clone typechecking and does not change the old source or normal production entry.
+
+## Final local correction checkpoint
+
+Corrected product `1678f8c23f0fdc96cc666600ae1ec3b910743ad2` passes locked npm ci, **317 unit tests**, **188 focused cases**, **31 unchanged reviewer probes in author replay**, typecheck/lint/build, **19 serial actual React/CSS browser cases** and **7 stylesheet controls** (2 intact / 5 expected faults). New malformed-data/ownership/recovery regressions total67. Browser/report/screenshots were copied from the disposable final-product archive into this correction directory; all91 historical author evidence hashes still match. No ordinary browser failure or retry occurred.
+
+The changed publication+React preparation path completed144 matched HUD runs/4608 snapshot+render operations. Paired preparation mean-delta medians range from -0.00156 to +0.01406 ms per publication across six profiles; raw tails/variance/negative observations remain. Closed/open healthy HTML is identical at fresh/300/truncated profiles. This is a local synthetic cost observation, not a budget/device PASS. The exact unchanged pipeline modules justify retaining original pipeline experiments at their original heads; their historical HUD values are not relabelled corrected-head measurements. [HUD report](hud-cost-report.md), [source bindings](source-binding.json), [finding response](finding-response.json), [commands](commands.jsonl).
+
+The following evidence-only commit will package this checkpoint. Its final public SHA/tree and completed exact-head hosted CI/checkout evidence are recorded in PR14/the handoff after publication. PR06-F01 is **addressed by the author, pending independent closure**, not independently closed here.
+
+Raw Vitest terminal output preservation: staged whitespace checking flagged repeated trailing blank lines in four original reviewer replay logs. Their exact bytes are retained as logs/*.raw.txt.gz with SHA256 receipts in raw-log-preservation.json; the readable .txt copies remove only terminal blank lines. The staged check was rerun without weakening its scope.

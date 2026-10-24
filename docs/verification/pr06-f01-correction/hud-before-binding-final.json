@@ -1,0 +1,5 @@
+{
+  "ref": "04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9",
+  "originalSHA256": "bb904bf467999bb4d4f508e7353aa839234de60c0bf8b8c69a69315178019c47",
+  "adaptation": "Only relative pipelineMetrics import changed to the byte-identical current service; React remains the same installed package."
+}

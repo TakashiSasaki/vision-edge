@@ -1,0 +1,162 @@
+{
+  "reviewHead": "3d6bf05fcef72ede7d66d03a2ef34185ea802f86",
+  "reviewTree": "6fe9a2806e377804ea7c99aee828e24fd632b999",
+  "previousAuthorHead": "04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9",
+  "productHead": "1678f8c23f0fdc96cc666600ae1ec3b910743ad2",
+  "productTree": "9463090735f5e9c4816286159235b5ba129c68da",
+  "unchanged": [
+    {
+      "path": "src/services/frameScheduler.ts",
+      "sha256": "5a92cf5634faf88981fa2fef6176818488badc72588d9bdd71fc98ff1cab5819",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/services/pipelineMetrics.ts",
+      "sha256": "ae7ef3c07027075d94d1022bcf078112b3eb4bbc1c919b8e1f7854e89e4687c0",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/services/performanceMetrics.ts",
+      "sha256": "d14a5a19e8f03dfb025c9748e66ccbfa433778d71d8c24602e11c1767c1fa351",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/services/visionEngine.ts",
+      "sha256": "6d931b352bc6339bf099731533f80878142e4e1d5487640699d5626940642a3b",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/services/canvasRenderer.ts",
+      "sha256": "6bb0f6911746167c3fe7d601c55f045665c54f77c2a7981d1c637adc4f2d7d3c",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/hooks/useCameraStream.ts",
+      "sha256": "69ef9ec6891dee3ed0e8c6822405d72fea3f1d8061edab40f5e5ea73158edc73",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/services/videoCoordinates.ts",
+      "sha256": "99c904ddbe15f822efbedbd03d428e7def74d609cdf4fe6768d6438bcb1fcfa7",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/services/speechService.ts",
+      "sha256": "36bc30c2d510fb0336f0ef24ab0bf08a4c124e94a773cd94d22fbd27c1c2f8f9",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/services/dictionary.ts",
+      "sha256": "e5333b12898b7be3becaaf9d9daab4e704f9fc43549decee6e9dab68b2c6e3a2",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/types/vision.ts",
+      "sha256": "1634ef6981db2cf5161b029b63b7aa0c44b8ad31e5857954094bb9385cb93e70",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/App.tsx",
+      "sha256": "cb6f7ac9672f5d08350563e6e29fece95992e92b73d81d58c79c162ea7eab5e1",
+      "byteIdentical": true
+    },
+    {
+      "path": "src/index.css",
+      "sha256": "76f6a5812150a612c363c9105a8dfc4eb5a068b1ff3296a4100a3a2f0f765087",
+      "byteIdentical": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "d58b9ead5548b0ac8e6f10c153640b3d59c7a46b0569bb50a848a0a4b9ad7ca6",
+      "byteIdentical": true
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "1501945de52bc26a7411bd139358604ab1a189b51608c011a93d3164baa6de5b",
+      "byteIdentical": true
+    },
+    {
+      "path": ".nvmrc",
+      "sha256": "7e8a2fa94951112b894a3dbe3d05efef5e9263741fa49125f0a70f40fedab4cc",
+      "byteIdentical": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "4339cfa58a62b375367a27ff0dbc55034336f4b1d552ebc03d022df625863fa1",
+      "byteIdentical": true
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "087cf75c3e18abc52082eb67a4aa8f7e220f6ca4394eaaf86b654de5e021ab57",
+      "byteIdentical": true
+    },
+    {
+      "path": "vite.config.ts",
+      "sha256": "5d1c39a3dc2a764c55479a7329c75ec54970f4cf3bb52e94fc0ff5d2b291e8f2",
+      "byteIdentical": true
+    },
+    {
+      "path": "vitest.config.ts",
+      "sha256": "653f8490e9ec6a1b4ab25353ba3ae019fd89b6b542a41e8ec95912a9323b49cd",
+      "byteIdentical": true
+    }
+  ],
+  "reviewerReplay": [
+    {
+      "path": "docs/verification/pr06-independent/independent.test.ts",
+      "sha256": "4ed64cde87b67f1315fcc3f9aad21cd3495d8ba2c11e00e8557514368b264fef",
+      "unmodifiedReplayCopy": true
+    },
+    {
+      "path": "docs/verification/pr06-independent/scheduler-adversarial.test.ts",
+      "sha256": "5cb0ec2c5379ea6c61e08b83caa98ac046eb3e1d47bfcb8e184ca3cb37e32a1e",
+      "unmodifiedReplayCopy": true
+    },
+    {
+      "path": "docs/verification/pr06-independent/ui-adversarial.test.tsx",
+      "sha256": "cebdcd885ed4a149b8cfc828ded17bb81e981f70511e2e49be3caffb444c88cf",
+      "unmodifiedReplayCopy": true
+    },
+    {
+      "path": "docs/verification/pr06-independent/vitest.config.ts",
+      "sha256": "d7d286901ee533f7f776312356ea76c2215e7bddca03a968bbbb772230133ab4",
+      "unmodifiedReplayCopy": true
+    },
+    {
+      "path": "docs/verification/pr06-independent/REPORT.md",
+      "sha256": "0d70f7e596383fe91f0c27fb4cc95273de8ca826918c7ec93c23d85dae06f1f2",
+      "unmodifiedReplayCopy": true
+    },
+    {
+      "path": "docs/verification/pr06-independent/findings.json",
+      "sha256": "e0044cac25189a9893a505409ad7d6006bdcf27169b22cbc033aad90bca744b9",
+      "unmodifiedReplayCopy": true
+    }
+  ],
+  "historicalEvidenceFilesVerified": 91,
+  "changedProductFiles": {
+    "src/components/PipelineDetails.test.tsx": "58647ec34971f8c108f961d097da33dc699762b49fbdab5fd2431aa8f72395c8",
+    "src/components/PipelineDetails.tsx": "87a9bcc9c2f2b86184fd383267ce8e5bf81d5d6f7eeffb544966cd636feeffa5",
+    "src/components/VisionCanvas.test.tsx": "939ed90c573b46ca1cd7819cc8fe99c16124a86cd8d70c631b41f141315756a8",
+    "src/components/VisionCanvas.tsx": "d5451d02d1835995b017728ae8807aca7327d95d9ad3459bbb0ff31e827f67db",
+    "src/services/pipelineSnapshotView.test.ts": "e031992e0133db4e6a64e398767c9e6fa380827d684bc695ad6fb8c90871c258",
+    "src/services/pipelineSnapshotView.ts": "b1698dc434d0959dd101b231ef96b9e8dd502a2bc7554c7be42fe8b58c8134e3"
+  },
+  "experiment": {
+    "docs/verification/pr06-f01-correction/experiment/PipelineDetails-before.tsx": "123feb0c30b8e2149e83ddeec299ab104a0e5f559e6d4e1114a33fcaaf2ea894",
+    "docs/verification/pr06-f01-correction/experiment/vite.config.ts": "d0bfa0395b285a68744fd38124a126e9ec30042dba221a5ec0d9c900e06936bb",
+    "docs/verification/pr06-f01-correction/experiment/materialize-before.mjs": "9292202e217e460ff14796aa70170980947acf774b7e492f67590316e03bbe95",
+    "docs/verification/pr06-f01-correction/experiment/run-hud-cost.mjs": "e1487cbc1562dc2a445f4622fc9baf1c5bce91e6b5bf5638f7707c238f4d088b",
+    "docs/verification/pr06-f01-correction/experiment/summarize-hud.py": "4f0b315d67d4552d1560f9a53a996c1bcb4a5918a67bbec29c30c99e70960edb",
+    "docs/verification/pr06-f01-correction/experiment/hud-cost.tsx": "84e55331da8cb28ba9692e134ae59cb7d0ce23c77f67e641b5b040a6d29dcf9a",
+    "docs/verification/pr06-f01-correction/experiment/index.html": "953e6c4c1e434e6677bee0922fcf6809d0c6bf3b11be5f5e0931d07ed3e912c4"
+  },
+  "bundles": {
+    ".cache/pr06-f01-hud-build/assets/index-Bzu7-GKo.css": "636f892da7cd35700d405bd02ddaee2a3fed4fca1b6351c05ead7500176976e0",
+    ".cache/pr06-f01-hud-build/assets/index-L40PMa5q.js": "53d07895c2b8ef49b5dcbdc09f0c92d9541bab1a4cbf2f6afaca2bf2afde40a4",
+    ".cache/pr06-f01-hud-build/assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+    ".cache/pr06-f01-hud-build/assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+    ".cache/pr06-f01-hud-build/assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+    ".cache/pr06-f01-hud-build/docs/verification/pr06-f01-correction/experiment/index.html": "2a04f87574f7cbb703f3ee7cb5f1b8ce9da2339c96c48409da14ccd08a48903c"
+  }
+}

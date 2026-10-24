@@ -13,8 +13,12 @@ import { speechService } from '../services/speechService';
 import { VisionEngine } from '../services/visionEngine';
 import { JobLock, startFrameScheduler } from '../services/frameScheduler';
 import { HUD_INTERVAL_MS, PerformanceMetrics, type PerformanceSnapshot } from '../services/performanceMetrics';
+import { PipelineMetrics, PipelineProbe, telemetry, type InferenceMeasurement } from '../services/pipelineMetrics';
+import { readPipelineSnapshot, type PipelineSnapshotView } from '../services/pipelineSnapshotView';
 import { modelMetadata } from '../services/modelRegistry';
 import { useCameraStream } from '../hooks/useCameraStream';
+import { drawCanvasFrame } from '../services/canvasRenderer';
+import { PipelineDetails } from './PipelineDetails';
 import { clientPointToVideo } from '../services/videoCoordinates';
 
 interface VisionCanvasProps {
@@ -69,6 +73,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   const [fault, setFault] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
   const [stats, setStats] = useState<PerformanceSnapshot>({ inferenceFps: null, drawFps: null, processingMs: null, stalled: false });
+  const [pipelineStats, setPipelineStats] = useState<PipelineSnapshotView | null>(null);
   const latest = useRef({ onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel });
   useLayoutEffect(() => {
     latest.current = { onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel };
@@ -84,6 +89,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     setClickRipple(null);
     setFault(null);
     setInferenceError(false);
+    setPipelineStats(null);
     setStats({ inferenceFps: null, drawFps: null, processingMs: null, stalled: false });
     try { latest.current.onFrame(null); }
     catch { setFault('結果通知エラー'); }
@@ -95,6 +101,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
   useLayoutEffect(() => {
     if (!fault) return;
+    setPipelineStats(null);
     schedulerGeneration.current++;
     latestFrameRef.current = null;
     engine.clearDetections();
@@ -121,6 +128,15 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     let warned = false;
     let inferenceFailed = false;
     const metrics = new PerformanceMetrics();
+    const pipeline = new PipelineMetrics();
+    const drawProbe = new PipelineProbe(pipeline);
+    let latestMeasurement: InferenceMeasurement | undefined;
+    let needsFirstDraw = false;
+    const discard = (reason: 'cancelled' | 'hidden' | 'draw-failed') => {
+      telemetry(() => pipeline.discardAll(reason)); needsFirstDraw = false;
+    };
+    const visibility = () => { if (document.hidden) discard('hidden'); };
+    document.addEventListener('visibilitychange', visibility);
     const current = () => {
       const props = latest.current;
       const state = engine.getState();
@@ -131,6 +147,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     let cancelAcquisition = () => {};
     const fail = (stage: string) => {
       if (!current()) return;
+      discard(stage === '描画エラー' ? 'draw-failed' : 'cancelled');
       stopped = true;
       cancelAcquisition();
       if (drawId !== null) cancelAnimationFrame(drawId);
@@ -140,18 +157,25 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       setFault(stage);
     };
     cancelAcquisition = startFrameScheduler({
-      video, current, bootstrap, lock: lockRef.current, input: () => metrics.input(),
+      video, current, bootstrap, instrumentation: pipeline, lock: lockRef.current, input: () => metrics.input(),
       captureError: () => fail('映像フレーム取得エラー'),
       work: input => {
         const start = performance.now();
-        const result = engine.detectVideoFrame(input, activeModel, latest.current.renderOptions.confidenceThreshold);
+        const result = engine.detectVideoFrame(input, activeModel, latest.current.renderOptions.confidenceThreshold, pipeline);
         const end = performance.now();
         return { result, start, end };
       },
-      adopt: ({ result, start, end }) => {
+      adopt: ({ result, start, end }, measurement) => {
         if (!current() || result.status !== 'ready' || result.requestId !== requestId || result.model !== activeModel) return;
         inferenceFailed = false;
         metrics.inferenceCompleted(start, end);
+        telemetry(() => {
+          if (latestMeasurement) pipeline.discard(latestMeasurement.jobId, 'overwritten');
+          if (measurement) pipeline.accept(measurement);
+        });
+        latestMeasurement = measurement;
+        needsFirstDraw = !!measurement;
+        if (document.hidden) discard('hidden');
         latestFrameRef.current = result;
         dirty = true;
         const config = latest.current.ttsConfig;
@@ -169,6 +193,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       error: cause => {
         if (!current()) return;
         // Repair only temporary scene state, retaining the ready model/task.
+        discard('cancelled');
         inferenceFailed = true;
         engine.clearDetections();
         latestFrameRef.current = null;
@@ -178,34 +203,33 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     });
     const draw = () => {
       if (!current()) return;
+      const drawStart = drawProbe.start();
+      let drawOutcome: 'success' | 'failed' | 'cancelled' = 'cancelled';
+      let drawEnded = false;
       try {
         const canvas = canvasRef.current;
         const frame = latestFrameRef.current;
         if (canvas) {
-          if (video.videoWidth > 0 && canvas.width !== video.videoWidth) canvas.width = video.videoWidth;
-          if (video.videoHeight > 0 && canvas.height !== video.videoHeight) canvas.height = video.videoHeight;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) throw new Error('Overlay context unavailable');
-          if (frame && video.readyState >= 2) {
-            const offscreen = offscreenCanvasRef.current ??= document.createElement('canvas');
-            // Assigning dimensions also resets context state after a failed draw.
-            offscreen.width = canvas.width; offscreen.height = canvas.height;
-            const offCtx = offscreen.getContext('2d');
-            if (!offCtx) throw new Error('Overlay buffer unavailable');
-            drawRef.current(offCtx, offscreen.width, offscreen.height, frame.objects);
-            if (!current()) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(offscreen, 0, 0);
+          const copied = drawCanvasFrame(canvas, video, frame, offscreenCanvasRef, drawRef.current, current);
+          drawOutcome = current() ? 'success' : 'cancelled';
+          drawProbe.end('draw', drawStart, drawOutcome); drawEnded = true;
+          if (copied) {
+            if (needsFirstDraw && latestMeasurement) {
+              telemetry(() => pipeline.firstDraw(latestMeasurement!));
+              needsFirstDraw = false;
+            }
             metrics.drawCompleted();
-          } else ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
         }
-      } catch { fail('描画エラー'); }
-      finally { if (current()) drawId = requestAnimationFrame(draw); }
+      } catch { drawOutcome = 'failed'; drawProbe.end('draw', drawStart, drawOutcome); drawEnded = true; fail('描画エラー'); }
+      finally { if (!drawEnded) drawProbe.end('draw', drawStart, drawOutcome); if (current()) drawId = requestAnimationFrame(draw); }
     };
     drawId = requestAnimationFrame(draw);
     const hud = setInterval(() => {
       if (!current()) return;
       setStats(metrics.snapshot());
+      const snapshot = telemetry(() => readPipelineSnapshot(pipeline.snapshot()));
+      setPipelineStats(snapshot ?? null);
       setInferenceError(inferenceFailed);
       if (dirty) {
         dirty = false;
@@ -218,6 +242,8 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       }
     }, HUD_INTERVAL_MS);
     return () => {
+      discard('cancelled');
+      document.removeEventListener('visibilitychange', visibility);
       stopped = true;
       cancelAcquisition();
       clearInterval(hud);
@@ -428,6 +454,8 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
         <span aria-label="描画FPS" className="ml-2">描画: {stats.drawFps === null || fault || !cameraReady || !modelReady ? '未計測' : `${stats.drawFps.toFixed(1)} FPS`}</span>
         <span aria-label="フレーム処理時間" className="ml-2">フレーム処理: {stats.processingMs === null || fault || !cameraReady || !modelReady ? '未計測' : `${stats.processingMs.toFixed(1)} ms`}</span>
       </div>
+
+      <PipelineDetails snapshot={pipelineStats} />
 
       {fault && <div className="absolute bottom-10 z-30 bg-slate-900 p-2 text-xs" role="alert">{fault}：処理を停止しました。<button onClick={() => setRetry(value => value + 1)}>処理を再試行</button></div>}
 

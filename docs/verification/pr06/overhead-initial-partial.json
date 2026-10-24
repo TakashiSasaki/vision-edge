@@ -1,0 +1,5724 @@
+{
+  "environment": {
+    "browser": "154.0.8037.57",
+    "node": "v24.19.0",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "hardwareConcurrency": 5
+  },
+  "warmup": [
+    {
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 16,
+      "counts": {
+        "captured": 48,
+        "compared": 77,
+        "processed": 16,
+        "drawn": 16,
+        "sdk": 16,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 951.5,
+      "total": {
+        "count": 16,
+        "mean": 59.443749999998545,
+        "median": 58.050000000046566,
+        "p95": 73.80000000004657,
+        "max": 73.80000000004657,
+        "variance": 73.99871093741457
+      },
+      "engine": {
+        "count": 16,
+        "mean": 0.16874999999708962,
+        "median": 0.09999999997671694,
+        "p95": 0.8000000000465661,
+        "max": 0.8000000000465661,
+        "variance": 0.03339843750127329
+      },
+      "draw": {
+        "count": 16,
+        "mean": 0.2062499999810825,
+        "median": 0.1499999999650754,
+        "p95": 1.1999999999534339,
+        "max": 1.1999999999534339,
+        "variance": 0.06933593749645298
+      },
+      "hud": {
+        "count": 2,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 16
+    },
+    {
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 16,
+      "counts": {
+        "captured": 48,
+        "compared": 77,
+        "processed": 16,
+        "drawn": 16,
+        "sdk": 16,
+        "released": 0,
+        "snapshot": 2,
+        "metricClock": 559,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 972.5,
+      "total": {
+        "count": 16,
+        "mean": 60.76875000000291,
+        "median": 62.54999999998836,
+        "p95": 76.79999999993015,
+        "max": 76.79999999993015,
+        "variance": 102.13464843731771
+      },
+      "engine": {
+        "count": 16,
+        "mean": 0.05625000001600711,
+        "median": 0,
+        "p95": 0.30000000004656613,
+        "max": 0.30000000004656613,
+        "variance": 0.0062109375025647786
+      },
+      "draw": {
+        "count": 16,
+        "mean": 0.26250000001164153,
+        "median": 0.19999999995343387,
+        "p95": 1.2000000000698492,
+        "max": 1.2000000000698492,
+        "variance": 0.06859375000844009
+      },
+      "hud": {
+        "count": 2,
+        "mean": 4.050000000046566,
+        "median": 4.050000000046566,
+        "p95": 6.700000000069849,
+        "max": 6.700000000069849,
+        "variance": 7.0225000001234
+      },
+      "checksum": 16
+    },
+    {
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 16,
+      "counts": {
+        "captured": 48,
+        "compared": 77,
+        "processed": 16,
+        "drawn": 16,
+        "sdk": 16,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 16,
+        "maskClosed": 16
+      },
+      "elapsedMs": 884.1999999999534,
+      "total": {
+        "count": 16,
+        "mean": 55.26249999999709,
+        "median": 55.70000000001164,
+        "p95": 64.19999999995343,
+        "max": 64.19999999995343,
+        "variance": 34.52734375010804
+      },
+      "engine": {
+        "count": 16,
+        "mean": 2.381249999998545,
+        "median": 2,
+        "p95": 7.699999999953434,
+        "max": 7.699999999953434,
+        "variance": 1.915273437465603
+      },
+      "draw": {
+        "count": 16,
+        "mean": 0.28125000000727596,
+        "median": 0.19999999995343387,
+        "p95": 2.099999999976717,
+        "max": 2.099999999976717,
+        "variance": 0.22277343749357897
+      },
+      "hud": {
+        "count": 2,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 16
+    },
+    {
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 16,
+      "counts": {
+        "captured": 48,
+        "compared": 77,
+        "processed": 16,
+        "drawn": 16,
+        "sdk": 16,
+        "released": 0,
+        "snapshot": 2,
+        "metricClock": 623,
+        "maskRead": 16,
+        "maskClosed": 16
+      },
+      "elapsedMs": 878.6999999999534,
+      "total": {
+        "count": 16,
+        "mean": 54.78125,
+        "median": 55.79999999998836,
+        "p95": 62.60000000009313,
+        "max": 62.60000000009313,
+        "variance": 55.25277343757535
+      },
+      "engine": {
+        "count": 16,
+        "mean": 2.5500000000247383,
+        "median": 2.200000000069849,
+        "p95": 7.199999999953434,
+        "max": 7.199999999953434,
+        "variance": 1.533749999954453
+      },
+      "draw": {
+        "count": 16,
+        "mean": 0.2749999999796273,
+        "median": 0.19999999995343387,
+        "p95": 1.400000000023283,
+        "max": 1.400000000023283,
+        "variance": 0.08937500000713046
+      },
+      "hud": {
+        "count": 2,
+        "mean": 1.6000000000349246,
+        "median": 1.6000000000349246,
+        "p95": 2.5,
+        "max": 2.5,
+        "variance": 0.8099999999371357
+      },
+      "checksum": 16
+    },
+    {
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 16,
+      "counts": {
+        "captured": 48,
+        "compared": 0,
+        "processed": 16,
+        "drawn": 16,
+        "sdk": 16,
+        "released": 48,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 3.699999999953434,
+      "total": {
+        "count": 16,
+        "mean": 0.2249999999985448,
+        "median": 0.09999999997671694,
+        "p95": 2.199999999953434,
+        "max": 2.199999999953434,
+        "variance": 0.26687499998668507
+      },
+      "engine": {
+        "count": 16,
+        "mean": 0.0062499999985448085,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.0005859374997271518
+      },
+      "draw": {
+        "count": 16,
+        "mean": 0.10624999998981366,
+        "median": 0.04999999998835847,
+        "p95": 0.7999999999301508,
+        "max": 0.7999999999301508,
+        "variance": 0.03808593749226932
+      },
+      "hud": {
+        "count": 2,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 16
+    },
+    {
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 16,
+      "counts": {
+        "captured": 48,
+        "compared": 0,
+        "processed": 16,
+        "drawn": 16,
+        "sdk": 16,
+        "released": 48,
+        "snapshot": 2,
+        "metricClock": 403,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 3.700000000069849,
+      "total": {
+        "count": 16,
+        "mean": 0.21875,
+        "median": 0.09999999997671694,
+        "p95": 1.400000000023283,
+        "max": 1.400000000023283,
+        "variance": 0.13527343750058204
+      },
+      "engine": {
+        "count": 16,
+        "mean": 0.018750000002910383,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 0.2000000000698492,
+        "variance": 0.0027734375013460525
+      },
+      "draw": {
+        "count": 16,
+        "mean": 0.06874999999854481,
+        "median": 0,
+        "p95": 0.8000000000465661,
+        "max": 0.8000000000465661,
+        "variance": 0.03714843750398355
+      },
+      "hud": {
+        "count": 2,
+        "mean": 0.5499999999301508,
+        "median": 0.5499999999301508,
+        "p95": 0.6999999999534339,
+        "max": 0.6999999999534339,
+        "variance": 0.02250000000698492
+      },
+      "checksum": 16
+    },
+    {
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 16,
+      "counts": {
+        "captured": 48,
+        "compared": 0,
+        "processed": 16,
+        "drawn": 16,
+        "sdk": 16,
+        "released": 48,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 16,
+        "maskClosed": 16
+      },
+      "elapsedMs": 54.800000000046566,
+      "total": {
+        "count": 16,
+        "mean": 3.4250000000029104,
+        "median": 3.1000000000349246,
+        "p95": 8.599999999976717,
+        "max": 8.599999999976717,
+        "variance": 2.1706249999853022
+      },
+      "engine": {
+        "count": 16,
+        "mean": 3.1062500000189175,
+        "median": 2.800000000046566,
+        "p95": 6.800000000046566,
+        "max": 6.800000000046566,
+        "variance": 1.2468359375154794
+      },
+      "draw": {
+        "count": 16,
+        "mean": 0.2312499999825377,
+        "median": 0.19999999995343387,
+        "p95": 1.1999999999534339,
+        "max": 1.1999999999534339,
+        "variance": 0.06964843749730792
+      },
+      "hud": {
+        "count": 2,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 16
+    },
+    {
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 16,
+      "counts": {
+        "captured": 48,
+        "compared": 0,
+        "processed": 16,
+        "drawn": 16,
+        "sdk": 16,
+        "released": 48,
+        "snapshot": 2,
+        "metricClock": 467,
+        "maskRead": 16,
+        "maskClosed": 16
+      },
+      "elapsedMs": 38.09999999997672,
+      "total": {
+        "count": 16,
+        "mean": 2.381249999998545,
+        "median": 2.200000000069849,
+        "p95": 4.199999999953434,
+        "max": 4.199999999953434,
+        "variance": 0.26152343748772183
+      },
+      "engine": {
+        "count": 16,
+        "mean": 2.1374999999825377,
+        "median": 2.099999999976717,
+        "p95": 2.799999999930151,
+        "max": 2.799999999930151,
+        "variance": 0.04484374999112334
+      },
+      "draw": {
+        "count": 16,
+        "mean": 0.125,
+        "median": 0.09999999997671694,
+        "p95": 0.9000000000232831,
+        "max": 0.9000000000232831,
+        "variance": 0.044375000001164164
+      },
+      "hud": {
+        "count": 2,
+        "mean": 0.3500000000349246,
+        "median": 0.3500000000349246,
+        "p95": 0.40000000002328306,
+        "max": 0.40000000002328306,
+        "variance": 0.0024999999988358466
+      },
+      "checksum": 16
+    }
+  ],
+  "trials": [
+    {
+      "pair": 0,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1758.7000000000698,
+      "total": {
+        "count": 32,
+        "mean": 54.95625000000291,
+        "median": 54.199999999953434,
+        "p95": 62.199999999953434,
+        "max": 64,
+        "variance": 32.86871093735457
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.028125000000727596,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.10000000009313226,
+        "variance": 0.0020214843751045924
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.14375000001018634,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.9000000000232831,
+        "variance": 0.021210937500854943
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 0,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1746,
+      "total": {
+        "count": 32,
+        "mean": 54.55937499999709,
+        "median": 54.95000000001164,
+        "p95": 63,
+        "max": 64.20000000006985,
+        "variance": 37.48991210955956
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.040624999994179234,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.0024121093743087836
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.17812500000582077,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 0.8999999999068677,
+        "variance": 0.021083984372344267
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.7999999999592546,
+        "median": 0.6999999999534339,
+        "p95": 1.099999999976717,
+        "max": 1.099999999976717,
+        "variance": 0.030000000003492462
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 1,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1759.0999999999767,
+      "total": {
+        "count": 32,
+        "mean": 54.953125,
+        "median": 55.45000000001164,
+        "p95": 59.59999999997672,
+        "max": 63.199999999953434,
+        "variance": 30.634990234324203
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.05000000000291038,
+        "median": 0,
+        "p95": 0.2999999999301508,
+        "max": 0.30000000004656613,
+        "variance": 0.006250000000000004
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.25937499999417923,
+        "median": 0.1000000000349246,
+        "p95": 0.7999999999301508,
+        "max": 3.5,
+        "variance": 0.3567871093733627
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.5250000000232831,
+        "median": 0.5,
+        "p95": 0.6000000000931323,
+        "max": 0.6000000000931323,
+        "variance": 0.0018750000034924597
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 1,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1759.9000000000233,
+      "total": {
+        "count": 32,
+        "mean": 54.99062500000218,
+        "median": 55.95000000001164,
+        "p95": 57.90000000002328,
+        "max": 58.40000000002328,
+        "variance": 28.353349609377073
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.03124999999636202,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.19999999995343387,
+        "variance": 0.00277343749920874
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.15312500000800355,
+        "median": 0.09999999997671694,
+        "p95": 0.2999999999301508,
+        "max": 1,
+        "variance": 0.027490234375022755
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 2,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1810.1999999999534,
+      "total": {
+        "count": 32,
+        "mean": 56.568749999998545,
+        "median": 56.79999999998836,
+        "p95": 63.5,
+        "max": 63.79999999993015,
+        "variance": 25.575898437561616
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.03750000000218279,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.10000000009313226,
+        "variance": 0.002343750000272849
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.2687499999956344,
+        "median": 0.15000000002328306,
+        "p95": 1.400000000023283,
+        "max": 2.8999999999068677,
+        "variance": 0.2765234374861936
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 2,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1829.5,
+      "total": {
+        "count": 32,
+        "mean": 57.16562499999782,
+        "median": 57.25,
+        "p95": 64.19999999995343,
+        "max": 71,
+        "variance": 43.10975585937808
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.05312500000218279,
+        "median": 0.04999999998835847,
+        "p95": 0.10000000009313226,
+        "max": 0.19999999995343387,
+        "variance": 0.0031152343749135994
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.30624999999054126,
+        "median": 0.19999999995343387,
+        "p95": 1,
+        "max": 4,
+        "variance": 0.4668359375015735
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.5499999999883585,
+        "median": 0.5,
+        "p95": 0.6999999999534339,
+        "max": 0.6999999999534339,
+        "variance": 0.00749999999650754
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 3,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1690.4000000000233,
+      "total": {
+        "count": 32,
+        "mean": 52.734375,
+        "median": 53.54999999998836,
+        "p95": 55.59999999997672,
+        "max": 57.300000000046566,
+        "variance": 25.873505859395213
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.046875000010913936,
+        "median": 0,
+        "p95": 0.30000000004656613,
+        "max": 0.30000000004656613,
+        "variance": 0.006240234377323759
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1375000000007276,
+        "median": 0.09999999997671694,
+        "p95": 0.5999999999767169,
+        "max": 0.7999999999301508,
+        "variance": 0.024843749996161932
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.5500000000174623,
+        "median": 0.5,
+        "p95": 0.8000000000465661,
+        "max": 0.8000000000465661,
+        "variance": 0.02250000000407454
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 3,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1672.5,
+      "total": {
+        "count": 32,
+        "mean": 52.25625000000218,
+        "median": 52.59999999997672,
+        "p95": 55.300000000046566,
+        "max": 62.59999999997672,
+        "variance": 30.204960937356848
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.04062500000145519,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.10000000009313226,
+        "variance": 0.002412109375172805
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.12812500001018634,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.6999999999534339,
+        "variance": 0.013896484373553907
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 4,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1722.5,
+      "total": {
+        "count": 32,
+        "mean": 53.828125,
+        "median": 52.90000000002328,
+        "p95": 70.60000000009313,
+        "max": 77.09999999997672,
+        "variance": 63.43014648429192
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.034374999995634425,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.0022558593744270183
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.24062499999490683,
+        "median": 0.09999999997671694,
+        "p95": 0.7000000000698492,
+        "max": 3.400000000023283,
+        "variance": 0.3367871093835631
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 4,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1720,
+      "total": {
+        "count": 32,
+        "mean": 53.740624999998545,
+        "median": 54.04999999998836,
+        "p95": 60.5,
+        "max": 62.79999999993015,
+        "variance": 33.76866210940482
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.06249999999636202,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.2000000000698492,
+        "variance": 0.004218750000309229
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1687500000007276,
+        "median": 0.10000000009313226,
+        "p95": 0.30000000004656613,
+        "max": 0.8000000000465661,
+        "variance": 0.017148437501791704
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.0249999999941792,
+        "median": 0.5499999999883585,
+        "p95": 2.6000000000931323,
+        "max": 2.6000000000931323,
+        "variance": 0.8318750001073931
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 5,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1787,
+      "total": {
+        "count": 32,
+        "mean": 55.837500000001455,
+        "median": 55.40000000008149,
+        "p95": 62.90000000002328,
+        "max": 78.89999999990687,
+        "variance": 51.18546874984507
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.06249999999636202,
+        "median": 0,
+        "p95": 0.19999999995343387,
+        "max": 0.9000000000232831,
+        "variance": 0.02546875000060026
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.18124999999417923,
+        "median": 0.19999999995343387,
+        "p95": 0.39999999990686774,
+        "max": 0.7999999999301508,
+        "variance": 0.019023437496143745
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.5750000000116415,
+        "median": 0.5499999999883585,
+        "p95": 0.7000000000698492,
+        "max": 0.7000000000698492,
+        "variance": 0.006875000004074537
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 5,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1807,
+      "total": {
+        "count": 32,
+        "mean": 56.46562500000073,
+        "median": 55.70000000001164,
+        "p95": 75.09999999997672,
+        "max": 76.89999999990687,
+        "variance": 61.31850585932588
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.04062500000145519,
+        "median": 0,
+        "p95": 0.19999999995343387,
+        "max": 0.2000000000698492,
+        "variance": 0.003662109375318324
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.20312500000363798,
+        "median": 0.19999999995343387,
+        "p95": 0.40000000002328306,
+        "max": 1.3000000000465661,
+        "variance": 0.04655273437919732
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 6,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1777,
+      "total": {
+        "count": 32,
+        "mean": 55.52187500000218,
+        "median": 55.79999999998836,
+        "p95": 61.199999999953434,
+        "max": 64.69999999995343,
+        "variance": 34.86608398430096
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.07499999999708962,
+        "median": 0.09999999997671694,
+        "p95": 0.19999999995343387,
+        "max": 0.19999999995343387,
+        "variance": 0.0031249999992724047
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.27500000000873115,
+        "median": 0.10000000009313226,
+        "p95": 1.099999999976717,
+        "max": 3.6000000000931323,
+        "variance": 0.3875000000174625
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 6,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1770.8000000000466,
+      "total": {
+        "count": 32,
+        "mean": 55.33437500000218,
+        "median": 56.25,
+        "p95": 61.60000000009313,
+        "max": 63.40000000002328,
+        "variance": 36.4185058593616
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.06875000000945874,
+        "median": 0.09999999997671694,
+        "p95": 0.19999999995343387,
+        "max": 0.2000000000698492,
+        "variance": 0.0033984375007366898
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1531250000007276,
+        "median": 0.10000000009313226,
+        "p95": 0.2000000000698492,
+        "max": 0.8000000000465661,
+        "variance": 0.017490234376814445
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.0249999999941792,
+        "median": 0.5,
+        "p95": 2.599999999976717,
+        "max": 2.599999999976717,
+        "variance": 0.8268749999816646
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 7,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1823.1999999999534,
+      "total": {
+        "count": 32,
+        "mean": 56.96875,
+        "median": 56.850000000034925,
+        "p95": 65.5,
+        "max": 66.29999999993015,
+        "variance": 40.175898437682484
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.04062499999781721,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.10000000009313226,
+        "variance": 0.0024121093747407948
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.21249999998690328,
+        "median": 0.19999999995343387,
+        "p95": 0.40000000002328306,
+        "max": 1.400000000023283,
+        "variance": 0.051718750001200554
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.6499999999941792,
+        "median": 0.5999999999767169,
+        "p95": 0.9000000000232831,
+        "max": 0.9000000000232831,
+        "variance": 0.02250000000407454
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 7,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1768.5,
+      "total": {
+        "count": 32,
+        "mean": 55.259375000001455,
+        "median": 55.199999999953434,
+        "p95": 64.30000000004657,
+        "max": 65.90000000002328,
+        "variance": 35.00053710925392
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.03749999999490683,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.0023437499993633534
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.14374999998835847,
+        "median": 0.1499999999650754,
+        "p95": 0.2000000000698492,
+        "max": 0.6999999999534339,
+        "variance": 0.016210937498544794
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 8,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1816.4000000000233,
+      "total": {
+        "count": 32,
+        "mean": 56.76250000000073,
+        "median": 57,
+        "p95": 62.20000000006985,
+        "max": 78.80000000004657,
+        "variance": 50.70484375000017
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.02187499999490683,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.2999999999301508,
+        "variance": 0.0035839843733310767
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.37812500000654836,
+        "median": 0.1000000000349246,
+        "p95": 0.8000000000465661,
+        "max": 7.200000000069849,
+        "variance": 1.5204589844045353
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 8,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1814.8000000000466,
+      "total": {
+        "count": 32,
+        "mean": 56.703125,
+        "median": 55.84999999997672,
+        "p95": 70.19999999995343,
+        "max": 71.80000000004657,
+        "variance": 59.307177734260804
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.05937500000800355,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 0.2000000000698492,
+        "variance": 0.004912109376668923
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1624999999839929,
+        "median": 0.1000000000349246,
+        "p95": 0.2000000000698492,
+        "max": 0.8999999999068677,
+        "variance": 0.020468749995743576
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.125,
+        "median": 0.5499999999883585,
+        "p95": 3,
+        "max": 3,
+        "variance": 1.1768749999976715
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 9,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1767.5999999999767,
+      "total": {
+        "count": 32,
+        "mean": 55.23125000000073,
+        "median": 54.84999999997672,
+        "p95": 69.70000000006985,
+        "max": 75,
+        "variance": 46.34089843751538
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.04687499999272404,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.19999999995343387,
+        "variance": 0.0031152343739358915
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.17500000000291038,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 0.8000000000465661,
+        "variance": 0.01812499999956345
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.1250000000582077,
+        "median": 0.6000000000931323,
+        "p95": 2.700000000069849,
+        "max": 2.700000000069849,
+        "variance": 0.8268750000122236
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 9,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1866.0999999999767,
+      "total": {
+        "count": 32,
+        "mean": 58.31562499999927,
+        "median": 58.84999999997672,
+        "p95": 66.79999999993015,
+        "max": 67.79999999993015,
+        "variance": 44.96694335935539
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.028125000000727596,
+        "median": 0,
+        "p95": 0.19999999995343387,
+        "max": 0.19999999995343387,
+        "variance": 0.0032714843745225153
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.18125000001236913,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 1,
+        "variance": 0.027148437501045918
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 10,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1709.7999999999302,
+      "total": {
+        "count": 32,
+        "mean": 53.42812499999491,
+        "median": 53,
+        "p95": 60.09999999997672,
+        "max": 60.59999999997672,
+        "variance": 30.608271484308332
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.021875000002182787,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.10000000009313226,
+        "variance": 0.0017089843753410605
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.22187499999199645,
+        "median": 0.09999999997671694,
+        "p95": 0.6999999999534339,
+        "max": 2.799999999930151,
+        "variance": 0.22858398436341748
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 10,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1722.4000000000233,
+      "total": {
+        "count": 32,
+        "mean": 53.821875000001455,
+        "median": 54.74999999994179,
+        "p95": 58.79999999993015,
+        "max": 62.09999999997672,
+        "variance": 34.01233398437539
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.11249999999563443,
+        "median": 0.09999999997671694,
+        "p95": 0.19999999995343387,
+        "max": 1.900000000023283,
+        "variance": 0.10609375000243741
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.26250000000800355,
+        "median": 0.19999999995343387,
+        "p95": 0.9000000000232831,
+        "max": 2.900000000023283,
+        "variance": 0.2454687500014733
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.5999999999767169,
+        "median": 0.5499999999883585,
+        "p95": 0.8999999999068677,
+        "max": 0.8999999999068677,
+        "variance": 0.044999999979045247
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 11,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1121,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1808.1999999999534,
+      "total": {
+        "count": 32,
+        "mean": 56.50312499999927,
+        "median": 56.95000000001164,
+        "p95": 61.199999999953434,
+        "max": 65.30000000004657,
+        "variance": 34.05905273445664
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.03125,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.19999999995343387,
+        "variance": 0.002773437499708962
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.17500000000654836,
+        "median": 0.19999999995343387,
+        "p95": 0.2000000000698492,
+        "max": 1,
+        "variance": 0.025624999999890846
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.0499999999883585,
+        "median": 0.5,
+        "p95": 2.799999999930151,
+        "max": 2.799999999930151,
+        "variance": 1.022499999931315
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 11,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 1676.3000000000466,
+      "total": {
+        "count": 32,
+        "mean": 52.37187500000073,
+        "median": 53.15000000002328,
+        "p95": 55.20000000006985,
+        "max": 56.10000000009313,
+        "variance": 25.657646484291227
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.018749999999272404,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.001523437499881766
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.13437499999054126,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.8000000000465661,
+        "variance": 0.01600585937695996
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 0,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1753.5,
+      "total": {
+        "count": 32,
+        "mean": 54.796875,
+        "median": 54.850000000034925,
+        "p95": 59.60000000009313,
+        "max": 62.60000000009313,
+        "variance": 24.08905273446419
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.062499999996362,
+        "median": 1.9500000000116415,
+        "p95": 3,
+        "max": 3.599999999976717,
+        "variance": 0.1279687499979809
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.20937499999490683,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 0.5999999999767169,
+        "variance": 0.008349609376114136
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 0,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1833.6999999999534,
+      "total": {
+        "count": 32,
+        "mean": 57.29999999999927,
+        "median": 58.15000000002328,
+        "p95": 64.20000000006985,
+        "max": 65,
+        "variance": 40.70812500011478
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1374999999970896,
+        "median": 2.099999999976717,
+        "p95": 2.599999999976717,
+        "max": 2.799999999930151,
+        "variance": 0.05921874999570719
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.22499999999490683,
+        "median": 0.19999999995343387,
+        "p95": 0.39999999990686774,
+        "max": 0.7000000000698492,
+        "variance": 0.012500000001273296
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.7749999999941792,
+        "median": 0.7999999999883585,
+        "p95": 1.099999999976717,
+        "max": 1.099999999976717,
+        "variance": 0.10687499998806742
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 1,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1812.1999999999534,
+      "total": {
+        "count": 32,
+        "mean": 56.62812499999927,
+        "median": 57.20000000001164,
+        "p95": 61.5,
+        "max": 64.29999999993015,
+        "variance": 28.96264648429109
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0375000000058208,
+        "median": 2,
+        "p95": 2.400000000023283,
+        "max": 2.900000000023283,
+        "variance": 0.05359374999796275
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.21874999998908606,
+        "median": 0.19999999995343387,
+        "p95": 0.5,
+        "max": 1,
+        "variance": 0.027773437501573437
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.3999999999941792,
+        "median": 0.7000000000116415,
+        "p95": 3.799999999930151,
+        "max": 3.799999999930151,
+        "variance": 1.939999999899883
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 1,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1781,
+      "total": {
+        "count": 32,
+        "mean": 55.64062499999636,
+        "median": 56.15000000002328,
+        "p95": 58.699999999953434,
+        "max": 67.19999999995343,
+        "variance": 30.550537109334556
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0187499999919964,
+        "median": 2,
+        "p95": 2.300000000046566,
+        "max": 2.700000000069849,
+        "variance": 0.030273437504956768
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.19687500000509317,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 0.8000000000465661,
+        "variance": 0.014677734375759432
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 2,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1804.5,
+      "total": {
+        "count": 32,
+        "mean": 56.390625,
+        "median": 56.54999999998836,
+        "p95": 63.199999999953434,
+        "max": 65.69999999995343,
+        "variance": 33.60272460923208
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0187499999919964,
+        "median": 2,
+        "p95": 2.400000000023283,
+        "max": 2.5,
+        "variance": 0.022773437498990468
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.22812500000873115,
+        "median": 0.2000000000698492,
+        "p95": 0.5,
+        "max": 0.8000000000465661,
+        "variance": 0.016396484377710286
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 2,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1740,
+      "total": {
+        "count": 32,
+        "mean": 54.368750000001455,
+        "median": 55.09999999997672,
+        "p95": 57.90000000002328,
+        "max": 58.40000000002328,
+        "variance": 23.423398437496033
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.006249999987631,
+        "median": 2,
+        "p95": 2.199999999953434,
+        "max": 3.199999999953434,
+        "variance": 0.05308593749869947
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1968750000014552,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 0.9000000000232831,
+        "variance": 0.0190527343773374
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.47499999997671694,
+        "median": 0.45000000001164153,
+        "p95": 0.5999999999767169,
+        "max": 0.5999999999767169,
+        "variance": 0.006875000001164153
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 3,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1853.0999999999767,
+      "total": {
+        "count": 32,
+        "mean": 57.900000000001455,
+        "median": 57.90000000002328,
+        "p95": 63.199999999953434,
+        "max": 63.29999999993015,
+        "variance": 20.968749999856676
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.531250000003638,
+        "median": 2.400000000023283,
+        "p95": 2.8999999999068677,
+        "max": 7.599999999976717,
+        "variance": 0.8877734374824562
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.29062500000873115,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 4,
+        "variance": 0.4489746093747273
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.9500000000407454,
+        "median": 2.1000000000349246,
+        "p95": 2.800000000046566,
+        "max": 2.800000000046566,
+        "variance": 0.5224999999982538
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 3,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1866.5999999999767,
+      "total": {
+        "count": 32,
+        "mean": 58.32812499999636,
+        "median": 57.84999999997672,
+        "p95": 66.09999999997672,
+        "max": 72.70000000006985,
+        "variance": 33.71514648443663
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.2718750000058208,
+        "median": 2.099999999976717,
+        "p95": 2.800000000046566,
+        "max": 7.5,
+        "variance": 0.94514648437751
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.2937500000152795,
+        "median": 0.20000000001164153,
+        "p95": 1.099999999976717,
+        "max": 2.5,
+        "variance": 0.1843359374959709
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 4,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1785.5999999999767,
+      "total": {
+        "count": 32,
+        "mean": 55.796875,
+        "median": 56.70000000001164,
+        "p95": 58.699999999953434,
+        "max": 61.09999999997672,
+        "variance": 27.11155273448572
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.084374999998545,
+        "median": 2,
+        "p95": 2.599999999976717,
+        "max": 2.900000000023283,
+        "variance": 0.04444335937524556
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.26250000001164153,
+        "median": 0.19999999995343387,
+        "p95": 0.7000000000698492,
+        "max": 1.7999999999301508,
+        "variance": 0.0917187499933061
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 4,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1760,
+      "total": {
+        "count": 32,
+        "mean": 54.99687500000073,
+        "median": 55.79999999998836,
+        "p95": 58.20000000006985,
+        "max": 60.09999999997672,
+        "variance": 24.41342773445316
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0656250000029104,
+        "median": 2,
+        "p95": 3,
+        "max": 3.900000000023283,
+        "variance": 0.1478808593779649
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.2937500000189175,
+        "median": 0.2000000000698492,
+        "p95": 0.9000000000232831,
+        "max": 2.700000000069849,
+        "variance": 0.20496093750678485
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.6750000000465661,
+        "median": 0.7000000000698492,
+        "p95": 0.8000000000465661,
+        "max": 0.8000000000465661,
+        "variance": 0.011875000004656612
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 5,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1801.5,
+      "total": {
+        "count": 32,
+        "mean": 56.29375000000073,
+        "median": 55.95000000001164,
+        "p95": 63.60000000009313,
+        "max": 65.69999999995343,
+        "variance": 35.148085937552665
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0906249999970896,
+        "median": 2,
+        "p95": 2.599999999976717,
+        "max": 2.799999999930151,
+        "variance": 0.048974609368542595
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.20624999999563443,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 0.7999999999301508,
+        "variance": 0.014335937496416578
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.7750000000232831,
+        "median": 0.5,
+        "p95": 1.7000000000698492,
+        "max": 1.7000000000698492,
+        "variance": 0.28687500002793964
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 5,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1788.1999999999534,
+      "total": {
+        "count": 32,
+        "mean": 55.87187499999345,
+        "median": 55.29999999998836,
+        "p95": 67.90000000002328,
+        "max": 76.5,
+        "variance": 44.7976464844541
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2,
+        "median": 1.900000000023283,
+        "p95": 2.699999999953434,
+        "max": 2.800000000046566,
+        "variance": 0.04687499999708962
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.19999999999345164,
+        "median": 0.19999999995343387,
+        "p95": 0.5,
+        "max": 0.9000000000232831,
+        "variance": 0.022500000002619324
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.024999999994179234,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.001874999999126885
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 6,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1825,
+      "total": {
+        "count": 32,
+        "mean": 57.02499999999782,
+        "median": 56.65000000002328,
+        "p95": 71.89999999990687,
+        "max": 74.30000000004657,
+        "variance": 52.6231250000458
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.046875000007276,
+        "median": 2,
+        "p95": 2.6000000000931323,
+        "max": 2.700000000069849,
+        "variance": 0.035615234379265524
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.23437500001091394,
+        "median": 0.2000000000698492,
+        "p95": 0.5,
+        "max": 0.8000000000465661,
+        "variance": 0.01663085937657797
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 6,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1767.8000000000466,
+      "total": {
+        "count": 32,
+        "mean": 55.23750000000291,
+        "median": 55.45000000001164,
+        "p95": 59.800000000046566,
+        "max": 64.29999999993015,
+        "variance": 27.0992187499014
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0124999999934516,
+        "median": 1.9500000000116415,
+        "p95": 2.300000000046566,
+        "max": 2.900000000023283,
+        "variance": 0.042968750004092705
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.31249999998908606,
+        "median": 0.19999999995343387,
+        "p95": 1,
+        "max": 3.299999999930151,
+        "variance": 0.31234374998761255
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.4250000000174623,
+        "median": 0.40000000002328306,
+        "p95": 0.5999999999767169,
+        "max": 0.5999999999767169,
+        "variance": 0.011874999994470272
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 7,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1787.7999999999302,
+      "total": {
+        "count": 32,
+        "mean": 55.865624999998545,
+        "median": 56.79999999993015,
+        "p95": 58.39999999990687,
+        "max": 58.40000000002328,
+        "variance": 27.39600585944957
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.115624999987631,
+        "median": 2.099999999976717,
+        "p95": 2.599999999976717,
+        "max": 2.799999999930151,
+        "variance": 0.0425683593758231
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.2093749999985448,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 1,
+        "variance": 0.02334960937706453
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.5,
+        "median": 0.5,
+        "p95": 0.5999999999767169,
+        "max": 0.5999999999767169,
+        "variance": 0.004999999997671693
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 7,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1854.0999999999767,
+      "total": {
+        "count": 32,
+        "mean": 57.9375,
+        "median": 56,
+        "p95": 77.79999999993015,
+        "max": 80.40000000002328,
+        "variance": 72.71296874997033
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0687500000058208,
+        "median": 2,
+        "p95": 2.800000000046566,
+        "max": 2.900000000023283,
+        "variance": 0.06277343750123691
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.22187499999563443,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 0.7999999999301508,
+        "variance": 0.016083984372717162
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 8,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 2001.3000000000466,
+      "total": {
+        "count": 32,
+        "mean": 62.53437500000291,
+        "median": 60.65000000002328,
+        "p95": 77,
+        "max": 86.40000000002328,
+        "variance": 85.54663085935694
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.209375000002183,
+        "median": 2.099999999976717,
+        "p95": 3.099999999976717,
+        "max": 3.299999999930151,
+        "variance": 0.12084960936579138
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.2281250000160071,
+        "median": 0.19999999995343387,
+        "p95": 1,
+        "max": 1.099999999976717,
+        "variance": 0.048896484372353395
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 8,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1791,
+      "total": {
+        "count": 32,
+        "mean": 55.962500000001455,
+        "median": 56.29999999993015,
+        "p95": 61.59999999997672,
+        "max": 62.20000000006985,
+        "variance": 25.427343750040578
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.015624999992724,
+        "median": 1.900000000023283,
+        "p95": 2.3999999999068677,
+        "max": 3.099999999976717,
+        "variance": 0.057568359370861806
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.21874999998544808,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 0.8999999999068677,
+        "variance": 0.018398437496616668
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.4499999999825377,
+        "median": 0.5999999999767169,
+        "p95": 4.199999999953434,
+        "max": 4.199999999953434,
+        "variance": 2.5324999999412103
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 9,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1866.0999999999767,
+      "total": {
+        "count": 32,
+        "mean": 58.306250000001455,
+        "median": 57.34999999997672,
+        "p95": 69.69999999995343,
+        "max": 87.5,
+        "variance": 70.54558593746262
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.131249999998545,
+        "median": 2,
+        "p95": 2.900000000023283,
+        "max": 4,
+        "variance": 0.1633984375043112
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.2531249999992724,
+        "median": 0.20000000001164153,
+        "p95": 0.8000000000465661,
+        "max": 1.1999999999534339,
+        "variance": 0.04624023437347661
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.3999999999941792,
+        "median": 0.6499999999650754,
+        "p95": 3.800000000046566,
+        "max": 3.800000000046566,
+        "variance": 1.9250000000814909
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 9,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1906.3000000000466,
+      "total": {
+        "count": 32,
+        "mean": 59.571875000001455,
+        "median": 58.20000000001164,
+        "p95": 76.39999999990687,
+        "max": 77.40000000002328,
+        "variance": 53.93389648424021
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1843750000080036,
+        "median": 2.099999999976717,
+        "p95": 2.599999999976717,
+        "max": 5,
+        "variance": 0.2863183593749592
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.26249999998981366,
+        "median": 0.19999999995343387,
+        "p95": 1,
+        "max": 1.900000000023283,
+        "variance": 0.10984375000287401
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 10,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1778.5999999999767,
+      "total": {
+        "count": 32,
+        "mean": 55.57500000000073,
+        "median": 56.09999999997672,
+        "p95": 60.800000000046566,
+        "max": 61,
+        "variance": 28.88624999991346
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1906249999919964,
+        "median": 2,
+        "p95": 2.799999999930151,
+        "max": 5.300000000046566,
+        "variance": 0.36897460938139837
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.2062499999992724,
+        "median": 0.19999999995343387,
+        "p95": 0.30000000004656613,
+        "max": 0.8000000000465661,
+        "variance": 0.014335937502919489
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 10,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1838.8000000000466,
+      "total": {
+        "count": 32,
+        "mean": 57.446875000001455,
+        "median": 57.25,
+        "p95": 64.5,
+        "max": 66.80000000004657,
+        "variance": 38.98874023431362
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.093750000007276,
+        "median": 2,
+        "p95": 2.900000000023283,
+        "max": 3,
+        "variance": 0.07308593750198271
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.23124999999345164,
+        "median": 0.19999999995343387,
+        "p95": 0.5999999999767169,
+        "max": 0.9000000000232831,
+        "variance": 0.023398437500700295
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.150000000023283,
+        "median": 0.6500000000232831,
+        "p95": 2.900000000023283,
+        "max": 2.900000000023283,
+        "variance": 1.0325000000023283
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 11,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 4,
+        "metricClock": 1249,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1830.2000000000698,
+      "total": {
+        "count": 32,
+        "mean": 57.1875,
+        "median": 57.149999999965075,
+        "p95": 64.29999999993015,
+        "max": 64.90000000002328,
+        "variance": 31.469218749990667
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1875,
+        "median": 2,
+        "p95": 4.099999999976717,
+        "max": 4.400000000023283,
+        "variance": 0.3292187500034924
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.2406249999985448,
+        "median": 0.2000000000698492,
+        "p95": 0.5,
+        "max": 0.9000000000232831,
+        "variance": 0.020537109377009963
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.5249999999650754,
+        "median": 0.5,
+        "p95": 0.6999999999534339,
+        "max": 0.6999999999534339,
+        "variance": 0.016874999999417925
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 11,
+      "width": 640,
+      "height": 480,
+      "path": "rgba",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 157,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 0,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 1835.1999999999534,
+      "total": {
+        "count": 32,
+        "mean": 57.34687499999927,
+        "median": 57.20000000001164,
+        "p95": 66.90000000002328,
+        "max": 67.90000000002328,
+        "variance": 38.98249023444115
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1437499999956344,
+        "median": 2,
+        "p95": 3,
+        "max": 4,
+        "variance": 0.1749609375069304
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.22187500000654836,
+        "median": 0.19999999995343387,
+        "p95": 0.40000000002328306,
+        "max": 1,
+        "variance": 0.024208984375004527
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.024999999994179234,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.001874999999126885
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 0,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 2.799999999930151,
+      "total": {
+        "count": 32,
+        "mean": 0.08749999999781721,
+        "median": 0.04999999998835847,
+        "p95": 0.19999999995343387,
+        "max": 1.1999999999534339,
+        "variance": 0.04296874999645297
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0031249999992724042,
+        "median": 0,
+        "p95": 0,
+        "max": 0.09999999997671694,
+        "variance": 0.00030273437485902867
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.0625,
+        "median": 0,
+        "p95": 0.19999999995343387,
+        "max": 0.7999999999301508,
+        "variance": 0.020468749996653064
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 0,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 12.29999999993015,
+      "total": {
+        "count": 32,
+        "mean": 0.3812499999985448,
+        "median": 0.09999999997671694,
+        "p95": 2.5,
+        "max": 3.800000000046566,
+        "variance": 0.6252734375082402
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0062499999985448085,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.0005859374997271509
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.09062499999345164,
+        "median": 0,
+        "p95": 0.6999999999534339,
+        "max": 0.8000000000465661,
+        "variance": 0.033974609374004074
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.2250000000349246,
+        "median": 0.40000000002328306,
+        "p95": 3.800000000046566,
+        "max": 3.800000000046566,
+        "variance": 2.2118750000192087
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 1,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 6.099999999976717,
+      "total": {
+        "count": 32,
+        "mean": 0.1843750000007276,
+        "median": 0.09999999997671694,
+        "p95": 0.9000000000232831,
+        "max": 1.6999999999534339,
+        "variance": 0.10631835937269439
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.009375000001455192,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.0008496093752637539
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.0656249999992724,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 1,
+        "variance": 0.031005859375386517
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.42499999998835847,
+        "median": 0.3999999999650754,
+        "p95": 0.8000000000465661,
+        "max": 0.8000000000465661,
+        "variance": 0.06187500001338776
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 1,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 3.800000000046566,
+      "total": {
+        "count": 32,
+        "mean": 0.11875000000145519,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 1.599999999976717,
+        "variance": 0.0740234374986358
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0062499999985448085,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.0005859374997271512
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.06562499999563443,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 1.099999999976717,
+        "variance": 0.03663085937324468
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 2,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 3.3999999999068677,
+      "total": {
+        "count": 32,
+        "mean": 0.10624999999708962,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 1.1999999999534339,
+        "variance": 0.04433593749799911
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.01562500000363798,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.10000000009313226,
+        "variance": 0.0013183593756139088
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.05312499999126885,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.6999999999534339,
+        "variance": 0.015615234372435241
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 2,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 6.099999999976717,
+      "total": {
+        "count": 32,
+        "mean": 0.1843750000007276,
+        "median": 0.09999999997671694,
+        "p95": 0.7999999999301508,
+        "max": 1.3000000000465661,
+        "variance": 0.07256835937531379
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.018749999999272404,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.001523437499881766
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.05625000000873115,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.8000000000465661,
+        "variance": 0.01996093750280122
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.42499999995925464,
+        "median": 0.34999999997671694,
+        "p95": 0.6999999999534339,
+        "max": 0.6999999999534339,
+        "variance": 0.026875000002037266
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 3,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 9.099999999976717,
+      "total": {
+        "count": 32,
+        "mean": 0.28125,
+        "median": 0.09999999997671694,
+        "p95": 2.200000000069849,
+        "max": 2.800000000046566,
+        "variance": 0.35402343751513415
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.10000000000218279,
+        "median": 0,
+        "p95": 0.2999999999301508,
+        "max": 2.700000000069849,
+        "variance": 0.2212500000104775
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.08437500000218279,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 1.3000000000465661,
+        "variance": 0.05006835937856067
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.37499999997089617,
+        "median": 0.3999999999650754,
+        "p95": 0.5,
+        "max": 0.5,
+        "variance": 0.011875000003201422
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 3,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 3.5,
+      "total": {
+        "count": 32,
+        "mean": 0.109375,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 1.599999999976717,
+        "variance": 0.0752246093729628
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.015625,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.0013183593749999999
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.0625,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 1.099999999976717,
+        "variance": 0.037343749998981345
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 4,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 2.900000000023283,
+      "total": {
+        "count": 32,
+        "mean": 0.0906250000007276,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 1.6000000000931323,
+        "variance": 0.07647460938418128
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.06249999999272404,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.8999999999068677,
+        "variance": 0.024843749994797687
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 4,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 5,
+      "total": {
+        "count": 32,
+        "mean": 0.15625,
+        "median": 0.09999999997671694,
+        "p95": 0.5,
+        "max": 1.2999999999301508,
+        "variance": 0.060585937496070955
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0062499999985448085,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.0005859374997271514
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.059375000000727596,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 0.7999999999301508,
+        "variance": 0.020537109372439768
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.3000000000174623,
+        "median": 0.29999999998835847,
+        "p95": 0.40000000002328306,
+        "max": 0.40000000002328306,
+        "variance": 0.004999999997671693
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 5,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 5.699999999953434,
+      "total": {
+        "count": 32,
+        "mean": 0.1749999999992724,
+        "median": 0.09999999997671694,
+        "p95": 0.5999999999767169,
+        "max": 1.5,
+        "variance": 0.07812500000054566
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.012500000000727596,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.0010937500001273295
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.059375000004365575,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.8000000000465661,
+        "variance": 0.01991210937739194
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.32500000001164153,
+        "median": 0.34999999997671694,
+        "p95": 0.40000000002328306,
+        "max": 0.40000000002328306,
+        "variance": 0.00687499999825377
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 5,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 3,
+      "total": {
+        "count": 32,
+        "mean": 0.09375,
+        "median": 0.09999999997671694,
+        "p95": 0.19999999995343387,
+        "max": 1.3000000000465661,
+        "variance": 0.04996093750320139
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0031249999992724042,
+        "median": 0,
+        "p95": 0,
+        "max": 0.09999999997671694,
+        "variance": 0.00030273437485902883
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.05624999999781721,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.6999999999534339,
+        "variance": 0.015585937498062774
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 6,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 2.6000000000931323,
+      "total": {
+        "count": 32,
+        "mean": 0.08125000000291038,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 1.2000000000698492,
+        "variance": 0.044023437505056814
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0031249999992724042,
+        "median": 0,
+        "p95": 0,
+        "max": 0.09999999997671694,
+        "variance": 0.0003027343748590288
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.05312500000218279,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.8000000000465661,
+        "variance": 0.0199902343772419
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 6,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 8.099999999976717,
+      "total": {
+        "count": 32,
+        "mean": 0.2437499999978172,
+        "median": 0.10000000009313226,
+        "p95": 0.8000000000465661,
+        "max": 1.7999999999301508,
+        "variance": 0.11433593749218741
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.012499999997089617,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.19999999995343387,
+        "variance": 0.0017187499991996448
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.09062500000800355,
+        "median": 0.09999999997671694,
+        "p95": 0.10000000009313226,
+        "max": 1.099999999976717,
+        "variance": 0.035224609373694864
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.45000000001164153,
+        "median": 0.5,
+        "p95": 0.6000000000931323,
+        "max": 0.6000000000931323,
+        "variance": 0.022500000012805686
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 7,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 5.699999999953434,
+      "total": {
+        "count": 32,
+        "mean": 0.17187499999636202,
+        "median": 0.09999999997671694,
+        "p95": 0.5,
+        "max": 1.5,
+        "variance": 0.07827148437552295
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.009374999997817213,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.0008496093746043702
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.06875000000218279,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.8000000000465661,
+        "variance": 0.01964843750217369
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.32499999995343387,
+        "median": 0.29999999998835847,
+        "p95": 0.39999999990686774,
+        "max": 0.39999999990686774,
+        "variance": 0.0018749999976716938
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 7,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 3.299999999930151,
+      "total": {
+        "count": 32,
+        "mean": 0.10312499999781721,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 1.1999999999534339,
+        "variance": 0.042802734371666706
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.009374999997817213,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.0008496093746043707
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.059375000000727596,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.6999999999534339,
+        "variance": 0.015537109373312874
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 8,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 4.699999999953434,
+      "total": {
+        "count": 32,
+        "mean": 0.1468749999985448,
+        "median": 0.09999999997671694,
+        "p95": 0.40000000002328306,
+        "max": 2.199999999953434,
+        "variance": 0.14624023436713304
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0031249999992724042,
+        "median": 0,
+        "p95": 0,
+        "max": 0.09999999997671694,
+        "variance": 0.00030273437485902845
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.07812500000363798,
+        "median": 0,
+        "p95": 0.30000000004656613,
+        "max": 1.099999999976717,
+        "variance": 0.03983398437341294
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 8,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 5.699999999953434,
+      "total": {
+        "count": 32,
+        "mean": 0.1749999999992724,
+        "median": 0.09999999997671694,
+        "p95": 0.5,
+        "max": 1.599999999976717,
+        "variance": 0.08249999999996357
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.012500000000727596,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.0010937500001273297
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.06250000000363798,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 1.099999999976717,
+        "variance": 0.03671874999881767
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.32500000001164153,
+        "median": 0.30000000004656613,
+        "p95": 0.39999999990686774,
+        "max": 0.39999999990686774,
+        "variance": 0.0018749999947613107
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 9,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 5.199999999953434,
+      "total": {
+        "count": 32,
+        "mean": 0.1593749999992724,
+        "median": 0.09999999997671694,
+        "p95": 0.5999999999767169,
+        "max": 1.7999999999301508,
+        "variance": 0.10366210936897453
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.01562500000363798,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.10000000009313226,
+        "variance": 0.0013183593756139088
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.05625000000145519,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.7999999999301508,
+        "variance": 0.019960937497071396
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.32500000001164153,
+        "median": 0.30000000004656613,
+        "p95": 0.5,
+        "max": 0.5,
+        "variance": 0.01187500000174623
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 9,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 3.099999999976717,
+      "total": {
+        "count": 32,
+        "mean": 0.09375,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 1.3999999999068677,
+        "variance": 0.05871093749330609
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0031249999992724042,
+        "median": 0,
+        "p95": 0,
+        "max": 0.09999999997671694,
+        "variance": 0.0003027343748590288
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.049999999995634425,
+        "median": 0,
+        "p95": 0.10000000009313226,
+        "max": 0.8999999999068677,
+        "variance": 0.0249999999949068
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 10,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 2.799999999930151,
+      "total": {
+        "count": 32,
+        "mean": 0.08749999999781721,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 1.2999999999301508,
+        "variance": 0.050468749995143294
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.05312499999854481,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 0.7999999999301508,
+        "variance": 0.02061523437224419
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 10,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 5.700000000069849,
+      "total": {
+        "count": 32,
+        "mean": 0.1749999999992724,
+        "median": 0.09999999997671694,
+        "p95": 0.5999999999767169,
+        "max": 1.400000000023283,
+        "variance": 0.0718750000012733
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0062499999985448085,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.0005859374997271515
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.06250000000363798,
+        "median": 0,
+        "p95": 0.30000000004656613,
+        "max": 0.8000000000465661,
+        "variance": 0.024218750003910827
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.35000000000582077,
+        "median": 0.3500000000349246,
+        "p95": 0.40000000002328306,
+        "max": 0.40000000002328306,
+        "variance": 0.00250000000174623
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 11,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 805,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 8.300000000046566,
+      "total": {
+        "count": 32,
+        "mean": 0.2593750000014552,
+        "median": 0.09999999997671694,
+        "p95": 1.6000000000931323,
+        "max": 2.599999999976717,
+        "variance": 0.2536621093805025
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.015625,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.10000000009313226,
+        "variance": 0.001318359375
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.07812499999636202,
+        "median": 0,
+        "p95": 0.2000000000698492,
+        "max": 0.9000000000232831,
+        "variance": 0.025458984376150493
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.8250000000407454,
+        "median": 0.3500000000349246,
+        "p95": 2.300000000046566,
+        "max": 2.300000000046566,
+        "variance": 0.7268750000049476
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 11,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "mediapipe",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 0,
+        "maskClosed": 0
+      },
+      "elapsedMs": 6.800000000046566,
+      "total": {
+        "count": 32,
+        "mean": 0.2125000000014552,
+        "median": 0,
+        "p95": 1.2000000000698492,
+        "max": 4.200000000069849,
+        "variance": 0.5567187500217922
+      },
+      "engine": {
+        "count": 32,
+        "mean": 0.0062499999985448085,
+        "median": 0,
+        "p95": 0.09999999997671694,
+        "max": 0.09999999997671694,
+        "variance": 0.0005859374997271519
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.056249999994179234,
+        "median": 0,
+        "p95": 0.19999999995343387,
+        "max": 0.8000000000465661,
+        "variance": 0.020585937501236933
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 0,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 69,
+      "total": {
+        "count": 32,
+        "mean": 2.1531249999970896,
+        "median": 2.099999999976717,
+        "p95": 2.400000000023283,
+        "max": 3.900000000023283,
+        "variance": 0.11061523437749204
+      },
+      "engine": {
+        "count": 32,
+        "mean": 1.9937500000050932,
+        "median": 2,
+        "p95": 2.300000000046566,
+        "max": 2.599999999976717,
+        "variance": 0.02683593749773537
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.12187499999345164,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.8000000000465661,
+        "variance": 0.01858398437630511
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 0,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 74.40000000002328,
+      "total": {
+        "count": 32,
+        "mean": 2.3250000000007276,
+        "median": 2.1000000000349246,
+        "p95": 4.400000000023283,
+        "max": 4.700000000069849,
+        "variance": 0.3856250000130603
+      },
+      "engine": {
+        "count": 32,
+        "mean": 1.9968750000007276,
+        "median": 1.9500000000116415,
+        "p95": 2.400000000023283,
+        "max": 2.900000000023283,
+        "variance": 0.04780273437602319
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.13124999999490683,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 1,
+        "variance": 0.02839843749973625
+      },
+      "hud": {
+        "count": 4,
+        "mean": 1.0000000000291038,
+        "median": 0.45000000001164153,
+        "p95": 2.700000000069849,
+        "max": 2.700000000069849,
+        "variance": 0.965000000045402
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 1,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 71.69999999995343,
+      "total": {
+        "count": 32,
+        "mean": 2.2374999999992724,
+        "median": 2.199999999953434,
+        "p95": 2.599999999976717,
+        "max": 4.299999999930151,
+        "variance": 0.15921874999015934
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.006249999998545,
+        "median": 2,
+        "p95": 2.200000000069849,
+        "max": 2.900000000023283,
+        "variance": 0.04058593750001817
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.11874999999781721,
+        "median": 0.09999999997671694,
+        "p95": 0.30000000004656613,
+        "max": 0.8999999999068677,
+        "variance": 0.024023437496589396
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.3249999999825377,
+        "median": 0.30000000004656613,
+        "p95": 0.39999999990686774,
+        "max": 0.39999999990686774,
+        "variance": 0.0018749999962165021
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 1,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 70.40000000002328,
+      "total": {
+        "count": 32,
+        "mean": 2.2000000000007276,
+        "median": 2.099999999976717,
+        "p95": 3.299999999930151,
+        "max": 4,
+        "variance": 0.16437499999476132
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0343749999883585,
+        "median": 2,
+        "p95": 2.5,
+        "max": 3.199999999953434,
+        "variance": 0.06975585937332653
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.11250000001018634,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 1,
+        "variance": 0.028593750000327448
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 2,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 70.5,
+      "total": {
+        "count": 32,
+        "mean": 2.203125,
+        "median": 2.099999999976717,
+        "p95": 2.400000000023283,
+        "max": 4.699999999953434,
+        "variance": 0.22280273436845138
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.015625000010914,
+        "median": 2,
+        "p95": 2.300000000046566,
+        "max": 2.8999999999068677,
+        "variance": 0.04256835936927474
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.14062499998908606,
+        "median": 0.09999999997671694,
+        "p95": 0.30000000004656613,
+        "max": 1.400000000023283,
+        "variance": 0.05616210937763302
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 2,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 77.70000000006985,
+      "total": {
+        "count": 32,
+        "mean": 2.428125000002183,
+        "median": 2.200000000069849,
+        "p95": 3.3999999999068677,
+        "max": 4.700000000069849,
+        "variance": 0.29827148438608214
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1625000000130967,
+        "median": 2.0499999999883585,
+        "p95": 3.099999999976717,
+        "max": 3.199999999953434,
+        "variance": 0.11046874999457948
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.15312499999345164,
+        "median": 0.09999999997671694,
+        "p95": 0.7999999999301508,
+        "max": 1.2000000000698492,
+        "variance": 0.05436523437642333
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.37500000002910383,
+        "median": 0.3500000000349246,
+        "p95": 0.5,
+        "max": 0.5,
+        "variance": 0.006874999996798579
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 3,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 76.69999999995343,
+      "total": {
+        "count": 32,
+        "mean": 2.3937499999992724,
+        "median": 2.2000000000116415,
+        "p95": 4.599999999976717,
+        "max": 4.800000000046566,
+        "variance": 0.4080859375046475
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.165625000016007,
+        "median": 2,
+        "p95": 3.099999999976717,
+        "max": 4.700000000069849,
+        "variance": 0.27100585938133914
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.13437499998690328,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.9000000000232831,
+        "variance": 0.022255859375754916
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.32500000004074536,
+        "median": 0.30000000004656613,
+        "p95": 0.40000000002328306,
+        "max": 0.40000000002328306,
+        "variance": 0.001874999999126885
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 3,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 73.20000000006985,
+      "total": {
+        "count": 32,
+        "mean": 2.287500000002183,
+        "median": 2.150000000023283,
+        "p95": 3.699999999953434,
+        "max": 4.400000000023283,
+        "variance": 0.23109374999816282
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1125000000065484,
+        "median": 2.099999999976717,
+        "p95": 2.800000000046566,
+        "max": 3.199999999953434,
+        "variance": 0.06671874999794455
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.12499999999272404,
+        "median": 0.09999999997671694,
+        "p95": 0.30000000004656613,
+        "max": 1,
+        "variance": 0.030000000000218272
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 4,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 76.89999999990687,
+      "total": {
+        "count": 32,
+        "mean": 2.399999999997817,
+        "median": 2.299999999930151,
+        "p95": 3.300000000046566,
+        "max": 5,
+        "variance": 0.28937500000130967
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1906250000029104,
+        "median": 2.1000000000931323,
+        "p95": 3,
+        "max": 3.1000000000931323,
+        "variance": 0.08897460937811048
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1375000000007276,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 1.6000000000931323,
+        "variance": 0.07234375000824
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 4,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 75,
+      "total": {
+        "count": 32,
+        "mean": 2.3406250000007276,
+        "median": 2.2499999999417923,
+        "p95": 3.5,
+        "max": 3.900000000023283,
+        "variance": 0.17053710937712369
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.109375000007276,
+        "median": 2,
+        "p95": 2.599999999976717,
+        "max": 3.300000000046566,
+        "variance": 0.08272460937952018
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.14062499999636202,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.8000000000465661,
+        "variance": 0.017412109377623875
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.34999999997671694,
+        "median": 0.34999999997671694,
+        "p95": 0.5,
+        "max": 0.5,
+        "variance": 0.012500000005820765
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 5,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 74.59999999997672,
+      "total": {
+        "count": 32,
+        "mean": 2.328125,
+        "median": 2.200000000069849,
+        "p95": 2.799999999930151,
+        "max": 4.900000000023283,
+        "variance": 0.25077148437543634
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1062500000043656,
+        "median": 2.0499999999883585,
+        "p95": 2.599999999976717,
+        "max": 2.900000000023283,
+        "variance": 0.050585937500090945
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1343749999978172,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 1.2000000000698492,
+        "variance": 0.04100585937937014
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.25,
+        "median": 0.20000000001164153,
+        "p95": 0.40000000002328306,
+        "max": 0.40000000002328306,
+        "variance": 0.0075000000023283065
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 5,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 74.70000000006985,
+      "total": {
+        "count": 32,
+        "mean": 2.334375000002183,
+        "median": 2.199999999953434,
+        "p95": 3.699999999953434,
+        "max": 4.100000000093132,
+        "variance": 0.21475585938154387
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.171875000010914,
+        "median": 2.099999999976717,
+        "p95": 2.800000000046566,
+        "max": 3.5,
+        "variance": 0.11889648437634148
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.10937499999272404,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.9000000000232831,
+        "variance": 0.023349609376155052
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 6,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 73.90000000002328,
+      "total": {
+        "count": 32,
+        "mean": 2.3093750000007276,
+        "median": 2.200000000069849,
+        "p95": 2.699999999953434,
+        "max": 4.700000000069849,
+        "variance": 0.22522460938662794
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.1187499999905413,
+        "median": 2,
+        "p95": 2.400000000023283,
+        "max": 3.5,
+        "variance": 0.09277343750195535
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.13125000000945874,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.7000000000698492,
+        "variance": 0.014648437503774403
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 6,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 74.19999999995343,
+      "total": {
+        "count": 32,
+        "mean": 2.3156249999992724,
+        "median": 2.299999999930151,
+        "p95": 2.900000000023283,
+        "max": 3.900000000023283,
+        "variance": 0.13069335937589588
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.087500000001455,
+        "median": 2,
+        "p95": 2.5,
+        "max": 2.5,
+        "variance": 0.02359374999901774
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1218750000007276,
+        "median": 0.09999999997671694,
+        "p95": 0.30000000004656613,
+        "max": 0.8000000000465661,
+        "variance": 0.019208984377878553
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.32500000001164153,
+        "median": 0.34999999997671694,
+        "p95": 0.40000000002328306,
+        "max": 0.40000000002328306,
+        "variance": 0.00687499999825377
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 7,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 70.70000000006985,
+      "total": {
+        "count": 32,
+        "mean": 2.2062499999992724,
+        "median": 2.099999999976717,
+        "p95": 2.599999999976717,
+        "max": 3.900000000023283,
+        "variance": 0.1312109375008822
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.009375000008731,
+        "median": 2,
+        "p95": 2.400000000023283,
+        "max": 2.699999999953434,
+        "variance": 0.03209960937148934
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.11249999999563443,
+        "median": 0.09999999997671694,
+        "p95": 0.30000000004656613,
+        "max": 0.9000000000232831,
+        "variance": 0.024218750002000872
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.32500000001164153,
+        "median": 0.30000000004656613,
+        "p95": 0.40000000002328306,
+        "max": 0.40000000002328306,
+        "variance": 0.0018750000005820769
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 7,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 70.59999999997672,
+      "total": {
+        "count": 32,
+        "mean": 2.2062499999992724,
+        "median": 2.1000000000931323,
+        "p95": 2.5,
+        "max": 4.099999999976717,
+        "variance": 0.13996093749826286
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.031249999996362,
+        "median": 2,
+        "p95": 2.300000000046566,
+        "max": 2.800000000046566,
+        "variance": 0.041523437506630186
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1281249999992724,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.7999999999301508,
+        "variance": 0.018271484372858134
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 8,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 71.09999999997672,
+      "total": {
+        "count": 32,
+        "mean": 2.2218749999992724,
+        "median": 2.099999999976717,
+        "p95": 2.700000000069849,
+        "max": 3.799999999930151,
+        "variance": 0.11545898437212139
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0406249999796273,
+        "median": 2,
+        "p95": 2.599999999976717,
+        "max": 2.6000000000931323,
+        "variance": 0.03616210938305812
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.12812500001382432,
+        "median": 0.09999999997671694,
+        "p95": 0.30000000004656613,
+        "max": 0.6999999999534339,
+        "variance": 0.013896484374076852
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 8,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 71,
+      "total": {
+        "count": 32,
+        "mean": 2.21875,
+        "median": 2.1000000000349246,
+        "p95": 2.799999999930151,
+        "max": 3.900000000023283,
+        "variance": 0.1340234374975262
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.006249999987631,
+        "median": 2,
+        "p95": 2.3999999999068677,
+        "max": 2.5,
+        "variance": 0.02558593749986357
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.11250000002110028,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.9000000000232831,
+        "variance": 0.024843750001800818
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.39999999999417923,
+        "median": 0.3999999999650754,
+        "p95": 0.6000000000931323,
+        "max": 0.6000000000931323,
+        "variance": 0.025000000017462297
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 9,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 77.70000000006985,
+      "total": {
+        "count": 32,
+        "mean": 2.421875,
+        "median": 2.25,
+        "p95": 4.5,
+        "max": 5.299999999930151,
+        "variance": 0.47920898436583215
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.0406249999869033,
+        "median": 2,
+        "p95": 2.599999999976717,
+        "max": 2.800000000046566,
+        "variance": 0.046162109378537916
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.15000000000873115,
+        "median": 0.09999999997671694,
+        "p95": 0.30000000004656613,
+        "max": 1.099999999976717,
+        "variance": 0.03437500000072759
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.3499999999476131,
+        "median": 0.2999999999301508,
+        "p95": 0.5,
+        "max": 0.5,
+        "variance": 0.00750000000523869
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 9,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 67.59999999997672,
+      "total": {
+        "count": 32,
+        "mean": 2.109375,
+        "median": 2,
+        "p95": 2.400000000023283,
+        "max": 3.8999999999068677,
+        "variance": 0.1183496093659779
+      },
+      "engine": {
+        "count": 32,
+        "mean": 1.9718749999956344,
+        "median": 1.900000000023283,
+        "p95": 2.200000000069849,
+        "max": 2.599999999976717,
+        "variance": 0.026396484374463392
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.09375000000363798,
+        "median": 0.09999999997671694,
+        "p95": 0.19999999995343387,
+        "max": 0.6999999999534339,
+        "variance": 0.01433593749800822
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 10,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 74.90000000002328,
+      "total": {
+        "count": 32,
+        "mean": 2.3406250000007276,
+        "median": 2.200000000069849,
+        "p95": 2.800000000046566,
+        "max": 4.599999999976717,
+        "variance": 0.21866210937217606
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.140625000003638,
+        "median": 2.099999999976717,
+        "p95": 2.599999999976717,
+        "max": 2.8999999999068677,
+        "variance": 0.0617871093716485
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.12499999999636202,
+        "median": 0.09999999997671694,
+        "p95": 0.2999999999301508,
+        "max": 0.8000000000465661,
+        "variance": 0.020000000001055004
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 10,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 75.30000000004657,
+      "total": {
+        "count": 32,
+        "mean": 2.353125000001455,
+        "median": 2.199999999953434,
+        "p95": 3.099999999976717,
+        "max": 3.700000000069849,
+        "variance": 0.1743652343751365
+      },
+      "engine": {
+        "count": 32,
+        "mean": 2.103125000001455,
+        "median": 2,
+        "p95": 2.699999999953434,
+        "max": 2.799999999930151,
+        "variance": 0.07405273436800598
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.12499999999636202,
+        "median": 0.09999999997671694,
+        "p95": 0.2999999999301508,
+        "max": 0.7000000000698492,
+        "variance": 0.016250000000618447
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.375,
+        "median": 0.3500000000349246,
+        "p95": 0.5999999999767169,
+        "max": 0.5999999999767169,
+        "variance": 0.021875
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 11,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": true,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 4,
+        "metricClock": 933,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 70.69999999995343,
+      "total": {
+        "count": 32,
+        "mean": 2.2062499999992724,
+        "median": 2.099999999976717,
+        "p95": 2.700000000069849,
+        "max": 4,
+        "variance": 0.1487109375007367
+      },
+      "engine": {
+        "count": 32,
+        "mean": 1.9875000000065484,
+        "median": 1.900000000023283,
+        "p95": 2.3999999999068677,
+        "max": 2.699999999953434,
+        "variance": 0.03109374999216014
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.1218750000007276,
+        "median": 0.09999999997671694,
+        "p95": 0.2000000000698492,
+        "max": 0.8000000000465661,
+        "variance": 0.0185839843788972
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0.39999999999417923,
+        "median": 0.34999999997671694,
+        "p95": 0.6000000000931323,
+        "max": 0.6000000000931323,
+        "variance": 0.015000000016298145
+      },
+      "checksum": 32
+    },
+    {
+      "pair": 11,
+      "width": 640,
+      "height": 480,
+      "path": "video-frame",
+      "model": "selfie-segmenter",
+      "enabled": false,
+      "iterations": 32,
+      "counts": {
+        "captured": 96,
+        "compared": 0,
+        "processed": 32,
+        "drawn": 32,
+        "sdk": 32,
+        "released": 96,
+        "snapshot": 0,
+        "metricClock": 0,
+        "maskRead": 32,
+        "maskClosed": 32
+      },
+      "elapsedMs": 68.59999999997672,
+      "total": {
+        "count": 32,
+        "mean": 2.1437499999992724,
+        "median": 2.0499999999883585,
+        "p95": 2.300000000046566,
+        "max": 4.699999999953434,
+        "variance": 0.2249609374927878
+      },
+      "engine": {
+        "count": 32,
+        "mean": 1.9812499999970896,
+        "median": 1.900000000023283,
+        "p95": 2.200000000069849,
+        "max": 3,
+        "variance": 0.045273437499745356
+      },
+      "draw": {
+        "count": 32,
+        "mean": 0.12812499999199645,
+        "median": 0.09999999997671694,
+        "p95": 0.2999999999301508,
+        "max": 1.2999999999301508,
+        "variance": 0.04764648436977497
+      },
+      "hud": {
+        "count": 4,
+        "mean": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0,
+        "variance": 0
+      },
+      "checksum": 32
+    }
+  ]
+}

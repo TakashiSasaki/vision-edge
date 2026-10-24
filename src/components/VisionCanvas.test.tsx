@@ -4,6 +4,7 @@ import { speechService } from '../services/speechService';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from '../App';
+import { PipelineMetrics, type PipelineSnapshot } from '../services/pipelineMetrics';
 import { VisionCanvas } from './VisionCanvas';
 import { VisionEngine, type SegmenterTask, type VisionTaskFactory } from '../services/visionEngine';
 
@@ -455,4 +456,147 @@ it('F01 real canvas/engine: a delayed arrival cannot adopt or announce the same 
   expect(inputs).toEqual([2]); expect(gate).toHaveBeenCalledTimes(1);
   expect(props.onFrame.mock.calls.filter(([frame]) => frame !== null)).toHaveLength(1);
   expect(screen.getByLabelText('推論FPS')).toHaveTextContent('未計測'); // One distinct successful input, not 2 FPS.
+});
+
+// PR06 uses the actual App, scheduler and Canvas copy, not onFrame callbacks.
+it('records a successful first Canvas draw for an empty immutable result once, including measured zero latency', async () => {
+  vi.stubGlobal('VideoFrame', class {
+    timestamp: number; displayWidth = 640; displayHeight = 480;
+    constructor(video: HTMLVideoElement) { this.timestamp = video.currentTime * 1000000; }
+    close() {}
+  });
+  const f = fixture(); const accepts = vi.spyOn(PipelineMetrics.prototype, 'accept'); const firstDraws = vi.spyOn(PipelineMetrics.prototype, 'firstDraw');
+  let container!: HTMLElement; await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); });
+  expect(accepts).toHaveBeenCalledTimes(1); expect(firstDraws).not.toHaveBeenCalled();
+  step(false); step(false); step(false);
+  expect(firstDraws).toHaveBeenCalledTimes(1);
+  expect(firstDraws.mock.calls[0][0]).toBe(accepts.mock.calls[0][0]);
+  const metrics = accepts.mock.contexts[0] as PipelineMetrics;
+  expect(metrics.snapshot()!.stages.latency.success).toMatchObject({ count: 1, mean: 0 });
+  expect(metrics.snapshot()!.results['first-draw']).toBe(1);
+  expect(f.segment).toHaveBeenCalledTimes(1);
+});
+it('records overwritten results separately and binds the first draw to the latest accepted job', async () => {
+  const f = fixture(); const accepts = vi.spyOn(PipelineMetrics.prototype, 'accept'); const draws = vi.spyOn(PipelineMetrics.prototype, 'firstDraw');
+  let container!: HTMLElement; await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); });
+  expect(accepts).toHaveBeenCalledTimes(1);
+  act(() => {
+    container.querySelector('video')!.currentTime += 1;
+    const [id, callback] = [...raf][0]; raf.delete(id); callback(0); // acquisition only; draw has not run
+    vi.advanceTimersByTime(0);
+  });
+  expect(accepts).toHaveBeenCalledTimes(2); expect(draws).not.toHaveBeenCalled();
+  const metrics = accepts.mock.contexts[0] as PipelineMetrics;
+  expect(metrics.snapshot()!.results.overwritten).toBe(1);
+  step(false); expect(draws.mock.calls[0][0]).toBe(accepts.mock.calls[1][0]);
+  expect(metrics.snapshot()!.results).toMatchObject({ overwritten: 1, 'first-draw': 1, unbound: 1 });
+});
+it.each(['hidden', 'stop', 'draw-failed'] as const)('never substitutes zero for %s result and prevents a later recovery latency', async outcome => {
+  const f = fixture(); const accepts = vi.spyOn(PipelineMetrics.prototype, 'accept'); const draws = vi.spyOn(PipelineMetrics.prototype, 'firstDraw');
+  let container!: HTMLElement; await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); });
+  const metrics = accepts.mock.contexts[0] as PipelineMetrics;
+  if (outcome === 'hidden') {
+    vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+    act(() => { document.dispatchEvent(new Event('visibilitychange')); });
+    step(false);
+  } else if (outcome === 'stop') {
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /^停止$/ })); });
+  } else {
+    const ctx = container.querySelector('canvas')!.getContext('2d')!;
+    vi.mocked(ctx.drawImage).mockImplementationOnce(() => { throw Error('copy'); }); step(false);
+    expect(screen.getByRole('alert')).toHaveTextContent('描画エラー');
+  }
+  expect(draws).not.toHaveBeenCalled();
+  expect(metrics.snapshot()!.stages.latency.success.mean).toBeNull();
+  expect(metrics.snapshot()!.results[outcome === 'stop' ? 'cancelled' : outcome]).toBe(1);
+});
+it('statistics exceptions and details toggles do not change SDK, camera, model or Canvas ownership', async () => {
+  const f = fixture(); const snapshot = vi.spyOn(PipelineMetrics.prototype, 'snapshot').mockImplementation(() => { throw Error('statistics'); });
+  let container!: HTMLElement; await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); }); step(false);
+  act(() => { vi.advanceTimersByTime(250); }); expect(snapshot).toHaveBeenCalled();
+  const loadCount = vi.mocked(f.factory.load).mock.calls.length;
+  for (let i = 0; i < 4; i++) fireEvent.click(screen.getByText('計測詳細 (JS wall time)'));
+  step(); act(() => { vi.advanceTimersByTime(0); }); step(false);
+  expect(f.segment).toHaveBeenCalledTimes(2); expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  expect(f.factory.load).toHaveBeenCalledTimes(loadCount); expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
+
+it('invalidates the published detail snapshot when a fatal draw fault stops its generation', async () => {
+  const f = fixture(); let container!: HTMLElement;
+  await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); }); step(false);
+  act(() => { vi.advanceTimersByTime(250); });
+  const count = () => container.querySelector('table[aria-label="success interval statistics"] tbody tr td')!.textContent;
+  expect(count()).toMatch(/[1-9]\d* \/ [1-9]\d* \/ 0/);
+  vi.mocked(container.querySelector('canvas')!.getContext('2d')!.drawImage).mockImplementationOnce(() => { throw Error('copy'); });
+  step(false); expect(screen.getByRole('alert')).toHaveTextContent('描画エラー'); expect(count()).toBe('未計測');
+});
+
+const malformedSnapshots: Array<[string, (snapshot: PipelineSnapshot) => unknown]> = [
+  ['null stages', snapshot => ({ ...snapshot, stages: null })],
+  ['missing stages', snapshot => { const broken: Record<string, unknown> = { ...snapshot }; delete broken.stages; return broken; }],
+  ['missing nested outcome', snapshot => ({ ...snapshot, stages: { ...snapshot.stages, sdk: { success: null } } })],
+  ['invalid times', snapshot => ({ ...snapshot, stages: { ...snapshot.stages, sdk: { ...snapshot.stages.sdk, success: { ...snapshot.stages.sdk.success, mean: NaN, p95: {} } } } })],
+  ['invalid counters', snapshot => ({ ...snapshot, results: { hidden: {} }, pendingResults: {}, unclocked: {} })],
+  ['throwing statistics getter', snapshot => Object.defineProperty({ ...snapshot }, 'stages', { get() { throw Error('statistics shape'); } })],
+];
+it.each(malformedSnapshots)('PR06-F01: %s remains unavailable while inference, ownership and recovery survive', async (_name, malformed) => {
+  const original = PipelineMetrics.prototype.snapshot;
+  let broken = true;
+  vi.spyOn(PipelineMetrics.prototype, 'snapshot').mockImplementation(function(this: PipelineMetrics) {
+    const snapshot = original.call(this)!;
+    return (broken ? malformed(snapshot) : snapshot) as PipelineSnapshot;
+  });
+  const track = Object.assign(new EventTarget(), { stop: vi.fn() });
+  vi.mocked(navigator.mediaDevices.getUserMedia).mockResolvedValue({ getTracks: () => [track] } as unknown as MediaStream);
+  const f = fixture(); let view!: ReturnType<typeof render>;
+  await act(async () => { view = render(<App engine={f.engine} />); });
+  makeVideoReady(view.container); const video = view.container.querySelector('video')!;
+  step(); act(() => { vi.advanceTimersByTime(0); });
+  expect(f.segment).toHaveBeenCalledTimes(1);
+  const requestId = f.engine.getState().requestId;
+  for (let i = 0; i < 3; i++) {
+    expect(() => act(() => { vi.advanceTimersByTime(250); })).not.toThrow();
+    step(); act(() => { vi.advanceTimersByTime(0); }); step(false);
+  }
+  expect(view.container.querySelector('video')).toBe(video); expect(video.isConnected).toBe(true);
+  expect(raf.size).toBe(2); expect(f.segment).toHaveBeenCalledTimes(4);
+  expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  expect(f.factory.segmenter).toHaveBeenCalledTimes(1); expect(f.segmenter.close).not.toHaveBeenCalled();
+  expect(track.stop).not.toHaveBeenCalled(); expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  expect(f.engine.getState()).toMatchObject({ status: 'ready', requestId });
+  expect(f.segment.mock.results.every(result => result.value.close.mock.calls.length === 1)).toBe(true);
+  broken = false; act(() => { vi.advanceTimersByTime(250); });
+  const rows = view.container.querySelectorAll('table[aria-label="success interval statistics"] tbody tr');
+  expect(rows[0].querySelector('td')!.textContent).toMatch(/[1-9]\d* \/ [1-9]\d* \/ 0/);
+  expect([...rows].find(row => row.querySelector('th')!.textContent === 'sdk')!.querySelectorAll('td')[1].textContent).toBe('0.00');
+  step(); act(() => { vi.advanceTimersByTime(0); }); expect(f.segment).toHaveBeenCalledTimes(5);
+  expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1); expect(f.factory.segmenter).toHaveBeenCalledTimes(1);
+  view.unmount(); expect(track.stop).toHaveBeenCalledTimes(1); expect(f.segmenter.close).toHaveBeenCalledTimes(1);
+});
+
+it('PR06-F01: publication owns the display snapshot and recovers when a producer reuses its raw object', async () => {
+  const original = PipelineMetrics.prototype.snapshot; let cached: PipelineSnapshot | undefined; let broken = true;
+  vi.spyOn(PipelineMetrics.prototype, 'snapshot').mockImplementation(function(this: PipelineMetrics) {
+    const actual = original.call(this)!; cached ??= actual;
+    Object.assign(cached, actual, { stages: broken ? null : actual.stages });
+    return cached;
+  });
+  const f = fixture(); let view!: ReturnType<typeof render>;
+  await act(async () => { view = render(<App engine={f.engine} />); });
+  makeVideoReady(view.container); const video = view.container.querySelector('video');
+  step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); });
+  const sdkMean = () => [...view.container.querySelectorAll('table[aria-label="success interval statistics"] tbody tr')].find(row => row.querySelector('th')!.textContent === 'sdk')!.querySelectorAll('td')[1].textContent;
+  expect(sdkMean()).toBe('未計測');
+  broken = false; act(() => { vi.advanceTimersByTime(250); }); expect(sdkMean()).toBe('0.00');
+  // Mutation after publication cannot change the owned React display value.
+  Object.assign(cached!, { stages: null });
+  fireEvent.click(screen.getByText('計測詳細 (JS wall time)')); expect(sdkMean()).toBe('0.00');
+  step(); act(() => { vi.advanceTimersByTime(0); }); expect(f.segment).toHaveBeenCalledTimes(2);
+  expect(view.container.querySelector('video')).toBe(video); expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  expect(f.factory.segmenter).toHaveBeenCalledTimes(1); expect(f.segmenter.close).not.toHaveBeenCalled();
 });

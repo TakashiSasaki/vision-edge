@@ -1,0 +1,62 @@
+[
+  {
+    "path": "src/services/performanceMetrics.ts",
+    "sha256": "d14a5a19e8f03dfb025c9748e66ccbfa433778d71d8c24602e11c1767c1fa351",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": "src/services/videoCoordinates.ts",
+    "sha256": "99c904ddbe15f822efbedbd03d428e7def74d609cdf4fe6768d6438bcb1fcfa7",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": "src/services/videoCoordinates.test.ts",
+    "sha256": "289a66cb815f999e6a077fcb6fbc76c39ea59c5dd7036c83434e10b7fd356b96",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": "src/hooks/useCameraStream.ts",
+    "sha256": "69ef9ec6891dee3ed0e8c6822405d72fea3f1d8061edab40f5e5ea73158edc73",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": "src/hooks/useCameraStream.test.tsx",
+    "sha256": "e7667ed17caa504c2774c296903d4d1fadc550f65ba73b4e34d4625993ccc43a",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": "src/services/dictionary.ts",
+    "sha256": "e5333b12898b7be3becaaf9d9daab4e704f9fc43549decee6e9dab68b2c6e3a2",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": "src/services/speechService.ts",
+    "sha256": "36bc30c2d510fb0336f0ef24ab0bf08a4c124e94a773cd94d22fbd27c1c2f8f9",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": "src/types/vision.ts",
+    "sha256": "1634ef6981db2cf5161b029b63b7aa0c44b8ad31e5857954094bb9385cb93e70",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": "package.json",
+    "sha256": "d58b9ead5548b0ac8e6f10c153640b3d59c7a46b0569bb50a848a0a4b9ad7ca6",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": "package-lock.json",
+    "sha256": "1501945de52bc26a7411bd139358604ab1a189b51608c011a93d3164baa6de5b",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": ".nvmrc",
+    "sha256": "7e8a2fa94951112b894a3dbe3d05efef5e9263741fa49125f0a70f40fedab4cc",
+    "byteIdenticalToBase": true
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "sha256": "4339cfa58a62b375367a27ff0dbc55034336f4b1d552ebc03d022df625863fa1",
+    "byteIdenticalToBase": true
+  }
+]

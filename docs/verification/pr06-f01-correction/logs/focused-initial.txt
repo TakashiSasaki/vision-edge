@@ -1,0 +1,18 @@
+
+> vision-studio@1.0.0 test
+> vitest run --run src/components/VisionCanvas.test.tsx src/components/PipelineDetails.test.tsx src/services/pipelineSnapshotView.test.ts
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+
+ Test Files  3 passed (3)
+      Tests  97 passed (97)
+   Start at  15:53:25
+   Duration  2.51s (tests 43%, environment 41%, transform 7%, setup 6%, import 3%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { JobLock, startFrameScheduler } from './frameScheduler';
+import { PipelineMetrics, type PipelineObserver, type InferenceMeasurement } from './pipelineMetrics';
 let raf: Map<number, FrameRequestCallback>;
 let rvfc: Map<number, VideoFrameRequestCallback>;
 let id: number;
@@ -22,7 +23,7 @@ beforeEach(() => {
   vi.stubGlobal('cancelAnimationFrame', vi.fn((key: number) => raf.delete(key)));
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
-function setup(native = false, lock = new JobLock(), dimensions = { width: 640, height: 480 }) {
+function setup(native = false, lock = new JobLock(), dimensions = { width: 640, height: 480 }, instrumentation?: PipelineObserver) {
   let current = true;
   const video = Object.defineProperties(document.createElement('video'), {
     readyState: { configurable: true, value: 2 }, videoWidth: { value: dimensions.width, configurable: true }, videoHeight: { value: dimensions.height, configurable: true },
@@ -33,7 +34,7 @@ function setup(native = false, lock = new JobLock(), dimensions = { width: 640, 
   }
   const work = vi.fn<() => number | Promise<number>>(() => 1);
   const adopt = vi.fn(); const error = vi.fn(); const input = vi.fn();
-  const stop = startFrameScheduler({ video, current: () => current, work, adopt, error, input, lock });
+  const stop = startFrameScheduler({ video, current: () => current, work, adopt, error, input, lock, instrumentation });
   const frame = (time: number, count = time) => {
     if (Number.isFinite(time)) video.currentTime = time;
     const callbacks = native ? rvfc : raf;
@@ -284,4 +285,83 @@ it('pixel capture/readback failure stops callbacks and releases its job lock for
   vi.mocked(HTMLCanvasElement.prototype.getContext).mockReturnValue(null);
   vi.runOnlyPendingTimers(); expect(f.work).not.toHaveBeenCalled(); expect(f.error).toHaveBeenCalledTimes(1);
   expect(raf.size + rvfc.size).toBe(0); const token = lock.acquire(); expect(token).not.toBeNull(); lock.release(token!); f.stop();
+});
+
+// PR06: keep all original identity/ownership cases above unchanged.
+it.each([false, true])('instrumentation counts bootstrap/duplicate RGBA captures and every external compare (%s)', native => {
+  let clock = 0; const metrics = new PipelineMetrics(() => clock); const f = setup(native, new JobLock(), { width: 2, height: 1 }, metrics);
+  pixelIds.set(f.video, 0); clock = 7; vi.runOnlyPendingTimers();
+  const image = f.work.mock.calls[0] as unknown as [HTMLCanvasElement, InferenceMeasurement];
+  expect(image[1]).toMatchObject({ generation: metrics.generation, jobId: 1, captureId: 2, captureStart: 7, captureEnd: 7, immutable: true });
+  expect(f.adopt.mock.calls[0][1]).toBe(image[1]);
+  expect(metrics.snapshot()!.stages.queue.success.mean).toBe(7);
+  for (let i = 1; i <= 400; i++) f.frame(i, i);
+  expect(f.work).toHaveBeenCalledTimes(1);
+  expect(metrics.snapshot()!.stages.capture.success).toMatchObject({ count: 402, quantileCount: 300, truncated: false });
+  expect(metrics.snapshot()!.stages.comparison.success.count).toBe(402);
+  expect(metrics.snapshot()!.stages.cleanup.success.count).toBe(402);
+  expect(metrics.snapshot()!.stages.capture.success.mean).toBe(0);
+  f.stop(); expect(image[0].width).toBe(0);
+});
+it.each([false, true])('binds execution capture B after queued arrival A, with separate real queue delay (%s)', native => {
+  let imageTime = 1; const frames = installFrameCapture(() => imageTime); let now = 0;
+  const metrics = new PipelineMetrics(() => now); const f = setup(native, new JobLock(), { width: 2, height: 1 }, metrics);
+  now = 15; imageTime = 2; vi.runOnlyPendingTimers();
+  const [input, measurement] = f.work.mock.calls[0] as unknown as [VideoFrame, InferenceMeasurement];
+  expect(input.timestamp).toBe(2000000);
+  expect(measurement).toMatchObject({ captureId: 2, captureStart: 15, captureEnd: 15, immutable: true });
+  expect(metrics.snapshot()!.stages.queue.success.mean).toBe(15);
+  metrics.accept(measurement); now = 20; metrics.firstDraw(measurement);
+  expect(metrics.snapshot()!.stages.latency.success.mean).toBe(5); // queue 15 is outside this image's interval
+  f.stop(); expect(frames.every(frame => frame.close.mock.calls.length === 1)).toBe(true);
+});
+it('quality-counter live-video path keeps product input and marks actual-image latency unbound', () => {
+  const metrics = new PipelineMetrics(() => 0); const f = setup(false, new JobLock(), { width: 2, height: 1 }, metrics);
+  f.video.getVideoPlaybackQuality = () => ({ totalVideoFrames: 1 } as VideoPlaybackQuality);
+  vi.runOnlyPendingTimers(); const [input, measurement] = f.work.mock.calls[0] as unknown as [HTMLVideoElement, InferenceMeasurement];
+  expect(input).toBe(f.video); expect(measurement.immutable).toBe(false);
+  metrics.accept(measurement); metrics.firstDraw(measurement);
+  expect(metrics.snapshot()!.results.unbound).toBe(1); expect(metrics.snapshot()!.stages.latency.success.count).toBe(0); f.stop();
+});
+it.each(['disabled', 'record-throws', 'clock-throws', 'clock-invalid'] as const)('observer isolation preserves calls, results and input release (%s)', mode => {
+  let imageTime = 0; const frames = installFrameCapture(() => imageTime); const lock = new JobLock();
+  const observer = mode === 'disabled' ? undefined : { now: () => { if (mode === 'clock-throws') throw Error('clock'); return mode === 'clock-invalid' ? NaN : 0; }, record: () => { throw Error('observer'); } };
+  const f = setup(true, lock, { width: 2, height: 1 }, observer);
+  vi.runOnlyPendingTimers(); f.frame(1, 1); vi.runOnlyPendingTimers(); imageTime = 2; f.frame(2, 2); vi.runOnlyPendingTimers();
+  expect(f.work).toHaveBeenCalledTimes(2); expect(f.adopt.mock.calls.map(call => call[0])).toEqual([1, 1]); expect(f.error).not.toHaveBeenCalled();
+  f.stop(); expect(frames.every(frame => frame.close.mock.calls.length === 1)).toBe(true);
+  const token = lock.acquire(); expect(token).not.toBeNull(); lock.release(token!);
+});
+it('records cancelled timer reservations and preserves async cancellation/ownership with instrumentation', async () => {
+  let now = 0; const metrics = new PipelineMetrics(() => now); const f = setup(true, new JobLock(), { width: 2, height: 1 }, metrics);
+  now = 10; f.stop(); expect(metrics.snapshot()!.stages.queue.cancelled.mean).toBe(10); vi.runOnlyPendingTimers(); expect(f.work).not.toHaveBeenCalled();
+  const frames = installFrameCapture(() => 0); const lock = new JobLock(); const g = setup(true, lock, { width: 2, height: 1 }, metrics);
+  let resolve!: (value: number) => void; g.work.mockImplementationOnce(() => new Promise<number>(yes => { resolve = yes; }));
+  vi.runOnlyPendingTimers(); g.stop(); expect(frames.some(frame => !frame.close.mock.calls.length)).toBe(true);
+  resolve(7); await vi.runAllTimersAsync(); expect(g.adopt).not.toHaveBeenCalled(); expect(frames.every(frame => frame.close.mock.calls.length === 1)).toBe(true);
+  expect(metrics.snapshot()!.stages.job.cancelled.count).toBe(1);
+  const token = lock.acquire(); expect(token).not.toBeNull(); lock.release(token!);
+});
+
+it('keeps failed and stale running-job occupancy out of success-only samples', async () => {
+  const metrics = new PipelineMetrics(() => 0); const f = setup(true, new JobLock(), { width: 2, height: 1 }, metrics);
+  f.work.mockImplementationOnce(() => { throw Error('sdk'); }); vi.runOnlyPendingTimers();
+  expect(metrics.snapshot()!.stages.job.failed.count).toBe(1); expect(metrics.snapshot()!.stages.job.success.count).toBe(0); f.stop();
+  const next = new PipelineMetrics(() => 0); const g = setup(true, new JobLock(), { width: 2, height: 1 }, next);
+  let resolve!: (value: number) => void; g.work.mockImplementationOnce(() => new Promise<number>(yes => { resolve = yes; }));
+  vi.runOnlyPendingTimers(); g.invalidate(); resolve(7); await vi.runAllTimersAsync();
+  expect(next.snapshot()!.stages.job.stale.count).toBe(1); expect(next.snapshot()!.stages.job.success.count).toBe(0); g.stop();
+});
+
+it('records bootstrap and execution capture failure while releasing its lock and preserving the capture error', () => {
+  const metrics = new PipelineMetrics(() => 0); const lock = new JobLock(); let captures = 0; const close = vi.fn();
+  vi.stubGlobal('VideoFrame', class {
+    timestamp = 0; displayWidth = 2; displayHeight = 1; close = close;
+    constructor() { if (++captures === 2) throw Error('capture'); }
+  });
+  const f = setup(true, lock, { width: 2, height: 1 }, metrics); vi.runOnlyPendingTimers();
+  expect(f.error).toHaveBeenCalledTimes(1); expect(f.work).not.toHaveBeenCalled(); expect(close).toHaveBeenCalledTimes(1);
+  expect(metrics.snapshot()!.stages.capture.success.count).toBe(1); expect(metrics.snapshot()!.stages.capture.failed.count).toBe(1);
+  expect(metrics.snapshot()!.stages.job.failed.count).toBe(1);
+  const token = lock.acquire(); expect(token).not.toBeNull(); lock.release(token!); f.stop();
 });

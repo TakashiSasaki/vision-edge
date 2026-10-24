@@ -1,0 +1,13 @@
+{
+  "checked": [
+    "dist/assets/index-FqC3xlP_.js"
+  ],
+  "markers": {
+    "Test-only SDK fault": [],
+    "pipelineCameraProbe": [],
+    "visionSdkProbe": [],
+    "runPipelineTrial": [],
+    "synthetic instrumentation experiment": []
+  },
+  "normalBuildOnly": true
+}
