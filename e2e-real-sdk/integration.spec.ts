@@ -103,6 +103,8 @@ for (const model of ['mediapipe', 'selfie-segmenter'] as const) {
       await expect(page.getByRole('alert')).toContainText('モデルの生成に失敗しました。', { timeout: 30_000 });
       await expect.poll(() => page.evaluate(model => window.__realSdkProbe.creates.some(c => c.model === model && !!c.error), model)).toBe(true);
       expect(requests.some(r => r.url.includes(model === 'mediapipe' ? 'efficientdet_lite0.tflite' : 'selfie_segmenter.tflite') && r.status === 'controlled HTTP503')).toBe(true);
+      const modelAsset = manifest.assets.find(asset => asset.file === (model === 'mediapipe' ? 'efficientdet_lite0.tflite' : 'selfie_segmenter.tflite'))!;
+      expect(await page.evaluate(model => window.__realSdkProbe.creates.find(c => c.model === model && c.error)?.error, model)).toBe(`Error: Failed to fetch model: ${modelAsset.url} (503)`);
       expect(await page.evaluate(() => window.__realSdkProbe.calls)).toBe(0);
       expect(errors).toEqual([]);
       await expect(page.locator('video')).toHaveCount(1);
