@@ -1,0 +1,191 @@
+{
+  "start": "2026-10-24T18:28:01.555Z",
+  "end": "2026-10-24T18:28:01.628Z",
+  "childExit": null,
+  "exit": 1,
+  "complete": false,
+  "matrix": [
+    {
+      "model": "mediapipe",
+      "input": "VideoFrame",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "fail",
+      "reason": [
+        {
+          "id": "vision_wasm_internal.wasm",
+          "status": "fail",
+          "reason": "Cached size/SHA256 differs from reviewed pin"
+        },
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "mediapipe",
+      "input": "Canvas",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "fail",
+      "reason": [
+        {
+          "id": "vision_wasm_internal.wasm",
+          "status": "fail",
+          "reason": "Cached size/SHA256 differs from reviewed pin"
+        },
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "mediapipe",
+      "input": "HTMLVideoElement",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "fail",
+      "reason": [
+        {
+          "id": "vision_wasm_internal.wasm",
+          "status": "fail",
+          "reason": "Cached size/SHA256 differs from reviewed pin"
+        },
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "selfie-segmenter",
+      "input": "VideoFrame",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "fail",
+      "reason": [
+        {
+          "id": "vision_wasm_internal.wasm",
+          "status": "fail",
+          "reason": "Cached size/SHA256 differs from reviewed pin"
+        },
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "selfie-segmenter",
+      "input": "Canvas",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "fail",
+      "reason": [
+        {
+          "id": "vision_wasm_internal.wasm",
+          "status": "fail",
+          "reason": "Cached size/SHA256 differs from reviewed pin"
+        },
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "selfie-segmenter",
+      "input": "HTMLVideoElement",
+      "runtime": "cloud Chromium / unchanged GPU request",
+      "status": "fail",
+      "reason": [
+        {
+          "id": "vision_wasm_internal.wasm",
+          "status": "fail",
+          "reason": "Cached size/SHA256 differs from reviewed pin"
+        },
+        {
+          "id": "efficientdet_lite0.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        },
+        {
+          "id": "selfie_segmenter.tflite",
+          "status": "blocked",
+          "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+        }
+      ],
+      "executedInference": 0
+    },
+    {
+      "model": "mediapipe",
+      "input": "controlled asset HTTP503",
+      "runtime": "cloud Chromium actual SDK",
+      "status": "not-run",
+      "reason": "No completed test record (startup/launch failure possible)"
+    },
+    {
+      "model": "selfie-segmenter",
+      "input": "controlled asset HTTP503",
+      "runtime": "cloud Chromium actual SDK",
+      "status": "not-run",
+      "reason": "No completed test record (startup/launch failure possible)"
+    },
+    {
+      "runtime": "physical desktop camera/GPU/audio",
+      "model": "both",
+      "status": "not-run",
+      "reason": "Outside this cloud run; separate authorization/environment needed"
+    },
+    {
+      "runtime": "physical mobile camera/GPU/audio",
+      "model": "both",
+      "status": "not-run",
+      "reason": "Outside this cloud run; separate authorization/environment needed"
+    },
+    {
+      "runtime": "public application code equality",
+      "model": "both",
+      "status": "not-run",
+      "reason": "Outside this cloud run; separate authorization/environment needed"
+    },
+    {
+      "runtime": "CPU diagnostic (product delegate unchanged)",
+      "model": "both",
+      "status": "not-run",
+      "reason": "Outside this cloud run; separate authorization/environment needed"
+    }
+  ]
+}

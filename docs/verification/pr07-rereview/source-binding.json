@@ -1,0 +1,89 @@
+{
+  "phase": "independent re-review; same reviewer as PR18, separate from author",
+  "frozenAt": "2026-10-24T18:38:44.798134+00:00",
+  "repo": "TakashiSasaki/vision-edge",
+  "targetPR": 17,
+  "targetBranch": "test/real-mediapipe-integration",
+  "targetHead": "21417613fc418fd5785f903fe8a3cf510477649b",
+  "targetTree": "1abe52da141590c49bc3bdf457ff7ed2e01f5ff4",
+  "oldTargetHead": "31721975d4eeef0ff31d29074aadafc801efae88",
+  "oldTargetTree": "a8e8fab06e4144b39449bbbe511d1eae95dd458a",
+  "main": "9dd0f7998a8c700c2f19c770e31dc790c4774de4",
+  "mainTree": "815f55307389f842d636f0381c206253630baabd",
+  "priorReviewHead": "e1414072fe2facf00b70720d7c706b1c2328712c",
+  "priorReviewTree": "bd66ecd52dfbc74acfb92f38ff14230f4318792b",
+  "evidenceBranch": "review/pr07-real-sdk-rereview",
+  "evidenceDirectBase": "test/real-mediapipe-integration",
+  "evidenceSoleParent": "21417613fc418fd5785f903fe8a3cf510477649b",
+  "finalEvidenceHeadTree": "Recorded in new Draft PR body after commit; no self-hash claim",
+  "changedFoundationBindings": {
+    "e2e-real-sdk/README.md": {
+      "blob": "e2f4ac2f94e362f8e11b3309f311ead4c572f7df",
+      "sha256": "c910d1d2e195af0ac39fd281cd59207e446ded9beff7e30c3054cc57b58bc3e5"
+    },
+    "e2e-real-sdk/acceptance.ts": {
+      "blob": "05e4b8149e021f6fd24360a2cf029ebfd2cc095a",
+      "sha256": "6d841d7a85f7fdd09879dcec0bd701989612a9cb45cc00bb4cd0b3d0cb6b92f0"
+    },
+    "e2e-real-sdk/fixtures.ts": {
+      "blob": "1473e77265069dce4099d679caf6efadecf5a236",
+      "sha256": "b1fba568e14a0947817025d6bb9b16801089f5da541d4d53e791c30c5f5232bb"
+    },
+    "e2e-real-sdk/input-provenance.ts": {
+      "blob": "15f458c1001959a302a98841c258717d73b92693",
+      "sha256": "2c4c69456612ff54a24b6e95a8ed94414f00297a131990510f1a8dcde3655634"
+    },
+    "e2e-real-sdk/integration.spec.ts": {
+      "blob": "e4c9f77eb97bd0b7374a05f820c3b9c4234f1d62",
+      "sha256": "72d8a17395501936329583837927ea313d43f942fa68aa409b6fae8cada1a92f"
+    },
+    "e2e-real-sdk/native-probe.ts": {
+      "blob": "f2c04868c45927199fad055e3f4d2ba5d45e3878",
+      "sha256": "ae217e2c95a1aefa7df9bad3c06eec96ca680e3fcb6ab1a61c64d349225723ab"
+    },
+    "e2e-real-sdk/observer.ts": {
+      "blob": "5a0b19581af285188cfafe3b6b540350d0775953",
+      "sha256": "abead72400654c7701cdd7801d364800c0489d3319e5a4e9fcf0fad895d4a0a7"
+    },
+    "e2e-real-sdk/provenance.spec.ts": {
+      "blob": "f4bdd796b4f39ffd506521a817348638dcaefbe2",
+      "sha256": "e3fa4f01bdf96a84bff80e6c59910e594a0026ceb6022e1064894e1296664c15"
+    },
+    "playwright.real-sdk.config.ts": {
+      "blob": "4c25b0bc30995e93f4b502974bd4ec57eb233595",
+      "sha256": "5b2367ca45afdd9abdceeacff1e64d83a5ecab5ffe03db8c47c4188bdebe01cc"
+    },
+    "scripts/real-sdk/assets.mjs": {
+      "blob": "9c41eee103b52a6a023225e2b78b7cab43e79b5b",
+      "sha256": "8d54f811a241cdf98bc732d266f4eee22bc175767be09741a043420f0c5c1eb7"
+    },
+    "scripts/real-sdk/build-native-probe.mjs": {
+      "blob": "20c3f901d087ab628722eef2808556ae5d18d915",
+      "sha256": "51cd9f046962b6a4230957520f489ce458f0754f960128b26697704596769dbc"
+    },
+    "scripts/real-sdk/corrections.test.mjs": {
+      "blob": "71726a7f6d4052172fb1250045e81ecc82b1c5fc",
+      "sha256": "3a73f90166d3cc0b18d122e2c12954a51f4c5fbb15668ac74c3ad8980046edb2"
+    },
+    "scripts/real-sdk/summarize.mjs": {
+      "blob": "c40d863065d5e173c62fadcc9b813b1febf93cf2",
+      "sha256": "3047c8fb7fe5b2bafc4834e46527104f6d7bff99ca4bf4deb46bcc8b798c9889"
+    },
+    "vite.real-sdk.config.ts": {
+      "blob": "9fa36d740454c706a8413531118ffa0c1c1ad4d0",
+      "sha256": "7f3fd372ebfb53ec6a3f1bc4c09141c696295653c46395261031d83fa904bfc3"
+    }
+  },
+  "originalPublishedProbes": {
+    "docs/verification/pr07-independent/probes/native-inputs.spec.txt": "1416b6f80769fc214347ee95ee1a86f8957f4dac8a6afb8fbbf0b80b2836eb4e",
+    "docs/verification/pr07-independent/probes/invalid-manifests.py": "12d90af7b6d4d7d86424c1feeae664ea40adfb85c31ddeaf66ec8974f4e92fab",
+    "docs/verification/pr07-independent/probes/checker-counterexamples.mjs": "789763d3c8175e8f08ca5e82623056258c3aa9ee7957785cc8ab1802dac79f41"
+  },
+  "notes": [
+    "No AGENTS.md or relevant checkout .agents/skills instruction file found; previously read review-cycle skill used.",
+    "Initial executor read failed; second read after environment update succeeded. Existing preserved files checked before new operations.",
+    "Every new command receipt/log is separate from recovered-history.",
+    "Current real run metadata lists only temporary regenerated historical PNGs and extra independent native spec; no product/foundation source changes, and disposable tree is restored clean.",
+    "No model download or alternate access route; controlled browser modelURL requests are locally fulfilled with503 and never become outbound model acquisition."
+  ]
+}

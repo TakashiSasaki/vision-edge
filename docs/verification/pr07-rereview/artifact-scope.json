@@ -1,0 +1,9 @@
+{
+  "newEvidence": "current/raw logs, JSON, licensed diagnostic UI PNGs and ordinary offline browser report archives",
+  "recoveredHistory": "separate immutable snapshots of previously unreachable records; not labelled new-head execution",
+  "excludedFromPromotion": [
+    "missing-wasm-diagnostic/browser/integration-asset-diagnostic-selfie-segmenter/trace.zip"
+  ],
+  "excludedReason": "Trace may contain cache-only SDK/input response bytes; original remains in ignored /tmp/pr07-rereview-unrelated-startup. No SDK/model/input binary is added by this review.",
+  "diff": "Textual complete Git diff plus binary-path markers; exact author binary blobs remain bound to source target tree. No duplicated Git binary patch."
+}

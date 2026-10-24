@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "--config",
+    "playwright.real-sdk.config.ts",
+    "--grep",
+    "asset diagnostic"
+  ],
+  "cwd": "/tmp/pr07-rereview-current/",
+  "env": {
+    "REAL_SDK_RUN_DIR": "/tmp/pr07-rereview-current/.cache/real-sdk-runs/2026-10-24T18-26-01.292Z-f18cd658",
+    "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+  }
+}

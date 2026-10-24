@@ -1,0 +1,10 @@
+{
+  "units": "milliseconds JavaScript wall time; observation overhead present in product metrics, original-call-only raw.ms excludes later observation",
+  "inferenceAttempted": false,
+  "inferenceExecuted": false,
+  "resultAdopted": false,
+  "resultRendered": false,
+  "execution": [],
+  "populations": [],
+  "limits": "inferenceExecuted means an observed successful SDK return, not a semantic/model acceptance verdict. Attempts, processing, adoption and rendering are separate. No physical timing/utilization guarantee; overlapping stages must not be summed."
+}

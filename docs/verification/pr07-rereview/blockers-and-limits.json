@@ -1,0 +1,27 @@
+{
+  "modelAcquisition": [
+    {
+      "target": "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
+      "status": "DENIED in original author session; no outbound retry this review",
+      "reason": "HTTP403 CONNECT denial, curl -I --max-time25 exit56; no bytes/hash acquired",
+      "reviewCompleted": "F01-F03 closure, fresh regression, native/checker and genuine SDK failure diagnostics",
+      "remaining": "Explicitly authorized lawful exact bytes, model-specific terms and reviewed pins before six genuine inference cases"
+    },
+    {
+      "target": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite",
+      "status": "DENIED in original author session; no outbound retry this review",
+      "reason": "HTTP403 CONNECT denial, curl -I --max-time25 exit56; no bytes/hash acquired",
+      "reviewCompleted": "F01-F03 closure, fresh regression, native/checker and genuine SDK failure diagnostics",
+      "remaining": "Explicitly authorized lawful exact bytes, model-specific terms and reviewed pins before six genuine inference cases"
+    }
+  ],
+  "executionEnvironment": {
+    "initialRead": "BLOCKED: No usable execution environment",
+    "laterRead": "RECOVERED by observed successful pwd/status and preserved file inspection after environment update",
+    "current": "USABLE; tests completed with receipts and logs",
+    "oldUncertainCorruption": "No old execution receipt/probe found, cache matched pin; historical uncertainty retained, not a certified test",
+    "newCacheControls": "Separate new disposable cache; completed; bytes restored"
+  },
+  "physicalAndPublic": "NOT RUN; no current physical device/public equality claim",
+  "publication": "No merge/deploy; only new evidence branch/PR is authorized"
+}

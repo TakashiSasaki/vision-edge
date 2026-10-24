@@ -1,0 +1,23 @@
+{
+  "start": "2026-10-24T18:26:01.323Z",
+  "sourceHead": "21417613fc418fd5785f903fe8a3cf510477649b",
+  "sourceTree": "1abe52da141590c49bc3bdf457ff7ed2e01f5ff4",
+  "worktreeStatus": "M docs/verification/pr06/screenshots/details-immutable.png\n M docs/verification/pr06/screenshots/details-live-quality.png\n M docs/verification/pr06/screenshots/details-rgba.png\n M docs/verification/pr06/screenshots/normal-immutable.png\n M docs/verification/pr06/screenshots/normal-live-quality.png\n M docs/verification/pr06/screenshots/normal-rgba.png\n?? e2e-real-sdk/independent-provenance.spec.ts",
+  "diffSha256": "f868d92e372e3dae53ebeb14d79cf9f6783589466dc56f61a95d30e88ed64517",
+  "manifestSha256": "32299afe278d3df6f86b102401457989cbd3d37449b15fc653166f8ebccfa24b",
+  "os": {
+    "platform": "linux",
+    "release": "6.18.55",
+    "arch": "x64"
+  },
+  "node": "v24.19.0",
+  "npm": "11.9.0",
+  "chromium": "/usr/bin/chromium",
+  "mode": "verified local routing; all other external browser requests blocked",
+  "resolution": [
+    512,
+    512
+  ],
+  "delegate": "GPU (unchanged product request); physical device unknown",
+  "population": "Per scenario: initialization separate; first successful SDK call warmup; next >=3 positive inference calls steady state; background/empty >=5 calls each. HUD rolling 5s/2048 events/latest300 quantiles; no physical timing threshold."
+}

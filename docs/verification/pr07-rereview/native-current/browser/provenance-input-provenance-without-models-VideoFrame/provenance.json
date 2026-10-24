@@ -1,0 +1,40 @@
+{
+  "mode": "VideoFrame",
+  "result": {
+    "rows": [
+      {
+        "kind": "VideoFrame",
+        "stamp": {
+          "scene": "astronaut.png",
+          "revision": 2,
+          "stream": 1
+        }
+      },
+      {
+        "kind": "VideoFrame",
+        "stamp": {
+          "scene": "empty",
+          "revision": 3,
+          "stream": 1
+        }
+      }
+    ],
+    "errors": [],
+    "sdkObservationPresent": false,
+    "created": 4,
+    "closed": 4,
+    "liveTracks": 0
+  },
+  "requests": [
+    {
+      "url": "http://127.0.0.1:4175/fixtures/astronaut.png",
+      "status": "verified local bytes"
+    },
+    {
+      "url": "http://127.0.0.1:4175/fixtures/coffee.png",
+      "status": "verified local bytes"
+    }
+  ],
+  "browserVersion": "154.0.8037.57",
+  "scope": "actual native inputs/unchanged scheduler ONLY; NO SDK/model inference"
+}

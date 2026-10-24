@@ -1,0 +1,631 @@
+{
+  "logsRead": 34,
+  "declaredCommands": [
+    {
+      "name": "reproduce-F01-before",
+      "argv": [
+        "python",
+        "docs/verification/pr07-f01-f03-correction/original-probes/invalid-manifests.py",
+        "/workspace/vision-edge"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T17:59:28.768683+00:00",
+      "end": "2026-10-24T17:59:28.923694+00:00",
+      "exit": 0
+    },
+    {
+      "name": "reproduce-F02-F03-before",
+      "argv": [
+        "node",
+        "docs/verification/pr07-f01-f03-correction/original-probes/checker-counterexamples.mjs.txt",
+        "/workspace/vision-edge"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T17:59:28.943616+00:00",
+      "end": "2026-10-24T17:59:28.963159+00:00",
+      "exit": 1
+    },
+    {
+      "name": "reproduce-F02-F03-before-fixed-invocation",
+      "argv": [
+        "node",
+        "/tmp/pr07-original-checker-counterexamples.mjs",
+        "/workspace/vision-edge"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T17:59:37.115094+00:00",
+      "end": "2026-10-24T17:59:37.560734+00:00",
+      "exit": 0
+    },
+    {
+      "name": "initial-typecheck",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:03:33.739339+00:00",
+      "end": "2026-10-24T18:03:36.415887+00:00",
+      "exit": 0
+    },
+    {
+      "name": "initial-lint",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:03:36.436587+00:00",
+      "end": "2026-10-24T18:03:37.869762+00:00",
+      "exit": 1
+    },
+    {
+      "name": "focused-initial",
+      "argv": [
+        "node",
+        "--test",
+        "scripts/real-sdk/assets.test.mjs",
+        "scripts/real-sdk/corrections.test.mjs"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:04:53.784892+00:00",
+      "end": "2026-10-24T18:04:54.697258+00:00",
+      "exit": 0
+    },
+    {
+      "name": "typecheck-after-controls",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:04:54.717491+00:00",
+      "end": "2026-10-24T18:04:56.933160+00:00",
+      "exit": 0
+    },
+    {
+      "name": "lint-after-controls",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:04:56.953507+00:00",
+      "end": "2026-10-24T18:04:58.300832+00:00",
+      "exit": 1
+    },
+    {
+      "name": "static-typecheck",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:06:02.276161+00:00",
+      "end": "2026-10-24T18:06:04.565206+00:00",
+      "exit": 0
+    },
+    {
+      "name": "static-lint",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:06:04.600076+00:00",
+      "end": "2026-10-24T18:06:06.019780+00:00",
+      "exit": 0
+    },
+    {
+      "name": "native-provenance",
+      "argv": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--config",
+        "playwright.real-sdk.config.ts",
+        "--grep",
+        "input provenance"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:06:06.168408+00:00",
+      "end": "2026-10-24T18:06:09.212005+00:00",
+      "exit": 0
+    },
+    {
+      "name": "focused-final",
+      "argv": [
+        "node",
+        "--test",
+        "scripts/real-sdk/assets.test.mjs",
+        "scripts/real-sdk/corrections.test.mjs"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:07:31.674869+00:00",
+      "end": "2026-10-24T18:07:32.609621+00:00",
+      "exit": 0
+    },
+    {
+      "name": "reproduce-F01-after",
+      "argv": [
+        "python",
+        "docs/verification/pr07-f01-f03-correction/original-probes/invalid-manifests.py",
+        "/workspace/vision-edge"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:07:32.629954+00:00",
+      "end": "2026-10-24T18:07:32.753412+00:00",
+      "exit": 0
+    },
+    {
+      "name": "reproduce-original-checker-after",
+      "argv": [
+        "node",
+        "/tmp/pr07-original-checker-counterexamples.mjs",
+        "/workspace/vision-edge"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:07:32.781975+00:00",
+      "end": "2026-10-24T18:07:33.165040+00:00",
+      "exit": 1
+    },
+    {
+      "name": "original-summary-only-after",
+      "argv": [
+        "node",
+        "/tmp/pr07-original-summary-only.mjs",
+        "/workspace/vision-edge"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:08:00.597447+00:00",
+      "end": "2026-10-24T18:08:00.646586+00:00",
+      "exit": 1
+    },
+    {
+      "name": "lock-install",
+      "argv": [
+        "npm",
+        "ci",
+        "--cache",
+        "/tmp/vision-edge-pr07-npm-cache",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:08:00.666146+00:00",
+      "end": "2026-10-24T18:08:04.000277+00:00",
+      "exit": 0
+    },
+    {
+      "name": "typecheck-final-code",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:08:04.020430+00:00",
+      "end": "2026-10-24T18:08:06.423521+00:00",
+      "exit": 0
+    },
+    {
+      "name": "lint-final-code",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:08:06.444030+00:00",
+      "end": "2026-10-24T18:08:07.841946+00:00",
+      "exit": 0
+    },
+    {
+      "name": "unit",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:08:07.861695+00:00",
+      "end": "2026-10-24T18:08:11.818647+00:00",
+      "exit": 0
+    },
+    {
+      "name": "build",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:08:11.838398+00:00",
+      "end": "2026-10-24T18:08:12.283507+00:00",
+      "exit": 0
+    },
+    {
+      "name": "isolation",
+      "argv": [
+        "node",
+        "scripts/real-sdk/audit.mjs"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:08:12.303371+00:00",
+      "end": "2026-10-24T18:08:12.453100+00:00",
+      "exit": 0
+    },
+    {
+      "name": "final-focused",
+      "argv": [
+        "node",
+        "--test",
+        "scripts/real-sdk/assets.test.mjs",
+        "scripts/real-sdk/corrections.test.mjs"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:09:51.945748+00:00",
+      "end": "2026-10-24T18:09:52.858508+00:00",
+      "exit": 0
+    },
+    {
+      "name": "final-typecheck",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:09:52.878936+00:00",
+      "end": "2026-10-24T18:09:55.202323+00:00",
+      "exit": 0
+    },
+    {
+      "name": "final-lint",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:09:55.221991+00:00",
+      "end": "2026-10-24T18:09:56.665286+00:00",
+      "exit": 0
+    },
+    {
+      "name": "regression-build",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/tmp/vision-edge-pr07-correction-regressions",
+      "start": "2026-10-24T18:10:10.992875+00:00",
+      "end": "2026-10-24T18:10:11.497579+00:00",
+      "exit": 0
+    },
+    {
+      "name": "F03-identical-before-after",
+      "argv": [
+        "python",
+        "docs/verification/pr07-f01-f03-correction/compare-summary.py",
+        "/workspace/vision-edge"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:11:09.029011+00:00",
+      "end": "2026-10-24T18:11:09.122358+00:00",
+      "exit": 0
+    },
+    {
+      "name": "browser",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "cwd": "/tmp/vision-edge-pr07-correction-regressions",
+      "start": "2026-10-24T18:10:11.517548+00:00",
+      "end": "2026-10-24T18:11:21.852874+00:00",
+      "exit": 0
+    },
+    {
+      "name": "controls",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e:controls"
+      ],
+      "cwd": "/tmp/vision-edge-pr07-correction-regressions",
+      "start": "2026-10-24T18:11:21.875117+00:00",
+      "end": "2026-10-24T18:11:45.663015+00:00",
+      "exit": 0
+    },
+    {
+      "name": "native-provenance-final",
+      "argv": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--config",
+        "playwright.real-sdk.config.ts",
+        "--grep",
+        "input provenance"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:12:34.299796+00:00",
+      "end": "2026-10-24T18:12:38.242499+00:00",
+      "exit": 0
+    },
+    {
+      "name": "real-sdk-final",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e:real-sdk"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:12:38.263210+00:00",
+      "end": "2026-10-24T18:12:43.333927+00:00",
+      "exit": 2
+    },
+    {
+      "name": "evidence-typecheck",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:14:42.714141+00:00",
+      "end": "2026-10-24T18:14:45.099133+00:00",
+      "exit": 0
+    },
+    {
+      "name": "evidence-lint",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:14:45.120342+00:00",
+      "end": "2026-10-24T18:14:46.483545+00:00",
+      "exit": 0
+    },
+    {
+      "name": "evidence-build",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:14:46.504365+00:00",
+      "end": "2026-10-24T18:14:46.958220+00:00",
+      "exit": 0
+    },
+    {
+      "name": "evidence-isolation",
+      "argv": [
+        "node",
+        "scripts/real-sdk/audit.mjs"
+      ],
+      "cwd": "/workspace/vision-edge",
+      "start": "2026-10-24T18:14:46.978876+00:00",
+      "end": "2026-10-24T18:14:47.141939+00:00",
+      "exit": 0
+    }
+  ],
+  "logFacts": [
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/F03-identical-before-after.txt",
+      "size": 4457,
+      "sha256": "7a32dc2c5d24a972abf9b0a292a004d0126f91bf6a129a3c7daae17d4fedb8cb",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/browser.txt",
+      "size": 9701,
+      "sha256": "47a416dcb698b43edfe91974722c4d119431a763fe017eff8eccf72ed274ce90",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/build.txt",
+      "size": 604,
+      "sha256": "01d9889d1ff08ed498dfaa2fd206286901bca96370d40a886852c2f24db6a85d",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/controls.txt",
+      "size": 912,
+      "sha256": "c89eca1b380efdef8eec003655672c850241a976412167165228b8fbd4271643",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/evidence-build.txt",
+      "size": 604,
+      "sha256": "620919178b03ef6aabd09ade2bfeefc1776403b14c98c6a4e674827a1562f845",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/evidence-isolation.txt",
+      "size": 1041,
+      "sha256": "fc2ee21041e9e72ff3b5d16448ea3673e53e08407fe7bb991880b47c1c134732",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/evidence-lint.txt",
+      "size": 265,
+      "sha256": "c5a95402c85690aab1dd91cd1794a87b47f12b6ca6184ac98b55259d5625de10",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/evidence-typecheck.txt",
+      "size": 257,
+      "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/final-focused.txt",
+      "size": 5100,
+      "sha256": "8c1c1db864e7c4f1c0173de45d8ab0c65f575a3391669335e8e5d1c208e68020",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/final-lint.txt",
+      "size": 265,
+      "sha256": "c5a95402c85690aab1dd91cd1794a87b47f12b6ca6184ac98b55259d5625de10",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/final-typecheck.txt",
+      "size": 257,
+      "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/focused-final.txt",
+      "size": 5099,
+      "sha256": "5d0b14f8cd4b5cce04cba4f3bfffcdd093e7bbc28c7ddff0cd661b5e50584a15",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/focused-initial.txt",
+      "size": 4897,
+      "sha256": "8ee3fcac3487f92191bdf2edb8fb89fd4990210f7fe07ccb77df8fc5debb6712",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/initial-lint.txt",
+      "size": 457,
+      "sha256": "00263570e583986e17a8c612f516a243a9ce13ca1aeec12c696490737d1ea38b",
+      "hasFailureText": true
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/initial-typecheck.txt",
+      "size": 257,
+      "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/isolation.txt",
+      "size": 1041,
+      "sha256": "fc2ee21041e9e72ff3b5d16448ea3673e53e08407fe7bb991880b47c1c134732",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/lint-after-controls.txt",
+      "size": 457,
+      "sha256": "00263570e583986e17a8c612f516a243a9ce13ca1aeec12c696490737d1ea38b",
+      "hasFailureText": true
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/lint-final-code.txt",
+      "size": 265,
+      "sha256": "c5a95402c85690aab1dd91cd1794a87b47f12b6ca6184ac98b55259d5625de10",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/lock-install.txt",
+      "size": 26,
+      "sha256": "5e2bf117e41e3ba86c3acbc03c10eee2765e2786e8ee0f4a2f055304002eb565",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/native-provenance-final.txt",
+      "size": 2099,
+      "sha256": "9252f41c3c5294672fcae9d04a0b11292f0af93ce5660e69336b5eb8140a97c6",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/native-provenance.txt",
+      "size": 1906,
+      "sha256": "122c7b7fec7ca39ec7374daf8bac86c09cf688367f81be1f2ad1682b781f9141",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/original-summary-only-after.txt",
+      "size": 367,
+      "sha256": "5f9b52a66226fc32fc8f75dda5567ddc88761c5f2d5eb9996f6e54de51880797",
+      "hasFailureText": true
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/real-sdk-final.txt",
+      "size": 8161,
+      "sha256": "22d739b86be3b90b2a5bfbefb714f41c7b7ec3365d8a0c191b2097b8ae20c73a",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/regression-build.txt",
+      "size": 604,
+      "sha256": "9ae0cde91c4e5abd15325e77ec71fde5a1fd59477d303df105621f2b3c5bef08",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/reproduce-F01-after.txt",
+      "size": 4790,
+      "sha256": "ae815241ccc909ceaed02730a31f16cd7c4c6116fe38a7090737532d33393866",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/reproduce-F01-before.txt",
+      "size": 2782,
+      "sha256": "903f95a9599222c1d24ad77dc77650be6522b85636a40fea403bff31b26500d4",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/reproduce-F02-F03-before-fixed-invocation.txt",
+      "size": 3933,
+      "sha256": "1a5fd8eb4c51928c06fbf0e644fc7c33a4653d96882cc6726c06860f20a5974c",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/reproduce-F02-F03-before.txt",
+      "size": 1099,
+      "sha256": "5eb7bc8560a206eb01b940db43f87c971d2affb5daf435ae1b864c52ee7a6fbb",
+      "hasFailureText": true
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/reproduce-original-checker-after.txt",
+      "size": 1312,
+      "sha256": "c84f8c40630785a0a92cc735a0cd6aab981b746878fdfa8802e0cb1adcf95544",
+      "hasFailureText": true
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/static-lint.txt",
+      "size": 265,
+      "sha256": "c5a95402c85690aab1dd91cd1794a87b47f12b6ca6184ac98b55259d5625de10",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/static-typecheck.txt",
+      "size": 257,
+      "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/typecheck-after-controls.txt",
+      "size": 257,
+      "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/typecheck-final-code.txt",
+      "size": 257,
+      "sha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "hasFailureText": false
+    },
+    {
+      "file": "docs/verification/pr07-f01-f03-correction/logs/unit.txt",
+      "size": 752,
+      "sha256": "d3138f582b401d4a9f9e845cb96286d7abdd7797535136375a772d5df087fb6f",
+      "hasFailureText": false
+    }
+  ],
+  "interpretation": "Initial invocation/lint failures and unsupported old-adapter TypeError remain preserved by author; not relabelled successful closure."
+}

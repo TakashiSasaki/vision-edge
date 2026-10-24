@@ -1,0 +1,54 @@
+{
+  "phase": "independent re-review by original PR18 reviewer",
+  "oldTarget": "31721975d4eeef0ff31d29074aadafc801efae88",
+  "oldVerdict": "FAIL remains historical and unchanged",
+  "targetHead": "21417613fc418fd5785f903fe8a3cf510477649b",
+  "targetTree": "1abe52da141590c49bc3bdf457ff7ed2e01f5ff4",
+  "foundationVerdict": "PASS WITH CONDITIONS",
+  "realInferenceVerdict": "BLOCKED / NOT ACHIEVED",
+  "newFindings": [],
+  "findings": [
+    {
+      "id": "PR07-F01", "severity": "P2", "status": "CLOSED",
+      "scope": "Invalid/incomplete manifest must not succeed; deliberate unavailable null models remain blocked",
+      "source": "scripts/real-sdk/assets.mjs validateManifest and preflight import",
+      "before": "Unchanged published Python probe: child exits0/0/0/1 on original31721975",
+      "after": "Same probe: child exits1/1/1/1 with INVALID_ASSET_MANIFEST on21417613. Actual complete cached inventory exits2 with7pass/2blocked, including unchanged null models.",
+      "independentVectors": 38,
+      "otherValidation": "Author30F01 controls independently rerun as part of73focused controls",
+      "evidence": ["logs/original-F01-old.txt", "logs/original-F01-current.txt", "logs/current-cached-assets.txt", "logs/independent-adversarial-final.txt"]
+    },
+    {
+      "id": "PR07-F02", "severity": "P2", "status": "CLOSED",
+      "scope": "Fresh successful actual-input/result/adoption/copy binding must replace stale empty-result acceptance",
+      "source": "e2e-real-sdk/acceptance.ts, input-provenance.ts, observer.ts, fixtures.ts and integration.spec.ts; build-only adoption hook",
+      "before": "Unchanged original combined probe again accepts failed new attempts with one stale empty record on old source",
+      "adapterCaution": "Unchanged old adapter on new source throws TypeError because it lacks negativeCheck. This is retained but not closure evidence.",
+      "after": "Actual shared checker rejects original failed/stale shape and adversarial model/input/generation/scene/revision/session/coverage/result/adoption/draw variants across both models and all3input kinds. Native3author+3independent cases prove marker transitions, original-input identity after requested-scene mutation, restart/session provenance and frame/track ownership without SDK/model calls.",
+      "independentVectors": 174,
+      "independentNativeCases": 3,
+      "otherValidation": "Author26F02 controls plus3native cases independently rerun",
+      "evidence": ["logs/original-F02-F03-old.txt", "logs/original-F02-F03-current-adapter.txt", "logs/independent-adversarial-final.txt", "logs/current-native-provenance.txt", "native-current"]
+    },
+    {
+      "id": "PR07-F03", "severity": "P2", "status": "CLOSED",
+      "scope": "File existence/zero calls cannot establish executed inference; attempted/returned/processed/adopted/rendered evidence separated",
+      "source": "scripts/real-sdk/summarize.mjs and linkedReadyResults",
+      "beforeAfter": "Identical original zero-call initialization-failure fixture through actual old/current summarizers: true -> false. Current attempted/adopted/rendered also false, populations empty.",
+      "after": "Independent cases separate successful SDK return from adoption/copy; failed/unknown/stale/duplicate/counter-inconsistent variants do not establish later stages. Actual genuine-SDK failure diagnostics produce false execution flags and no populations.",
+      "independentVectors": 61,
+      "definition": "inferenceExecuted means observed successful SDK return, not semantic/model acceptance. Retained/lifetime coverage is explicit, not tamper-proof certification of arbitrary edited JSON.",
+      "otherValidation": "Author10F03 controls independently rerun",
+      "evidence": ["logs/independent-adversarial-final.txt", "real-sdk-current/measurements.json"]
+    }
+  ],
+  "limits": [
+    "273independent cases are checker-only oracles; no fabricated result is supplied to App/VisionEngine/SDK or claimed as genuine inference",
+    "All6real-model/input scenarios remain BLOCKED; no successful model initialization/semantic/render/lifecycle/performance acceptance",
+    "No outbound acquisition request is made to either denied model URL; no new access route, host, account, machine, proxy or delegate used",
+    "Physical camera/GPU/audio/mobile/background behavior, CPU diagnostic and public-deployment/source equality remain NOT RUN",
+    "Inherited PR04 full-RGBA/coalescing, PR05-T01 and PR16 conditions remain"
+  ],
+  "remainingPrerequisite": "Authorized lawful exact model bytes and model-specific terms, reviewed provenance/size/SHA256/version pins, then all6genuine SDK/input scenarios; SHA-specific re-review for later source changes",
+  "scopeBoundary": "Foundation acceptance only. No product repair, PR18 edit, merge, deploy or next phase."
+}

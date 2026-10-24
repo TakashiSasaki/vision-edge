@@ -1,0 +1,29 @@
+Normalized excerpt only: trailing whitespace removed; exact raw bytes preserved in target-job-120948814304.txt.gz.
+2026-10-24T18:15:21.3872651Z   ref: 21417613fc418fd5785f903fe8a3cf510477649b
+2026-10-24T18:15:21.6287911Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 21417613fc418fd5785f903fe8a3cf510477649b
+2026-10-24T18:15:22.9384909Z  * branch            21417613fc418fd5785f903fe8a3cf510477649b -> FETCH_HEAD
+2026-10-24T18:15:22.9396681Z [command]/usr/bin/git rev-parse --verify --quiet 21417613fc418fd5785f903fe8a3cf510477649b^{object}
+2026-10-24T18:15:22.9420485Z 21417613fc418fd5785f903fe8a3cf510477649b
+2026-10-24T18:15:22.9516035Z [command]/usr/bin/git checkout --progress --force 21417613fc418fd5785f903fe8a3cf510477649b
+2026-10-24T18:15:23.0513596Z Note: switching to '21417613fc418fd5785f903fe8a3cf510477649b'.
+2026-10-24T18:15:23.0601583Z 21417613fc418fd5785f903fe8a3cf510477649b
+2026-10-24T18:15:28.1339850Z node: v24.19.0
+2026-10-24T18:15:28.1340365Z npm: 11.17.0
+2026-10-24T18:15:48.9668086Z [2m      Tests [22m [1m[32m317 passed[39m[22m[90m (317)[39m
+2026-10-24T18:16:01.2884250Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+2026-10-24T18:16:06.5134570Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to /home/runner/.cache/ms-playwright/chromium-1248
+2026-10-24T18:16:06.9220824Z Downloading Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-headless-shell-linux64.zip
+2026-10-24T18:16:10.5178234Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+2026-10-24T18:17:27.0734458Z   19 passed (1.3m)
+2026-10-24T18:17:31.5339335Z intact: exit=0; passed=1; failed=0
+2026-10-24T18:17:35.2967434Z missing-css-html-fallback: exit=1; passed=0; failed=1
+2026-10-24T18:17:35.2968188Z   Expected failure confirmed: required stylesheet MIME
+2026-10-24T18:17:39.0030048Z absent-stylesheet-link: exit=1; passed=0; failed=1
+2026-10-24T18:17:39.0031011Z   Expected failure confirmed: required local stylesheet links
+2026-10-24T18:17:42.7299330Z empty-css: exit=1; passed=0; failed=1
+2026-10-24T18:17:42.7300031Z   Expected failure confirmed: required stylesheet parsed rules
+2026-10-24T18:17:51.4611389Z irrelevant-css: exit=1; passed=0; failed=1
+2026-10-24T18:17:51.4612783Z   Expected failure confirmed: required stylesheet applied body reset
+2026-10-24T18:17:55.7176690Z fatal-javascript: exit=1; passed=0; failed=1
+2026-10-24T18:17:55.7177623Z   Expected failure confirmed: F01 fatal JavaScript control
+2026-10-24T18:17:59.8342185Z intact-after-controls: exit=0; passed=1; failed=0

@@ -1,0 +1,10 @@
+{
+  "protectedTargetCount": 784,
+  "changedTargetPaths": [],
+  "authorHistoricalCount": 635,
+  "changedAuthorHistoricalPaths": [],
+  "disposableCurrentStatus": "",
+  "oldEvidenceBranch": "e1414072fe2facf00b70720d7c706b1c2328712c",
+  "newBrowserArtifactsOnly": "all promoted NEW runs are within this new directory; old raw evidence is explicitly recovered-history",
+  "disposableNewBaselineStatus": ""
+}

@@ -1,0 +1,215 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/tmp/pr07-rereview-current/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "playwright.real-sdk.config.ts",
+      "--grep",
+      "asset diagnostic selfie-segmenter"
+    ],
+    "configFile": "/tmp/pr07-rereview-current/playwright.real-sdk.config.ts",
+    "rootDir": "/tmp/pr07-rereview-current/e2e-real-sdk",
+    "failOnFlakyTests": false,
+    "forbidOnly": true,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 600000,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/pr07-rereview-unrelated-startup/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/tmp/pr07-rereview-current/e2e-real-sdk",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/tmp/pr07-rereview-unrelated-startup/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/tmp/pr07-rereview-current/e2e-real-sdk",
+        "snapshotDir": "/tmp/pr07-rereview-current/e2e-real-sdk",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 60000,
+        "use": {
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "baseURL": "http://127.0.0.1:4175",
+          "serviceWorkers": "block",
+          "launchOptions": {
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/pr07-rereview-unrelated-startup/playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": {
+      "command": "node scripts/real-sdk/build-native-probe.mjs && npm run build -- --config vite.real-sdk.config.ts && npm run preview -- --outDir .cache/vision-edge-real-sdk --host 127.0.0.1 --port 4175 --strictPort",
+      "url": "http://127.0.0.1:4175",
+      "timeout": 45000,
+      "reuseExistingServer": false,
+      "gracefulShutdown": {
+        "signal": "SIGTERM",
+        "timeout": 5000
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "integration.spec.ts",
+      "file": "integration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "asset diagnostic selfie-segmenter",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 866,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /tmp/pr07-rereview-current/e2e-real-sdk/integration.spec.ts:112:168",
+                    "location": {
+                      "file": "/tmp/pr07-rereview-current/e2e-real-sdk/integration.spec.ts",
+                      "column": 168,
+                      "line": 112
+                    },
+                    "snippet": "  110 |       await expect(page.getByRole('alert')).toContainText('モデルの生成に失敗しました。', { timeout: 30_000 });\n  111 |       await expect.poll(() => page.evaluate(model => window.__realSdkProbe.creates.some(c => c.model === model && !!c.error), model)).toBe(true);\n> 112 |       expect(requests.some(r => r.url.includes(model === 'mediapipe' ? 'efficientdet_lite0.tflite' : 'selfie_segmenter.tflite') && r.status === 'controlled HTTP503')).toBe(true);\n      |                                                                                                                                                                        ^\n  113 |       const modelAsset = manifest.assets.find(asset => asset.file === (model === 'mediapipe' ? 'efficientdet_lite0.tflite' : 'selfie_segmenter.tflite'))!;\n  114 |       expect(await page.evaluate(model => window.__realSdkProbe.creates.find(c => c.model === model && c.error)?.error, model)).toBe(`Error: Failed to fetch model: ${modelAsset.url} (503)`);\n  115 |       expect(await page.evaluate(() => window.__realSdkProbe.calls)).toBe(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/pr07-rereview-current/e2e-real-sdk/integration.spec.ts",
+                        "column": 168,
+                        "line": 112
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  110 |       await expect(page.getByRole('alert')).toContainText('モデルの生成に失敗しました。', { timeout: 30_000 });\n  111 |       await expect.poll(() => page.evaluate(model => window.__realSdkProbe.creates.some(c => c.model === model && !!c.error), model)).toBe(true);\n> 112 |       expect(requests.some(r => r.url.includes(model === 'mediapipe' ? 'efficientdet_lite0.tflite' : 'selfie_segmenter.tflite') && r.status === 'controlled HTTP503')).toBe(true);\n      |                                                                                                                                                                        ^\n  113 |       const modelAsset = manifest.assets.find(asset => asset.file === (model === 'mediapipe' ? 'efficientdet_lite0.tflite' : 'selfie_segmenter.tflite'))!;\n  114 |       expect(await page.evaluate(model => window.__realSdkProbe.creates.find(c => c.model === model && c.error)?.error, model)).toBe(`Error: Failed to fetch model: ${modelAsset.url} (503)`);\n  115 |       expect(await page.evaluate(() => window.__realSdkProbe.calls)).toBe(0);\n    at /tmp/pr07-rereview-current/e2e-real-sdk/integration.spec.ts:112:168"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-24T18:28:04.240Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/pr07-rereview-unrelated-startup/browser/integration-asset-diagnostic-selfie-segmenter/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/pr07-rereview-unrelated-startup/browser/integration-asset-diagnostic-selfie-segmenter/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/pr07-rereview-unrelated-startup/browser/integration-asset-diagnostic-selfie-segmenter/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/pr07-rereview-current/e2e-real-sdk/integration.spec.ts",
+                    "column": 168,
+                    "line": 112
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4c8f7e420cc033ba00ea-32961a708d3fff129ee8",
+          "file": "integration.spec.ts",
+          "line": 103,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-24T18:28:01.994Z",
+    "duration": 3552.232,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

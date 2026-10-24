@@ -1,0 +1,247 @@
+{
+  "scope": "NEW cache/integrity and failure-diagnostic controls ONLY; no model acquisition/inference",
+  "originalSha256": "f82a8e6c05e08a44cc9f9e7ec5f845935bcbb1b1500ebe8c2f4812fb4e2917dc",
+  "restored": true,
+  "records": [
+    {
+      "argv": [
+        "node",
+        "scripts/real-sdk/assets.mjs"
+      ],
+      "exit": 1,
+      "stdout": "{\n  \"mode\": \"cached-byte-verification\",\n  \"at\": \"2026-10-24T18:28:01.470Z\",\n  \"rows\": [\n    {\n      \"id\": \"vision_wasm_internal.js\",\n      \"status\": \"pass\",\n      \"size\": 209826,\n      \"sha256\": \"9440cf0cc0cea21800e31581ec32aeedcc5fbf9df4509796bbc7d3f99e52ab9c\"\n    },\n    {\n      \"id\": \"vision_wasm_internal.wasm\",\n      \"status\": \"fail\",\n      \"reason\": \"Cached size/SHA256 differs from reviewed pin\"\n    },\n    {\n      \"id\": \"vision_wasm_nosimd_internal.js\",\n      \"status\": \"pass\",\n      \"size\": 209735,\n      \"sha256\": \"abe9b6fbeaf86fcb53a5edce3926c82ccb0619e18fed4d9d9ce561ee7f55e054\"\n    },\n    {\n      \"id\": \"vision_wasm_nosimd_internal.wasm\",\n      \"status\": \"pass\",\n      \"size\": 9294247,\n      \"sha256\": \"38b61feab2fd7934e05cbe9f68baa308978a5e3b7f85c1913bb8ae89b8ef8b97\"\n    },\n    {\n      \"id\": \"astronaut.png\",\n      \"status\": \"pass\",\n      \"size\": 791555,\n      \"sha256\": \"88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5\"\n    },\n    {\n      \"id\": \"coffee.png\",\n      \"status\": \"pass\",\n      \"size\": 466706,\n      \"sha256\": \"cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7\"\n    },\n    {\n      \"id\": \"efficientdet_lite0.tflite\",\n      \"status\": \"blocked\",\n      \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n    },\n    {\n      \"id\": \"selfie_segmenter.tflite\",\n      \"status\": \"blocked\",\n      \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n    },\n    {\n      \"id\": \"vision_bundle.mjs\",\n      \"status\": \"pass\",\n      \"size\": 136870,\n      \"sha256\": \"e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669\"\n    }\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/real-sdk/run.mjs"
+      ],
+      "exit": 1,
+      "stdout": "Real SDK run: /tmp/pr07-rereview-current/.cache/real-sdk-runs/2026-10-24T18-28-01.528Z-fd53e0e9\nPrerequisites: BLOCKED or corrupt; running asset diagnostics only\n{\n  \"start\": \"2026-10-24T18:28:01.555Z\",\n  \"end\": \"2026-10-24T18:28:01.628Z\",\n  \"childExit\": null,\n  \"exit\": 1,\n  \"complete\": false,\n  \"matrix\": [\n    {\n      \"model\": \"mediapipe\",\n      \"input\": \"VideoFrame\",\n      \"runtime\": \"cloud Chromium / unchanged GPU request\",\n      \"status\": \"fail\",\n      \"reason\": [\n        {\n          \"id\": \"vision_wasm_internal.wasm\",\n          \"status\": \"fail\",\n          \"reason\": \"Cached size/SHA256 differs from reviewed pin\"\n        },\n        {\n          \"id\": \"efficientdet_lite0.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        },\n        {\n          \"id\": \"selfie_segmenter.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        }\n      ],\n      \"executedInference\": 0\n    },\n    {\n      \"model\": \"mediapipe\",\n      \"input\": \"Canvas\",\n      \"runtime\": \"cloud Chromium / unchanged GPU request\",\n      \"status\": \"fail\",\n      \"reason\": [\n        {\n          \"id\": \"vision_wasm_internal.wasm\",\n          \"status\": \"fail\",\n          \"reason\": \"Cached size/SHA256 differs from reviewed pin\"\n        },\n        {\n          \"id\": \"efficientdet_lite0.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        },\n        {\n          \"id\": \"selfie_segmenter.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        }\n      ],\n      \"executedInference\": 0\n    },\n    {\n      \"model\": \"mediapipe\",\n      \"input\": \"HTMLVideoElement\",\n      \"runtime\": \"cloud Chromium / unchanged GPU request\",\n      \"status\": \"fail\",\n      \"reason\": [\n        {\n          \"id\": \"vision_wasm_internal.wasm\",\n          \"status\": \"fail\",\n          \"reason\": \"Cached size/SHA256 differs from reviewed pin\"\n        },\n        {\n          \"id\": \"efficientdet_lite0.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        },\n        {\n          \"id\": \"selfie_segmenter.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        }\n      ],\n      \"executedInference\": 0\n    },\n    {\n      \"model\": \"selfie-segmenter\",\n      \"input\": \"VideoFrame\",\n      \"runtime\": \"cloud Chromium / unchanged GPU request\",\n      \"status\": \"fail\",\n      \"reason\": [\n        {\n          \"id\": \"vision_wasm_internal.wasm\",\n          \"status\": \"fail\",\n          \"reason\": \"Cached size/SHA256 differs from reviewed pin\"\n        },\n        {\n          \"id\": \"efficientdet_lite0.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        },\n        {\n          \"id\": \"selfie_segmenter.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        }\n      ],\n      \"executedInference\": 0\n    },\n    {\n      \"model\": \"selfie-segmenter\",\n      \"input\": \"Canvas\",\n      \"runtime\": \"cloud Chromium / unchanged GPU request\",\n      \"status\": \"fail\",\n      \"reason\": [\n        {\n          \"id\": \"vision_wasm_internal.wasm\",\n          \"status\": \"fail\",\n          \"reason\": \"Cached size/SHA256 differs from reviewed pin\"\n        },\n        {\n          \"id\": \"efficientdet_lite0.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        },\n        {\n          \"id\": \"selfie_segmenter.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        }\n      ],\n      \"executedInference\": 0\n    },\n    {\n      \"model\": \"selfie-segmenter\",\n      \"input\": \"HTMLVideoElement\",\n      \"runtime\": \"cloud Chromium / unchanged GPU request\",\n      \"status\": \"fail\",\n      \"reason\": [\n        {\n          \"id\": \"vision_wasm_internal.wasm\",\n          \"status\": \"fail\",\n          \"reason\": \"Cached size/SHA256 differs from reviewed pin\"\n        },\n        {\n          \"id\": \"efficientdet_lite0.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        },\n        {\n          \"id\": \"selfie_segmenter.tflite\",\n          \"status\": \"blocked\",\n          \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n        }\n      ],\n      \"executedInference\": 0\n    },\n    {\n      \"model\": \"mediapipe\",\n      \"input\": \"controlled asset HTTP503\",\n      \"runtime\": \"cloud Chromium actual SDK\",\n      \"status\": \"not-run\",\n      \"reason\": \"No completed test record (startup/launch failure possible)\"\n    },\n    {\n      \"model\": \"selfie-segmenter\",\n      \"input\": \"controlled asset HTTP503\",\n      \"runtime\": \"cloud Chromium actual SDK\",\n      \"status\": \"not-run\",\n      \"reason\": \"No completed test record (startup/launch failure possible)\"\n    },\n    {\n      \"runtime\": \"physical desktop camera/GPU/audio\",\n      \"model\": \"both\",\n      \"status\": \"not-run\",\n      \"reason\": \"Outside this cloud run; separate authorization/environment needed\"\n    },\n    {\n      \"runtime\": \"physical mobile camera/GPU/audio\",\n      \"model\": \"both\",\n      \"status\": \"not-run\",\n      \"reason\": \"Outside this cloud run; separate authorization/environment needed\"\n    },\n    {\n      \"runtime\": \"public application code equality\",\n      \"model\": \"both\",\n      \"status\": \"not-run\",\n      \"reason\": \"Outside this cloud run; separate authorization/environment needed\"\n    },\n    {\n      \"runtime\": \"CPU diagnostic (product delegate unchanged)\",\n      \"model\": \"both\",\n      \"status\": \"not-run\",\n      \"reason\": \"Outside this cloud run; separate authorization/environment needed\"\n    }\n  ]\n}\n",
+      "stderr": "",
+      "matrix": {
+        "start": "2026-10-24T18:28:01.555Z",
+        "end": "2026-10-24T18:28:01.628Z",
+        "childExit": null,
+        "exit": 1,
+        "complete": false,
+        "matrix": [
+          {
+            "model": "mediapipe",
+            "input": "VideoFrame",
+            "runtime": "cloud Chromium / unchanged GPU request",
+            "status": "fail",
+            "reason": [
+              {
+                "id": "vision_wasm_internal.wasm",
+                "status": "fail",
+                "reason": "Cached size/SHA256 differs from reviewed pin"
+              },
+              {
+                "id": "efficientdet_lite0.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              },
+              {
+                "id": "selfie_segmenter.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              }
+            ],
+            "executedInference": 0
+          },
+          {
+            "model": "mediapipe",
+            "input": "Canvas",
+            "runtime": "cloud Chromium / unchanged GPU request",
+            "status": "fail",
+            "reason": [
+              {
+                "id": "vision_wasm_internal.wasm",
+                "status": "fail",
+                "reason": "Cached size/SHA256 differs from reviewed pin"
+              },
+              {
+                "id": "efficientdet_lite0.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              },
+              {
+                "id": "selfie_segmenter.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              }
+            ],
+            "executedInference": 0
+          },
+          {
+            "model": "mediapipe",
+            "input": "HTMLVideoElement",
+            "runtime": "cloud Chromium / unchanged GPU request",
+            "status": "fail",
+            "reason": [
+              {
+                "id": "vision_wasm_internal.wasm",
+                "status": "fail",
+                "reason": "Cached size/SHA256 differs from reviewed pin"
+              },
+              {
+                "id": "efficientdet_lite0.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              },
+              {
+                "id": "selfie_segmenter.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              }
+            ],
+            "executedInference": 0
+          },
+          {
+            "model": "selfie-segmenter",
+            "input": "VideoFrame",
+            "runtime": "cloud Chromium / unchanged GPU request",
+            "status": "fail",
+            "reason": [
+              {
+                "id": "vision_wasm_internal.wasm",
+                "status": "fail",
+                "reason": "Cached size/SHA256 differs from reviewed pin"
+              },
+              {
+                "id": "efficientdet_lite0.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              },
+              {
+                "id": "selfie_segmenter.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              }
+            ],
+            "executedInference": 0
+          },
+          {
+            "model": "selfie-segmenter",
+            "input": "Canvas",
+            "runtime": "cloud Chromium / unchanged GPU request",
+            "status": "fail",
+            "reason": [
+              {
+                "id": "vision_wasm_internal.wasm",
+                "status": "fail",
+                "reason": "Cached size/SHA256 differs from reviewed pin"
+              },
+              {
+                "id": "efficientdet_lite0.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              },
+              {
+                "id": "selfie_segmenter.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              }
+            ],
+            "executedInference": 0
+          },
+          {
+            "model": "selfie-segmenter",
+            "input": "HTMLVideoElement",
+            "runtime": "cloud Chromium / unchanged GPU request",
+            "status": "fail",
+            "reason": [
+              {
+                "id": "vision_wasm_internal.wasm",
+                "status": "fail",
+                "reason": "Cached size/SHA256 differs from reviewed pin"
+              },
+              {
+                "id": "efficientdet_lite0.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              },
+              {
+                "id": "selfie_segmenter.tflite",
+                "status": "blocked",
+                "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+              }
+            ],
+            "executedInference": 0
+          },
+          {
+            "model": "mediapipe",
+            "input": "controlled asset HTTP503",
+            "runtime": "cloud Chromium actual SDK",
+            "status": "not-run",
+            "reason": "No completed test record (startup/launch failure possible)"
+          },
+          {
+            "model": "selfie-segmenter",
+            "input": "controlled asset HTTP503",
+            "runtime": "cloud Chromium actual SDK",
+            "status": "not-run",
+            "reason": "No completed test record (startup/launch failure possible)"
+          },
+          {
+            "runtime": "physical desktop camera/GPU/audio",
+            "model": "both",
+            "status": "not-run",
+            "reason": "Outside this cloud run; separate authorization/environment needed"
+          },
+          {
+            "runtime": "physical mobile camera/GPU/audio",
+            "model": "both",
+            "status": "not-run",
+            "reason": "Outside this cloud run; separate authorization/environment needed"
+          },
+          {
+            "runtime": "public application code equality",
+            "model": "both",
+            "status": "not-run",
+            "reason": "Outside this cloud run; separate authorization/environment needed"
+          },
+          {
+            "runtime": "CPU diagnostic (product delegate unchanged)",
+            "model": "both",
+            "status": "not-run",
+            "reason": "Outside this cloud run; separate authorization/environment needed"
+          }
+        ]
+      }
+    },
+    {
+      "argv": [
+        "node",
+        "scripts/real-sdk/assets.mjs"
+      ],
+      "exit": 2,
+      "stdout": "{\n  \"mode\": \"cached-byte-verification\",\n  \"at\": \"2026-10-24T18:28:01.678Z\",\n  \"rows\": [\n    {\n      \"id\": \"vision_wasm_internal.js\",\n      \"status\": \"pass\",\n      \"size\": 209826,\n      \"sha256\": \"9440cf0cc0cea21800e31581ec32aeedcc5fbf9df4509796bbc7d3f99e52ab9c\"\n    },\n    {\n      \"id\": \"vision_wasm_internal.wasm\",\n      \"status\": \"blocked\",\n      \"reason\": \"Error: ENOENT: no such file or directory, stat '/tmp/pr07-rereview-current/.cache/real-sdk-assets/vision_wasm_internal.wasm'\"\n    },\n    {\n      \"id\": \"vision_wasm_nosimd_internal.js\",\n      \"status\": \"pass\",\n      \"size\": 209735,\n      \"sha256\": \"abe9b6fbeaf86fcb53a5edce3926c82ccb0619e18fed4d9d9ce561ee7f55e054\"\n    },\n    {\n      \"id\": \"vision_wasm_nosimd_internal.wasm\",\n      \"status\": \"pass\",\n      \"size\": 9294247,\n      \"sha256\": \"38b61feab2fd7934e05cbe9f68baa308978a5e3b7f85c1913bb8ae89b8ef8b97\"\n    },\n    {\n      \"id\": \"astronaut.png\",\n      \"status\": \"pass\",\n      \"size\": 791555,\n      \"sha256\": \"88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5\"\n    },\n    {\n      \"id\": \"coffee.png\",\n      \"status\": \"pass\",\n      \"size\": 466706,\n      \"sha256\": \"cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7\"\n    },\n    {\n      \"id\": \"efficientdet_lite0.tflite\",\n      \"status\": \"blocked\",\n      \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n    },\n    {\n      \"id\": \"selfie_segmenter.tflite\",\n      \"status\": \"blocked\",\n      \"reason\": \"blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed\"\n    },\n    {\n      \"id\": \"vision_bundle.mjs\",\n      \"status\": \"pass\",\n      \"size\": 136870,\n      \"sha256\": \"e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669\"\n    }\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--config",
+        "playwright.real-sdk.config.ts",
+        "--grep",
+        "asset diagnostic selfie-segmenter"
+      ],
+      "exit": 1,
+      "stdout": "\nRunning 1 test using 1 worker\n\n  \u2718  1 e2e-real-sdk/integration.spec.ts:103:3 \u203a asset diagnostic selfie-segmenter (866ms)\n\n\n  1) e2e-real-sdk/integration.spec.ts:103:3 \u203a asset diagnostic selfie-segmenter \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n    Error: expect(received).toBe(expected) // Object.is equality\n\n    Expected: true\n    Received: false\n\n      110 |       await expect(page.getByRole('alert')).toContainText('\u30e2\u30c7\u30eb\u306e\u751f\u6210\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002', { timeout: 30_000 });\n      111 |       await expect.poll(() => page.evaluate(model => window.__realSdkProbe.creates.some(c => c.model === model && !!c.error), model)).toBe(true);\n    > 112 |       expect(requests.some(r => r.url.includes(model === 'mediapipe' ? 'efficientdet_lite0.tflite' : 'selfie_segmenter.tflite') && r.status === 'controlled HTTP503')).toBe(true);\n          |                                                                                                                                                                        ^\n      113 |       const modelAsset = manifest.assets.find(asset => asset.file === (model === 'mediapipe' ? 'efficientdet_lite0.tflite' : 'selfie_segmenter.tflite'))!;\n      114 |       expect(await page.evaluate(model => window.__realSdkProbe.creates.find(c => c.model === model && c.error)?.error, model)).toBe(`Error: Failed to fetch model: ${modelAsset.url} (503)`);\n      115 |       expect(await page.evaluate(() => window.__realSdkProbe.calls)).toBe(0);\n        at /tmp/pr07-rereview-current/e2e-real-sdk/integration.spec.ts:112:168\n\n    attachment #1: screenshot (image/png) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    ../pr07-rereview-unrelated-startup/browser/integration-asset-diagnostic-selfie-segmenter/test-failed-1.png\n    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n    Error Context: ../pr07-rereview-unrelated-startup/browser/integration-asset-diagnostic-selfie-segmenter/error-context.md\n\n    attachment #3: trace (application/zip) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    ../pr07-rereview-unrelated-startup/browser/integration-asset-diagnostic-selfie-segmenter/trace.zip\n    Usage:\n\n        npx playwright show-trace ../pr07-rereview-unrelated-startup/browser/integration-asset-diagnostic-selfie-segmenter/trace.zip\n\n    \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n  1 failed\n    e2e-real-sdk/integration.spec.ts:103:3 \u203a asset diagnostic selfie-segmenter \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n",
+      "stderr": "[WebServer] (node:12519) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n[WebServer] (node:12544) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n[WebServer] (node:12557) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n[WebServer]   - import \"./vite.config\" without a file extension (vite.real-sdk.config.ts:3:18). Add the file extension\n[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\n[WebServer] npm notice\n[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1\n[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1\n[WebServer] npm notice To update run: npm install -g npm@12.2.1\n[WebServer] npm notice\n[WebServer] (node:12588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n[WebServer] (node:12610) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)\n(node:12647) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "stats": {
+        "startTime": "2026-10-24T18:28:01.994Z",
+        "duration": 3552.232,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      }
+    }
+  ]
+}

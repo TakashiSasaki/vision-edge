@@ -1,0 +1,112 @@
+{
+  "mode": "HTMLVideoElement",
+  "result": {
+    "rows": [
+      {
+        "session": 1,
+        "kind": "HTMLVideoElement",
+        "stamp": {
+          "scene": "coffee.png",
+          "revision": 2,
+          "stream": 1
+        }
+      },
+      {
+        "session": 1,
+        "kind": "HTMLVideoElement",
+        "stamp": {
+          "scene": "background",
+          "revision": 3,
+          "stream": 1
+        }
+      },
+      {
+        "session": 1,
+        "kind": "HTMLVideoElement",
+        "stamp": {
+          "scene": "empty",
+          "revision": 4,
+          "stream": 1
+        }
+      },
+      {
+        "session": 2,
+        "kind": "HTMLVideoElement",
+        "stamp": {
+          "scene": "astronaut.png",
+          "revision": 5,
+          "stream": 2
+        }
+      },
+      {
+        "session": 2,
+        "kind": "HTMLVideoElement",
+        "stamp": {
+          "scene": "empty",
+          "revision": 6,
+          "stream": 2
+        }
+      }
+    ],
+    "echoes": [
+      {
+        "requested": "background",
+        "before": {
+          "scene": "coffee.png",
+          "revision": 2,
+          "stream": 1
+        },
+        "after": {
+          "scene": "coffee.png",
+          "revision": 2,
+          "stream": 1
+        }
+      },
+      {
+        "requested": "empty",
+        "before": {
+          "scene": "background",
+          "revision": 3,
+          "stream": 1
+        },
+        "after": {
+          "scene": "background",
+          "revision": 3,
+          "stream": 1
+        }
+      },
+      {
+        "requested": "empty",
+        "before": {
+          "scene": "astronaut.png",
+          "revision": 5,
+          "stream": 2
+        },
+        "after": {
+          "scene": "astronaut.png",
+          "revision": 5,
+          "stream": 2
+        }
+      }
+    ],
+    "black": null,
+    "white": null,
+    "sdkObservationPresent": false,
+    "created": 0,
+    "closed": 0,
+    "doubleCloses": 0,
+    "liveTracks": 0
+  },
+  "requests": [
+    {
+      "url": "http://127.0.0.1:4175/fixtures/astronaut.png",
+      "status": "verified local bytes"
+    },
+    {
+      "url": "http://127.0.0.1:4175/fixtures/coffee.png",
+      "status": "verified local bytes"
+    }
+  ],
+  "browserVersion": "154.0.8037.57",
+  "scope": "NEW independent native INPUT evidence only; NO SDK/model/inference"
+}

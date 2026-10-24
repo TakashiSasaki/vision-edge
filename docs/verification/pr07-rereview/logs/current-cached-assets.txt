@@ -1,0 +1,67 @@
+
+> vision-studio@1.0.0 test:e2e:real-sdk:assets
+> node scripts/real-sdk/assets.mjs
+
+{
+  "mode": "cached-byte-verification",
+  "at": "2026-10-24T18:23:19.063Z",
+  "rows": [
+    {
+      "id": "vision_wasm_internal.js",
+      "status": "pass",
+      "size": 209826,
+      "sha256": "9440cf0cc0cea21800e31581ec32aeedcc5fbf9df4509796bbc7d3f99e52ab9c"
+    },
+    {
+      "id": "vision_wasm_internal.wasm",
+      "status": "pass",
+      "size": 9423986,
+      "sha256": "f82a8e6c05e08a44cc9f9e7ec5f845935bcbb1b1500ebe8c2f4812fb4e2917dc"
+    },
+    {
+      "id": "vision_wasm_nosimd_internal.js",
+      "status": "pass",
+      "size": 209735,
+      "sha256": "abe9b6fbeaf86fcb53a5edce3926c82ccb0619e18fed4d9d9ce561ee7f55e054"
+    },
+    {
+      "id": "vision_wasm_nosimd_internal.wasm",
+      "status": "pass",
+      "size": 9294247,
+      "sha256": "38b61feab2fd7934e05cbe9f68baa308978a5e3b7f85c1913bb8ae89b8ef8b97"
+    },
+    {
+      "id": "astronaut.png",
+      "status": "pass",
+      "size": 791555,
+      "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5"
+    },
+    {
+      "id": "coffee.png",
+      "status": "pass",
+      "size": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+    },
+    {
+      "id": "efficientdet_lite0.tflite",
+      "status": "blocked",
+      "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+    },
+    {
+      "id": "selfie_segmenter.tflite",
+      "status": "blocked",
+      "reason": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18–17:19Z; no GET/body obtained; not retried or bypassed"
+    },
+    {
+      "id": "vision_bundle.mjs",
+      "status": "pass",
+      "size": 136870,
+      "sha256": "e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669"
+    }
+  ]
+}
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,0 +1,31 @@
+{
+  "productionSdkAlias": false,
+  "forbiddenMarkers": 0,
+  "sdkVersion": "0.10.14",
+  "files": [
+    {
+      "file": "dist/assets/aistudio/Screenshot_20261023-184437_91894f37.png",
+      "sha256": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+    },
+    {
+      "file": "dist/assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png",
+      "sha256": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323"
+    },
+    {
+      "file": "dist/assets/aistudio/Screenshot_20261023-193223_8ec61247.png",
+      "sha256": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b"
+    },
+    {
+      "file": "dist/assets/index-C8I1SdIw.js",
+      "sha256": "1d1d27901e2d1f589ac4b3555a36f5ba69e8760f7b4396582fd3006de2a489ba"
+    },
+    {
+      "file": "dist/assets/index-DQl_fXTn.css",
+      "sha256": "f89f2b08e9c3c9344d2a4d109eec73724473fa86d0827abc50054214ced2becc"
+    },
+    {
+      "file": "dist/index.html",
+      "sha256": "b10c2a036d7b4df9199429c6b147278e65d62fe55745336b0f3163dbc2741056"
+    }
+  ]
+}

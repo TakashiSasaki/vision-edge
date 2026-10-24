@@ -1,0 +1,365 @@
+{
+  "recovery": "2026-10-24 following successful executor read; historical results, not new-head tests",
+  "records": [
+    {
+      "name": "asset-controls",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "node",
+        "--test",
+        "scripts/real-sdk/assets.test.mjs"
+      ],
+      "start": "2026-10-24T17:44:54.616799+00:00",
+      "end": "2026-10-24T17:44:54.783208+00:00",
+      "exit": 0,
+      "log": "logs/asset-controls.txt",
+      "logSha256": "6279c2e345f044b2c0088832cb06d9ba147303e869c02db541af02214087e305",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "assets-before",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e:real-sdk:assets"
+      ],
+      "start": "2026-10-24T17:44:54.806075+00:00",
+      "end": "2026-10-24T17:44:55.020647+00:00",
+      "exit": 2,
+      "log": "logs/assets-before.txt",
+      "logSha256": "7568ba8c81855b942bd8cd283dd9704f934acb6168f22b6661f6e8a3bd14681a",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "acquire-pinned-nonmodel-assets",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e:real-sdk:acquire"
+      ],
+      "start": "2026-10-24T17:44:55.042195+00:00",
+      "end": "2026-10-24T17:45:00.921068+00:00",
+      "exit": 2,
+      "log": "logs/acquire-pinned-nonmodel-assets.txt",
+      "logSha256": "4c1abfba94f98fc829398eb2c0892b1c444aa8651fcda46ecf4ab2d90112a70a",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "current-typecheck",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "start": "2026-10-24T17:45:04.871175+00:00",
+      "end": "2026-10-24T17:45:07.299036+00:00",
+      "exit": 0,
+      "log": "logs/current-typecheck.txt",
+      "logSha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "current-lint",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "start": "2026-10-24T17:45:07.323374+00:00",
+      "end": "2026-10-24T17:45:09.199412+00:00",
+      "exit": 0,
+      "log": "logs/current-lint.txt",
+      "logSha256": "c5a95402c85690aab1dd91cd1794a87b47f12b6ca6184ac98b55259d5625de10",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "current-unit",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "start": "2026-10-24T17:45:09.222240+00:00",
+      "end": "2026-10-24T17:45:13.472904+00:00",
+      "exit": 0,
+      "log": "logs/current-unit.txt",
+      "logSha256": "decbaefc8741e03db5275630354ab16f53065e9b9ce86632f58e4ec4b0be7358",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "current-build",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "start": "2026-10-24T17:45:13.498289+00:00",
+      "end": "2026-10-24T17:45:14.117622+00:00",
+      "exit": 0,
+      "log": "logs/current-build.txt",
+      "logSha256": "bce914592cb2134c07fd141a939a319480c654c8e1e7b8d7ce2759141ae4d8a7",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "current-isolation",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "node",
+        "scripts/real-sdk/audit.mjs"
+      ],
+      "start": "2026-10-24T17:45:14.149667+00:00",
+      "end": "2026-10-24T17:45:14.364210+00:00",
+      "exit": 0,
+      "log": "logs/current-isolation.txt",
+      "logSha256": "7ff319b05571920ba9438d34cbe846994e00559291759a7caf73032471c0eecd",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "current-browser",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "start": "2026-10-24T17:45:14.388667+00:00",
+      "end": "2026-10-24T17:46:25.609751+00:00",
+      "exit": 0,
+      "log": "logs/current-browser.txt",
+      "logSha256": "d113f1ee60140671d8a7f2f2b0405d2b7c5a13c4dbfe8a14f7d4635721a53da2",
+      "browserOverride": "/usr/bin/chromium",
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "independent-invalid-manifests",
+      "cwd": "/workspace/vision-edge",
+      "argv": [
+        "python3",
+        "docs/verification/pr07-independent/probe-assets.py"
+      ],
+      "start": "2026-10-24T17:46:37.672613+00:00",
+      "end": "2026-10-24T17:46:37.838004+00:00",
+      "exit": 0,
+      "log": "logs/independent-invalid-manifests.txt",
+      "logSha256": "2d15ecf272fd7775a4043acb74185e15f85ff382f0cda58d6944a7e138d7f3c1",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "current-controls",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e:controls"
+      ],
+      "start": "2026-10-24T17:46:25.638777+00:00",
+      "end": "2026-10-24T17:46:49.694707+00:00",
+      "exit": 0,
+      "log": "logs/current-controls.txt",
+      "logSha256": "c89eca1b380efdef8eec003655672c850241a976412167165228b8fbd4271643",
+      "browserOverride": "/usr/bin/chromium",
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "baseline-install",
+      "cwd": "/tmp/pr07-review-baseline",
+      "argv": [
+        "npm",
+        "ci",
+        "--cache",
+        "/tmp/pr07-review-npm-cache"
+      ],
+      "start": "2026-10-24T17:47:27.822418+00:00",
+      "end": "2026-10-24T17:47:31.508122+00:00",
+      "exit": 0,
+      "log": "logs/baseline-install.txt",
+      "logSha256": "914dd990afac6f350bd524969c97bfbe74e024b131ff3675bceb8ffcd2d73a27",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "current-real-sdk",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e:real-sdk"
+      ],
+      "start": "2026-10-24T17:47:26.420091+00:00",
+      "end": "2026-10-24T17:47:33.001919+00:00",
+      "exit": 2,
+      "log": "logs/current-real-sdk.txt",
+      "logSha256": "ef5b55e58b77aff2fa474a04115474ec1d37ca8103d8b6c193145327abe4b357",
+      "browserOverride": "/usr/bin/chromium",
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "baseline-typecheck",
+      "cwd": "/tmp/pr07-review-baseline",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "start": "2026-10-24T17:47:31.530548+00:00",
+      "end": "2026-10-24T17:47:34.169561+00:00",
+      "exit": 0,
+      "log": "logs/baseline-typecheck.txt",
+      "logSha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "baseline-lint",
+      "cwd": "/tmp/pr07-review-baseline",
+      "argv": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "start": "2026-10-24T17:47:34.192777+00:00",
+      "end": "2026-10-24T17:47:35.868116+00:00",
+      "exit": 0,
+      "log": "logs/baseline-lint.txt",
+      "logSha256": "c5a95402c85690aab1dd91cd1794a87b47f12b6ca6184ac98b55259d5625de10",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "baseline-unit",
+      "cwd": "/tmp/pr07-review-baseline",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "start": "2026-10-24T17:47:35.893139+00:00",
+      "end": "2026-10-24T17:47:40.611895+00:00",
+      "exit": 0,
+      "log": "logs/baseline-unit.txt",
+      "logSha256": "a79eb7007e8e418688eee3fb8896062cdc3872bc7c96253ea4c772e5e28def10",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "baseline-build",
+      "cwd": "/tmp/pr07-review-baseline",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "start": "2026-10-24T17:47:40.635886+00:00",
+      "end": "2026-10-24T17:47:41.204239+00:00",
+      "exit": 0,
+      "log": "logs/baseline-build.txt",
+      "logSha256": "a95fdab8d89c117727c1d1347591378a701e454e128a24c4b4b23a3c7c3864a6",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "independent-native-inputs",
+      "cwd": "/tmp/pr07-review-current",
+      "argv": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--config",
+        "playwright.real-sdk.config.ts",
+        "--grep",
+        "independent native acquisition"
+      ],
+      "start": "2026-10-24T17:47:33.033232+00:00",
+      "end": "2026-10-24T17:47:42.376628+00:00",
+      "exit": 0,
+      "log": "logs/independent-native-inputs.txt",
+      "logSha256": "e535d48f60ce5c0ff25bc18ad5e0d90cf7e6c205d3e0ca3732d8f7d420158199",
+      "browserOverride": "/usr/bin/chromium",
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "independent-checker-counterexamples",
+      "cwd": "/workspace/vision-edge",
+      "argv": [
+        "node",
+        "docs/verification/pr07-independent/probes/checker-counterexamples.mjs",
+        "/tmp/pr07-review-current"
+      ],
+      "start": "2026-10-24T17:48:43.636296+00:00",
+      "end": "2026-10-24T17:48:44.050945+00:00",
+      "exit": 0,
+      "log": "logs/independent-checker-counterexamples.txt",
+      "logSha256": "1a5fd8eb4c51928c06fbf0e644fc7c33a4653d96882cc6726c06860f20a5974c",
+      "browserOverride": null,
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "baseline-browser",
+      "cwd": "/tmp/pr07-review-baseline",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "start": "2026-10-24T17:48:44.073031+00:00",
+      "end": "2026-10-24T17:49:54.935799+00:00",
+      "exit": 0,
+      "log": "logs/baseline-browser.txt",
+      "logSha256": "1034542a359924a1668e87b05668caa04198415d01f004c38d68a5283be59440",
+      "browserOverride": "/usr/bin/chromium",
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    },
+    {
+      "name": "baseline-controls",
+      "cwd": "/tmp/pr07-review-baseline",
+      "argv": [
+        "npm",
+        "run",
+        "test:e2e:controls"
+      ],
+      "start": "2026-10-24T17:49:54.958989+00:00",
+      "end": "2026-10-24T17:50:20.469470+00:00",
+      "exit": 0,
+      "log": "logs/baseline-controls.txt",
+      "logSha256": "c89eca1b380efdef8eec003655672c850241a976412167165228b8fbd4271643",
+      "browserOverride": "/usr/bin/chromium",
+      "recoveredLogPresent": true,
+      "recoveredLogHashMatches": true
+    }
+  ],
+  "original715PathsStillMatch": true,
+  "additionalCorruptionCommand": "No script/log/new run found; original cached WASM matches expected pin. Do not claim original test executed."
+}

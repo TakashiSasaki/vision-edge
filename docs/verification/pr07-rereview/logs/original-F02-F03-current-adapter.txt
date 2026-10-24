@@ -1,0 +1,16 @@
+<anonymous_script>:13
+        const result = await page.evaluate(({ boundary, expected }) => window.__realSdkProbe.negativeCheck(boundary, expected), { boundary, expected });
+                                                                                             ^
+
+TypeError: window.__realSdkProbe.negativeCheck is not a function
+    at page.evaluate.boundary.boundary (eval at <anonymous> (file:///tmp/pr07-original-evidence/docs/verification/pr07-independent/probes/checker-counterexamples.mjs:16:13), <anonymous>:13:94)
+    at Object.evaluate (file:///tmp/pr07-original-evidence/docs/verification/pr07-independent/probes/checker-counterexamples.mjs:26:18)
+    at eval (eval at <anonymous> (file:///tmp/pr07-original-evidence/docs/verification/pr07-independent/probes/checker-counterexamples.mjs:16:13), <anonymous>:13:35)
+    at /tmp/pr07-rereview-current/node_modules/playwright/lib/matchers/expect.js:13397:25
+    at async raceAgainstDeadline (/tmp/pr07-rereview-current/node_modules/playwright-core/lib/coreBundle.js:4741:10)
+    at async pollAgainstDeadline (/tmp/pr07-rereview-current/node_modules/playwright-core/lib/coreBundle.js:4762:22)
+    at async invokePollMatcher (/tmp/pr07-rereview-current/node_modules/playwright/lib/matchers/expect.js:13394:18)
+    at async eval (eval at <anonymous> (file:///tmp/pr07-original-evidence/docs/verification/pr07-independent/probes/checker-counterexamples.mjs:16:13), <anonymous>:12:5)
+    at async file:///tmp/pr07-original-evidence/docs/verification/pr07-independent/probes/checker-counterexamples.mjs:28:1
+
+Node.js v24.19.0

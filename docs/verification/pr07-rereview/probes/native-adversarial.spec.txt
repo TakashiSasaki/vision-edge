@@ -1,0 +1,45 @@
+// Independent native INPUT provenance/ownership only: no App/SDK/model or inference result.
+import { test, expect } from '@playwright/test';
+import { readFile, writeFile } from 'node:fs/promises';
+import { installCamera, routeAssets, type InputMode } from './fixtures';
+import type { Stamp } from './acceptance';
+for (const mode of ['VideoFrame','Canvas','HTMLVideoElement'] as InputMode[]) {
+ test(`independent provenance scenes and restart ${mode}`,async({context,page},info)=>{
+  await installCamera(context,mode,'coffee.png');const requests=await routeAssets(context);
+  await context.route('http://127.0.0.1:4175/',r=>r.fulfill({contentType:'text/html',body:'<video autoplay muted playsinline></video>'}));
+  await context.route('**/native-probe.js',async r=>r.fulfill({contentType:'application/javascript',body:await readFile('.cache/pr07-native-probe/native-probe.js')}));
+  try {
+   await page.goto('/');
+   const result=await page.evaluate(async()=>{
+    const modulePath='/native-probe.js'; const scheduler=await import(/* @vite-ignore */modulePath);const video=document.querySelector('video')!;
+    const rows:Array<{session:number;kind:string;stamp:Stamp|null}>=[];const echoes:Array<{requested:string;before:Stamp;after:Stamp|null}>=[];
+    async function session(scenes:string[]) {
+     window.__realCamera.scene=scenes[0];const stream=await navigator.mediaDevices.getUserMedia({video:true});video.srcObject=stream;await video.play();
+     const expectedSession=window.__realCamera.requests;let index=0;let done!:()=>void;let fail!:(e:unknown)=>void;
+     const completed=new Promise<void>((yes,no)=>{done=yes;fail=no;});const timeout=setTimeout(()=>fail(new Error('independent native scene timeout')),8000);
+     const stop=scheduler.startFrameScheduler({video,lock:new scheduler.JobLock(),current:()=>true,input:()=>{},adopt:()=>{},error:fail,captureError:fail,
+      work:(input:VideoFrame|HTMLCanvasElement|HTMLVideoElement)=>{
+       const stamp=scheduler.inputStamp(input);rows.push({session:expectedSession,kind:input instanceof HTMLVideoElement?'HTMLVideoElement':input instanceof HTMLCanvasElement?'Canvas':'VideoFrame',stamp});
+       if(stamp?.scene===scenes[index]&&stamp.stream===expectedSession){
+        index++;if(index===scenes.length){done();return;}
+        window.__realCamera.scene=scenes[index];echoes.push({requested:scenes[index],before:stamp,after:scheduler.inputStamp(input)});
+       }
+      }});
+     try{await completed;}finally{clearTimeout(timeout);stop();window.__realCamera.dispose();video.srcObject=null;}
+    }
+    await session(['coffee.png','background','empty']);await session(['astronaut.png','empty']);
+    const blank=document.createElement('canvas');blank.width=512;blank.height=512;const ctx=blank.getContext('2d')!;ctx.fillStyle='#000';ctx.fillRect(0,0,512,512);const black=scheduler.inputStamp(blank);ctx.fillStyle='#fff';ctx.fillRect(0,0,512,512);const white=scheduler.inputStamp(blank);
+    return {rows,echoes,black,white,sdkObservationPresent:!!window.__realSdkProbe,created:window.__realCamera.framesCreated,closed:window.__realCamera.framesClosed,doubleCloses:window.__realCamera.doubleCloses,liveTracks:window.__realCamera.liveTracks()};
+   });
+   await writeFile(info.outputPath('independent-provenance.json'),JSON.stringify({mode,result,requests,browserVersion:context.browser()?.version(),scope:'NEW independent native INPUT evidence only; NO SDK/model/inference'},null,2));
+   expect(result.sdkObservationPresent).toBe(false);expect(result.rows.every(r=>r.kind===mode)).toBe(true);
+   for(const [session,scenes] of [[1,['coffee.png','background','empty']],[2,['astronaut.png','empty']]] as const){
+    const selected=scenes.map(scene=>result.rows.find(r=>r.session===session&&r.stamp?.stream===session&&r.stamp.scene===scene)!.stamp!);
+    expect(selected.every(Boolean)).toBe(true);for(let i=1;i<selected.length;i++)expect(selected[i].revision).toBe(selected[i-1].revision+1);
+   }
+   expect(result.echoes).toHaveLength(3);for(const echo of result.echoes){expect(echo.after).toEqual(echo.before);expect(echo.after!.scene).not.toBe(echo.requested);}
+   expect(result.black).toBeNull();expect(result.white).toBeNull();expect(result.liveTracks).toBe(0);expect(result.created).toBe(result.closed);expect(result.doubleCloses).toBe(0);
+   expect(requests.some(r=>r.url.endsWith('.tflite'))).toBe(false);
+  } finally {await page.evaluate(()=>window.__realCamera?.dispose());}
+ });
+}

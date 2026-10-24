@@ -1,0 +1,72 @@
+{
+  "units": "milliseconds JavaScript wall time; observation overhead present in product metrics, original-call-only raw.ms excludes later observation",
+  "inferenceAttempted": false,
+  "inferenceExecuted": false,
+  "resultAdopted": false,
+  "resultRendered": false,
+  "execution": [
+    {
+      "file": "browser/integration-asset-diagnostic-mediapipe/diagnostic.json",
+      "evidenceErrors": [],
+      "attempts": 0,
+      "retainedAttempts": 0,
+      "successfulSdkCalls": 0,
+      "retainedSuccessfulSdkCalls": 0,
+      "failedSdkCallsRetained": 0,
+      "unknownSdkOutcomesRetained": 0,
+      "readyProcessedResultsRetained": 0,
+      "adoptedResultsRetained": 0,
+      "renderedResultsRetained": 0,
+      "inferenceAttempted": false,
+      "inferenceExecuted": false,
+      "resultAdopted": false,
+      "resultRendered": false,
+      "coverage": "retained observations; unknown outcomes are not successes",
+      "initialization": [
+        {
+          "model": "selfie-segmenter",
+          "delegate": "GPU",
+          "at": 211.8000000002794,
+          "ms": 365.6999999997206,
+          "error": "Error: Failed to fetch model: https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite (503)"
+        },
+        {
+          "model": "mediapipe",
+          "delegate": "GPU",
+          "at": 273.3000000002794,
+          "ms": 688.3999999999069,
+          "error": "Error: Failed to fetch model: https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite (503)"
+        }
+      ]
+    },
+    {
+      "file": "browser/integration-asset-diagnostic-selfie-segmenter/diagnostic.json",
+      "evidenceErrors": [],
+      "attempts": 0,
+      "retainedAttempts": 0,
+      "successfulSdkCalls": 0,
+      "retainedSuccessfulSdkCalls": 0,
+      "failedSdkCallsRetained": 0,
+      "unknownSdkOutcomesRetained": 0,
+      "readyProcessedResultsRetained": 0,
+      "adoptedResultsRetained": 0,
+      "renderedResultsRetained": 0,
+      "inferenceAttempted": false,
+      "inferenceExecuted": false,
+      "resultAdopted": false,
+      "resultRendered": false,
+      "coverage": "retained observations; unknown outcomes are not successes",
+      "initialization": [
+        {
+          "model": "selfie-segmenter",
+          "delegate": "GPU",
+          "at": 164.70000000018626,
+          "ms": 259.5,
+          "error": "Error: Failed to fetch model: https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite (503)"
+        }
+      ]
+    }
+  ],
+  "populations": [],
+  "limits": "inferenceExecuted means an observed successful SDK return, not a semantic/model acceptance verdict. Attempts, processing, adoption and rendering are separate. No physical timing/utilization guarantee; overlapping stages must not be summed."
+}

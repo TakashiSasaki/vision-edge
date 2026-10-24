@@ -1,0 +1,24 @@
+{
+  "targetHead": "21417613fc418fd5785f903fe8a3cf510477649b",
+  "runId": 40119850663,
+  "jobId": 120948814304,
+  "runStatus": "completed",
+  "runConclusion": "success",
+  "jobStatus": "completed",
+  "jobConclusion": "success",
+  "rawLog": "target-job-120948814304.txt.gz",
+  "rawLogSha256": "8cce61e2187fefc86559e5015511922704626b54aed40234ab7b662f95090bd5",
+  "checkoutBinding": "Raw ref/fetch/checkout/git-log explicitly21417613",
+  "unit": 317,
+  "browser": 19,
+  "controls": "2normal +5specified expected faults",
+  "optionalModelTests": "NOT RUN in hosted mandatory CI",
+  "runtime": {
+    "node": "24.19.0",
+    "npm": "11.17.0",
+    "chromium": "156.0.8078.4 / Playwrightv1248"
+  },
+  "url": "https://github.com/TakashiSasaki/vision-edge/actions/runs/40119850663/job/120948814304",
+  "rawLogSha256Meaning": "SHA256 of decompressed exact connector-returned log bytes",
+  "readableExcerpt": "normalized-binding-excerpt.txt"
+}

@@ -1,0 +1,22 @@
+{
+  "initialDiffCheckExit": 2,
+  "initialIssues": "Trailing spaces in raw CI log, raw Git diff context and raw browser error context only. Product/tests/independent probe source had no whitespace issue.",
+  "resolution": "Lossless gzip for exact raw records, no content editing or weakened test. Readable CI excerpt explicitly normalized.",
+  "packed": [
+    {
+      "file": "ci/target-job-120948814304.txt.gz",
+      "uncompressedSha256": "8cce61e2187fefc86559e5015511922704626b54aed40234ab7b662f95090bd5",
+      "compressedSha256": "d4425c0c653e19eb443c206175909535c5712395ecbea9440523a36ca9a646b9"
+    },
+    {
+      "file": "correction-source.diff.gz",
+      "uncompressedSha256": "1bfbaed4d4de8dd11a8038c79ed4883e117e3841c73632c420c2766e7e063778",
+      "compressedSha256": "9c94b92c2287dfa44de3101481d97d2a4b24b1d493bbf96221a6d48d0fd97e08"
+    },
+    {
+      "file": "missing-wasm-diagnostic/browser/integration-asset-diagnostic-selfie-segmenter/error-context.md.gz",
+      "uncompressedSha256": "c3b444c30f4574461cad7455c9422f594095f1d05521a0726e6ee8b97f07a240",
+      "compressedSha256": "ef67112f49538a9873b17d1585a90f84825a12dc625231ed1aa1d2bf863eaa0c"
+    }
+  ]
+}
