@@ -1,0 +1,28 @@
+[
+  {
+    "command": "original PR15 ui-adversarial reproducer",
+    "cwd": "/tmp/vision-edge-pr06-f01-replay",
+    "exit": 1,
+    "passed": 1,
+    "failed": 1,
+    "log": "logs/reviewer-ui-before.txt",
+    "beforeHead": "04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9"
+  },
+  {
+    "command": "initial corrected original UI replay",
+    "exit": 0,
+    "passed": 2,
+    "log": "logs/reviewer-ui-after-initial.txt"
+  },
+  {
+    "command": "disclosure-state comparison investigation",
+    "exit": 0,
+    "proof": "hud-setup-difference.json"
+  },
+  {
+    "command": "summarize-hud.py",
+    "exit": 0,
+    "trials": 144,
+    "operations": 4608
+  }
+]

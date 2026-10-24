@@ -1,0 +1,10 @@
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+const ref = '04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9';
+const original = execFileSync('git', ['show', `${ref}:src/components/PipelineDetails.tsx`], { encoding: 'utf8' });
+const needle = "from '../services/pipelineMetrics'";
+if (!original.includes(needle)) throw Error('Unexpected original component import');
+mkdirSync('docs/verification/pr06-f01-correction/experiment', { recursive: true });
+writeFileSync('docs/verification/pr06-f01-correction/experiment/PipelineDetails-before.tsx', original.replace(needle, "from '../../../../src/services/pipelineMetrics'"));
+writeFileSync('docs/verification/pr06-f01-correction/hud-before-binding-final.json', JSON.stringify({ ref, originalSHA256: createHash('sha256').update(original).digest('hex'), adaptation: 'Only relative pipelineMetrics import changed to the byte-identical current service; React remains the same installed package.' }, null, 2) + '\n');

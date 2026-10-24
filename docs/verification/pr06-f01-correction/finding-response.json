@@ -1,0 +1,29 @@
+{
+  "id": "PR06-F01",
+  "severity": "P2",
+  "reviewerStatus": "open at PR15 evidence head",
+  "authorStatus": "addressed; independent closure pending",
+  "before": {
+    "head": "04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9",
+    "probe": "unchanged PR15 ui-adversarial.test.tsx",
+    "exit": 1,
+    "passed": 1,
+    "failed": 1,
+    "videoMounted": false,
+    "pendingRAF": 0
+  },
+  "after": {
+    "productHead": "1678f8c23f0fdc96cc666600ae1ec3b910743ad2",
+    "originalReviewerProbes": 31,
+    "originalReviewerExit": 0,
+    "unit": 317,
+    "focused": 188,
+    "newRegressions": 67,
+    "ordinaryBrowser": 19,
+    "stylesheetControls": 7,
+    "sameRawObjectRecovery": true
+  },
+  "qualification": "Injected malformed statistics violated the TS return shape; no natural collector route or ordinary production incidence has been established.",
+  "fix": "Bounded owned display projection at HUD publication before React state, finite/count/shape validation and missing cells, no raw React data or lifecycle changes",
+  "reReview": "Return new PR14 HEAD/tree and exact-head CI to same reviewer; author replay is not independent PASS"
+}

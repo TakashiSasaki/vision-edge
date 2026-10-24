@@ -1,0 +1,26 @@
+[
+  {
+    "display": "logs/reviewer-all-after.txt",
+    "exactRaw": "logs/reviewer-all-after.raw.txt.gz",
+    "rawSHA256": "3325bf425493f83df79255dbaf37eab54b3b2ca231d4d3bdca60ef4ace526151",
+    "displayChange": "Only repeated terminal LF blank lines removed; exact raw stdout retained in gzip"
+  },
+  {
+    "display": "logs/reviewer-all-final.txt",
+    "exactRaw": "logs/reviewer-all-final.raw.txt.gz",
+    "rawSHA256": "e987ff3e656dce590ff653b8f66aa77d7a2ba4da3a25e7ea9eea974787e8cfac",
+    "displayChange": "Only repeated terminal LF blank lines removed; exact raw stdout retained in gzip"
+  },
+  {
+    "display": "logs/reviewer-ui-after-initial.txt",
+    "exactRaw": "logs/reviewer-ui-after-initial.raw.txt.gz",
+    "rawSHA256": "fb68294d0fcaab1fecd59739048e62622b78070d79e2b072e5d51f83f9610e85",
+    "displayChange": "Only repeated terminal LF blank lines removed; exact raw stdout retained in gzip"
+  },
+  {
+    "display": "logs/reviewer-ui-before.txt",
+    "exactRaw": "logs/reviewer-ui-before.raw.txt.gz",
+    "rawSHA256": "b5cb2e47a5389127518b473d2872dba82f935aa860c7d9719e6b192112f3f97a",
+    "displayChange": "Only repeated terminal LF blank lines removed; exact raw stdout retained in gzip"
+  }
+]

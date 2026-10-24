@@ -1,0 +1,35 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (docs/verification/pr06-independent/vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.5 /tmp/vision-edge-pr06-f01-replay
+
+stdout | docs/verification/pr06-independent/ui-adversarial.test.tsx > invalid statistics result must not unmount the camera/engine component
+PR06-F01 {"error":"Cannot read properties of null (reading 'capture')","videoMounted":false,"pendingRAF":0,"cameraRequests":1,"sdkCalls":1}
+
+ ❯ docs/verification/pr06-independent/ui-adversarial.test.tsx (2 tests | 1 failed) 151ms
+   × invalid statistics result must not unmount the camera/engine component 71ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/verification/pr06-independent/ui-adversarial.test.tsx > invalid statistics result must not unmount the camera/engine component
+AssertionError: expected TypeError: Cannot read properties of null… to be undefined
+
+- Expected:
+undefined
+
++ Received:
+TypeError {
+  "message": "Cannot read properties of null (reading 'capture')",
+}
+
+ ❯ docs/verification/pr06-independent/ui-adversarial.test.tsx:26:640
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  15:49:21
+   Duration  1.27s (environment 53%, import 17%, transform 16%, tests 13%)

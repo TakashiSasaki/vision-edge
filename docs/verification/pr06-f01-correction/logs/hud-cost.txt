@@ -1,0 +1,8 @@
+file:///workspace/vision-edge/docs/verification/pr06-f01-correction/experiment/run-hud-cost.mjs:10
+    if (!await page.evaluate(profile => window.hudCost.equivalent(profile), profile)) throw Error(`Valid ${profile} HTML changed`);
+                                                                                            ^
+
+Error: Valid 300 HTML changed
+    at file:///workspace/vision-edge/docs/verification/pr06-f01-correction/experiment/run-hud-cost.mjs:10:93
+
+Node.js v24.19.0

@@ -1,0 +1,18 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../../../vite.config" without a file extension (docs/verification/pr06-f01-correction/experiment/vite.config.ts:2:18). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 19 modules transformed.
+rendering chunks...
+computing gzip size...
+.cache/pr06-f01-hud-build/docs/verification/pr06-f01-correction/experiment/index.html    0.29 kB │ gzip:  0.23 kB
+.cache/pr06-f01-hud-build/assets/index-Bzu7-GKo.css                                     27.42 kB │ gzip:  5.89 kB
+.cache/pr06-f01-hud-build/assets/index-DXDiAIC3.js                                     235.89 kB │ gzip: 73.57 kB
+
+✓ built in 178ms
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
