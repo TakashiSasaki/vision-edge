@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "assets": [
+    {
+      "id": "vision_wasm_internal.js",
+      "file": "vision_wasm_internal.js",
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.js",
+      "version": "0.10.14",
+      "size": 209826,
+      "sha256": "9440cf0cc0cea21800e31581ec32aeedcc5fbf9df4509796bbc7d3f99e52ab9c",
+      "retrievedAt": "2026-10-24T17:20:27.341048+00:00",
+      "license": "Apache-2.0",
+      "production": "FilesetResolver.forVisionTasks CDN directory; byte-identical npm package file",
+      "required": true,
+      "licenseSource": "https://www.npmjs.com/package/@mediapipe/tasks-vision/v/0.10.14 (installed package.json license field)"
+    },
+    {
+      "id": "vision_wasm_internal.wasm",
+      "file": "vision_wasm_internal.wasm",
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.wasm",
+      "version": "0.10.14",
+      "size": 9423986,
+      "sha256": "f82a8e6c05e08a44cc9f9e7ec5f845935bcbb1b1500ebe8c2f4812fb4e2917dc",
+      "retrievedAt": "2026-10-24T17:20:27.448805+00:00",
+      "license": "Apache-2.0",
+      "production": "FilesetResolver.forVisionTasks CDN directory; byte-identical npm package file",
+      "required": true,
+      "licenseSource": "https://www.npmjs.com/package/@mediapipe/tasks-vision/v/0.10.14 (installed package.json license field)"
+    },
+    {
+      "id": "vision_wasm_nosimd_internal.js",
+      "file": "vision_wasm_nosimd_internal.js",
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_nosimd_internal.js",
+      "version": "0.10.14",
+      "size": 209735,
+      "sha256": "abe9b6fbeaf86fcb53a5edce3926c82ccb0619e18fed4d9d9ce561ee7f55e054",
+      "retrievedAt": "2026-10-24T17:20:27.647490+00:00",
+      "license": "Apache-2.0",
+      "production": "FilesetResolver.forVisionTasks CDN directory; byte-identical npm package file",
+      "required": true,
+      "licenseSource": "https://www.npmjs.com/package/@mediapipe/tasks-vision/v/0.10.14 (installed package.json license field)"
+    },
+    {
+      "id": "vision_wasm_nosimd_internal.wasm",
+      "file": "vision_wasm_nosimd_internal.wasm",
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_nosimd_internal.wasm",
+      "version": "0.10.14",
+      "size": 9294247,
+      "sha256": "38b61feab2fd7934e05cbe9f68baa308978a5e3b7f85c1913bb8ae89b8ef8b97",
+      "retrievedAt": "2026-10-24T17:20:28.606107+00:00",
+      "license": "Apache-2.0",
+      "production": "FilesetResolver.forVisionTasks CDN directory; byte-identical npm package file",
+      "required": true,
+      "licenseSource": "https://www.npmjs.com/package/@mediapipe/tasks-vision/v/0.10.14 (installed package.json license field)"
+    },
+    {
+      "id": "astronaut.png",
+      "file": "astronaut.png",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.24.0/skimage/data/astronaut.png",
+      "version": "scikit-image v0.24.0",
+      "size": 791555,
+      "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "retrievedAt": "2026-10-24T17:20:05.802423+00:00",
+      "license": "Public domain (NASA photograph of Eileen Collins)",
+      "production": "Test input only, never a production model/result substitute",
+      "required": true,
+      "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.24.0/skimage/data/_fetchers.py"
+    },
+    {
+      "id": "coffee.png",
+      "file": "coffee.png",
+      "url": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.24.0/skimage/data/coffee.png",
+      "version": "scikit-image v0.24.0",
+      "size": 466706,
+      "sha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7",
+      "retrievedAt": "2026-10-24T17:20:07.114415+00:00",
+      "license": "CC0 (Rachel Michetti, courtesy Pikolo Espresso Bar)",
+      "production": "Test input only, never a production model/result substitute",
+      "required": true,
+      "licenseSource": "https://github.com/scikit-image/scikit-image/blob/v0.24.0/skimage/data/_fetchers.py"
+    },
+    {
+      "id": "efficientdet_lite0.tflite",
+      "file": "efficientdet_lite0.tflite",
+      "url": "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
+      "version": "float16/1",
+      "size": null,
+      "sha256": null,
+      "retrievedAt": null,
+      "license": "Unverified model-specific redistribution terms; do not commit binary",
+      "production": "Exact defaultFactory modelAssetPath",
+      "required": true,
+      "acquisitionStatus": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+    },
+    {
+      "id": "selfie_segmenter.tflite",
+      "file": "selfie_segmenter.tflite",
+      "url": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite",
+      "version": "float16/latest (mutable)",
+      "size": null,
+      "sha256": null,
+      "retrievedAt": null,
+      "license": "Unverified model-specific redistribution terms; do not commit binary",
+      "production": "Exact defaultFactory modelAssetPath",
+      "required": true,
+      "acquisitionStatus": "blocked: HTTP403 CONNECT denial at 2026-10-24T17:18\u201317:19Z; no GET/body obtained; not retried or bypassed"
+    },
+    {
+      "id": "vision_bundle.mjs",
+      "file": "vision_bundle.mjs",
+      "url": "https://registry.npmjs.org/@mediapipe/tasks-vision/-/tasks-vision-0.10.14.tgz",
+      "version": "0.10.14",
+      "size": 136870,
+      "sha256": "e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669",
+      "retrievedAt": null,
+      "license": "Apache-2.0",
+      "production": "Actual unaliased SDK import, bundled by Vite from npm lock integrity",
+      "required": true,
+      "packageFile": "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs",
+      "packageIntegrity": "sha512-vOifgZhkndgybdvoRITzRkIueWWSiCKuEUXXK6Q4FaJsFvRJuwgg++vqFUMlL0Uox62U5aEXFhHxlhV7Ja5e3Q==",
+      "retrievalTimePrecision": "npm ci run window; exact per-file download time not captured",
+      "licenseSource": "https://www.npmjs.com/package/@mediapipe/tasks-vision/v/0.10.14 (installed package.json license field)",
+      "retrievalWindowUTC": [
+        "2026-10-24T17:19:00Z",
+        "2026-10-24T17:20:10Z"
+      ]
+    }
+  ]
+}
