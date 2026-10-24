@@ -16,7 +16,7 @@ for (const model of ['mediapipe', 'selfie-segmenter'] as const) {
         await page.goto('/');
         if (model === 'mediapipe') await page.getByRole('banner').getByRole('combobox').selectOption(model);
         await ready(page);
-        await expect.poll(() => page.evaluate(() => window.__realSdkProbe.processed.filter(r => r.status === 'ready').length)).toBeGreaterThanOrEqual(4);
+        await expect.poll(() => page.evaluate(model => window.__realSdkProbe.processed.filter(r => r.model === model && r.status === 'ready').length, model)).toBeGreaterThanOrEqual(4);
         const positive = await page.evaluate(() => ({ raw: window.__realSdkProbe.raw, processed: window.__realSdkProbe.processed, draws: window.__realSdkProbe.draws }));
         const raws = positive.raw.filter(r => r.model === model && !r.error);
         expect(raws.length).toBeGreaterThanOrEqual(4);

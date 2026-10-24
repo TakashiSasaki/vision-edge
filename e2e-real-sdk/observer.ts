@@ -74,6 +74,9 @@ for (const [model, Task, method] of [
   }) });
   prototype.close = new Proxy(prototype.close, { apply(target, receiver, args) { probe.closes++; return Reflect.apply(target, receiver, args); } });
 }
+VisionEngine.prototype.initialize = new Proxy(VisionEngine.prototype.initialize, {
+  apply(target, receiver, args) { activeEngine = receiver; return Reflect.apply(target, receiver, args); },
+});
 VisionEngine.prototype.detectVideoFrame = new Proxy(VisionEngine.prototype.detectVideoFrame, {
   apply(target, receiver, args) {
     activeEngine = receiver;

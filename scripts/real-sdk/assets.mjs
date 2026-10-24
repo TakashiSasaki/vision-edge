@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFile, writeFile, mkdir, rename, rm } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rename, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,6 +13,8 @@ export function assetPath(asset) { return path.join(root, asset.packageFile ?? `
 export async function verifyAsset(asset) {
   if (!asset.sha256 || !asset.size) return { id: asset.id, status: 'blocked', reason: asset.acquisitionStatus ?? 'No reviewed byte pin; acquisition/enrollment required' };
   try {
+    const info = await stat(assetPath(asset));
+    if (info.size !== asset.size || info.size > 15_000_000) return { id: asset.id, status: 'fail', reason: 'Cached size differs from reviewed pin (not read)' };
     const bytes = await readFile(assetPath(asset));
     if (bytes.length !== asset.size || hash(bytes) !== asset.sha256) return { id: asset.id, status: 'fail', reason: 'Cached size/SHA256 differs from reviewed pin' };
     return { id: asset.id, status: 'pass', size: bytes.length, sha256: hash(bytes) };

@@ -16,7 +16,7 @@
     "test:e2e:controls": "node scripts/smoke-css-controls.mjs",
     "test:e2e:real-sdk": "node scripts/real-sdk/run.mjs",
     "test:e2e:real-sdk:assets": "node scripts/real-sdk/assets.mjs",
-    "test:e2e:real-sdk:acquire": "node scripts/real-sdk/assets.mjs --acquire"
+    "test:e2e:real-sdk:acquire": "node --use-env-proxy scripts/real-sdk/assets.mjs --acquire"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.14",
