@@ -19,7 +19,7 @@ export default defineConfig({
     trace: 'retain-on-failure', screenshot: 'only-on-failure',
   },
   webServer: {
-    command: 'npm run build -- --config vite.real-sdk.config.ts && npm run preview -- --outDir .cache/vision-edge-real-sdk --host 127.0.0.1 --port 4175 --strictPort',
+    command: 'node scripts/real-sdk/build-native-probe.mjs && npm run build -- --config vite.real-sdk.config.ts && npm run preview -- --outDir .cache/vision-edge-real-sdk --host 127.0.0.1 --port 4175 --strictPort',
     url: 'http://127.0.0.1:4175', timeout: 45_000, reuseExistingServer: false,
     gracefulShutdown: { signal: 'SIGTERM', timeout: 5000 },
   },

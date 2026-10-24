@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { manifest, assetPath, verifyAsset } from '../scripts/real-sdk/assets.mjs';
 import type { probe } from './observer';
 export type InputMode = 'VideoFrame' | 'Canvas' | 'HTMLVideoElement';
-type Camera = { scene: string; frames: number; requests: number; framesCreated: number; framesClosed: number; doubleCloses: number; liveTracks: () => number; dispose: () => void };
+type Camera = { scene: string; revision: number; renderedScene: string; frames: number; requests: number; framesCreated: number; framesClosed: number; doubleCloses: number; liveTracks: () => number; dispose: () => void };
 declare global { interface Window { __realCamera: Camera; __realSdkProbe: typeof probe } }
 export async function routeAssets(context: BrowserContext, failModel = false) {
   const requests: Array<{ url: string; status: string }> = [];
@@ -28,7 +28,7 @@ export async function routeAssets(context: BrowserContext, failModel = false) {
 export async function installCamera(context: BrowserContext, mode: InputMode, initialScene: string) {
   await context.addInitScript(({ mode, initialScene }) => {
     const streams: MediaStream[] = []; const intervals: number[] = []; const closed = new WeakSet<VideoFrame>();
-    const camera: Camera = window.__realCamera = { scene: initialScene, frames: 0, requests: 0, framesCreated: 0, framesClosed: 0, doubleCloses: 0,
+    const camera: Camera = window.__realCamera = { scene: initialScene, revision: 1, renderedScene: '', frames: 0, requests: 0, framesCreated: 0, framesClosed: 0, doubleCloses: 0,
       liveTracks: () => streams.flatMap(s => s.getTracks()).filter(t => t.readyState === 'live').length,
       dispose: () => { intervals.forEach(clearInterval); streams.forEach(s => s.getTracks().forEach(t => t.stop())); } };
     if (mode !== 'VideoFrame') Object.defineProperty(window, 'VideoFrame', { configurable: true, value: undefined });
@@ -58,6 +58,13 @@ export async function installCamera(context: BrowserContext, mode: InputMode, in
           ctx.fillStyle = '#080808'; ctx.fillRect(0, 0, 512, 512);
           if (camera.scene === 'background') for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { ctx.fillStyle = (x + y) % 2 ? '#283848' : '#8193a5'; ctx.fillRect(x * 32, y * 32, 32, 32); }
         }
+        if (camera.renderedScene !== camera.scene) { camera.revision++; camera.renderedScene = camera.scene; }
+        // Observation-only input provenance: binary black/white marker survives
+        // native video color conversion. Decode the actual SDK argument, never
+        // infer its scene from a mutable requested-scene global.
+        const code = ({ 'astronaut.png': 1, 'coffee.png': 2, background: 3, empty: 4 }[camera.scene] ?? 0)
+          | ((camera.revision & 255) << 3) | ((camera.requests & 255) << 11) | (10 << 19);
+        for (let bit = 0; bit < 23; bit++) { ctx.fillStyle = code & (1 << bit) ? '#fff' : '#000'; ctx.fillRect(bit * 8, 504, 8, 8); }
         // Distinct native frames at 5Hz, not physical-camera FPS evidence.
         ctx.fillStyle = ++camera.frames % 2 ? '#000000' : '#ffffff'; ctx.fillRect(511, 511, 1, 1);
       };

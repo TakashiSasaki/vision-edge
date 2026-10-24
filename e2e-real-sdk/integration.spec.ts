@@ -68,11 +68,18 @@ for (const model of ['mediapipe', 'selfie-segmenter'] as const) {
         expect(await page.evaluate(() => window.__realSdkProbe.creates.length)).toBe(creations);
         // Both textured background and empty controls; allow existing 2-frame retention.
         for (const scene of ['background', 'empty']) {
-          const before = await page.evaluate(scene => { window.__realCamera.scene = scene; return window.__realSdkProbe.calls; }, scene);
-          await expect.poll(() => page.evaluate(before => window.__realSdkProbe.calls - before, before)).toBeGreaterThanOrEqual(5);
-          const latest = await page.evaluate(() => window.__realSdkProbe.processed.at(-1)!);
-          expect(latest.status).toBe('ready');
-          expect(latest.objects.filter((obj: { label: string }) => obj.label === expected)).toEqual([]);
+          const boundary = await page.evaluate(scene => {
+            const probe = window.__realSdkProbe;
+            const latest = probe.processed.at(-1)!;
+            window.__realCamera.scene = scene;
+            return { afterCallId: probe.calls, afterResultId: latest.id, model: latest.model, input: latest.input, requestId: latest.requestId,
+              stamp: { scene, revision: window.__realCamera.revision + 1, stream: window.__realCamera.requests } };
+          }, scene);
+          await expect.poll(async () => {
+            const result = await page.evaluate(({ boundary, expected }) => window.__realSdkProbe.negativeCheck(boundary, expected), { boundary, expected });
+            expect(result.status, result.reason).not.toBe('fail');
+            return result.status;
+          }).toBe('pass');
         }
         const other = model === 'mediapipe' ? 'selfie-segmenter' : 'mediapipe';
         await page.getByRole('banner').getByRole('combobox').selectOption(other);

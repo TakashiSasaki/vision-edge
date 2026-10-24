@@ -1,19 +1,23 @@
 import { ObjectDetector, ImageSegmenter, type Detection, type MPMask } from '@mediapipe/tasks-vision';
 import { VisionEngine } from '../src/services/visionEngine';
 import { PipelineMetrics, type PipelineSnapshot } from '../src/services/pipelineMetrics';
+import { inputStamp } from './input-provenance';
+import { checkNegativeScene, type SceneBoundary, type Stamp } from './acceptance';
 import type { DetectionFrame, FrameResult } from '../src/types/vision';
 
 type RawDetection = { categories: Array<{ label: string; score: number }>; bbox: Detection['boundingBox'] };
 type ProcessedObject = { label: string; confidence: number; bbox: { x: number; y: number; width: number; height: number }; mask: { width: number; height: number } | null };
 type SdkResult = { detections?: Detection[]; confidenceMasks?: MPMask[]; close: () => void };
-type Raw = { scene: string; id: number; model: string; input: string; ms: number; detections?: RawDetection[]; masks?: ReturnType<typeof summarizeMask>[]; error?: string };
+type Raw = { sdkSucceeded: boolean; stamp: Stamp | null; requestId: number | null; scene: string; id: number; model: string; input: string; ms: number; detections?: RawDetection[]; masks?: ReturnType<typeof summarizeMask>[]; error?: string };
 export const probe = {
   marker: 'PR07_REAL_SDK_OBSERVATION',
   creates: [] as Array<{ model: string; delegate: string; at: number; ms?: number; error?: string }>,
-  closes: 0, resultCloses: 0, calls: 0, rawDropped: 0,
+  observationVersion: 2, closes: 0, resultCloses: 0, calls: 0, sdkSuccesses: 0, rawDropped: 0,
   raw: [] as Raw[],
-  processed: [] as Array<{ id: number; rawId: number; status: string; model: string; requestId: number; objects: ProcessedObject[] }>,
+  processed: [] as Array<{ id: number; rawId: number; status: string; model: string; input: string; stamp: Stamp | null; requestId: number; objects: ProcessedObject[] }>,
   draws: [] as Array<{ id: number; alphaPixels: number; width: number; height: number; maskDraws: number }>,
+  adoptions: [] as Array<{ id: number }>,
+  negativeCheck: (boundary: SceneBoundary, expected: string) => checkNegativeScene(probe, boundary, expected),
   snapshots: [] as PipelineSnapshot[],
   invalidateAfterNextSdk: false,
   stop: () => {},
@@ -56,10 +60,11 @@ for (const [model, Task, method] of [
   const original = Reflect.get(prototype, method) as (...args: unknown[]) => SdkResult;
   Object.defineProperty(prototype, method, { configurable: true, value: new Proxy(original, {
     apply(target, receiver, args) {
+      const row: Raw = { sdkSucceeded: false, stamp: inputStamp(args[0]), requestId: activeEngine?.getState().requestId ?? null, scene: window.__realCamera?.scene ?? 'unknown', id: ++probe.calls, model, input: 'timestamp' in args[0] ? 'VideoFrame' : 'getContext' in args[0] ? 'Canvas' : 'HTMLVideoElement', ms: 0 };
       const at = performance.now();
-      const row: Raw = { scene: window.__realCamera?.scene ?? 'unknown', id: ++probe.calls, model, input: 'timestamp' in args[0] ? 'VideoFrame' : 'getContext' in args[0] ? 'Canvas' : 'HTMLVideoElement', ms: 0 };
       try {
         const result = Reflect.apply(target, receiver, args);
+        row.sdkSucceeded = true; probe.sdkSuccesses++;
         row.ms = performance.now() - at; // Original SDK call only, excludes observations below.
         if (model === 'mediapipe') row.detections = result.detections!.map(det => ({ categories: det.categories.map(cat => ({ label: cat.categoryName, score: cat.score })), bbox: det.boundingBox }));
         else {
@@ -68,7 +73,7 @@ for (const [model, Task, method] of [
         }
         if (probe.invalidateAfterNextSdk) { probe.invalidateAfterNextSdk = false; activeEngine?.clearDetections(); }
         return result;
-      } catch (error) { row.error = String(error); throw error; }
+      } catch (error) { if (!row.sdkSucceeded) row.ms = performance.now() - at; row.error = String(error); throw error; }
       finally { if (probe.raw.length === 80) { probe.raw.shift(); probe.rawDropped++; } probe.raw.push(row); }
     },
   }) });
@@ -82,8 +87,9 @@ VisionEngine.prototype.detectVideoFrame = new Proxy(VisionEngine.prototype.detec
     activeEngine = receiver;
     const result: FrameResult = Reflect.apply(target, receiver, args);
     const id = ++resultId; identities.set(result, id);
+    const raw = probe.raw.at(-1);
     if (result.status === 'ready') for (const object of result.objects) if (object.maskCanvas) masks.add(object.maskCanvas);
-    probe.processed.push({ id, rawId: probe.calls, status: result.status, model: result.model, requestId: result.requestId,
+    probe.processed.push({ id, rawId: probe.calls, status: result.status, model: result.model, input: raw?.input ?? 'unknown', stamp: raw?.stamp ?? null, requestId: result.requestId,
       objects: result.status === 'ready' ? result.objects.map(obj => ({ label: obj.label, confidence: obj.confidence, bbox: { ...obj.bbox }, mask: obj.maskCanvas ? { width: obj.maskCanvas.width, height: obj.maskCanvas.height } : null })) : [] });
     if (probe.processed.length > 80) probe.processed.shift();
     return result;
@@ -105,6 +111,10 @@ CanvasRenderingContext2D.prototype.drawImage = new Proxy(CanvasRenderingContext2
     return Reflect.apply(target, receiver, args);
   },
 });
+export function observeAdoption(frame: DetectionFrame) {
+  probe.adoptions.push({ id: identities.get(frame) ?? -1 });
+  if (probe.adoptions.length > 80) probe.adoptions.shift();
+}
 export function observeDraw(frame: DetectionFrame, canvas: HTMLCanvasElement) {
   if (drawn.has(frame)) return;
   drawn.add(frame);

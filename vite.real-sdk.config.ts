@@ -11,6 +11,11 @@ export default defineConfig(async env => mergeConfig(
       name: 'real-sdk-observation-only',
       transform(code: string, id: string) {
         if (id === path.resolve('src/main.tsx')) return `import '../e2e-real-sdk/observer';\n${code}`;
+        if (id === path.resolve('src/components/VisionCanvas.tsx')) {
+          const anchor = 'latestFrameRef.current = result;';
+          if (code.split(anchor).length !== 2) throw new Error('Adoption observation anchor changed; inspect before running');
+          return `import { observeAdoption } from '../../e2e-real-sdk/observer';\n${code.replace(anchor, `${anchor}\n        observeAdoption(result);`)}`;
+        }
         if (id === path.resolve('src/services/canvasRenderer.ts')) {
           const anchor = 'ctx.drawImage(offscreen, 0, 0);';
           if (!code.includes(anchor)) throw new Error('Renderer observation anchor changed; inspect before running');
