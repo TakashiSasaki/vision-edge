@@ -1,0 +1,44 @@
+Command: npm run test:e2e:controls
+Exit: 1
+Expected: 1
+
+
+> vision-studio@1.0.0 test:e2e:controls
+> node scripts/smoke-css-controls.mjs
+
+intact: exit=0; passed=1; failed=0
+missing-css-html-fallback: exit=1; passed=0; failed=1
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: missing-css-html-fallback: missing diagnostic required stylesheet MIME
+Error: independent wrong diagnostic: http://127.0.0.1:4173/assets/f01-missing-0.css
+
+[2mexpect([22m[31mreceived[39m[2m).[22mtoMatch[2m([22m[32mexpected[39m[2m)[22m
+
+Expected pattern: [32m/^text\/css(?:;|$)/i[39m
+Received string:  [31m"text/html"[39m
+
+  50 |     expect(response, `required stylesheet response: ${href}`).toBeDefined();
+  51 |     expect(response!.status(), `required stylesheet status: ${href}`).toBe(200);
+> 52 |     expect(response!.headers()['content-type'], `independent wrong diagnostic: ${href}`).toMatch(/^text\/css(?:;|$)/i);
+     |                                                                                          ^
+  53 |   }
+  54 |   const parsedStylesheets = await page.locator('link[rel~="stylesheet"]').evaluateAll(links =>
+  55 |     links.filter(link => new URL((link as HTMLLinkElement).href).origin === location.origin).map(link => {
+    at /tmp/vision-edge-css-controls-nzvW5X/e2e/smoke.spec.ts:52:90
+
+    at file:///tmp/vision-css-runner-review-9279l3h_/scripts/smoke-css-controls.mjs:68:7
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

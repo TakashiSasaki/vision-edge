@@ -1,0 +1,208 @@
+Command: ['npm', 'run', 'test:e2e', '--', '--reporter=json']
+Exit: 1
+
+
+> vision-studio@1.0.0 test:e2e
+> playwright test --reporter=json
+
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/tmp/vision-css-independent-mytxp32h/node_modules/.bin/playwright",
+      "test",
+      "--reporter=json"
+    ],
+    "configFile": "/tmp/vision-css-independent-mytxp32h/playwright.config.ts",
+    "rootDir": "/tmp/vision-css-independent-mytxp32h/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/vision-css-independent-mytxp32h/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/tmp/vision-css-independent-mytxp32h/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/tmp/vision-css-independent-mytxp32h/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/tmp/vision-css-independent-mytxp32h/e2e",
+        "snapshotDir": "/tmp/vision-css-independent-mytxp32h/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "executablePath": "/usr/bin/chromium"
+          },
+          "serviceWorkers": "block",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run preview -- --host 127.0.0.1 --port 4173 --strictPort",
+      "url": "http://127.0.0.1:4173",
+      "reuseExistingServer": false,
+      "timeout": 30000
+    }
+  },
+  "suites": [
+    {
+      "title": "smoke.spec.ts",
+      "file": "smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "production app loads and model controls work without camera or external services",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5685,
+                  "error": {
+                    "message": "Error: required stylesheet applied overflow\n\n\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCSS\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#root')\nExpected: \u001b[32m\"hidden\"\u001b[39m\nReceived: \u001b[31m\"visible\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - required stylesheet applied overflow locator('#root') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#root')\u001b[22m\n\u001b[2m    14 × locator resolved to <div id=\"root\" class=\"h-full w-full overflow-hidden flex flex-col\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n",
+                    "stack": "Error: required stylesheet applied overflow\n\n\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCSS\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#root')\nExpected: \u001b[32m\"hidden\"\u001b[39m\nReceived: \u001b[31m\"visible\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - required stylesheet applied overflow locator('#root') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#root')\u001b[22m\n\u001b[2m    14 × locator resolved to <div id=\"root\" class=\"h-full w-full overflow-hidden flex flex-col\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n    at /tmp/vision-css-independent-mytxp32h/e2e/smoke.spec.ts:65:79",
+                    "location": {
+                      "file": "/tmp/vision-css-independent-mytxp32h/e2e/smoke.spec.ts",
+                      "column": 79,
+                      "line": 65
+                    },
+                    "snippet": "  63 |   // Check both the base reset/custom CSS and a utility used by the real app.\n  64 |   await expect(page.locator('body'), 'required stylesheet applied body reset').toHaveCSS('margin', '0px');\n> 65 |   await expect(page.locator('#root'), 'required stylesheet applied overflow').toHaveCSS('overflow', 'hidden');\n     |                                                                               ^\n  66 |   await expect(header, 'required stylesheet applied header layout').toHaveCSS('display', 'flex');\n  67 |   // Observe the real loader reaching the blocked network boundary before asserting errors.\n  68 |   await expect.poll(() => externalRequests.some(url => url.includes('cdn.jsdelivr.net'))).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/vision-css-independent-mytxp32h/e2e/smoke.spec.ts",
+                        "column": 79,
+                        "line": 65
+                      },
+                      "message": "Error: required stylesheet applied overflow\n\n\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCSS\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#root')\nExpected: \u001b[32m\"hidden\"\u001b[39m\nReceived: \u001b[31m\"visible\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - required stylesheet applied overflow locator('#root') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#root')\u001b[22m\n\u001b[2m    14 × locator resolved to <div id=\"root\" class=\"h-full w-full overflow-hidden flex flex-col\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n\n  63 |   // Check both the base reset/custom CSS and a utility used by the real app.\n  64 |   await expect(page.locator('body'), 'required stylesheet applied body reset').toHaveCSS('margin', '0px');\n> 65 |   await expect(page.locator('#root'), 'required stylesheet applied overflow').toHaveCSS('overflow', 'hidden');\n     |                                                                               ^\n  66 |   await expect(header, 'required stylesheet applied header layout').toHaveCSS('display', 'flex');\n  67 |   // Observe the real loader reaching the blocked network boundary before asserting errors.\n  68 |   await expect.poll(() => externalRequests.some(url => url.includes('cdn.jsdelivr.net'))).toBe(true);\n    at /tmp/vision-css-independent-mytxp32h/e2e/smoke.spec.ts:65:79"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-24T01:41:59.435Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/vision-css-independent-mytxp32h/test-results/smoke-production-app-loads-db693-camera-or-external-services-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/vision-css-independent-mytxp32h/test-results/smoke-production-app-loads-db693-camera-or-external-services-chromium/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/vision-css-independent-mytxp32h/test-results/smoke-production-app-loads-db693-camera-or-external-services-chromium/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/vision-css-independent-mytxp32h/e2e/smoke.spec.ts",
+                    "column": 79,
+                    "line": 65
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4219922fea2e2bd3c691-2fbce535a2951d3f12eb",
+          "file": "smoke.spec.ts",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-24T01:41:58.670Z",
+    "duration": 6819.210999999999,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

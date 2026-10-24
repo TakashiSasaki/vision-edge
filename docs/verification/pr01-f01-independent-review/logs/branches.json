@@ -1,0 +1,34 @@
+[
+  {
+    "name": "chore/build-ci-test-foundation",
+    "commit": {
+      "sha": "f20474be156522ee6141cde9c2b3a958db8d2457",
+      "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/commits/f20474be156522ee6141cde9c2b3a958db8d2457"
+    },
+    "protected": false
+  },
+  {
+    "name": "fix/pr01-css-smoke-validation",
+    "commit": {
+      "sha": "accfb1e895f16b4aec32db5dd5025a1bf2782898",
+      "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/commits/accfb1e895f16b4aec32db5dd5025a1bf2782898"
+    },
+    "protected": false
+  },
+  {
+    "name": "main",
+    "commit": {
+      "sha": "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+      "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/commits/7b813beeebfa3ded90aacda3d69dab76a5ea991d"
+    },
+    "protected": false
+  },
+  {
+    "name": "review/pr01-build-ci-test-foundation",
+    "commit": {
+      "sha": "67e0c15e652d88c773a82b06f615b2befa27a695",
+      "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/commits/67e0c15e652d88c773a82b06f615b2befa27a695"
+    },
+    "protected": false
+  }
+]

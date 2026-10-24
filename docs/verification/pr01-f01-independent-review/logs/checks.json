@@ -1,0 +1,116 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "check-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "check-01.txt"
+  },
+  {
+    "command": [
+      "chromium",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "check-02.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "--version"
+    ],
+    "exit": 0,
+    "log": "check-03.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "ls",
+      "--all"
+    ],
+    "exit": 0,
+    "log": "check-04.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "log": "check-05.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "log": "check-06.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "log": "check-07.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "log": "check-08.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 0,
+    "log": "check-09.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e:controls"
+    ],
+    "exit": 0,
+    "log": "check-10.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 0,
+    "log": "check-11.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "log": "check-12.txt"
+  }
+]

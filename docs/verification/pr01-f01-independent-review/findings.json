@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "decision": "PASS",
+  "scope": "Independent non-Author re-review of PR-01 F01 CSS smoke correction only",
+  "reviewed_source": {
+    "repository": "TakashiSasaki/vision-edge",
+    "fix_pr": 3,
+    "branch": "fix/pr01-css-smoke-validation",
+    "head": "accfb1e895f16b4aec32db5dd5025a1bf2782898",
+    "tree": "027d88998218c98966f95db7bbe1362e6703009c",
+    "sole_parent_and_main": "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+    "original_product": "f20474be156522ee6141cde9c2b3a958db8d2457",
+    "original_review": "67e0c15e652d88c773a82b06f615b2befa27a695"
+  },
+  "new_findings": [],
+  "severity_definition": {"P0": "Critical", "P1": "High", "P2": "Medium", "P3": "Low"},
+  "findings": [
+    {
+      "id": "F01",
+      "severity": "P2",
+      "status": "closed_on_reviewed_fix",
+      "title": "Production smoke passes with missing required CSS served as HTML 200",
+      "file": "e2e/smoke.spec.ts",
+      "line": 44,
+      "blocks_foundation_acceptance_on_reviewed_fix": false,
+      "still_present_on_current_main": true,
+      "reproduction": "Independently replace only the generated stylesheet href with /assets/review-missing.css in disposable original and corrected production builds, directly observe responses/CSSOM/styles, then execute each unchanged smoke.",
+      "original_observed": "HTTP 200 text/html, zero rules, body margin 8px, root overflow visible, header display block, no page errors; original smoke exit 0 / one passed.",
+      "corrected_observed": "Same actual faulty delivery and applied-style observations; corrected smoke exit 1 / one failed at required stylesheet MIME.",
+      "acceptance": [
+        "Healthy original and corrected real offline app smokes pass, with byte-identical production build manifests.",
+        "Independent missing/deleted CSS, removed local link, empty/invalid CSS with CSS MIME, wrong MIME and nonempty unrelated CSS all fail specifically.",
+        "Independent isolated body, root and header applied-style loss each fails its relevant assertion.",
+        "Independent fatal JavaScript fails the preserved final pageErrors assertion.",
+        "Author controls match all seven expected outcomes; insensitive-child and wrong-diagnostic runner controls exit 1.",
+        "Full exact-source clean install/static/unit/build/smoke checks pass, source checkout remains clean and build hashes remain unchanged.",
+        "Exact-fix hosted CI and downloaded matched-Chromium logs verify completed/success with controls."
+      ],
+      "evidence": [
+        "logs/original-missing-href-observation.json",
+        "logs/original-missing-href-smoke.txt",
+        "logs/fixed-01-missing-href-observation.json",
+        "logs/fixed-01-missing-href-smoke.txt",
+        "logs/independent-css-results.json",
+        "logs/runner-sensitivity.json",
+        "logs/checks.json",
+        "logs/build-integrity.json",
+        "logs/fix-ci-job.txt"
+      ]
+    }
+  ],
+  "inherited_deferrals": [
+    {"id": "F02", "severity": "P3", "status": "accepted_scoped_deferral_unchanged", "topic": "Single effect lint suppression blind spot", "independently_revalidated_in_this_review": false},
+    {"id": "F03", "severity": "P2", "status": "pre_existing_deferred_unchanged", "topic": "Dictionary inherited keys and substring false positives", "independently_revalidated_in_this_review": false},
+    {"id": "F04", "severity": "P2", "status": "pre_existing_deferred_unchanged", "topic": "Model/runtime/backend truthfulness", "independently_revalidated_in_this_review": false},
+    {"id": "F05", "severity": "P2", "status": "pre_existing_deferred_unchanged", "topic": "Camera lifecycle and late acquisition", "independently_revalidated_in_this_review": false}
+  ],
+  "foundation_conditions_on_reviewed_fix": [],
+  "ready_for_separately_authorized_pr02_pr03_on_reviewed_fix": true,
+  "ready_on_uncorrected_main": false,
+  "later_phase_execution_authorized_by_this_review": false,
+  "publication": "New evidence-only Draft PR directly based on actual fix branch; final HEAD/tree and evidence-PR terminal CI recorded in PR body.",
+  "limitations": [
+    "Local matched browser download HTTP 403; local uses Chromium 154, exact-fix hosted matched Chrome 156 independently verified.",
+    "Real camera/model/GPU/audio, geometry/tracking/FPS, broad accessibility, Windows/macOS and production deployment not certified.",
+    "No Author source/history modification, merge, auto-merge, release, deploy, settings change or later-phase implementation."
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "source": {
+    "head": "accfb1e895f16b4aec32db5dd5025a1bf2782898",
+    "tree": "027d88998218c98966f95db7bbe1362e6703009c",
+    "parents": "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+    "base": "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+    "original": "f20474be156522ee6141cde9c2b3a958db8d2457"
+  },
+  "tracked_status": "",
+  "bindings": {
+    "src": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "64ea1a41b3e8c176ee4a8ae25ba256f071a6b9aa",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "64ea1a41b3e8c176ee4a8ae25ba256f071a6b9aa",
+      "f20474be156522ee6141cde9c2b3a958db8d2457": "64ea1a41b3e8c176ee4a8ae25ba256f071a6b9aa"
+    },
+    "index.html": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "8a58a7336bdbc4ae578afee16f5534c4ea7f774f",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "8a58a7336bdbc4ae578afee16f5534c4ea7f774f",
+      "f20474be156522ee6141cde9c2b3a958db8d2457": "8a58a7336bdbc4ae578afee16f5534c4ea7f774f"
+    },
+    "package-lock.json": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "1db1427fab65c695e26bc70e4ad77b285f1d288f",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "1db1427fab65c695e26bc70e4ad77b285f1d288f",
+      "f20474be156522ee6141cde9c2b3a958db8d2457": "1db1427fab65c695e26bc70e4ad77b285f1d288f"
+    },
+    "playwright.config.ts": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "f49e47bf3b59fec9e916148dbb6afc6f682b1418",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "f49e47bf3b59fec9e916148dbb6afc6f682b1418",
+      "f20474be156522ee6141cde9c2b3a958db8d2457": "f49e47bf3b59fec9e916148dbb6afc6f682b1418"
+    },
+    "vitest.config.ts": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "18fa747362452bf215191f364671b3fe2d350614",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "18fa747362452bf215191f364671b3fe2d350614",
+      "f20474be156522ee6141cde9c2b3a958db8d2457": "18fa747362452bf215191f364671b3fe2d350614"
+    },
+    ".nvmrc": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "60ade1ae01e833a5c291c47883bf26fb031f7727",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "60ade1ae01e833a5c291c47883bf26fb031f7727",
+      "f20474be156522ee6141cde9c2b3a958db8d2457": "60ade1ae01e833a5c291c47883bf26fb031f7727"
+    },
+    "eslint.config.js": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "4d63bc59ee952f6d0ddb6ccd44eb3f9e014eab01",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "4d63bc59ee952f6d0ddb6ccd44eb3f9e014eab01"
+    },
+    "package.json": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "ad4d0d70885d143b78b29b0d94a813415c22b05f",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "02173e2d1451f66a65a49b1ce9d1f628d302c1ec"
+    },
+    "e2e/smoke.spec.ts": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "f112239b4fd78a1f4c48aa3f5759eb4252a10ec5",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "04f0810108fd79328f491980e3deacb058e68148"
+    },
+    "scripts/smoke-css-controls.mjs": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "1ea5d4dd7f1772024fc6b92ff02ac9c5728443b4"
+    },
+    ".github/workflows/ci.yml": {
+      "accfb1e895f16b4aec32db5dd5025a1bf2782898": "a71705c427237ac5f20381380c6c77b736788e7b",
+      "7b813beeebfa3ded90aacda3d69dab76a5ea991d": "bc204f3ad6b9111fd44282bb4dc24b35548ab826"
+    }
+  },
+  "scope": "M\t.github/workflows/ci.yml\nM\tREADME.md\nA\tdocs/verification/pr01-f01-css-smoke/REPORT.md\nA\tdocs/verification/pr01-f01-css-smoke/logs/01-node---version.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/02-npm---version.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/03-npx---no-install-playwright.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/04-chromium---version.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/05-npm-ci---cache.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/06-npm-run-typecheck.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/07-npm-run-lint.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/08-npm-test.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/09-npm-run-build.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/10-npm-run-test-e2e.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/11-npm-run-test-e2e-controls.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/12-git-diff---check.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/before-build.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/before-css-observation.json\nA\tdocs/verification/pr01-f01-css-smoke/logs/before-missing-css.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/before-negative-controls.json\nA\tdocs/verification/pr01-f01-css-smoke/logs/browser-install.txt\nA\tdocs/verification/pr01-f01-css-smoke/logs/checks.json\nA\tdocs/verification/pr01-f01-css-smoke/logs/source-bindings.json\nM\te2e/smoke.spec.ts\nM\tpackage.json\nA\tscripts/smoke-css-controls.mjs",
+  "instructions": {
+    "ancestor_AGENTS": [
+      [
+        "/AGENTS.md",
+        false
+      ],
+      [
+        "/workspace/AGENTS.md",
+        false
+      ],
+      [
+        "/workspace/vision-edge-css-source/AGENTS.md",
+        false
+      ]
+    ],
+    "checkout_AGENTS": "",
+    "checkout_skills": "",
+    "workspace_agents_entries": []
+  }
+}

@@ -1,0 +1,15 @@
+Command: ['npm', 'test']
+Exit: 0
+
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge-css-source
+
+
+ Test Files  3 passed (3)
+      Tests  8 passed (8)
+   Start at  01:39:57
+   Duration  1.19s (environment 64%, tests 12%, setup 10%, transform 8%, import 5%)

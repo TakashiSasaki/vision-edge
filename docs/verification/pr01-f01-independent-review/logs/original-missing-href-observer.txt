@@ -1,0 +1,43 @@
+Command: ['node', 'observer.mjs']
+Exit: 0
+
+{
+  "title": "Webcam Vision & Segmentation Studio",
+  "header": "VisionStudio AI\nモデル:\n✨ Selfie Segmenter (人物輪郭・推奨)\nYOLO-seg (輪郭＋矩形)\nMediaPipe (高速矩形)\nSegFormer (全領域)\n自動 (Auto)\nWebGPU\nWASM SIMD\nWebGL\n仕様カメラ開始",
+  "model": "selfie-segmenter",
+  "styles": [
+    {
+      "href": "http://127.0.0.1:4173/assets/review-missing.css",
+      "enabled": true,
+      "rules": 0
+    }
+  ],
+  "margin": "8px",
+  "overflow": "visible",
+  "display": "block",
+  "responses": [
+    {
+      "url": "http://127.0.0.1:4173/",
+      "status": 200,
+      "mime": "text/html",
+      "resource": "document"
+    },
+    {
+      "url": "http://127.0.0.1:4173/assets/review-missing.css",
+      "status": 200,
+      "mime": "text/html",
+      "resource": "stylesheet"
+    },
+    {
+      "url": "http://127.0.0.1:4173/assets/index-BGqVEvfJ.js",
+      "status": 200,
+      "mime": "text/javascript",
+      "resource": "script"
+    }
+  ],
+  "external": [
+    "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.js"
+  ],
+  "errors": []
+}

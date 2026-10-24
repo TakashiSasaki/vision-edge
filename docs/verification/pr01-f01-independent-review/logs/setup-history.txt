@@ -1,0 +1,34 @@
+Reviewer setup history (not product or ordinary CI failures):
+
+1. Initial clean install/check/control sequence in the evidence-authoring checkout
+   passed, but new review files were present when Tailwind scanned the tree.
+   A preliminary probe required original/fixed build byte equality and stopped
+   on an assertion before browser validation. This was an overstrict setup
+   assumption on a checkout already containing new evidence. Final execution was
+   moved to untouched detached /workspace/vision-edge-css-source at accfb1e.
+   It received its own clean npm ci and full check/control rerun. Those exact
+   source checks overwrite check-00..12/checks.json; the first install log remains
+   npm-ci.txt and the final install log is npm-ci-exact-source.txt.
+
+2. Initial direct browser observer tried to read CSSOM for the blocked external
+   Google Fonts link, producing SecurityError and exit 1. The observer now
+   restricts CSSOM to same-origin sheets, while still recording blocked external
+   requests. No production smoke ran for that observer attempt.
+
+3. The first attempt to start the final source clone/install command specified
+   its destination as cwd before it existed. The exec service rejected startup
+   (No such file or directory); the shell did not execute. Clone from /workspace
+   followed by npm ci in the created directory succeeded.
+
+4. A preliminary no-links mutation matched both local CSS and external Fonts,
+   then stopped at its one-link assertion. It was corrected to remove only the
+   discovered local stylesheet tag. Final probe reran all 15 cases successfully.
+
+5. Fresh matched-browser download exited 1 with HTTP 403 Domain forbidden.
+   browser-install.txt preserves this environment restriction. Local validation
+   uses system Chromium 154.0.8037.57, not the unavailable matched Chrome 156.
+   Exact-fix hosted logs independently confirm matched Chrome 156 success.
+
+No Author source, branch, historical evidence or application/test/CI code was
+modified by these reviewer setup corrections. All probe code changes are new
+evidence files; all fault mutations run only in temporary copies.

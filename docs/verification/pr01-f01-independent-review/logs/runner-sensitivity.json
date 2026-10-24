@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "mutation": "css-checks-removed",
+      "exit": 1,
+      "diagnostic": "expected smoke assertion failure",
+      "passed": true
+    },
+    {
+      "mutation": "wrong-diagnostic",
+      "exit": 1,
+      "diagnostic": "missing diagnostic required stylesheet MIME",
+      "passed": true
+    }
+  ],
+  "build_unchanged": true
+}

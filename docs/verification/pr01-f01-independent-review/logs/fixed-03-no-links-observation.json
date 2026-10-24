@@ -1,0 +1,28 @@
+{
+  "title": "Webcam Vision & Segmentation Studio",
+  "header": "VisionStudio AI\n\u30e2\u30c7\u30eb:\n\u2728 Selfie Segmenter (\u4eba\u7269\u8f2a\u90ed\u30fb\u63a8\u5968)\nYOLO-seg (\u8f2a\u90ed\uff0b\u77e9\u5f62)\nMediaPipe (\u9ad8\u901f\u77e9\u5f62)\nSegFormer (\u5168\u9818\u57df)\n\u81ea\u52d5 (Auto)\nWebGPU\nWASM SIMD\nWebGL\n\u4ed5\u69d8\u30ab\u30e1\u30e9\u958b\u59cb",
+  "model": "selfie-segmenter",
+  "styles": [],
+  "margin": "8px",
+  "overflow": "visible",
+  "display": "block",
+  "responses": [
+    {
+      "url": "http://127.0.0.1:4173/",
+      "status": 200,
+      "mime": "text/html",
+      "resource": "document"
+    },
+    {
+      "url": "http://127.0.0.1:4173/assets/index-BGqVEvfJ.js",
+      "status": 200,
+      "mime": "text/javascript",
+      "resource": "script"
+    }
+  ],
+  "external": [
+    "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.js"
+  ],
+  "errors": []
+}

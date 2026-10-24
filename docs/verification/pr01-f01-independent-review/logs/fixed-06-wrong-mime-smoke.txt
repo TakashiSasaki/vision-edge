@@ -1,0 +1,208 @@
+Command: ['npm', 'run', 'test:e2e', '--', '--reporter=json']
+Exit: 1
+
+
+> vision-studio@1.0.0 test:e2e
+> playwright test --reporter=json
+
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/tmp/vision-css-independent-s6g73xhg/node_modules/.bin/playwright",
+      "test",
+      "--reporter=json"
+    ],
+    "configFile": "/tmp/vision-css-independent-s6g73xhg/playwright.config.ts",
+    "rootDir": "/tmp/vision-css-independent-s6g73xhg/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/vision-css-independent-s6g73xhg/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/tmp/vision-css-independent-s6g73xhg/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/tmp/vision-css-independent-s6g73xhg/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/tmp/vision-css-independent-s6g73xhg/e2e",
+        "snapshotDir": "/tmp/vision-css-independent-s6g73xhg/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "executablePath": "/usr/bin/chromium"
+          },
+          "serviceWorkers": "block",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run preview -- --host 127.0.0.1 --port 4173 --strictPort",
+      "url": "http://127.0.0.1:4173",
+      "reuseExistingServer": false,
+      "timeout": 30000
+    }
+  },
+  "suites": [
+    {
+      "title": "smoke.spec.ts",
+      "file": "smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "production app loads and model controls work without camera or external services",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 526,
+                  "error": {
+                    "message": "Error: required stylesheet MIME: http://127.0.0.1:4173/assets/independent-styles.txt\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/^text\\/css(?:;|$)/i\u001b[39m\nReceived string:  \u001b[31m\"text/plain\"\u001b[39m",
+                    "stack": "Error: required stylesheet MIME: http://127.0.0.1:4173/assets/independent-styles.txt\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/^text\\/css(?:;|$)/i\u001b[39m\nReceived string:  \u001b[31m\"text/plain\"\u001b[39m\n    at /tmp/vision-css-independent-s6g73xhg/e2e/smoke.spec.ts:52:86",
+                    "location": {
+                      "file": "/tmp/vision-css-independent-s6g73xhg/e2e/smoke.spec.ts",
+                      "column": 86,
+                      "line": 52
+                    },
+                    "snippet": "  50 |     expect(response, `required stylesheet response: ${href}`).toBeDefined();\n  51 |     expect(response!.status(), `required stylesheet status: ${href}`).toBe(200);\n> 52 |     expect(response!.headers()['content-type'], `required stylesheet MIME: ${href}`).toMatch(/^text\\/css(?:;|$)/i);\n     |                                                                                      ^\n  53 |   }\n  54 |   const parsedStylesheets = await page.locator('link[rel~=\"stylesheet\"]').evaluateAll(links =>\n  55 |     links.filter(link => new URL((link as HTMLLinkElement).href).origin === location.origin).map(link => {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/tmp/vision-css-independent-s6g73xhg/e2e/smoke.spec.ts",
+                        "column": 86,
+                        "line": 52
+                      },
+                      "message": "Error: required stylesheet MIME: http://127.0.0.1:4173/assets/independent-styles.txt\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/^text\\/css(?:;|$)/i\u001b[39m\nReceived string:  \u001b[31m\"text/plain\"\u001b[39m\n\n  50 |     expect(response, `required stylesheet response: ${href}`).toBeDefined();\n  51 |     expect(response!.status(), `required stylesheet status: ${href}`).toBe(200);\n> 52 |     expect(response!.headers()['content-type'], `required stylesheet MIME: ${href}`).toMatch(/^text\\/css(?:;|$)/i);\n     |                                                                                      ^\n  53 |   }\n  54 |   const parsedStylesheets = await page.locator('link[rel~=\"stylesheet\"]').evaluateAll(links =>\n  55 |     links.filter(link => new URL((link as HTMLLinkElement).href).origin === location.origin).map(link => {\n    at /tmp/vision-css-independent-s6g73xhg/e2e/smoke.spec.ts:52:86"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-24T01:41:39.074Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/tmp/vision-css-independent-s6g73xhg/test-results/smoke-production-app-loads-db693-camera-or-external-services-chromium/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/tmp/vision-css-independent-s6g73xhg/test-results/smoke-production-app-loads-db693-camera-or-external-services-chromium/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/tmp/vision-css-independent-s6g73xhg/test-results/smoke-production-app-loads-db693-camera-or-external-services-chromium/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/tmp/vision-css-independent-s6g73xhg/e2e/smoke.spec.ts",
+                    "column": 86,
+                    "line": 52
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4219922fea2e2bd3c691-2fbce535a2951d3f12eb",
+          "file": "smoke.spec.ts",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-24T01:41:38.325Z",
+    "duration": 1570.255,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
