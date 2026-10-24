@@ -1,0 +1,4 @@
+Command: ['node', '--version']
+Exit: 0
+
+v24.19.0

@@ -69,9 +69,13 @@ been executed on those operating systems.
 ## Camera, speech, and network dependencies
 
 The app requests camera access on initial load. Grant permission in a secure browser
-context: HTTPS or localhost. A plain HTTP LAN address generally cannot access the
-camera. Actual camera acquisition/stop behavior and device support are outside the
-PR-01 infrastructure checks. Speech starts disabled and depends on the browser's
+context: HTTPS or localhost. The camera session changes only for start/stop or a
+facing-mode change, not model/status/settings rerenders. Obsolete/late acquisitions
+are stopped without being attached, and owned tracks are released on replacement,
+stop, unmount, playback failure or a track ending. Camera readiness waits for video
+playback and stays separate from model readiness. A stopped/replaced session clears
+old scene detections without disposing the model task. Real device behavior still
+requires acceptance testing. Speech starts disabled and depends on the browser's
 Web Speech API and installed voices; Japanese voices may not be available.
 
 Runtime inference downloads MediaPipe WASM/loader assets from
@@ -96,21 +100,30 @@ npm run test:e2e
 npm run test:e2e:controls
 ```
 
-Vitest uses jsdom and React Testing Library. Tests cover dictionary/speech boundaries, supported model selection, staged
-initialization errors, explicit retry, shared requests, cancellation, task ownership
+Vitest uses jsdom and React Testing Library. Tests cover dictionary/speech boundaries,
+supported model selection, staged initialization errors, explicit retry, shared
+requests (including synchronous subscriber reentrancy), cancellation, task ownership
 and controlled out-of-order completion. The actual engine/state/UI run with the
 MediaPipe creation boundary injected. Canvas bridge tests use a controlled RAF,
 timers and canvas context, and exercise successful inference dispatch as well as
-old-result invalidation. Camera acquisition is rejected or held pending by tests;
-these are not device tests.
+old-result invalidation. Camera acquisition uses controlled Promises and synthetic
+streams in tests; these are not device tests.
 Unit tests do not evaluate real GPU inference, canvas rendering, or audible speech.
 
+The camera lifecycle browser test controls only acquisition, using native
+MediaStreams/tracks from synthetic canvas video. Actual app/UI rendering, video
+playback and track stopping run in Chromium. It checks render stability,
+stop/restart, delayed acquisition and out-of-order facing changes. It is not a
+physical camera or inference test. Unit hook tests separately cover unmount,
+StrictMode, stale rejection, playback failure and ended-track cleanup.
+
 Playwright starts a fresh Vite production preview at `127.0.0.1:4173` and runs the
-real built app in Chromium. It denies camera access and blocks every external
-request, including model/WASM/CDN/font resources. It verifies the header, model
-supported/disabled model choices, comparison UI, model-load error/retry, continued
-camera controls, required stylesheet CSS MIME/rules/applied styles, successful local
-resources, and no uncaught JavaScript exception. It does not replace app modules or mock model outputs.
+real built app in Chromium. The separate offline production smoke denies camera
+access and blocks every external request, including model/WASM/CDN/font resources.
+It verifies supported/disabled model choices, comparison UI, model-load error/retry,
+continued camera controls, required stylesheet CSS MIME/rules/applied styles,
+successful local resources, and no uncaught JavaScript exception. It does not
+replace app modules or mock model outputs.
 
 The stylesheet controls rerun `e2e/smoke.spec.ts` explicitly with retries disabled
 on disposable copies of the build. Two intact builds must pass. Missing CSS,
@@ -132,6 +145,12 @@ The job runs install, typecheck, ESLint, unit tests, production build, browser
 installation, all browser tests, and stylesheet controls in that order. Failures stop subsequent verification
 steps and fail the job. Browser reports and failure traces/screenshots are uploaded
 for 14 days. CI needs no application secrets and does not deploy or merge.
+
+See [PR-02/03 integration verification](docs/verification/integration-2026-10-24.md)
+for the reentrancy correction, CSS reconciliation, source bindings and CI receipts.
+
+See [PR-03 camera verification](docs/verification/pr03.md) for session ownership,
+controlled races and remaining device/scheduler limits.
 
 See [PR-02 verification evidence](docs/verification/pr02.md) for state/task ownership,
 regression coverage and remaining lifecycle/measurement limits.

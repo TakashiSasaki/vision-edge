@@ -12,6 +12,7 @@ import {
 import { speechService } from '../services/speechService';
 import { VisionEngine } from '../services/visionEngine';
 import { modelMetadata } from '../services/modelRegistry';
+import { useCameraStream } from '../hooks/useCameraStream';
 
 interface VisionCanvasProps {
   activeModel: RunnableModelType;
@@ -47,12 +48,12 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [cameraError, setCameraError] = useState<string | null>(null);
+  const { cameraError, clearError, cameraReady, cameraRequestId } = useCameraStream(videoRef, isCameraActive, facingMode, onCameraStop);
   const [clickRipple, setClickRipple] = useState<{ x: number; y: number; label: string } | null>(null);
   const [currentFrame, setCurrentFrame] = useState<DetectionFrame | null>(null);
   const modelReady = modelState.status === 'ready' && modelState.model === activeModel;
   const requestId = modelState.requestId;
-  const currentObjects = modelReady && currentFrame?.model === activeModel && currentFrame.requestId === requestId
+  const currentObjects = cameraReady && modelReady && currentFrame?.model === activeModel && currentFrame.requestId === requestId
     ? currentFrame.objects : [];
 
   const animFrameIdRef = useRef<number | null>(null);
@@ -65,61 +66,13 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   // remain separate. New results carry the engine generation, not just a label.
   useLayoutEffect(() => {
     latestFrameRef.current = null;
+    engine.clearDetections();
     setCurrentFrame(null);
     setClickRipple(null);
     onFrame(null);
     const canvas = canvasRef.current;
     if (canvas) canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
-  }, [activeModel, requestId, isCameraActive, onFrame]);
-
-  // Handle webcam stream start/stop and facing mode flip
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-
-    if (isCameraActive) {
-      setCameraError(null);
-
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      };
-
-      navigator.mediaDevices
-        ?.getUserMedia(constraints)
-        .then((s) => {
-          stream = s;
-          if (videoRef.current) {
-            videoRef.current.srcObject = s;
-            videoRef.current.play().catch(e => console.warn('Video play error:', e));
-          }
-        })
-        .catch((err) => {
-          console.warn('Webcam permission error:', err);
-          setCameraError(
-            err.name === 'NotAllowedError'
-              ? 'カメラへのアクセスが拒否されました。ブラウザの設定でカメラ許可をオンにしてください。'
-              : 'カメラデバイスが見つからないか使用中です。'
-          );
-          onCameraStop();
-        });
-    } else {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach(track => track.stop());
-        videoRef.current.srcObject = null;
-      }
-    }
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-      }
-    };
-  }, [isCameraActive, facingMode, onCameraStop]);
+  }, [activeModel, requestId, isCameraActive, facingMode, cameraReady, cameraRequestId, onFrame, engine]);
 
   // Main rendering loop for video frames and overlay canvas (Double-buffered & Decoupled)
   useEffect(() => {
@@ -144,7 +97,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       }
 
       // Sync canvas dimensions with video
-      if (isCameraActive && modelReady && video.readyState >= 2) {
+      if (isCameraActive && cameraReady && modelReady && video.readyState >= 2) {
         const targetW = video.videoWidth || 640;
         const targetH = video.videoHeight || 480;
 
@@ -237,10 +190,10 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       }
     };
     // Retain the existing drawOverlays closure exception (including clickRipple).
-    // PR-02 adds only engine readiness/generation and pending-timer cancellation;
+    // Model and camera readiness/generations cancel obsolete queued callbacks;
     // full rendering/scheduler and overlay closure repair stays in PR-04/06.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCameraActive, activeModel, engine, modelReady, requestId, renderOptions, ttsConfig, onFrame, selectedObjectId]);
+  }, [isCameraActive, cameraReady, cameraRequestId, facingMode, activeModel, engine, modelReady, requestId, renderOptions, ttsConfig, onFrame, selectedObjectId]);
 
   const drawOverlays = (
     ctx: CanvasRenderingContext2D,
@@ -433,6 +386,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
       <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none px-2.5 py-1 rounded-md bg-black/60 text-[11px]">
         <span>{modelMetadata(activeModel).name}</span>
+        <span aria-label="カメラ状態" className="ml-2">{cameraReady ? 'カメラ映像を取得しました' : isCameraActive && !cameraError ? 'カメラ準備中' : 'カメラ停止中'}</span>
         <span className="ml-2">性能：計測未整備</span>
       </div>
 
@@ -453,7 +407,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
             <h4 className="text-xs font-semibold text-white mb-1">カメラエラー</h4>
             <p className="text-[11px] text-slate-300 leading-relaxed mb-3">{cameraError}</p>
             <button
-              onClick={() => setCameraError(null)}
+              onClick={clearError}
               className="px-3 py-1.5 text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-md"
             >
               閉じる

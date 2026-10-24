@@ -56,6 +56,10 @@ export class VisionEngine {
     this.offscreenMaskCanvas = null;
     this.maskImageData = null;
   }
+  // A new camera session must not inherit temporal detections from another scene.
+  // Keep the ready model task and its initialization generation intact.
+  clearDetections(): void { this.resetOutputs(); }
+
   private closeTask(active: ActiveTask | null): void {
     if (!active) return;
     try { active.task.close(); }

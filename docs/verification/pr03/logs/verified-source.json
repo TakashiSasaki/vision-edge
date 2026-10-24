@@ -1,0 +1,29 @@
+{
+  "base": "538d25157a5d87feac2da4496e354cbf8b9bdf5f",
+  "main_at_start": "7b813beeebfa3ded90aacda3d69dab76a5ea991d",
+  "sha256": {
+    "README.md": "feffbcb5651eb0542f62afe7421d819a5d42487bd9849e6cb03aaf57a26c13a7",
+    "e2e/camera-lifecycle.spec.ts": "a191608102fd1fe28b823bc61bbcc3a7c9353e7e84c9f741631802440bc9205b",
+    "e2e/smoke.spec.ts": "c7f696776eeff9724f16e5e67a05ea7cb0b8046fa3eff9bb6f0cdc5b6cf8c57f",
+    "src/App.test.tsx": "13831c895bad8658bef9262ff441fb8ef4c2d0d08aecf3a59edea144f526b086",
+    "src/App.tsx": "cb6f7ac9672f5d08350563e6e29fece95992e92b73d81d58c79c162ea7eab5e1",
+    "src/components/ControlPanel.tsx": "0cf0305e42b1c74e533963a1968d2e65c71b56b9af5e02417364be53b9d618f4",
+    "src/components/Header.tsx": "657ae0c41ca4fe2eb039f26a02bc2b2ca91c889431b19c79e40ff4e3da40c53c",
+    "src/components/ModelComparisonTable.tsx": "32a90954bf524900ba6386605de2a30f4f4990cb25baeacbec2f9e5e6044be94",
+    "src/components/ModelStatus.tsx": "41b3d020147bd8a035c7b18f95a8c60dbd226bbe3040f9cc7ed4821f61a44354",
+    "src/components/VisionCanvas.test.tsx": "b6f41de8eaa72f9c9af3c8363b605c8d09f211e89b67386b8162275c9d1054c1",
+    "src/components/VisionCanvas.tsx": "cbdd0191da15b371108e934d44e8cfae55140e1a678760560735348751b65d0f",
+    "src/hooks/useCameraStream.test.tsx": "e7667ed17caa504c2774c296903d4d1fadc550f65ba73b4e34d4625993ccc43a",
+    "src/hooks/useCameraStream.ts": "69ef9ec6891dee3ed0e8c6822405d72fea3f1d8061edab40f5e5ea73158edc73",
+    "src/main.tsx": "6d84ef84ce96b80b0909622959c17d795c60b3d7fed05154e00d027645143476",
+    "src/services/dictionary.test.ts": "9eed4caf65533f764f51bb16c3041d3e07d5e160cba17ebe436e255c3ed0cf8b",
+    "src/services/dictionary.ts": "e5333b12898b7be3becaaf9d9daab4e704f9fc43549decee6e9dab68b2c6e3a2",
+    "src/services/modelRegistry.ts": "d12effee6c147a1404d846bdd44a381c9f9d61bd085f4df085fdb5e472c22d3b",
+    "src/services/speechService.test.ts": "14e03176957ef8f331208d9ae89ea33054dc56a30409f5789e3d5c884000389a",
+    "src/services/speechService.ts": "36bc30c2d510fb0336f0ef24ab0bf08a4c124e94a773cd94d22fbd27c1c2f8f9",
+    "src/services/visionEngine.test.ts": "d1616f88df98c219f5dcb5501b6ac02011865ae4d102139ff6b122ef10b1b430",
+    "src/services/visionEngine.ts": "c53140db51eec7781fdf5cb53717cb27cdc12169884d76764ef9adb6a9b1dbd1",
+    "src/test/setup.ts": "268e7200d092daa3225eb06790ed72842e5d3234a53980c90ff463d7b81528d3",
+    "src/types/vision.ts": "573f5c8d2f7c70a1390d61d67336d0f52cab2b6a3a5395ef5f8547bec58ddc24"
+  }
+}
