@@ -1,0 +1,264 @@
+
+ RUN  v5.0.5 /workspace/vision-edge-pr04-r2
+
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js (10 tests | 10 failed) 29ms
+   × F01: deferral must not infer the same live frame twice (false) 12ms
+   × F01: deferral must not infer the same live frame twice (true) 2ms
+   × first zero, equal new-session time, coarse timestamps and cancellation (false) 2ms
+   × first zero, equal new-session time, coarse timestamps and cancellation (true) 1ms
+   × F02: consumes an already ready first frame without waiting for a second native arrival 4ms
+   × gate immediately before work, then accept same input after readiness (false) 1ms
+   × gate immediately before work, then accept same input after readiness (true) 1ms
+   × throwing work releases ownership and never retries unchanged input (false) 1ms
+   × throwing work releases ownership and never retries unchanged input (true) 2ms
+   × async stale completion cannot adopt; foreign releases cannot unlock; latest replaces 100 arrivals 2ms
+stdout | docs/verification/pr04-independent/vectors/canvas.test.jsx > F01 production bridge: repeated live image reaches real engine and repeats TTS decisions
+F01 real canvas/engine { images: [], ttsDecisions: 0, fps: '推論: 未計測' }
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx (16 tests | 11 failed) 513ms
+   × stage exception reaches explicit stop and recovers: offscreen-draw 213ms
+   × stage exception reaches explicit stop and recovers: visible-copy 33ms
+   × stage exception reaches explicit stop and recovers: missing-context 47ms
+   × stage exception reaches explicit stop and recovers: notification 31ms
+   × stage exception reaches explicit stop and recovers: tts-gate 25ms
+   × stage exception reaches explicit stop and recovers: tts-speak 28ms
+   × duration includes separately injected SDK and post-processing work, and draw callbacks before results count nothing 14ms
+   × segmenter duration includes result cleanup, not just SDK timestamp or call 11ms
+   × processing failure repairs smoothing; fixed timestamp never retried; empty recovery counts success 16ms
+   × ready model refusing a reentrantly invalidated result creates no success or draw sample 12ms
+   × F01 production bridge: repeated live image reaches real engine and repeats TTS decisions 13ms
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  21 failed | 8 passed (29)
+   Start at  09:15:34
+   Duration  1.79s (environment 66%, tests 16%, import 9%, transform 8%)
+
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 21 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > stage exception reaches explicit stop and recovers: offscreen-draw
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > stage exception reaches explicit stop and recovers: visible-copy
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > stage exception reaches explicit stop and recovers: missing-context
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > stage exception reaches explicit stop and recovers: notification
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > stage exception reaches explicit stop and recovers: tts-gate
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > stage exception reaches explicit stop and recovers: tts-speak
+AssertionError: expected <div …(2)><button></button></div> to be null
+
+- Expected:
+null
+
++ Received:
+<div
+  class="absolute bottom-10 z-30 bg-slate-900 p-2 text-xs"
+  role="alert"
+>
+  映像フレーム取得エラー
+  ：処理を停止しました。
+  <button>
+    処理を再試行
+  </button>
+</div>
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx:81:39
+     79|   fireEvent.click(screen.getByRole('button', { name: '処理を再試行' }));
+     80|   drawTick(); flush(); drawTick(); flush(250);
+     81|   expect(screen.queryByRole('alert')).toBeNull(); expect(f.detect.mock…
+       |                                       ^
+     82|   expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+     83|   expect(f.factory.detector).toHaveBeenCalledTimes(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > duration includes separately injected SDK and post-processing work, and draw callbacks before results count nothing
+AssertionError: expected 'フレーム処理: 未計測' to contain '16.0 ms'
+
+Expected: "16.0 ms"
+Received: "フレーム処理: 未計測"
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx:99:57
+     97|   now = 1000; flush(250);
+     98|   // 5 SDK + 11 post-processing = 16. Zero-duration successes have no …
+     99|   expect(screen.getByLabelText('フレーム処理時間').textContent).toContain('16.…
+       |                                                         ^
+    100| });
+    101| it('segmenter duration includes result cleanup, not just SDK timestamp…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > segmenter duration includes result cleanup, not just SDK timestamp or call
+AssertionError: expected 'フレーム処理: 未計測' to contain '18.0 ms'
+
+Expected: "18.0 ms"
+Received: "フレーム処理: 未計測"
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx:105:57
+    103|   f.segment.mockImplementation(() => { now += 5; return { confidenceMa…
+    104|   drawTick(); flush(); now = 250; flush(250);
+    105|   expect(screen.getByLabelText('フレーム処理時間').textContent).toContain('18.…
+       |                                                         ^
+    106| });
+    107| it.each(['model', 'camera', 'threshold', 'unmount'])('stale SDK reentr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > processing failure repairs smoothing; fixed timestamp never retried; empty recovery counts success
+AssertionError: expected last "vi.fn()" call to have been called with [ ObjectContaining{…} ]
+
+- Expected
++ Received
+
+  [
+-   ObjectContaining {
+-     "objects": [
+-       ObjectContaining {
+-         "label": "dog",
+-       },
+-     ],
+-   },
++   null,
+  ]
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx:128:27
+    126|   const f = await mount();
+    127|   drawTick(); flush(); now = 250; flush(250);
+    128|   expect(f.props.onFrame).toHaveBeenLastCalledWith(expect.objectContai…
+       |                           ^
+    129|   f.detect.mockReturnValueOnce({ get detections() { throw Error('postp…
+    130|   f.video.currentTime = 1; drawTick(); flush(); now = 500; flush(250);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > ready model refusing a reentrantly invalidated result creates no success or draw sample
+AssertionError: expected last "vi.fn()" call to have been called with [ ObjectContaining {"objects": []} ]
+
+- Expected
++ Received
+
+  [
+-   ObjectContaining {
+-     "objects": [],
+-   },
++   null,
+  ]
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx:154:27
+    152|   f.detect.mockImplementation(() => { now += 3; return { detections: […
+    153|   f.video.currentTime = 1; drawTick(); flush(); now = 500; flush(250);
+    154|   expect(f.props.onFrame).toHaveBeenLastCalledWith(expect.objectContai…
+       |                           ^
+    155|   expect(screen.getByLabelText('フレーム処理時間').textContent).toContain('3.0…
+    156|   expect(f.engine.getState().requestId).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/canvas.test.jsx > F01 production bridge: repeated live image reaches real engine and repeats TTS decisions
+AssertionError: expected [] to deeply equal [ 2 ]
+
+- Expected
++ Received
+
+- [
+-   2,
+- ]
++ []
+
+ ❯ docs/verification/pr04-independent/vectors/canvas.test.jsx:175:18
+    173|   now = 500; drawTick(); flush(); flush(250);
+    174|   console.log('F01 real canvas/engine', { images, ttsDecisions: gate.m…
+    175|   expect(images).toEqual([2]);
+       |                  ^
+    176|   expect(gate).toHaveBeenCalledTimes(1);
+    177| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (false)
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F01: deferral must not infer the same live frame twice (true)
+TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
+ ❯ Object.deliver docs/verification/pr04-independent/vectors/scheduler.test.js:22:28
+     20|   function deliver(time, count = time) {
+     21|     video.currentTime = time;
+     22|     const [id, callback] = callbacks.entries().next().value;
+       |                            ^
+     23|     callbacks.delete(id);
+     24|     callback(0, { mediaTime: time, presentedFrames: count });
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:30:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > first zero, equal new-session time, coarse timestamps and cancellation (false)
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > first zero, equal new-session time, coarse timestamps and cancellation (true)
+TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
+ ❯ Object.deliver docs/verification/pr04-independent/vectors/scheduler.test.js:22:28
+     20|   function deliver(time, count = time) {
+     21|     video.currentTime = time;
+     22|     const [id, callback] = callbacks.entries().next().value;
+       |                            ^
+     23|     callbacks.delete(id);
+     24|     callback(0, { mediaTime: time, presentedFrames: count });
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:41:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > F02: consumes an already ready first frame without waiting for a second native arrival
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:53:18
+     51|   vi.advanceTimersByTime(400);
+     52|   s.stop();
+     53|   expect(s.work).toHaveBeenCalledTimes(1);
+       |                  ^
+     54| });
+     55| it.each([false, true])('gate immediately before work, then accept same…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > gate immediately before work, then accept same input after readiness (false)
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > gate immediately before work, then accept same input after readiness (true)
+TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
+ ❯ Object.deliver docs/verification/pr04-independent/vectors/scheduler.test.js:22:28
+     20|   function deliver(time, count = time) {
+     21|     video.currentTime = time;
+     22|     const [id, callback] = callbacks.entries().next().value;
+       |                            ^
+     23|     callbacks.delete(id);
+     24|     callback(0, { mediaTime: time, presentedFrames: count });
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:56:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > throwing work releases ownership and never retries unchanged input (false)
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > throwing work releases ownership and never retries unchanged input (true)
+TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
+ ❯ Object.deliver docs/verification/pr04-independent/vectors/scheduler.test.js:22:28
+     20|   function deliver(time, count = time) {
+     21|     video.currentTime = time;
+     22|     const [id, callback] = callbacks.entries().next().value;
+       |                            ^
+     23|     callbacks.delete(id);
+     24|     callback(0, { mediaTime: time, presentedFrames: count });
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:63:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/21]⎯
+
+ FAIL  docs/verification/pr04-independent/vectors/scheduler.test.js > async stale completion cannot adopt; foreign releases cannot unlock; latest replaces 100 arrivals
+TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
+ ❯ Object.deliver docs/verification/pr04-independent/vectors/scheduler.test.js:22:28
+     20|   function deliver(time, count = time) {
+     21|     video.currentTime = time;
+     22|     const [id, callback] = callbacks.entries().next().value;
+       |                            ^
+     23|     callbacks.delete(id);
+     24|     callback(0, { mediaTime: time, presentedFrames: count });
+ ❯ docs/verification/pr04-independent/vectors/scheduler.test.js:70:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/21]⎯

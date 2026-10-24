@@ -1,0 +1,20 @@
+[
+  {
+    "file": "native-boundaries.mjs",
+    "original_sha256": "e7c3bee35de88f3d71d8fd7f06350ed4d3ab6fd420330df239328a604fa55d22",
+    "adapted_sha256": "f634eb3acf6b056be07cb6c8b24b039b23ca22ea57ecab339c08553f886cd6e4",
+    "change": "Canvas observation-frame constructor timestamp argument only; assertions unchanged"
+  },
+  {
+    "file": "forced-native-race.mjs",
+    "original_sha256": "0f34964a9059443018b49ae95bbb6ed74f9a815d3b81ce371f49ca90f67c1003",
+    "adapted_sha256": "84fbc5d3ae70b46c1d578a78e11ff447c8bbe570e2f7f0da600b34fd146e9938",
+    "change": "Canvas observation-frame constructor timestamp argument only; assertions unchanged"
+  },
+  {
+    "file": "independentSdk.mjs",
+    "original_sha256": "620b212e754e605c1c135cf1114d29607dc9f807b363e86ab26f8ab174a59485",
+    "adapted_sha256": "1165a722f0d2f9b05f3ec33bb4b4e24efb88b256e4a150858300fa332a444ba8",
+    "change": "Canvas observation-frame constructor timestamp argument only; assertions unchanged"
+  }
+]

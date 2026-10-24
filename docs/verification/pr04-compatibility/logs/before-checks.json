@@ -1,0 +1,68 @@
+[
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/vitest.config.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-r2",
+    "head": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+    "exit": 0,
+    "log": "before-00.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/native-boundaries.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-r2",
+    "head": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+    "exit": 1,
+    "log": "before-01.txt"
+  },
+  {
+    "command": [
+      "node",
+      "node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/playwright.config.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-r2",
+    "head": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+    "exit": 1,
+    "log": "before-02.txt"
+  },
+  {
+    "command": [
+      "ffmpeg",
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-f",
+      "lavfi",
+      "-i",
+      "testsrc2=size=64x64:rate=20:duration=5",
+      "-c:v",
+      "libvpx",
+      "-y",
+      ".cache/review-video.webm"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-r2",
+    "head": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+    "exit": 0,
+    "log": "before-03.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/forced-native-race.mjs"
+    ],
+    "cwd": "/workspace/vision-edge-pr04-r2",
+    "head": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+    "exit": 1,
+    "log": "before-04.txt"
+  }
+]

@@ -1,0 +1,52 @@
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ src/services/frameScheduler.test.ts (28 tests | 2 failed) 1183ms
+   × uses presented-frame identity with coarse media timestamps and ignores invalid metadata 56ms
+   × F02: bootstraps a pre-presented image once, including a new session at the same zero time (true) 33ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/services/frameScheduler.test.ts > uses presented-frame identity with coarse media timestamps and ignores invalid metadata
+AssertionError: expected "vi.fn()" to be called 2 times, but got 3 times
+ ❯ src/services/frameScheduler.test.ts:100:60
+     98|   f.frame(NaN, 1); vi.runOnlyPendingTimers(); expect(f.work).toHaveBee…
+     99|   f.frame(0, 1); vi.runOnlyPendingTimers();
+    100|   f.frame(0, 2); vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenC…
+       |                                                            ^
+    101|   f.frame(1, 2); vi.runOnlyPendingTimers(); expect(f.work).toHaveBeenC…
+    102| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/services/frameScheduler.test.ts > F02: bootstraps a pre-presented image once, including a new session at the same zero time (true)
+AssertionError: expected "vi.fn()" to be called 1 times, but got 2 times
+ ❯ src/services/frameScheduler.test.ts:135:20
+    133|     expect(f.work).toHaveBeenCalledTimes(1);
+    134|     f.frame(0, 1); vi.runOnlyPendingTimers();
+    135|     expect(f.work).toHaveBeenCalledTimes(1); // Late callback reconcil…
+       |                    ^
+    136|     f.stop(); expect(raf.size + rvfc.size).toBe(0);
+    137|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  2 failed | 107 passed (109)
+   Start at  08:46:34
+   Duration  5.08s (environment 59%, tests 25%, setup 9%, import 4%, transform 3%)
+
+Environment  jsdom was created 9 times · 7.56s total, 59% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

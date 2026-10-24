@@ -1,0 +1,40 @@
+[
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/vitest.config.mjs"
+    ],
+    "exit": 0,
+    "log": "after-00.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/native-boundaries.mjs"
+    ],
+    "exit": 0,
+    "log": "after-01.txt"
+  },
+  {
+    "command": [
+      "node",
+      "node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/playwright.config.mjs"
+    ],
+    "exit": 0,
+    "log": "after-02.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/forced-native-race.mjs"
+    ],
+    "exit": 0,
+    "log": "after-03.txt"
+  }
+]

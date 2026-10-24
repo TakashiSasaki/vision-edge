@@ -1,0 +1,109 @@
+
+> vision-studio@1.0.0 test:e2e
+> playwright test e2e/compatibility.spec.ts
+
+[WebServer] (node:28864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:28877) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:28902) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:28915) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:28946) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:28959) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:28983) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+COMPATIBILITY {"mode":"immutable","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"計測中","sourceKind":"video-frame"}
+  ✓  1 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (immutable) (2.2s)
+COMPATIBILITY {"mode":"quality","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"計測中","sourceKind":"live-video"}
+  ✓  2 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (quality) (1.9s)
+COMPATIBILITY {"mode":"pixels-rvfc","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"live-video"}
+  ✓  3 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (pixels-rvfc) (3.6s)
+  ✘  4 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (pixels-raf) (3.5s)
+(node:29220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+COMPATIBILITY {"mode":"zero-quality-rvfc","callsAfterStill":1,"fpsAfterStill":"推論: 未計測","statusAfterStill":"映像入力停滞","sourceKind":"live-video"}
+  ✓  5 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (zero-quality-rvfc) (4.1s)
+  ✘  6 [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (zero-quality-raf) (3.7s)
+
+
+  1) [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (pixels-raf)
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 135
+
+      41 |       const still = await page.evaluate(() => ({ calls: window.visionSdkProbe.calls, input: window.visionSdkProbe.inputs[0],
+      42 |         fps: document.querySelector('[aria-label="推論FPS"]')!.textContent, status: document.querySelector('[aria-label="性能状態"]')!.textContent }));
+    > 43 |       expect(still.calls).toBe(1); expect(still.fps).toContain('未計測'); expect(still.input.pixels.slice(0, 4)).toEqual([255, 0, 0, 255]);
+         |                           ^
+      44 |       if (pixelMode) expect(still.status).toBe('映像入力停滞');
+      45 |       await page.evaluate(() => window.compatibilityProbe.change('blue'));
+      46 |       await expect.poll(() => page.evaluate(() => window.visionSdkProbe.calls)).toBe(2);
+        at /workspace/vision-edge-pr04-r2/e2e/compatibility.spec.ts:43:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/compatibility-native-still-aa409-changes-recover-pixels-raf--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/compatibility-native-still-aa409-changes-recover-pixels-raf--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/compatibility-native-still-aa409-changes-recover-pixels-raf--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/compatibility-native-still-aa409-changes-recover-pixels-raf--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (zero-quality-raf)
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 140
+
+      41 |       const still = await page.evaluate(() => ({ calls: window.visionSdkProbe.calls, input: window.visionSdkProbe.inputs[0],
+      42 |         fps: document.querySelector('[aria-label="推論FPS"]')!.textContent, status: document.querySelector('[aria-label="性能状態"]')!.textContent }));
+    > 43 |       expect(still.calls).toBe(1); expect(still.fps).toContain('未計測'); expect(still.input.pixels.slice(0, 4)).toEqual([255, 0, 0, 255]);
+         |                           ^
+      44 |       if (pixelMode) expect(still.status).toBe('映像入力停滞');
+      45 |       await page.evaluate(() => window.compatibilityProbe.change('blue'));
+      46 |       await expect.poll(() => page.evaluate(() => window.visionSdkProbe.calls)).toBe(2);
+        at /workspace/vision-edge-pr04-r2/e2e/compatibility.spec.ts:43:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/compatibility-native-still-cee47-s-recover-zero-quality-raf--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/compatibility-native-still-cee47-s-recover-zero-quality-raf--chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/compatibility-native-still-cee47-s-recover-zero-quality-raf--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/compatibility-native-still-cee47-s-recover-zero-quality-raf--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (pixels-raf)
+    [chromium] › e2e/compatibility.spec.ts:6:3 › native still input ages and real pixel changes recover (zero-quality-raf)
+  4 passed (24.5s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

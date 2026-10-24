@@ -1,0 +1,184 @@
+[
+  {
+    "fallback": false,
+    "compatibility": "immutable",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.41485,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.06077,
+        "quality": 1,
+        "kind": "immutable"
+      },
+      {
+        "timestamp": 414850,
+        "red": 0,
+        "time": 0.412645,
+        "quality": 2,
+        "kind": "immutable"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": false,
+    "compatibility": "live-quality",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.415065,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.060156,
+        "quality": 1,
+        "kind": "live"
+      },
+      {
+        "timestamp": 415065,
+        "red": 0,
+        "time": 0.411896,
+        "quality": 2,
+        "kind": "live"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": false,
+    "compatibility": "live-time",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.447576,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.087662,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 0,
+        "time": 0.43976,
+        "kind": "live"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "immutable",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.411163,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.058857,
+        "quality": 1,
+        "kind": "immutable"
+      },
+      {
+        "timestamp": 411163,
+        "red": 0,
+        "time": 0.424353,
+        "quality": 2,
+        "kind": "immutable"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "live-quality",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.409351,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.05187,
+        "quality": 1,
+        "kind": "live"
+      },
+      {
+        "timestamp": 409351,
+        "red": 0,
+        "time": 0.416587,
+        "quality": 2,
+        "kind": "live"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "live-time",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.420592,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.06494,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 0,
+        "time": 0.425301,
+        "kind": "live"
+      }
+    ],
+    "errors": []
+  }
+]
