@@ -1,0 +1,352 @@
+[
+  {
+    "fallback": false,
+    "compatibility": "immutable",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.422472,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.054978,
+        "quality": 1,
+        "kind": "immutable"
+      },
+      {
+        "timestamp": 422472,
+        "red": 0,
+        "time": 0.413208,
+        "quality": 2,
+        "kind": "immutable"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": false,
+    "compatibility": "live-quality",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.419566,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.064712,
+        "quality": 1,
+        "kind": "live"
+      },
+      {
+        "timestamp": 419566,
+        "red": 0,
+        "time": 0.41635,
+        "quality": 2,
+        "kind": "live"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": false,
+    "compatibility": "live-time",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.416407,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.055638,
+        "kind": "live"
+      },
+      {
+        "timestamp": 416407,
+        "red": 0,
+        "time": 0.4101,
+        "kind": "live"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "immutable",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.419185,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.061576,
+        "quality": 1,
+        "kind": "immutable"
+      },
+      {
+        "timestamp": 419185,
+        "red": 0,
+        "time": 0.42701,
+        "quality": 2,
+        "kind": "immutable"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "live-quality",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.42087,
+      "count": 2
+    },
+    "before": 1,
+    "total": 2,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.063436,
+        "quality": 1,
+        "kind": "live"
+      },
+      {
+        "timestamp": 420870,
+        "red": 0,
+        "time": 0.428487,
+        "quality": 2,
+        "kind": "live"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "live-time",
+    "initial": {
+      "time": 0,
+      "count": 1
+    },
+    "second": {
+      "time": 0.417575,
+      "count": 2
+    },
+    "before": 23,
+    "total": 44,
+    "observations": [
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.058764,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.061493,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.071935,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.090228,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.105662,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.122291,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.138915,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.156073,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.172506,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.18936,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.205731,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.222117,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.238546,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.255267,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.271828,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.288605,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.305319,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.321898,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.33852,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.355456,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.372457,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.38848,
+        "kind": "live"
+      },
+      {
+        "timestamp": 0,
+        "red": 255,
+        "time": 0.405348,
+        "kind": "live"
+      },
+      {
+        "timestamp": 417575,
+        "red": 0,
+        "time": 0.422619,
+        "kind": "live"
+      },
+      {
+        "timestamp": 417575,
+        "red": 0,
+        "time": 0.438437,
+        "kind": "live"
+      },
+      {
+        "timestamp": 417575,
+        "red": 0,
+        "time": 0.455123,
+        "kind": "live"
+      },
+      {
+        "timestamp": 417575,
+        "red": 0,
+        "time": 0.471717,
+        "kind": "live"
+      },
+      {
+        "timestamp": 417575,
+        "red": 0,
+        "time": 0.488382,
+        "kind": "live"
+      },
+      {
+        "timestamp": 417575,
+        "red": 0,
+        "time": 0.505201,
+        "kind": "live"
+      },
+      {
+        "timestamp": 417575,
+        "red": 0,
+        "time": 0.526179,
+        "kind": "live"
+      }
+    ],
+    "errors": []
+  }
+]

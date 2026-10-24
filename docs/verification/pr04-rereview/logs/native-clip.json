@@ -1,0 +1,18 @@
+{
+  "generation_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "error",
+    "-f",
+    "lavfi",
+    "-i",
+    "testsrc2=size=64x64:rate=20:duration=5",
+    "-c:v",
+    "libvpx",
+    "-y",
+    ".cache/review-video.webm"
+  ],
+  "bytes": 49466,
+  "sha256": "97f996da8f6ffe70ee82c61d353d655b4af68b05a11b71236e921417272002a5"
+}

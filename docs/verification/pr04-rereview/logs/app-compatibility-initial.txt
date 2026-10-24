@@ -1,0 +1,33 @@
+[WebServer] (node:9769) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:9782) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] failed to load config from /workspace/pr04-rereview/docs/verification/pr04-rereview/vectors/docs/verification/pr04-rereview/vectors/vite.config.mjs
+[WebServer] error during build:
+[WebServer] Error: Build failed with 1 error:
+[WebServer]
+[WebServer] [UNRESOLVED_ENTRY] Cannot resolve entry module docs/verification/pr04-rereview/vectors/vite.config.mjs.
+[WebServer]
+[WebServer]     at aggregateBindingErrorsIntoJsError (file:///workspace/pr04-rereview/node_modules/rolldown/dist/shared/error-D0SD8_tL.mjs:49:18)
+[WebServer]     at unwrapBindingResult (file:///workspace/pr04-rereview/node_modules/rolldown/dist/shared/error-D0SD8_tL.mjs:19:128)
+[WebServer]     at #build (file:///workspace/pr04-rereview/node_modules/rolldown/dist/shared/rolldown-CMhwwZPA.mjs:145:34)
+[WebServer]     at async bundleConfigFile (file:///workspace/pr04-rereview/node_modules/vite/dist/node/chunks/node.js:38209:12)
+[WebServer]     at async bundleAndLoadConfigFile (file:///workspace/pr04-rereview/node_modules/vite/dist/node/chunks/node.js:38105:18)
+[WebServer]     at async loadConfigFromFile (file:///workspace/pr04-rereview/node_modules/vite/dist/node/chunks/node.js:38066:42)
+[WebServer]     at async resolveConfig (file:///workspace/pr04-rereview/node_modules/vite/dist/node/chunks/node.js:37668:22)
+[WebServer]     at async createBuilder (file:///workspace/pr04-rereview/node_modules/vite/dist/node/chunks/node.js:35245:17)
+[WebServer]     at async CAC.<anonymous> (file:///workspace/pr04-rereview/node_modules/vite/dist/node/cli.js:779:19) {
+[WebServer]   errors: [Getter/Setter]
+[WebServer] }
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+Error: Process from config.webServer was not able to start. Exit code: 1
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

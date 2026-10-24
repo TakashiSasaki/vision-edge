@@ -1,0 +1,285 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.03888988494873047,
+    "log": "check-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.39362263679504395,
+    "log": "check-01.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit": 0,
+    "seconds": 14.264174938201904,
+    "log": "check-02.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 5.234631538391113,
+    "log": "check-03.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 3.4887242317199707,
+    "log": "check-04.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 6.746471166610718,
+    "log": "check-05.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 1.1418015956878662,
+    "log": "check-06.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 0,
+    "seconds": 38.153507709503174,
+    "log": "check-07.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e:controls"
+    ],
+    "exit": 0,
+    "seconds": 47.703126668930054,
+    "log": "check-08.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+      "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5"
+    ],
+    "exit": 0,
+    "seconds": 0.01858353614807129,
+    "log": "check-09.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "2f4cdea1bc3e6706f49e37116ede8b1881472f7f",
+      "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5"
+    ],
+    "exit": 0,
+    "seconds": 0.0064318180084228516,
+    "log": "check-10.txt"
+  },
+  {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "docs/verification/pr04-independent/vectors/vitest.config.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview-replay",
+    "exit": 0,
+    "log": "original-29.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-first-frame.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview-replay",
+    "exit": 0,
+    "log": "original-first-frame.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-independent/vectors/native-frame-race.mjs"
+    ],
+    "cwd": "/workspace/pr04-rereview-replay",
+    "exit": 0,
+    "log": "original-native-race.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "vitest",
+      "run",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/vitest.config.mjs"
+    ],
+    "exit": 0,
+    "result": "11/11 new boundary cases",
+    "log": "new-unit-boundaries.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/native-boundaries.mjs"
+    ],
+    "exit": 1,
+    "result": "5 positive cases; one RAF currentTime-only duplicate-input failure",
+    "log": "native-boundaries.json"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/forced-native-race.mjs"
+    ],
+    "exit": 1,
+    "result": "4 positive cases; 2 currentTime-only duplicate-input failures",
+    "log": "forced-native-race.json"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/generator-collision.mjs"
+    ],
+    "exit": 1,
+    "result": "inconclusive source setup, no product assertion reached",
+    "log": "generator-collision-setup-failure.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/playwright.config.mjs"
+    ],
+    "exit": 1,
+    "phase": "first harness attempt",
+    "result": "webServer cwd path error; no product test executed",
+    "log": "app-compatibility-initial.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/playwright.config.mjs"
+    ],
+    "exit": 1,
+    "phase": "650 ms still input",
+    "result": "2 pass / 1 fail, 41 SDK calls for one frame",
+    "log": "app-compatibility-final.txt"
+  },
+  {
+    "command": [
+      "npx",
+      "--no-install",
+      "playwright",
+      "test",
+      "--config",
+      "docs/verification/pr04-rereview/vectors/playwright.config.mjs"
+    ],
+    "exit": 1,
+    "phase": "2300 ms still input, final probe",
+    "result": "2 pass / 1 fail, 140 SDK calls, 60.6 FPS, measuring state",
+    "log": "app-compatibility-aging.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--prefix",
+      "/workspace/pr04-baseline",
+      "test"
+    ],
+    "exit": 0,
+    "result": "61/61 original main tests",
+    "log": "baseline-61.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "phase": "evidence included",
+    "log": "evidence-typecheck.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "phase": "evidence included",
+    "log": "evidence-lint.txt"
+  },
+  {
+    "command": [
+      "node",
+      "docs/verification/pr04-rereview/vectors/forced-native-race.mjs"
+    ],
+    "exit": 1,
+    "phase": "self-contained relative clip path",
+    "result": "4 pass / 2 time-only duplicate failures",
+    "log": "forced-native-race-final.json"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "phase": "final evidence-inclusive",
+    "log": "evidence-final-typecheck.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "phase": "final evidence-inclusive",
+    "log": "evidence-final-lint.txt"
+  }
+]

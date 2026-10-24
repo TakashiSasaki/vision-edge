@@ -1,0 +1,52 @@
+[WebServer] (node:10253) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:10272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:10317) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:10330) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:10354) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+INDEPENDENT actual app immutable {"calls":1,"inputs":[{"timestamp":0,"pixel":[255,0,0,255],"kind":"immutable"}],"first":{"time":0,"count":1},"inference":"推論: 未計測","status":"計測中"}
+  ✓  1 docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs:3:2 › real app static source retains single inference: immutable (1.5s)
+INDEPENDENT actual app live-quality {"calls":1,"inputs":[{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"}],"first":{"time":0,"count":1},"inference":"推論: 未計測","status":"計測中"}
+  ✓  2 docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs:3:2 › real app static source retains single inference: live-quality (1.4s)
+INDEPENDENT actual app live-time {"calls":140,"inputs":[{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"},{"timestamp":0,"pixel":[255,0,0,255],"kind":"live"}],"first":{"time":0,"count":1},"inference":"推論: 60.6 FPS","status":"計測中"}
+  ✘  3 docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs:3:2 › real app static source retains single inference: live-time (3.1s)
+
+
+  1) docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs:3:2 › real app static source retains single inference: live-time
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 140
+
+      33 |   await page.getByRole('banner').getByRole('button',{name:'停止',exact:true}).click();
+      34 |   expect(errors).toEqual([]);
+    > 35 |   expect(evidence.calls).toBe(1);
+         |                          ^
+      36 |   expect(new Set(evidence.inputs.map(input=>input.timestamp)).size).toBe(1);
+      37 |  });
+      38 | }
+        at /workspace/pr04-rereview/docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs:35:26
+
+    Error Context: test-results/app-compatibility-real-app-0ce2e--single-inference-live-time/error-context.md
+
+  1 failed
+    docs/verification/pr04-rereview/vectors/app-compatibility.spec.mjs:3:2 › real app static source retains single inference: live-time
+  2 passed (9.0s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

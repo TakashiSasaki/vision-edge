@@ -1,0 +1,29 @@
+
+> vision-studio@1.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:5987) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:6024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:6067) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:6091) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › e2e/camera-lifecycle.spec.ts:10:1 › camera sessions survive UI renders and release stopped, replaced and late synthetic streams (2.4s)
+F01 native input {"inputs":[{"sourceKind":"video-frame","time":0.947344,"qualityFrames":9,"pixelSha256":"e849c9b5c8361c34a17ceaddb02e2cf8710224eae0d4899b9e0ffebc4d07013c"}],"calls":1,"reservedImageTimestamp":518111,"reservedFrames":6,"delayed":1,"blocked":1,"requests":1,"samePixelsAcrossInputs":[],"reservedPixelSha256":"88869c3e617129dd124576440fd8f91f4a18e4f411eea2516d84e53de11bc6f1"}
+  ✓  2 [chromium] › e2e/frame-identity.spec.ts:136:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (rVFC) (4.1s)
+F02 native scenes {"inputs":[{"time":0,"qualityFrames":1},{"time":0,"qualityFrames":1},{"time":0.058107,"qualityFrames":2}],"first":[{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1}],"creates":1,"requests":3,"delayed":1}
+  ✓  3 [chromium] › e2e/frame-identity.spec.ts:170:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (rVFC) (2.7s)
+F01 native input {"inputs":[{"sourceKind":"video-frame","time":0.83384,"qualityFrames":6,"pixelSha256":"434d4291c6af51b4463be21132f0ce47b8d7ffa7bd1b80f56320a79cb2fa9dd0"}],"calls":1,"reservedImageTimestamp":320288,"reservedFrames":3,"delayed":1,"blocked":1,"requests":1,"samePixelsAcrossInputs":[],"reservedPixelSha256":"dfd6a9f0b62d4b84c84af4b703415c1f64c160111d0eefeadc81d0669d957798"}
+  ✓  4 [chromium] › e2e/frame-identity.spec.ts:136:3 › F01 actual canvas/engine consumes one decoded image after delayed execution (fallback) (4.3s)
+F02 native scenes {"inputs":[{"time":0,"qualityFrames":1},{"time":0,"qualityFrames":1},{"time":0.058318,"qualityFrames":2}],"first":[{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1},{"mediaTime":0,"presentedFrames":1}],"creates":1,"requests":3,"delayed":1}
+  ✓  5 [chromium] › e2e/frame-identity.spec.ts:170:3 › F02 pre-presented first frame, equal-time restart and bootstrap/arrival race (fallback) (2.7s)
+  ✓  6 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (rVFC) (6.2s)
+  ✓  7 [chromium] › e2e/inference-metrics.spec.ts:6:3 › successful inference, measurements, idle and recovery with native video (RAF fallback) (7.3s)
+  ✓  8 [chromium] › e2e/smoke.spec.ts:3:1 › production app loads and model controls work without camera or external services (1.9s)
+
+  8 passed (36.3s)

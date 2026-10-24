@@ -1,0 +1,7 @@
+Exploratory generator-collision.mjs exited 1 during first-source setup.
+page.evaluate: InvalidStateError: Failed to construct 'VideoFrame': Invalid source state
+    at write (eval at evaluate, line 10)
+    at async eval (eval at evaluate, line 13)
+Node.js v24.19.0
+No timestamp-collision product assertion was reached. This is an inconclusive
+harness attempt, not an additional product finding or a passing boundary case.

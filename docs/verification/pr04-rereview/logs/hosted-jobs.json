@@ -1,0 +1,153 @@
+{
+  "total_count": 1,
+  "jobs": [
+    {
+      "id": 120820304359,
+      "run_id": 40076315419,
+      "workflow_name": "CI",
+      "head_branch": "fix/inference-scheduler-metrics",
+      "run_url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/runs/40076315419",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVVTne88AAAAcIXOJ5w",
+      "head_sha": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+      "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/actions/jobs/120820304359",
+      "html_url": "https://github.com/TakashiSasaki/vision-edge/actions/runs/40076315419/job/120820304359",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-24T08:00:07Z",
+      "started_at": "2026-10-24T08:00:10Z",
+      "completed_at": "2026-10-24T08:02:12Z",
+      "name": "verify",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-24T08:00:10Z",
+          "completed_at": "2026-10-24T08:00:12Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-24T08:00:12Z",
+          "completed_at": "2026-10-24T08:00:13Z"
+        },
+        {
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-24T08:00:13Z",
+          "completed_at": "2026-10-24T08:00:18Z"
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-24T08:00:18Z",
+          "completed_at": "2026-10-24T08:00:21Z"
+        },
+        {
+          "name": "Typecheck",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-24T08:00:21Z",
+          "completed_at": "2026-10-24T08:00:24Z"
+        },
+        {
+          "name": "ESLint",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-24T08:00:24Z",
+          "completed_at": "2026-10-24T08:00:25Z"
+        },
+        {
+          "name": "Unit and component tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-24T08:00:25Z",
+          "completed_at": "2026-10-24T08:00:29Z"
+        },
+        {
+          "name": "Production build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-24T08:00:29Z",
+          "completed_at": "2026-10-24T08:00:29Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-24T08:00:29Z",
+          "completed_at": "2026-10-24T08:01:19Z"
+        },
+        {
+          "name": "Browser smoke tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-24T08:01:19Z",
+          "completed_at": "2026-10-24T08:01:46Z"
+        },
+        {
+          "name": "Stylesheet smoke controls",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-24T08:01:46Z",
+          "completed_at": "2026-10-24T08:02:08Z"
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-24T08:02:08Z",
+          "completed_at": "2026-10-24T08:02:09Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-10-24T08:02:09Z",
+          "completed_at": "2026-10-24T08:02:09Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-10-24T08:02:09Z",
+          "completed_at": "2026-10-24T08:02:09Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-10-24T08:02:09Z",
+          "completed_at": "2026-10-24T08:02:09Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/TakashiSasaki/vision-edge/check-runs/120820304359",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000154656,
+      "runner_name": "GitHub Actions 1000154656",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

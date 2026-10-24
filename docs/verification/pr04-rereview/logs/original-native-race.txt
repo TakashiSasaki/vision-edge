@@ -1,0 +1,233 @@
+[
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.010377,
+        "total": 4,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 486.09999999962747
+      }
+    ],
+    "arrivals": []
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.003716,
+        "total": 4,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 182.80000000074506
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 187.80000000074506
+      },
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 509.90000000037253
+      },
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 515
+      },
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 531.4000000003725
+      },
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 549
+      },
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 566.2000000001863
+      },
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 581.4000000003725
+      },
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 598.2000000001863
+      },
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 615.7000000001863
+      },
+      {
+        "time": 0.014949,
+        "count": 4,
+        "at": 631.4000000003725
+      }
+    ]
+  },
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.002009,
+        "total": 4,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 208
+      }
+    ],
+    "arrivals": []
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.005667,
+        "total": 4,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 236.29999999981374
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 236.79999999981374
+      },
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 559.1000000005588
+      },
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 562.5
+      },
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 579.2999999998137
+      },
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 595.9000000003725
+      },
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 614.1000000005588
+      },
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 629.9000000003725
+      },
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 645.7999999998137
+      },
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 663.7999999998137
+      },
+      {
+        "time": 0.013432,
+        "count": 4,
+        "at": 679.4000000003725
+      }
+    ]
+  },
+  {
+    "native": true,
+    "observations": [
+      {
+        "time": 0.003534,
+        "total": 4,
+        "hash": 857949326,
+        "identicalPixelsToPrevious": false,
+        "at": 182.69999999925494
+      }
+    ],
+    "arrivals": []
+  },
+  {
+    "native": false,
+    "observations": [
+      {
+        "time": 0.328344,
+        "total": 11,
+        "hash": 882506059,
+        "identicalPixelsToPrevious": false,
+        "at": 543.1999999992549
+      }
+    ],
+    "arrivals": [
+      {
+        "time": 0.006422,
+        "count": 4,
+        "at": 215.3999999994412
+      },
+      {
+        "time": 0.334223,
+        "count": 11,
+        "at": 544.2999999998137
+      },
+      {
+        "time": 0.334223,
+        "count": 11,
+        "at": 548.3999999994412
+      },
+      {
+        "time": 0.334223,
+        "count": 11,
+        "at": 564.5
+      },
+      {
+        "time": 0.334223,
+        "count": 11,
+        "at": 580.1999999992549
+      },
+      {
+        "time": 0.334223,
+        "count": 11,
+        "at": 596.8999999994412
+      },
+      {
+        "time": 0.334223,
+        "count": 11,
+        "at": 613.6999999992549
+      },
+      {
+        "time": 0.334223,
+        "count": 11,
+        "at": 632.5
+      },
+      {
+        "time": 0.334223,
+        "count": 11,
+        "at": 648
+      },
+      {
+        "time": 0.334223,
+        "count": 11,
+        "at": 666.2999999998137
+      }
+    ]
+  }
+]

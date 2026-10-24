@@ -1,0 +1,106 @@
+{
+  "reviewed_head": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+  "reviewed_tree": "d15536393c00c55c16c8654612d13d8e7e5692a7",
+  "previous_review_pr": 8,
+  "previous_review_head": "c632cf0cbce82b48503540651120c88fff75c8ef",
+  "verdict": "FAIL",
+  "open_blocking_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 0
+  },
+  "findings": [
+    {
+      "id": "PR04-F01",
+      "severity": "medium",
+      "priority": "P2",
+      "status": "partially addressed; remains open",
+      "blocking_acceptance": true,
+      "contract": [
+        1,
+        7
+      ],
+      "title": "The currentTime-only compatibility path still repeatedly consumes an unchanged image",
+      "location": {
+        "file": "src/services/frameScheduler.ts",
+        "line": 73
+      },
+      "related_locations": [
+        {
+          "file": "src/services/frameScheduler.ts",
+          "line": 60
+        },
+        {
+          "file": "src/services/frameScheduler.ts",
+          "line": 82
+        },
+        {
+          "file": "src/services/frameScheduler.ts",
+          "line": 112
+        }
+      ],
+      "closure_of_original_vectors": "Original 29 independent vectors pass unchanged, including both deferred-execution paths and the real canvas/engine bridge. Native first-frame and six original native race trials pass. New forced immutable-input races reach the delayed work boundary and pass in both paths.",
+      "remaining_trigger": "VideoFrame is unavailable and playback-quality counters are unavailable or unusable, selecting the existing currentTime compatibility branch. The native video playhead advances while a one-frame MediaStream continues to display its original image. RAF marks every changed playhead as new input; delayed rVFC reconciliation also repeats the same consumed image when playhead and mediaTime differ.",
+      "minimal_reproduction": [
+        "Use a native canvas.captureStream(0), draw one red frame, attach/play video and request one frame. Wait until native rVFC reports mediaTime 0 / presentedFrames 1.",
+        "Represent the documented capability-absence path by removing VideoFrame, requestVideoFrameCallback and getVideoPlaybackQuality from the product-visible environment. Keep a saved native VideoFrame constructor only in the independent SDK observation boundary.",
+        "Release the real App model initialization and run the production scheduler/engine against that single native source frame.",
+        "After 2300 ms, observe 140 successful SDK entries, retained input observations all at intrinsic image timestamp 0 with the same red pixels, inference display 60.6 FPS, and performance state still measuring.",
+        "Run immutable and live-quality controls: each consumes the same one-frame input once. A separately forced delayed native race without VideoFrame/quality repeats the same image in both callback paths."
+      ],
+      "observed": "Actual app compatibility test: 2 pass / 1 fail; currentTime-only case expected one SDK entry, received 140. A previous 650 ms observation received 41 calls and 61.1 FPS. Native still-source matrix: 5 pass / 1 fail, RAF time-only 23 calls before the second image and 44 total. Forced native race matrix: 4 pass / 2 fail; time-only rVFC and RAF each read byte-identical pixels at the same intrinsic timestamp twice.",
+      "expected": "Infer a usable source image once, accept genuinely subsequent input, and let input aging/stalled state advance when no new image arrives. A running playhead alone must not be taken as new source frames.",
+      "impact": "Unbounded repetition of synchronous inference on a stalled image and continuous resetting of input age. The collector arithmetic measures the repeated successful calls correctly; this is a frame-identity/input-aging defect, not an arithmetic error. It is stronger than documented coarse-clock coalescing.",
+      "reproduction_command": "npx --no-install playwright test --config docs/verification/pr04-rereview/vectors/playwright.config.mjs",
+      "evidence": [
+        "vectors/app-compatibility.spec.mjs",
+        "vectors/independentSdk.mjs",
+        "logs/app-compatibility-aging.txt",
+        "logs/app-observations.json",
+        "vectors/native-boundaries.mjs",
+        "logs/native-boundaries.json",
+        "vectors/forced-native-race.mjs",
+        "logs/forced-native-race-final.json"
+      ],
+      "correction_acceptance": [
+        "Repair the explicitly implemented currentTime-only path so an unchanged source image is not inferred repeatedly and cannot keep input age fresh.",
+        "If exact source identity cannot be supported for a capability combination, expose a deliberate unsupported/stopped state instead of silently producing repeated inference; any narrowing of the original compatibility contract requires owner agreement.",
+        "Retain capability-absence regressions with a native still MediaStream and actual production App/engine/scheduler. Observe actual SDK input, not only callback metadata or quality counters.",
+        "Verify delayed rVFC and RAF paths without VideoFrame/quality, bootstrap/late-arrival races, subsequent frames, and expiration after no new source image.",
+        "Preserve immutable-path single consumption, F02 closure, handle/token ownership and the complete existing validation, then provide new frozen HEAD/tree and exact-HEAD hosted matched Chromium logs for independent re-review."
+      ]
+    },
+    {
+      "id": "PR04-F02",
+      "severity": "medium",
+      "status": "closed at this checkpoint",
+      "blocking_acceptance": false,
+      "location": {
+        "file": "src/services/frameScheduler.ts",
+        "line": 155
+      },
+      "closure_evidence": [
+        "Original native one-frame probe rerun unchanged: rVFC 1 / RAF 1 with first mediaTime 0, presentedFrames 1 and readyState 4.",
+        "Unchanged independent 29-case suite passes including first-frame startup and generation invalidation.",
+        "Eight ordinary browser cases pass, including actual App pre-presented image, model gate, equal-time camera restarts and bootstrap/arrival race.",
+        "New actual-app immutable and live-quality static-frame controls each infer once; new immutable handle/ownership boundaries pass."
+      ],
+      "closure_limit": "This closes first-frame acquisition at the reviewed checkpoint. It does not close residual F01 duplicates in currentTime-only compatibility."
+    }
+  ],
+  "nonblocking_observations": [
+    {
+      "id": "PR04-R01",
+      "severity": "low",
+      "status": "unchanged future asynchronous-path risk",
+      "description": "Replacement rVFC pending work can require another arrival after an older Promise job releases the lock. Real production inference remains synchronous. No Worker migration is requested."
+    },
+    {
+      "id": "PR04-C01",
+      "severity": "informational",
+      "status": "original coverage gap substantially addressed; compatibility gap remains",
+      "description": "New normal browser tests observe immutable SDK input and ready-first-frame startup. The unchanged original native race probe can bootstrap before its contention boundary, so its green result alone is insufficient. New forced-delay probes verify that boundary independently and reveal the remaining capability-absence defect."
+    }
+  ]
+}

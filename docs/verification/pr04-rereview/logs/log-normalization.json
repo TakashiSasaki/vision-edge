@@ -1,0 +1,45 @@
+{
+  "operation": "Only new re-review readable text logs: trailing line whitespace and terminal blank lines normalized. Raw exact decoded hosted log retained separately as hosted-job.raw.json. Original vectors and all historical evidence untouched.",
+  "receipts": [
+    {
+      "path": "logs/app-compatibility-aging.txt",
+      "original_sha256": "c3cd355ea6e434c39d8e2333ec4bb4b0e5df59683dc5a3991effb0df01baf3ee",
+      "normalized_sha256": "c9dff4f0cc7f77b75466d4007e7b7179f299667b0f672eabdb7fffa50a8f4e99"
+    },
+    {
+      "path": "logs/app-compatibility-final.txt",
+      "original_sha256": "d837e4af11c1d5fae13b80463a13a9932e13a86aa472b3c96a8daa135d3b8596",
+      "normalized_sha256": "1dff73542de947818bbc04700435fba998a672a3151e322488b56f91818b1052"
+    },
+    {
+      "path": "logs/app-compatibility-initial.txt",
+      "original_sha256": "f82bfc4240a993199ff1de8a51a0f89c95877eead489b41cd735066a4823390a",
+      "normalized_sha256": "9b85b705d643dafa063e244eba3bebe3a46d97692fbc47c71290d5f53f70f0b7"
+    },
+    {
+      "path": "logs/check-03.txt",
+      "original_sha256": "24d0874c683ef121c05f0f2fde6df107483f0565962673234d1b422c8f4dd16c",
+      "normalized_sha256": "cbf4ae38b4434094514e6bc93a33299016ff7bb7bd60e7ed7fcfe68c05434bda"
+    },
+    {
+      "path": "logs/check-04.txt",
+      "original_sha256": "8254c57afd7e6f2c88036baa9a2ad81d75fda7aeea4a3877684e35157794fc2b",
+      "normalized_sha256": "c5b096baf6611e1ed56fe93470bc6dbf2543f7518a23b789b45e65e1a132f13c"
+    },
+    {
+      "path": "logs/check-05.txt",
+      "original_sha256": "1fd600f2ed1e846d1afe7237e56d73d05a39a4f1820b421ee2dafaa9ebd189ed",
+      "normalized_sha256": "c4b972897a5ce4a0b11ff112a21a0c7f6f3360f9af2432a11dc9f7f6130f50ae"
+    },
+    {
+      "path": "logs/hosted-job.txt",
+      "original_sha256": "124683e8ee2f2132117b251216770cbf210ce93296b9867834e4cce893bdc129",
+      "normalized_sha256": "cb26ca649e5d857e11a67d38e75880713b6c85a0b5c8def416ec9971b62781e0"
+    },
+    {
+      "path": "logs/original-29.txt",
+      "original_sha256": "2009593a309524df97e8fa63c59c773ca298ee9548eeb6af19859d55ade1941f",
+      "normalized_sha256": "e8a6f0cbac7cee7ed4ab0eb6ad7f51988f906b033db76876108903b1d989707d"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "reviewed_target": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+  "start_head": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+  "end_before_publication_head": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+  "moved": false,
+  "base_main": "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+  "original_pr_8_head": "c632cf0cbce82b48503540651120c88fff75c8ef",
+  "original_pr_8_state": "open",
+  "original_pr_8_draft": true,
+  "latest_open_prs": [
+    {
+      "number": 7,
+      "title": "fix: reliable video inference scheduling and truthful metrics (PR-04)",
+      "head": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+      "base_ref": "main"
+    },
+    {
+      "number": 8,
+      "title": "review: independently assess PR-04 — FAIL (duplicate input and missing first frame)",
+      "head": "c632cf0cbce82b48503540651120c88fff75c8ef",
+      "base_ref": "fix/inference-scheduler-metrics"
+    },
+    {
+      "number": 4,
+      "title": "review: independently validate PR-01 F01 CSS smoke correction — PASS",
+      "head": "fc0e643afef17fdcd7ab888e59e34991b85cd2a7",
+      "base_ref": "fix/pr01-css-smoke-validation"
+    },
+    {
+      "number": 2,
+      "title": "review: PR-01 foundation — PASS WITH CONDITIONS",
+      "head": "67e0c15e652d88c773a82b06f615b2befa27a695",
+      "base_ref": "chore/build-ci-test-foundation"
+    }
+  ]
+}

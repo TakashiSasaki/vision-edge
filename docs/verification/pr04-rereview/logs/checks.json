@@ -1,0 +1,112 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.03888988494873047,
+    "log": "check-00.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "--version"
+    ],
+    "exit": 0,
+    "seconds": 0.39362263679504395,
+    "log": "check-01.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit": 0,
+    "seconds": 14.264174938201904,
+    "log": "check-02.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 5.234631538391113,
+    "log": "check-03.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 3.4887242317199707,
+    "log": "check-04.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 6.746471166610718,
+    "log": "check-05.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 1.1418015956878662,
+    "log": "check-06.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 0,
+    "seconds": 38.153507709503174,
+    "log": "check-07.txt"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e:controls"
+    ],
+    "exit": 0,
+    "seconds": 47.703126668930054,
+    "log": "check-08.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+      "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5"
+    ],
+    "exit": 0,
+    "seconds": 0.01858353614807129,
+    "log": "check-09.txt"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "2f4cdea1bc3e6706f49e37116ede8b1881472f7f",
+      "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5"
+    ],
+    "exit": 0,
+    "seconds": 0.0064318180084228516,
+    "log": "check-10.txt"
+  }
+]

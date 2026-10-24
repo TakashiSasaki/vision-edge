@@ -1,0 +1,13 @@
+{
+  "source_url": "https://api.github.com/repos/TakashiSasaki/vision-edge/commits/f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+  "sha": "f81ce6102ec4f459ef7a0c3fb7e55d126b157be5",
+  "tree": {
+    "sha": "d15536393c00c55c16c8654612d13d8e7e5692a7",
+    "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/git/trees/d15536393c00c55c16c8654612d13d8e7e5692a7"
+  },
+  "parents": [
+    "89e444820b6befbd333236e65697b5bcf8f5e15a"
+  ],
+  "message": "docs: record independent F01 and F02 correction evidence",
+  "projection": "Source identity metadata; redundant evidence-file patches omitted"
+}

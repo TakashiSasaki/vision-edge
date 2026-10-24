@@ -1,0 +1,108 @@
+[
+  {
+    "fallback": false,
+    "compatibility": "immutable",
+    "blocked": true,
+    "reservedTimestamp": 50000,
+    "observations": [
+      {
+        "timestamp": 350000,
+        "samePixels": false,
+        "kind": "immutable",
+        "time": 0.393189,
+        "quality": 12
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": false,
+    "compatibility": "live-quality",
+    "blocked": true,
+    "reservedTimestamp": 50000,
+    "observations": [
+      {
+        "timestamp": 350000,
+        "samePixels": false,
+        "kind": "live",
+        "time": 0.38829,
+        "quality": 12
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": false,
+    "compatibility": "live-time",
+    "blocked": true,
+    "reservedTimestamp": 50000,
+    "observations": [
+      {
+        "timestamp": 350000,
+        "samePixels": false,
+        "kind": "live",
+        "time": 0.389634
+      },
+      {
+        "timestamp": 350000,
+        "samePixels": true,
+        "kind": "live",
+        "time": 0.390971
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "immutable",
+    "blocked": true,
+    "reservedTimestamp": 0,
+    "observations": [
+      {
+        "timestamp": 350000,
+        "samePixels": false,
+        "kind": "immutable",
+        "time": 0.338978,
+        "quality": 12
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "live-quality",
+    "blocked": true,
+    "reservedTimestamp": 0,
+    "observations": [
+      {
+        "timestamp": 150000,
+        "samePixels": false,
+        "kind": "live",
+        "time": 0.328767,
+        "quality": 9
+      }
+    ],
+    "errors": []
+  },
+  {
+    "fallback": true,
+    "compatibility": "live-time",
+    "blocked": true,
+    "reservedTimestamp": 0,
+    "observations": [
+      {
+        "timestamp": 300000,
+        "samePixels": false,
+        "kind": "live",
+        "time": 0.337407
+      },
+      {
+        "timestamp": 300000,
+        "samePixels": true,
+        "kind": "live",
+        "time": 0.33953
+      }
+    ],
+    "errors": []
+  }
+]

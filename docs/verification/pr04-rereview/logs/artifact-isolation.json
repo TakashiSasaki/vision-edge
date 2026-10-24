@@ -1,0 +1,38 @@
+[
+  {
+    "directory": "dist",
+    "markers": {
+      "visionSdkProbe": false,
+      "Test-only SDK fault": false,
+      "independentSdk": false,
+      "reviewNativeFrame": false
+    },
+    "files": {
+      "dist/assets/index-NhtArd8L.js": "5bcd91b9fbd651b9911e2260d08d56595d7a1590066d8dbeedf4ec96906f38e0"
+    }
+  },
+  {
+    "directory": ".cache/vision-edge-e2e",
+    "markers": {
+      "visionSdkProbe": true,
+      "Test-only SDK fault": true,
+      "independentSdk": false,
+      "reviewNativeFrame": false
+    },
+    "files": {
+      ".cache/vision-edge-e2e/assets/index-CJmIPpuC.js": "ef5d47b699787335a1a5e0a86485c6043fc9241ddfda876069d36c4ed454bbaf"
+    }
+  },
+  {
+    "directory": ".cache/pr04-independent-rereview",
+    "markers": {
+      "visionSdkProbe": false,
+      "Test-only SDK fault": false,
+      "independentSdk": true,
+      "reviewNativeFrame": true
+    },
+    "files": {
+      ".cache/pr04-independent-rereview/assets/index-RvjrNTCe.js": "d79b56e01477522e4b4e2cf04cbe83f896bfc02aaa1ff47bdf82f0540e084f50"
+    }
+  }
+]
