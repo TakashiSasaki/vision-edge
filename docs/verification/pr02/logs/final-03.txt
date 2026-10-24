@@ -1,0 +1,4 @@
+Command: ['npx', '--no-install', 'playwright', '--version']
+Exit: 0
+
+Version 1.64.1

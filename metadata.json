@@ -1,6 +1,6 @@
 {
   "name": "Webcam Vision & Segmentation Studio",
-  "description": "リアルタイムWebカメラ物体認識・セグメンテーション（YOLO-seg, SegFormer, MediaPipe）と比較デモ＆日本語音声読み上げスタジオ",
+  "description": "MediaPipe EfficientDet-Lite0 による物体検出と Selfie Segmenter による人物領域推定。YOLO-seg と SegFormer は未実装。",
   "requestFramePermissions": ["camera"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

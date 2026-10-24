@@ -1,20 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Camera, AlertCircle, SwitchCamera } from 'lucide-react';
-import { 
-  BenchmarkStats, 
-  DetectedObject, 
-  ModelType, 
-  BackendOption, 
-  CameraFacingMode, 
-  RenderOptions, 
-  TTSConfig 
+import {
+  DetectionFrame,
+  ModelState,
+  DetectedObject,
+  RunnableModelType,
+  CameraFacingMode,
+  RenderOptions,
+  TTSConfig
 } from '../types/vision';
 import { speechService } from '../services/speechService';
-import { visionEngine } from '../services/visionEngine';
+import { VisionEngine } from '../services/visionEngine';
+import { modelMetadata } from '../services/modelRegistry';
 
 interface VisionCanvasProps {
-  activeModel: ModelType;
-  selectedBackend: BackendOption;
+  activeModel: RunnableModelType;
+  engine: VisionEngine;
+  modelState: ModelState;
   facingMode: CameraFacingMode;
   onToggleFacingMode: () => void;
   renderOptions: RenderOptions;
@@ -24,12 +26,13 @@ interface VisionCanvasProps {
   onCameraStop: () => void;
   onSelectObject: (obj: DetectedObject) => void;
   selectedObjectId?: string;
-  onStatsUpdate: (stats: BenchmarkStats, objects: DetectedObject[]) => void;
+  onFrame: (frame: DetectionFrame | null) => void;
 }
 
 export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   activeModel,
-  selectedBackend,
+  engine,
+  modelState,
   facingMode,
   onToggleFacingMode,
   renderOptions,
@@ -39,44 +42,35 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   onCameraStop,
   onSelectObject,
   selectedObjectId,
-  onStatsUpdate
+  onFrame
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [clickRipple, setClickRipple] = useState<{ x: number; y: number; label: string } | null>(null);
-  const [currentObjects, setCurrentObjects] = useState<DetectedObject[]>([]);
-  const [currentStats, setCurrentStats] = useState<BenchmarkStats>({
-    inferenceTimeMs: 16,
-    fps: 60,
-    objectCount: 0,
-    backend: 'WebAssembly',
-    resolution: '640x480',
-    processedFrames: 0
-  });
+  const [currentFrame, setCurrentFrame] = useState<DetectionFrame | null>(null);
+  const modelReady = modelState.status === 'ready' && modelState.model === activeModel;
+  const requestId = modelState.requestId;
+  const currentObjects = modelReady && currentFrame?.model === activeModel && currentFrame.requestId === requestId
+    ? currentFrame.objects : [];
 
   const animFrameIdRef = useRef<number | null>(null);
   const lastReportedTimeRef = useRef<number>(0);
   const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isInferringRef = useRef<boolean>(false);
-  const latestDetectionsRef = useRef<DetectedObject[]>([]);
-  const latestStatsRef = useRef<BenchmarkStats>({
-    inferenceTimeMs: 16,
-    fps: 60,
-    objectCount: 0,
-    backend: 'WebAssembly',
-    resolution: '640x480',
-    processedFrames: 0
-  });
+  const latestFrameRef = useRef<DetectionFrame | null>(null);
 
-  // Initialize MediaPipe once on mount
-  useEffect(() => {
-    visionEngine.initMediaPipe();
-    if (!offscreenCanvasRef.current) {
-      offscreenCanvasRef.current = document.createElement('canvas');
-    }
-  }, []);
+  // Clear the visible old overlay before paint; initialization and camera state
+  // remain separate. New results carry the engine generation, not just a label.
+  useLayoutEffect(() => {
+    latestFrameRef.current = null;
+    setCurrentFrame(null);
+    setClickRipple(null);
+    onFrame(null);
+    const canvas = canvasRef.current;
+    if (canvas) canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+  }, [activeModel, requestId, isCameraActive, onFrame]);
 
   // Handle webcam stream start/stop and facing mode flip
   useEffect(() => {
@@ -130,6 +124,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   // Main rendering loop for video frames and overlay canvas (Double-buffered & Decoupled)
   useEffect(() => {
     let isRunning = true;
+    let inferenceTimer: ReturnType<typeof setTimeout> | undefined;
 
     const renderLoop = () => {
       if (!isRunning) return;
@@ -149,7 +144,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       }
 
       // Sync canvas dimensions with video
-      if (isCameraActive && video.readyState >= 2) {
+      if (isCameraActive && modelReady && video.readyState >= 2) {
         const targetW = video.videoWidth || 640;
         const targetH = video.videoHeight || 480;
 
@@ -168,31 +163,26 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
           offscreen.height = targetH;
         }
 
-        // DECOUPLED ASYNC INFERENCE: Trigger AI inference in background if ready
-        if (!isInferringRef.current && video.readyState >= 2) {
+        // Preserve the existing timer-based scheduling. Cancel its one pending
+        // callback when readiness changes so the new generation can start.
+        if (!isInferringRef.current) {
           isInferringRef.current = true;
-          // Run AI inference without stalling the 60 FPS animation frame
-          setTimeout(() => {
-            if (!isRunning) return;
+          inferenceTimer = setTimeout(() => {
             try {
-              const res = visionEngine.detectVideoFrame(
-                video,
-                activeModel,
-                renderOptions.confidenceThreshold,
-                selectedBackend
-              );
-              latestDetectionsRef.current = res.objects;
-              latestStatsRef.current = res.stats;
-            } catch {
-              // Ignore frame errors
+              if (!isRunning || engine.getState().requestId !== requestId) return;
+              const result = engine.detectVideoFrame(video, activeModel, renderOptions.confidenceThreshold);
+              latestFrameRef.current = result.status === 'ready' && result.requestId === requestId ? result : null;
+            } catch (cause) {
+              console.warn('Vision frame failed', { model: activeModel, cause });
+              latestFrameRef.current = null;
             } finally {
               isInferringRef.current = false;
             }
           }, 0);
         }
 
-        const currentDetections = latestDetectionsRef.current;
-        const currentBenchmarkStats = latestStatsRef.current;
+        const frame = latestFrameRef.current;
+        const currentDetections = frame?.requestId === requestId ? frame.objects : [];
 
         // 1. RENDER OVERLAYS ONTO IN-MEMORY OFFSCREEN BUFFER (NEVER BLANK ON SCREEN)
         const offCtx = offscreen.getContext('2d');
@@ -200,19 +190,18 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
           offCtx.clearRect(0, 0, offscreen.width, offscreen.height);
           drawOverlays(offCtx, offscreen.width, offscreen.height, currentDetections);
 
-          // 2. ATOMIC BLIT: Instantly copy offscreen buffer to visible canvas in <0.1ms
+          // Copy the overlay buffer to the visible canvas.
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(offscreen, 0, 0);
         }
 
-        setCurrentObjects(currentDetections);
-        setCurrentStats(currentBenchmarkStats);
+        setCurrentFrame(frame);
 
         // Rate limit parent state updates (max once per 200ms) to prevent React DOM re-render thrashing
         const nowMs = performance.now();
         if (nowMs - lastReportedTimeRef.current >= 200) {
           lastReportedTimeRef.current = nowMs;
-          onStatsUpdate(currentBenchmarkStats, currentDetections);
+          onFrame(frame);
         }
 
         // Auto TTS if enabled
@@ -241,14 +230,17 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
     return () => {
       isRunning = false;
+      clearTimeout(inferenceTimer);
+      isInferringRef.current = false;
       if (animFrameIdRef.current) {
         cancelAnimationFrame(animFrameIdRef.current);
       }
     };
-    // Preserve existing loop restart behavior in PR-01. The drawOverlays closure
-    // (including stale clickRipple) needs a lifecycle review in PR-04/06.
+    // Retain the existing drawOverlays closure exception (including clickRipple).
+    // PR-02 adds only engine readiness/generation and pending-timer cancellation;
+    // full rendering/scheduler and overlay closure repair stays in PR-04/06.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCameraActive, activeModel, selectedBackend, renderOptions, ttsConfig, onStatsUpdate, selectedObjectId]);
+  }, [isCameraActive, activeModel, engine, modelReady, requestId, renderOptions, ttsConfig, onFrame, selectedObjectId]);
 
   const drawOverlays = (
     ctx: CanvasRenderingContext2D,
@@ -370,7 +362,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     const clickX = (e.clientX - rect.left) / rect.width;
     const clickY = (e.clientY - rect.top) / rect.height;
 
-    const hit = visionEngine.findObjectAtPoint(clickX, clickY, currentObjects);
+    const hit = engine.findObjectAtPoint(clickX, clickY, currentObjects);
 
     if (hit) {
       onSelectObject(hit);
@@ -413,7 +405,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
           </div>
           <h3 className="text-sm font-bold text-white mb-1">Webカメラ待機中</h3>
           <p className="text-xs text-slate-400 max-w-xs mb-4 leading-relaxed">
-            「カメラを開始」を押すとリアルタイム物体認識が始まります。
+            カメラを開始し、モデルの準備が完了すると推論結果を取得します。
           </p>
           <button
             onClick={onCameraStart}
@@ -439,20 +431,9 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
         </button>
       )}
 
-      {/* HUD Telemetry (Top-Left Corner) */}
-      <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none flex items-center gap-2 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md border border-slate-800 text-[11px]">
-        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-        <span className="font-semibold text-slate-200 uppercase tracking-wide">
-          {activeModel === 'selfie-segmenter' ? 'Selfie Seg' : activeModel === 'yolo-seg' ? 'YOLO-seg' : activeModel === 'mediapipe' ? 'MediaPipe' : 'SegFormer'}
-        </span>
-        <span className="text-slate-600">|</span>
-        <span className="font-mono tabular-nums text-emerald-400">
-          {currentStats.fps} FPS
-        </span>
-        <span className="text-slate-600">·</span>
-        <span className="font-mono tabular-nums text-slate-300">
-          {currentStats.inferenceTimeMs}ms
-        </span>
+      <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none px-2.5 py-1 rounded-md bg-black/60 text-[11px]">
+        <span>{modelMetadata(activeModel).name}</span>
+        <span className="ml-2">性能：計測未整備</span>
       </div>
 
       {/* Tap Hint (Bottom Center) */}

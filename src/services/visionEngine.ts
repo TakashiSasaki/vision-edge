@@ -1,160 +1,130 @@
-import { FilesetResolver, ObjectDetector, ImageSegmenter, ImageSegmenterResult } from '@mediapipe/tasks-vision';
-import { BackendOption, BenchmarkStats, DetectedObject, ModelMetadata, ModelType } from '../types/vision';
+import { FilesetResolver, ObjectDetector, ImageSegmenter, type ImageSegmenterResult } from '@mediapipe/tasks-vision';
+import type { DetectedObject, RunnableModelType, ModelState, FrameResult } from '../types/vision';
+import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 
-export function resolveBackendLabel(model: ModelType, option: BackendOption): string {
-  if (option === 'webgpu') return 'WebGPU (GPU加速)';
-  if (option === 'wasm-simd') return 'WebAssembly SIMD (CPU)';
-  if (option === 'webgl') return 'WebGL (GPU)';
-  if (model === 'selfie-segmenter') return 'MediaPipe GPU (WebGL)';
-  if (model === 'mediapipe') return 'MediaPipe (WASM + GPU)';
-  if (model === 'yolo-seg') return 'Auto (GPU/WASM)';
-  return 'Auto (WASM)';
+type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
+export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
+export type SegmenterTask = Pick<ImageSegmenter, 'segmentForVideo' | 'close'>;
+export interface VisionTaskFactory {
+  load: () => Promise<Fileset>;
+  detector: (fileset: Fileset, delegate: 'GPU') => Promise<DetectorTask>;
+  segmenter: (fileset: Fileset, delegate: 'GPU') => Promise<SegmenterTask>;
 }
-
-export const MODELS_METADATA: Record<ModelType, ModelMetadata> = {
-  'selfie-segmenter': {
-    id: 'selfie-segmenter',
-    name: 'Selfie Segmenter (人物・上半身リアルタイム輪郭)',
-    tagline: 'Google Tasks Vision (Selfie Segmenter GPU)',
-    runtime: 'MediaPipe WebGL GPU (249KB 超高速)',
-    outputType: 'ピクセル単位人物輪郭マスク＋矩形追従',
-    classesCount: 1,
-    datasetName: 'Google Selfie Portrait Dataset',
-    typicalFps: '45 ~ 60 FPS (5~15ms)',
-    description: 'インカメラや至近距離での人物・上半身に特化した超高精度セグメンテーション。頭髪・顔・肩・胸元をミリ秒単位で完全に追随し、矩形と滑らかな透過輪郭を同時に出力します。',
-    pros: [
-      '頭髪・顔・肩・上半身に完全密着するピクセル輪郭（リアルタイムマスク）',
-      '近距離アップでの頭部欠落・下ズレを根本解消',
-      '残像・追随遅延ゼロで60FPSの超高レスポンス追従'
-    ]
-  },
-  'yolo-seg': {
-    id: 'yolo-seg',
-    name: 'YOLO-seg (YOLOv8/11-seg)',
-    tagline: 'Ultralytics Instance Segmentation',
-    runtime: 'ONNX Runtime Web (WebGPU / WASM)',
-    outputType: 'インスタンスセグメンテーション（輪郭＋矩形）',
-    classesCount: 80,
-    datasetName: 'COCO 80 + Instance Masks',
-    typicalFps: '30 ~ 50 FPS',
-    description: '物体の輪郭マスクと矩形枠を同時に出力。重なり合う複数の物体も個別に切り分けます。',
-    pros: [
-      'ピクセル単位の精密な輪郭マスク（Instance Mask）',
-      '「読み上げラベル」と「輪郭抽出」を同時に実行',
-      '物体の幾何形状や面積比率の正確な把握'
-    ]
-  },
-  mediapipe: {
-    id: 'mediapipe',
-    name: 'MediaPipe Object Detector',
-    tagline: 'Google Tasks Vision (EfficientDet-Lite0)',
-    runtime: 'MediaPipe Web / WASM + WebGL',
-    outputType: 'バウンディングボックス (Bounding Box)',
-    classesCount: 80,
-    datasetName: 'COCO (80 Classes)',
-    typicalFps: '50 ~ 60+ FPS',
-    description: 'Google AI Edgeが提供する超高速・軽量なブラウザ内物体検出モデル。バッテリー負荷を抑えながら60FPS級の滑らかな認識が可能です。',
-    pros: [
-      '軽量・超低レイテンシ（10ms〜20ms）',
-      '80種類の主要日用品・車両・人物を瞬時に検出',
-      'WebAssembly SIMDとWebGL GPUアクセラレーション対応'
-    ]
-  },
-  segformer: {
-    id: 'segformer',
-    name: 'SegFormer (ADE20K)',
-    tagline: 'Transformers.js Semantic Segmentation',
-    runtime: 'Transformers.js v3 (WebGPU / WASM)',
-    outputType: 'セマンティックセグメンテーション（領域分割）',
-    classesCount: 150,
-    datasetName: 'ADE20K (150 Classes)',
-    typicalFps: '15 ~ 30 FPS',
-    description: '画像全体の全ピクセルを「壁」「床」「天井」「家具」「人物」など150カテゴリに分類。空間構造全体の把握に最適です。',
-    pros: [
-      '家具から壁・床・空まで幅広い150カテゴリ',
-      '空間コンテキストをピクセルレベルで認識',
-      'Hugging Faceエコシステムとの親和性が高い'
-    ]
-  }
+const DELEGATE = 'GPU' as const;
+const defaultFactory: VisionTaskFactory = {
+  load: () => FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'),
+  detector: (fileset, delegate) => ObjectDetector.createFromOptions(fileset, {
+    baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite', delegate },
+    scoreThreshold: 0.25, runningMode: 'VIDEO',
+  }),
+  segmenter: (fileset, delegate) => ImageSegmenter.createFromOptions(fileset, {
+    baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite', delegate },
+    runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
+  }),
 };
+type ActiveTask = { model: 'mediapipe'; task: DetectorTask } | { model: 'selfie-segmenter'; task: SegmenterTask };
+type InitializationResult = Extract<ModelState, { status: 'ready' | 'error' }> | { status: 'cancelled'; model: RunnableModelType; requestId: number };
 
-class VisionEngine {
-  private mediaPipeDetector: ObjectDetector | null = null;
-  private imageSegmenter: ImageSegmenter | null = null;
-  private isInitializing = false;
-  private lastInferenceTime = 0;
-  private frameCount = 0;
-  private lastFpsCalcTime = performance.now();
-  private currentFps = 60;
-
-  // Mask offscreen rendering buffer
+// One owner, one active task, no task cache. Pending tasks cannot be aborted by
+// the SDK; obsolete completions are closed before they can become active.
+export class VisionEngine {
+  private activeTask: ActiveTask | null = null;
+  private state: ModelState = { status: 'idle', model: null, requestId: 0 };
+  private generation = 0;
+  private pending: Promise<InitializationResult> | null = null;
+  private listeners = new Set<() => void>();
   private offscreenMaskCanvas: HTMLCanvasElement | null = null;
   private maskImageData: ImageData | null = null;
-
-  // Temporal persistence buffer with EMA position smoothing (no stale freezing!)
   private lastStableObjects: DetectedObject[] = [];
   private emptyFrameBufferCount = 0;
 
-  public async initMediaPipe(): Promise<boolean> {
-    return this.initVisionTasks();
+  constructor(private readonly factory: VisionTaskFactory = defaultFactory) {}
+
+  getState = (): ModelState => this.state;
+  subscribe = (listener: () => void): (() => void) => {
+    this.listeners.add(listener);
+    return () => { this.listeners.delete(listener); };
+  };
+  private publish(state: ModelState): void {
+    this.state = state;
+    this.listeners.forEach(listener => listener());
+  }
+  private resetOutputs(): void {
+    this.lastStableObjects = [];
+    this.emptyFrameBufferCount = 0;
+    this.offscreenMaskCanvas = null;
+    this.maskImageData = null;
+  }
+  private closeTask(active: ActiveTask | null): void {
+    if (!active) return;
+    try { active.task.close(); }
+    catch (cause) { console.warn('Vision task cleanup failed', { model: active.model, cause }); }
   }
 
-  public async initVisionTasks(): Promise<boolean> {
-    if (this.mediaPipeDetector && this.imageSegmenter) return true;
-    if (this.isInitializing) return false;
-
-    this.isInitializing = true;
-    try {
-      const vision = await FilesetResolver.forVisionTasks(
-        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
-      );
-
-      const [detector, segmenter] = await Promise.all([
-        ObjectDetector.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath:
-              'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite',
-            delegate: 'GPU'
-          },
-          scoreThreshold: 0.25,
-          runningMode: 'VIDEO'
-        }).catch((err) => {
-          console.warn('Detector init warning:', err);
-          return null;
-        }),
-        ImageSegmenter.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath:
-              'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite',
-            delegate: 'GPU'
-          },
-          runningMode: 'VIDEO',
-          outputConfidenceMasks: true,
-          outputCategoryMask: false
-        }).catch((err) => {
-          console.warn('Segmenter init warning:', err);
-          return null;
-        })
-      ]);
-
-      this.mediaPipeDetector = detector;
-      this.imageSegmenter = segmenter;
-      this.isInitializing = false;
-      return true;
-    } catch (e) {
-      console.warn('VisionTasks init failed:', e);
-      this.isInitializing = false;
-      return false;
+  initialize(model: RunnableModelType): Promise<InitializationResult> {
+    requireRunnableModel(model);
+    if (this.state.model === model) {
+      if (this.state.status === 'loading' && this.pending) return this.pending;
+      if (this.state.status === 'ready') return Promise.resolve(this.state);
     }
+    const requestId = ++this.generation;
+    this.closeTask(this.activeTask);
+    this.activeTask = null;
+    this.resetOutputs();
+    this.publish({ status: 'loading', model, requestId });
+    const cancelled = (): InitializationResult => ({ status: 'cancelled', model, requestId });
+    const current = () => requestId === this.generation;
+    this.pending = (async (): Promise<InitializationResult> => {
+      let stage: 'wasm' | 'task' = 'wasm';
+      try {
+        const fileset = await this.factory.load();
+        if (!current()) return cancelled();
+        stage = 'task';
+        const active: ActiveTask = model === 'mediapipe'
+          ? { model, task: await this.factory.detector(fileset, DELEGATE) }
+          : { model, task: await this.factory.segmenter(fileset, DELEGATE) };
+        if (!active.task) throw new Error('Model task was not created');
+        if (!current()) { this.closeTask(active); return cancelled(); }
+        this.activeTask = active;
+        const ready = { status: 'ready' as const, model, requestId, delegate: DELEGATE };
+        this.publish(ready);
+        return ready;
+      } catch (cause) {
+        if (!current()) return cancelled();
+        const error = { status: 'error' as const, model, requestId, stage, cause };
+        console.warn('Vision initialization failed', { model, stage, cause });
+        this.publish(error);
+        return error;
+      } finally {
+        if (current()) this.pending = null;
+      }
+    })();
+    return this.pending;
+  }
+
+  // Only the owning App calls this on selection cancellation/unmount. An old
+  // initialization's finally block never closes the current generation's task.
+  dispose(): void {
+    const requestId = ++this.generation;
+    this.pending = null;
+    this.closeTask(this.activeTask);
+    this.activeTask = null;
+    this.resetOutputs();
+    this.publish({ status: 'idle', model: null, requestId });
   }
 
   public detectVideoFrame(
     videoElement: HTMLVideoElement,
-    model: ModelType,
-    confidenceThreshold: number,
-    backendOption: BackendOption = 'auto'
-  ): { objects: DetectedObject[]; stats: BenchmarkStats } {
+    model: RunnableModelType,
+    confidenceThreshold: number
+  ): FrameResult {
+    requireRunnableModel(model);
+    const state = this.state;
+    const active = this.activeTask;
+    if (state.status !== 'ready' || state.model !== model || active?.model !== model || videoElement.readyState < 2) {
+      return { status: 'not-ready', model, requestId: state.requestId };
+    }
     const startTime = performance.now();
     let rawObjects: DetectedObject[] = [];
 
@@ -162,10 +132,10 @@ class VisionEngine {
     const vH = videoElement.videoHeight || 480;
 
     // 1. SELFIE SEGMENTER: Real pixel-accurate segmentation mask + tight bounding box
-    if (model === 'selfie-segmenter' && this.imageSegmenter && videoElement.readyState >= 2) {
+    if (active.model === 'selfie-segmenter') {
       let segResult: ImageSegmenterResult | null = null;
       try {
-        segResult = this.imageSegmenter.segmentForVideo(videoElement, startTime);
+        segResult = active.task.segmentForVideo(videoElement, startTime);
         const confMask = segResult.confidenceMasks?.[0];
 
         if (confMask) {
@@ -248,73 +218,49 @@ class VisionEngine {
             }
           }
         }
-      } catch (err) {
-        console.warn('SelfieSegmenter inference error:', err);
       } finally {
         if (segResult) {
           try {
             segResult.close();
-          } catch {
-            // Ignore close cleanup error
+          } catch (cause) {
+            console.warn('Vision result cleanup failed', { cause });
           }
         }
       }
     }
 
-    // 2. OBJECT DETECTOR (MediaPipe, YOLO-seg, SegFormer): Detect bounding boxes for 80 classes
-    if (model !== 'selfie-segmenter' && this.mediaPipeDetector && videoElement.readyState >= 2) {
-      try {
-        const detectionResult = this.mediaPipeDetector.detectForVideo(videoElement, startTime);
+    // EfficientDet-Lite0 produces boxes only; no substitute segmentation.
+    if (active.model === 'mediapipe') {
+      const detectionResult = active.task.detectForVideo(videoElement, startTime);
 
-        if (detectionResult.detections && detectionResult.detections.length > 0) {
-          rawObjects = detectionResult.detections.map((det, idx) => {
-            const cat = det.categories[0];
-            const label = cat ? cat.categoryName : 'object';
-            const score = cat ? cat.score : 0.8;
-            const bbox = det.boundingBox || { originX: 0, originY: 0, width: 0, height: 0 };
-            const labelInfo = getLabelInfo(label, model === 'segformer');
+      if (detectionResult.detections && detectionResult.detections.length > 0) {
+        rawObjects = detectionResult.detections.map((det, idx) => {
+          const cat = det.categories[0];
+          const label = cat ? cat.categoryName : 'object';
+          const score = cat ? cat.score : 0.8;
+          const bbox = det.boundingBox || { originX: 0, originY: 0, width: 0, height: 0 };
+          const labelInfo = getLabelInfo(label);
 
-            const normX = Math.max(0, bbox.originX / vW);
-            const normY = Math.max(0, bbox.originY / vH);
-            const normW = Math.min(1, bbox.width / vW);
-            const normH = Math.min(1, bbox.height / vH);
+          const normX = Math.max(0, bbox.originX / vW);
+          const normY = Math.max(0, bbox.originY / vH);
+          const normW = Math.min(1, bbox.width / vW);
+          const normH = Math.min(1, bbox.height / vH);
 
-            let maskPolygon: Array<{ x: number; y: number }> | undefined = undefined;
-            if (model === 'yolo-seg' || model === 'segformer') {
-              const rx = normX + normW * 0.05;
-              const ry = normY + normH * 0.05;
-              const rw = normW * 0.90;
-              const rh = normH * 0.90;
-
-              maskPolygon = [
-                { x: rx + rw * 0.15, y: ry },
-                { x: rx + rw * 0.85, y: ry },
-                { x: rx + rw, y: ry + rh * 0.35 },
-                { x: rx + rw * 0.95, y: ry + rh },
-                { x: rx + rw * 0.05, y: ry + rh },
-                { x: rx, y: ry + rh * 0.35 }
-              ];
-            }
-
-            return {
-              id: `det-${idx}-${label}`,
-              label,
-              labelJa: labelInfo.ja,
-              category: labelInfo.category,
-              confidence: score,
-              bbox: {
-                x: normX,
-                y: normY,
-                width: normW,
-                height: normH
-              },
-              color: getCategoryColor(label),
-              maskPolygon
-            };
-          });
-        }
-      } catch (err) {
-        console.warn('ObjectDetector inference error:', err);
+          return {
+            id: `det-${idx}-${label}`,
+            label,
+            labelJa: labelInfo.ja,
+            category: labelInfo.category,
+            confidence: score,
+            bbox: {
+              x: normX,
+              y: normY,
+              width: normW,
+              height: normH
+            },
+            color: getCategoryColor(label)
+          };
+        });
       }
     }
 
@@ -323,7 +269,7 @@ class VisionEngine {
       ? rawObjects
       : rawObjects.filter(obj => obj.confidence >= confidenceThreshold);
 
-    // ZERO-LAG SMOOTHING & TRACKING PIPELINE
+    // Existing within-model smoothing; cross-model state is reset on initialization.
     let finalObjects: DetectedObject[];
 
     if (filteredObjects.length > 0) {
@@ -364,28 +310,7 @@ class VisionEngine {
       }
     }
 
-    const elapsed = Math.round((performance.now() - startTime) * 10) / 10;
-    this.lastInferenceTime = Math.max(elapsed, model === 'selfie-segmenter' ? 8 : 14);
-
-    this.frameCount++;
-    const now = performance.now();
-    if (now - this.lastFpsCalcTime >= 500) {
-      this.currentFps = Math.round((this.frameCount * 1000) / (now - this.lastFpsCalcTime));
-      this.frameCount = 0;
-      this.lastFpsCalcTime = now;
-    }
-
-    return {
-      objects: finalObjects,
-      stats: {
-        inferenceTimeMs: this.lastInferenceTime,
-        fps: Math.min(60, Math.max(20, this.currentFps)),
-        objectCount: finalObjects.length,
-        backend: resolveBackendLabel(model, backendOption),
-        resolution: `${videoElement.videoWidth || 640}x${videoElement.videoHeight || 480}`,
-        processedFrames: this.frameCount
-      }
-    };
+    return { status: 'ready', model, requestId: state.requestId, objects: finalObjects };
   }
 
   public findObjectAtPoint(
@@ -451,5 +376,3 @@ class VisionEngine {
     return inside;
   }
 }
-
-export const visionEngine = new VisionEngine();

@@ -1,12 +1,12 @@
 import React from 'react';
 import { Camera, CameraOff, Volume2, VolumeX, Sparkles, Layers, Cpu } from 'lucide-react';
-import { BackendOption, ModelType } from '../types/vision';
+import type { ModelState, RunnableModelType } from '../types/vision';
+import { MODEL_REGISTRY, isRunnableModel, backendDescription } from '../services/modelRegistry';
 
 interface HeaderProps {
-  activeModel: ModelType;
-  onSelectModel: (model: ModelType) => void;
-  selectedBackend: BackendOption;
-  onSelectBackend: (backend: BackendOption) => void;
+  activeModel: RunnableModelType;
+  onSelectModel: (model: RunnableModelType) => void;
+  modelState: ModelState;
   isCameraActive: boolean;
   onToggleCamera: () => void;
   ttsEnabled: boolean;
@@ -18,8 +18,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   activeModel,
   onSelectModel,
-  selectedBackend,
-  onSelectBackend,
+  modelState,
   isCameraActive,
   onToggleCamera,
   ttsEnabled,
@@ -48,29 +47,22 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
           <select
             value={activeModel}
-            onChange={(e) => onSelectModel(e.target.value as ModelType)}
+            aria-label="モデル"
+            onChange={(e) => { if (isRunnableModel(e.target.value)) onSelectModel(e.target.value); }}
             className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer"
           >
-            <option value="selfie-segmenter" className="bg-slate-900 text-emerald-400 font-bold">✨ Selfie Segmenter (人物輪郭・推奨)</option>
-            <option value="yolo-seg" className="bg-slate-900 text-white">YOLO-seg (輪郭＋矩形)</option>
-            <option value="mediapipe" className="bg-slate-900 text-white">MediaPipe (高速矩形)</option>
-            <option value="segformer" className="bg-slate-900 text-white">SegFormer (全領域)</option>
+            {MODEL_REGISTRY.map(model => (
+              <option key={model.id} value={model.id} disabled={!model.implemented} className="bg-slate-900 text-white">
+                {model.name}{model.implemented ? '' : '（未実装・選択不可）'}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Acceleration Backend Selector Pulldown */}
         <div className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs">
           <Cpu className="w-3 h-3 text-blue-400 shrink-0" />
-          <select
-            value={selectedBackend}
-            onChange={(e) => onSelectBackend(e.target.value as BackendOption)}
-            className="bg-transparent text-xs font-medium text-slate-200 focus:outline-none cursor-pointer"
-          >
-            <option value="auto" className="bg-slate-900 text-white">自動 (Auto)</option>
-            <option value="webgpu" className="bg-slate-900 text-white">WebGPU</option>
-            <option value="wasm-simd" className="bg-slate-900 text-white">WASM SIMD</option>
-            <option value="webgl" className="bg-slate-900 text-white">WebGL</option>
-          </select>
+          <span aria-label="バックエンド状態">{backendDescription(modelState)}</span>
         </div>
       </div>
 
