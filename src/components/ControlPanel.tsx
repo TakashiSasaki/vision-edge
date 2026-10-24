@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sliders, 
   Volume2, 
-  Layers, 
-  Sparkles 
+  Layers
 } from 'lucide-react';
 import { DetectedObject, ModelType, RenderOptions, TTSConfig } from '../types/vision';
 import { speechService } from '../services/speechService';
@@ -21,18 +20,16 @@ interface ControlPanelProps {
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
-  activeModel,
   renderOptions,
   onChangeRenderOptions,
   ttsConfig,
   onChangeTTSConfig,
   detectedObjects,
   onSelectObject,
-  selectedObjectId,
-  isSpeaking
+  selectedObjectId
 }) => {
   const [activeTab, setActiveTab] = useState<'detection' | 'settings'>('detection');
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
     setAvailableVoices(speechService.getVoices());

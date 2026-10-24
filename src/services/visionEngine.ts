@@ -324,7 +324,7 @@ class VisionEngine {
       : rawObjects.filter(obj => obj.confidence >= confidenceThreshold);
 
     // ZERO-LAG SMOOTHING & TRACKING PIPELINE
-    let finalObjects: DetectedObject[] = [];
+    let finalObjects: DetectedObject[];
 
     if (filteredObjects.length > 0) {
       if (model === 'selfie-segmenter') {
