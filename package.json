@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:controls": "node scripts/smoke-css-controls.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.14",

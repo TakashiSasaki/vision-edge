@@ -90,6 +90,12 @@ real built app in Chromium. It denies camera access and blocks every external
 request, including model/WASM/CDN/font resources. It verifies the header, model
 controls, comparison UI interactions, successful local resources, and no uncaught
 JavaScript exception. It does not replace app modules or mock model outputs.
+Required local stylesheet links must return CSS MIME, expose parsed rules, and
+apply the body reset, root overflow, and header flex layout. This rejects Vite's
+HTML 200 fallback for a missing stylesheet. After building, `npm run test:e2e:controls`
+reruns the same smoke on disposable builds: intact builds must pass; missing CSS,
+absent links, empty CSS, unrelated CSS rules, and an uncaught JavaScript error
+must fail at their intended assertions. The original build is preserved.
 If a compatible Chromium is already installed, a local-only override is available:
 
 ```sh
@@ -100,7 +106,7 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
 `.github/workflows/ci.yml` runs on every pull request and pushes to `main`, using
 the lockfile and pinned Node version. PR runs explicitly check out the PR head SHA.
 The job runs install, typecheck, ESLint, unit tests, production build, browser
-installation, and smoke tests in that order. Failures stop subsequent verification
+installation, smoke tests, and stylesheet controls in that order. Failures stop subsequent verification
 steps and fail the job. Browser reports and failure traces/screenshots are uploaded
 for 14 days. CI needs no application secrets and does not deploy or merge.
 
