@@ -47,7 +47,12 @@ beforeEach(() => {
   clearRect = vi.fn();
   const ctx = { clearRect, drawImage: vi.fn(), save: vi.fn(), restore: vi.fn(), beginPath: vi.fn(), roundRect: vi.fn(), stroke: vi.fn(), fill: vi.fn(), fillText: vi.fn(), measureText: vi.fn(() => ({ width: 20 })) };
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
-  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: vi.fn(() => new Promise<MediaStream>(() => {})) } });
+  vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
+  vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: vi.fn(async () => {
+    const track = Object.assign(new EventTarget(), { stop: vi.fn() });
+    return { getTracks: () => [track] } as unknown as MediaStream;
+  }) } });
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); Reflect.deleteProperty(navigator, 'mediaDevices'); });
 
@@ -64,6 +69,7 @@ it('runs the ready model through the real App/canvas bridge and removes old list
   act(() => { vi.advanceTimersByTime(250); });
   step();
   expect(screen.getByText('(dog)')).toBeInTheDocument();
+  expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
   const pending = deferred<SegmenterTask>();
   vi.mocked(f.factory.segmenter).mockReturnValueOnce(pending.promise);
   const clearCount = clearRect.mock.calls.length;
@@ -96,6 +102,7 @@ it('cancels a queued old-generation inference and allows the replacement model t
     isCameraActive: true, onCameraStart: vi.fn(), onCameraStop: vi.fn(), onSelectObject: vi.fn(), onFrame,
   };
   const view = render(<VisionCanvas {...common} activeModel="mediapipe" modelState={f.engine.getState()} />);
+  await act(async () => {}); // Complete the real camera hook with the synthetic stream.
   makeVideoReady(view.container);
   step(); // Queued detector call has not executed yet.
   expect(f.detect).not.toHaveBeenCalled();
@@ -109,4 +116,62 @@ it('cancels a queued old-generation inference and allows the replacement model t
   act(() => { vi.advanceTimersByTime(250); });
   step();
   expect(onFrame).toHaveBeenLastCalledWith(expect.objectContaining({ model: 'selfie-segmenter', requestId: f.engine.getState().requestId, objects: [] }));
+});
+
+it('camera stop/restart clears the old scene without disposing or recreating the ready model', async () => {
+  const f = fixture();
+  let container!: HTMLElement;
+  await act(async () => { container = render(<App engine={f.engine} />).container; });
+  await act(async () => { fireEvent.change(screen.getByRole('combobox', { name: 'モデル' }), { target: { value: 'mediapipe' } }); });
+  makeVideoReady(container);
+  step();
+  act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); });
+  step();
+  expect(screen.getByText('(dog)')).toBeInTheDocument();
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '停止' })); });
+  expect(screen.queryByText('(dog)')).not.toBeInTheDocument();
+  expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mediapipe' });
+  expect(f.detector.close).not.toHaveBeenCalled();
+  f.detect.mockReturnValue({ detections: [] });
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'カメラ開始' })); });
+  expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(2);
+  step();
+  act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); });
+  step();
+  expect(screen.queryByText('(dog)')).not.toBeInTheDocument();
+  expect(screen.getByText('現在しきい値を超える物体はありません')).toBeInTheDocument();
+  expect(f.factory.detector).toHaveBeenCalledTimes(1);
+  expect(f.detector.close).not.toHaveBeenCalled();
+});
+
+it('does not infer from stale video frames while camera acquisition or playback is pending', async () => {
+  const f = fixture();
+  await f.engine.initialize('mediapipe');
+  const acquisition = deferred<MediaStream>();
+  const playback = deferred<void>();
+  vi.mocked(navigator.mediaDevices.getUserMedia).mockReturnValue(acquisition.promise);
+  vi.mocked(HTMLMediaElement.prototype.play).mockReturnValue(playback.promise);
+  const props = {
+    engine: f.engine, facingMode: 'user' as const, onToggleFacingMode: vi.fn(),
+    renderOptions: { showBoxes: true, showMasks: true, showLabels: true, showConfidence: true, maskOpacity: 0.35, confidenceThreshold: 0.35 },
+    ttsConfig: { enabled: false, autoReadout: false, cooldownSec: 3, rate: 1, pitch: 1, volume: 1, voiceURI: '' },
+    isCameraActive: true, onCameraStart: vi.fn(), onCameraStop: vi.fn(), onSelectObject: vi.fn(), onFrame: vi.fn(),
+  };
+  const view = render(<VisionCanvas {...props} activeModel="mediapipe" modelState={f.engine.getState()} />);
+  makeVideoReady(view.container); // A previous video can still expose readyState >= 2.
+  step();
+  act(() => { vi.advanceTimersByTime(0); });
+  expect(f.detect).not.toHaveBeenCalled();
+  const track = Object.assign(new EventTarget(), { stop: vi.fn() });
+  await act(async () => { acquisition.resolve({ getTracks: () => [track] } as unknown as MediaStream); });
+  step();
+  act(() => { vi.advanceTimersByTime(0); });
+  expect(f.detect).not.toHaveBeenCalled();
+  await act(async () => { playback.resolve(); });
+  step();
+  act(() => { vi.advanceTimersByTime(0); });
+  expect(f.detect).toHaveBeenCalledTimes(1);
+  view.unmount();
+  expect(track.stop).toHaveBeenCalledTimes(1);
+  f.engine.dispose();
 });

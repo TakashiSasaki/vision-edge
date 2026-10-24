@@ -1,0 +1,2 @@
+Command: ['git', 'diff', '--exit-code', '538d25157a5d87feac2da4496e354cbf8b9bdf5f', '--', 'package.json', 'package-lock.json', '.nvmrc', '.github/workflows/ci.yml', 'playwright.config.ts', 'vitest.config.ts', 'eslint.config.js', 'src/services/modelRegistry.ts', 'src/types/vision.ts', 'src/App.test.tsx', 'src/services/visionEngine.test.ts', 'src/services/dictionary.ts', 'src/services/speechService.ts', 'e2e/smoke.spec.ts', 'docs/verification/pr02.md', 'docs/verification/pr02']
+Exit: 0

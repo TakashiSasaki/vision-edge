@@ -74,9 +74,12 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
     }
   };
 
-  const handleToggleFacingMode = () => {
+  const handleToggleFacingMode = useCallback(() => {
     setFacingMode(prev => (prev === 'user' ? 'environment' : 'user'));
-  };
+  }, []);
+  const handleCameraStart = useCallback(() => setIsCameraActive(true), []);
+  const handleCameraStop = useCallback(() => setIsCameraActive(false), []);
+  const handleToggleCamera = useCallback(() => setIsCameraActive(previous => !previous), []);
 
   const handleFrame = useCallback((frame: DetectionFrame | null) => { setLastFrame(frame); }, []);
 
@@ -88,7 +91,7 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
         onSelectModel={handleSelectModel}
         modelState={modelState}
         isCameraActive={isCameraActive}
-        onToggleCamera={() => setIsCameraActive(prev => !prev)}
+        onToggleCamera={handleToggleCamera}
         ttsEnabled={ttsConfig.enabled}
         onToggleTTS={() => setTTSConfig(prev => ({ ...prev, enabled: !prev.enabled }))}
         isSpeaking={isSpeaking}
@@ -110,8 +113,8 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
             renderOptions={renderOptions}
             ttsConfig={ttsConfig}
             isCameraActive={isCameraActive}
-            onCameraStart={() => setIsCameraActive(true)}
-            onCameraStop={() => setIsCameraActive(false)}
+            onCameraStart={handleCameraStart}
+            onCameraStop={handleCameraStop}
             onSelectObject={(obj) => setSelectedObjectId(obj.id)}
             selectedObjectId={selectedObjectId}
             onFrame={handleFrame}

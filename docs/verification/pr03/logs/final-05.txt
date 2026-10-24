@@ -1,0 +1,6 @@
+Command: ['npm', 'run', 'typecheck']
+Exit: 0
+
+
+> vision-studio@1.0.0 typecheck
+> tsc --noEmit

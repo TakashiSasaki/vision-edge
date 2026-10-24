@@ -1,0 +1,17 @@
+Command: ['npm', 'run', 'build']
+Exit: 0
+
+
+> vision-studio@1.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 1671 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   1.59 kB │ gzip:   0.77 kB
+dist/assets/index-BlRF0iq4.css   26.22 kB │ gzip:   5.67 kB
+dist/assets/index-Bk9Ag90v.js   399.68 kB │ gzip: 124.26 kB
+
+✓ built in 216ms
