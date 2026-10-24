@@ -1,0 +1,6 @@
+{
+  "independent.test.ts": "4ed64cde87b67f1315fcc3f9aad21cd3495d8ba2c11e00e8557514368b264fef",
+  "scheduler-adversarial.test.ts": "5cb0ec2c5379ea6c61e08b83caa98ac046eb3e1d47bfcb8e184ca3cb37e32a1e",
+  "ui-adversarial.test.tsx": "cebdcd885ed4a149b8cfc828ded17bb81e981f70511e2e49be3caffb444c88cf",
+  "vitest.config.ts": "d7d286901ee533f7f776312356ea76c2215e7bddca03a968bbbb772230133ab4"
+}

@@ -1,0 +1,273 @@
+{
+  "targetHead": "7056c67cd1f59c8d3e2237b84df05c223d99a25e",
+  "targetTree": "815f55307389f842d636f0381c206253630baabd",
+  "previousHead": "04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9",
+  "previousReview": "3d6bf05fcef72ede7d66d03a2ef34185ea802f86",
+  "files": {
+    ".github/workflows/ci.yml": {
+      "sha256": "4339cfa58a62b375367a27ff0dbc55034336f4b1d552ebc03d022df625863fa1",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "e2e/camera-lifecycle.spec.ts": {
+      "sha256": "a191608102fd1fe28b823bc61bbcc3a7c9353e7e84c9f741631802440bc9205b",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "e2e/compatibility.spec.ts": {
+      "sha256": "90dbf1f583ef8d6b36ff87b0f2858f75030a7ae331cfc1d62bd32e13599aff0e",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "e2e/coordinates.spec.ts": {
+      "sha256": "1591fd1e8c992d44e936dc1af7020bc6b7992b83dac268d7464a2ce4d491927b",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "e2e/fixtures/visionSdk.ts": {
+      "sha256": "412d511b18585b59dff7adaee4c69ed85867fcb395f7ce6b834d7f14cc3af633",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "e2e/frame-identity.spec.ts": {
+      "sha256": "12f048adeea3efed0676739cd8ec1d0b180bacf4960337753cefb698a93f825d",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "e2e/inference-metrics.spec.ts": {
+      "sha256": "2fc4ee8ad6d8e9be69aa6dfa972029117ca75dfdaaeda4ba8e92896d1eb81f5f",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "e2e/pipeline-metrics.spec.ts": {
+      "sha256": "508975bce0c3193245e9815601d99620c9b7b09ff49c851f73a2cff2784a4f18",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "e2e/smoke.spec.ts": {
+      "sha256": "864289033b329d124e5b5d526bf0dc35a319e0c324d5e223b55ec7dec6926dbb",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "package-lock.json": {
+      "sha256": "1501945de52bc26a7411bd139358604ab1a189b51608c011a93d3164baa6de5b",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "package.json": {
+      "sha256": "d58b9ead5548b0ac8e6f10c153640b3d59c7a46b0569bb50a848a0a4b9ad7ca6",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "playwright.config.ts": {
+      "sha256": "087cf75c3e18abc52082eb67a4aa8f7e220f6ca4394eaaf86b654de5e021ab57",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "scripts/clean.mjs": {
+      "sha256": "2323d5b91b1a82cd9f1fb7993bc917d096d6febb428a1448b0918cbea6b295b8",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "scripts/smoke-css-controls.mjs": {
+      "sha256": "0fa08103b019025d0e8638f26a3e6e04fd69112d6f867665f3bd54c30215f5b0",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/App.test.tsx": {
+      "sha256": "8b900a0a446379bdb4b13756f7f22f6133a99353f27a489956b89f5515fa646a",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/App.tsx": {
+      "sha256": "cb6f7ac9672f5d08350563e6e29fece95992e92b73d81d58c79c162ea7eab5e1",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/components/ControlPanel.tsx": {
+      "sha256": "0cf0305e42b1c74e533963a1968d2e65c71b56b9af5e02417364be53b9d618f4",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/components/Header.tsx": {
+      "sha256": "657ae0c41ca4fe2eb039f26a02bc2b2ca91c889431b19c79e40ff4e3da40c53c",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/components/ModelComparisonTable.tsx": {
+      "sha256": "32a90954bf524900ba6386605de2a30f4f4990cb25baeacbec2f9e5e6044be94",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/components/ModelStatus.tsx": {
+      "sha256": "41b3d020147bd8a035c7b18f95a8c60dbd226bbe3040f9cc7ed4821f61a44354",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/components/PipelineDetails.test.tsx": {
+      "sha256": "58647ec34971f8c108f961d097da33dc699762b49fbdab5fd2431aa8f72395c8",
+      "previousIdentical": false,
+      "worktreeIdentical": true
+    },
+    "src/components/PipelineDetails.tsx": {
+      "sha256": "87a9bcc9c2f2b86184fd383267ce8e5bf81d5d6f7eeffb544966cd636feeffa5",
+      "previousIdentical": false,
+      "worktreeIdentical": true
+    },
+    "src/components/VisionCanvas.test.tsx": {
+      "sha256": "939ed90c573b46ca1cd7819cc8fe99c16124a86cd8d70c631b41f141315756a8",
+      "previousIdentical": false,
+      "worktreeIdentical": true
+    },
+    "src/components/VisionCanvas.tsx": {
+      "sha256": "d5451d02d1835995b017728ae8807aca7327d95d9ad3459bbb0ff31e827f67db",
+      "previousIdentical": false,
+      "worktreeIdentical": true
+    },
+    "src/hooks/useCameraStream.test.tsx": {
+      "sha256": "e7667ed17caa504c2774c296903d4d1fadc550f65ba73b4e34d4625993ccc43a",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/hooks/useCameraStream.ts": {
+      "sha256": "69ef9ec6891dee3ed0e8c6822405d72fea3f1d8061edab40f5e5ea73158edc73",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/index.css": {
+      "sha256": "76f6a5812150a612c363c9105a8dfc4eb5a068b1ff3296a4100a3a2f0f765087",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/main.tsx": {
+      "sha256": "6d84ef84ce96b80b0909622959c17d795c60b3d7fed05154e00d027645143476",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/canvasRenderer.ts": {
+      "sha256": "6bb0f6911746167c3fe7d601c55f045665c54f77c2a7981d1c637adc4f2d7d3c",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/dictionary.test.ts": {
+      "sha256": "9eed4caf65533f764f51bb16c3041d3e07d5e160cba17ebe436e255c3ed0cf8b",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/dictionary.ts": {
+      "sha256": "e5333b12898b7be3becaaf9d9daab4e704f9fc43549decee6e9dab68b2c6e3a2",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/frameScheduler.test.ts": {
+      "sha256": "0bc24a8b05588cb88a491b9cd64fa7b7c8408f0bc6c627b2e1184f3f74371f24",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/frameScheduler.ts": {
+      "sha256": "5a92cf5634faf88981fa2fef6176818488badc72588d9bdd71fc98ff1cab5819",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/modelRegistry.ts": {
+      "sha256": "d12effee6c147a1404d846bdd44a381c9f9d61bd085f4df085fdb5e472c22d3b",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/performanceMetrics.test.ts": {
+      "sha256": "f42235e5e546b6781c4696e93618127fb7d0af930a52ed1dd4e451cc2c277417",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/performanceMetrics.ts": {
+      "sha256": "d14a5a19e8f03dfb025c9748e66ccbfa433778d71d8c24602e11c1767c1fa351",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/pipelineMetrics.test.ts": {
+      "sha256": "9533537024a54dbf7851b8c9d923a235aafd2033b2e63993829a9cc77fffd943",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/pipelineMetrics.ts": {
+      "sha256": "ae7ef3c07027075d94d1022bcf078112b3eb4bbc1c919b8e1f7854e89e4687c0",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/pipelineSnapshotView.test.ts": {
+      "sha256": "e031992e0133db4e6a64e398767c9e6fa380827d684bc695ad6fb8c90871c258",
+      "previousIdentical": false,
+      "worktreeIdentical": true
+    },
+    "src/services/pipelineSnapshotView.ts": {
+      "sha256": "b1698dc434d0959dd101b231ef96b9e8dd502a2bc7554c7be42fe8b58c8134e3",
+      "previousIdentical": false,
+      "worktreeIdentical": true
+    },
+    "src/services/speechService.test.ts": {
+      "sha256": "14e03176957ef8f331208d9ae89ea33054dc56a30409f5789e3d5c884000389a",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/speechService.ts": {
+      "sha256": "36bc30c2d510fb0336f0ef24ab0bf08a4c124e94a773cd94d22fbd27c1c2f8f9",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/videoCoordinates.test.ts": {
+      "sha256": "289a66cb815f999e6a077fcb6fbc76c39ea59c5dd7036c83434e10b7fd356b96",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/videoCoordinates.ts": {
+      "sha256": "99c904ddbe15f822efbedbd03d428e7def74d609cdf4fe6768d6438bcb1fcfa7",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/visionEngine.metrics.test.ts": {
+      "sha256": "1498dff29a9ee0049bf67d34e44dfc16c86921056bde41bac233acb815620d72",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/visionEngine.reentrancy.test.ts": {
+      "sha256": "de8af55125a4ad272a3ec9cf8d39b268fdbed4b4f788264e4e8ea96c0ebe6592",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/visionEngine.test.ts": {
+      "sha256": "45aef3ef5c572f7c1e17a642cb326c9bd938ce24305251cf48f92ddecb644c5e",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/services/visionEngine.ts": {
+      "sha256": "6d931b352bc6339bf099731533f80878142e4e1d5487640699d5626940642a3b",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/test/setup.ts": {
+      "sha256": "268e7200d092daa3225eb06790ed72842e5d3234a53980c90ff463d7b81528d3",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "src/types/vision.ts": {
+      "sha256": "1634ef6981db2cf5161b029b63b7aa0c44b8ad31e5857954094bb9385cb93e70",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "tsconfig.json": {
+      "sha256": "56baf34fe9e208cd7e937508c1dbe5e946396779fb4e013436e380b20677d6be",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "vite.config.ts": {
+      "sha256": "5d1c39a3dc2a764c55479a7329c75ec54970f4cf3bb52e94fc0ff5d2b291e8f2",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    },
+    "vitest.config.ts": {
+      "sha256": "653f8490e9ec6a1b4ab25353ba3ae019fd89b6b542a41e8ec95912a9323b49cd",
+      "previousIdentical": true,
+      "worktreeIdentical": true
+    }
+  }
+}

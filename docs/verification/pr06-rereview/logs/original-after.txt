@@ -1,0 +1,14 @@
+
+ RUN  v5.0.5 /tmp/pr06-rereview-product
+
+
+ Test Files  3 passed (3)
+      Tests  31 passed (31)
+   Start at  16:24:27
+   Duration  1.39s (environment 70%, tests 13%, transform 9%, import 7%, worker 1%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

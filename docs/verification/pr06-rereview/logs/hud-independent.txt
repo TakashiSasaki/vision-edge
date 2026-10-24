@@ -1,0 +1,6 @@
+{"profile":"empty","open":false,"trials":12}
+{"profile":"empty","open":true,"trials":24}
+{"profile":"quantile300","open":false,"trials":36}
+{"profile":"quantile300","open":true,"trials":48}
+{"profile":"truncated","open":false,"trials":60}
+{"profile":"truncated","open":true,"trials":72}

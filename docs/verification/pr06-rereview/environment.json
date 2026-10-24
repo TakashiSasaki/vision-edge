@@ -1,0 +1,8 @@
+{
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "node": "v24.19.0",
+  "npm": "11.9.0",
+  "browser": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+  "matchedDownload": "Prior403 restriction respected, not retried or bypassed",
+  "instructions": "No new AGENTS.md or .agents/skills; previously read coordination skill remains applicable. Separate cloud reviewer."
+}

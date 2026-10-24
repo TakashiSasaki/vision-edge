@@ -1,0 +1,21 @@
+{
+  "beforeRef": "04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9",
+  "beforeSha256": "bb904bf467999bb4d4f508e7353aa839234de60c0bf8b8c69a69315178019c47",
+  "adaptation": "only relative pipelineMetrics import moved",
+  "independentCopyMatchesAuthorAdaptation": true,
+  "files": {
+    "experiment/Before.tsx": "123feb0c30b8e2149e83ddeec299ab104a0e5f559e6d4e1114a33fcaaf2ea894",
+    "experiment/hud.tsx": "32d72aeb7f759536f6f039b8f1872c3d5b2a0c76f7cf03e585d43b7569e97810",
+    "experiment/index.html": "c01a9ee2843eedaf9b9de98cb5156747b517058f3e031848f8af2e19b15cc76b",
+    "experiment/run.mjs": "559c8670d533db9adec940fa52b5f137aee88c8b3f3619e2af1fe4086b4e5cb3",
+    "experiment/vite.config.ts": "77ad2e084046e9e2a25c88f532dd956610b6d3bba2cb13b01b22a2c25b860065"
+  },
+  "bundle": {
+    ".cache/pr06-rereview-hud/assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+    ".cache/pr06-rereview-hud/assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+    ".cache/pr06-rereview-hud/assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+    ".cache/pr06-rereview-hud/assets/index-Bzu7-GKo.css": "636f892da7cd35700d405bd02ddaee2a3fed4fca1b6351c05ead7500176976e0",
+    ".cache/pr06-rereview-hud/assets/index-bBJLcVbI.js": "cd73d638b847dfb1d495fe00f7f43db5a562c72bbb86fb7bc4fafdf81e4554bc",
+    ".cache/pr06-rereview-hud/docs/verification/pr06-rereview/experiment/index.html": "f9aa97e4646f23dd880199a5905ebc67fbf570930efa02882407e2ca733eb442"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "verdict": "PASS WITH CONDITIONS (scoped independent re-review)",
+  "reviewedHead": "7056c67cd1f59c8d3e2237b84df05c223d99a25e",
+  "reviewedTree": "815f55307389f842d636f0381c206253630baabd",
+  "closed": [
+    {
+      "id": "PR06-F01",
+      "originalSeverity": "P2 / medium",
+      "status": "CLOSED at reviewed corrected HEAD",
+      "originalTarget": "04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9",
+      "originalEvidence": "3d6bf05fcef72ede7d66d03a2ef34185ea802f86",
+      "expected": "Malformed statistics become unavailable without unmounting the actual camera/SDK pipeline; valid data and ordinary lifecycle recover.",
+      "beforeActual": "Unchanged F01 probe: one pass/one failure, TypeError, videoMounted=false, pendingRAF=0.",
+      "afterActual": "All31 unchanged original probes pass. Forty independent new cases pass, including nine live malformed payload paths with seven SDK calls through recovery/stop/restart and exact release checks; same reused raw object recovers and cannot mutate the already published view.",
+      "fixAssessment": "Fixed-size owned primitive projection is built before React state; raw access/coercion does not reach JSX. Source/ownership and bounded reads verified independently.",
+      "locations": ["src/services/pipelineSnapshotView.ts:19", "src/services/pipelineSnapshotView.ts:46", "src/components/VisionCanvas.tsx:231"],
+      "reproducer": "python docs/verification/pr06-rereview/replay-original.py /tmp/pr06-rereview-product; cd /tmp/pr06-rereview-product; npx vitest run --config docs/verification/pr06-independent/vitest.config.ts",
+      "evidence": ["logs/original-before-setup-fixed.txt", "logs/original-after.txt", "logs/independent-new-all.txt", "boundary.test.ts", "live-boundary.test.tsx", "original-probe-bindings.json"],
+      "qualification": "The original and new malformed snapshots deliberately violate runtime TS shapes. Neither review establishes a natural collector path to the injected malformed data. Closure is for the explicitly requested fault-containment acceptance requirement."
+    }
+  ],
+  "newFindings": [],
+  "remainingConditions": ["Synthetic cloud/browser/SDK evidence is not physical camera/model/GPU/audio/mobile/background validation or deployed-public-version equality", "PR04 fullRGBA cost and identical-content coalescing limits remain", "PR05 T01 timing sensitivity remains with original failures/traces and serial reruns preserved", "No merge/deploy/next-phase authorization is inferred"]
+}

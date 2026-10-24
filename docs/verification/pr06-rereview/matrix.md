@@ -1,0 +1,16 @@
+# Independent re-review matrix
+
+Target7056c67/tree815f553. Exact full bindings appear in REPORT and source-bindings.json. Pass is scoped to the checks described.
+
+| Requirement | Independent evidence | Result |
+| --- | --- | --- |
+| Original F01 failure sensitive, closure reproducible | Exact PR15 bytes/hash; old04a source reproduces one pass/one fail with video unmounted; corrected source31/31 original probes pass. Original failed evidence remains untouched. | F01 CLOSED |
+| Malformed nested shapes/durations/coverage | Independent hand-specified40-row partial fixture, absent/array/malformed rows, invalid counts/quantile bounds, nonfinite/string/BigInt/Symbol/object durations; healthy neighboring cells retained, no coercion. New pure suite30 cases. | PASS |
+| Getter/proxy contract | Throwing/changing accessors at root/stage/row/duration/results/descriptor; revoked proxy; counts read once; unknown getters/ownKeys/cyclic unknown fields not traversed. Finite number of relevant reads verified (455 at saturated snapshot). Arbitrary nonterminating getter code is outside bounded-read claims. | PASS scoped |
+| Valid0/null/partial/window semantics | Manual missing1/measured2 row, real3000-event retention2048/latest300/truncated/missing snapshots, overflowed sum/mean, actual0ms, unexecuted-null, inclusive5000ms and later expiry/recovery. Matches unchanged collector, not recalculated from display. | PASS |
+| Ownership and recovery | All owned row/outcome/result objects distinct, frozen source accepted without writes, raw later mutations do not alter projection; same reused object invalid/valid publications update actual memoized UI. | PASS |
+| Actual React/camera/SDK continuity | Nine payload variants: original video remains, RAF2, SDK5 through four faulty publications; valid zero recovers, SDK6, stop clears loops/releases track, restart SDK7 without model recreation, unmount closes every input/track, explicit model disposal once. Successful empty results still publish. Tenth live case tests same-object/memo recovery. | PASS |
+| Generation/resources/prior semantics | Only display boundary product changes. Collector/probe/scheduler/engine/Canvas/FPS/camera/coordinates/dictionary/speech/SDK/package/workflow byte-identical to04a. Old31 independent cases include generation/lock/SDK exceptions/firstdraw; full317 unit and188 focused pass with existing assertions preserved. | PASS scoped |
+| Fixed work / overhead | Exactly10 known stages×4 outcomes/eight counters, no arbitrary enumeration/recursive traversal, no source retention; only250ms publication adds work. Independent72 matched browser trials,2304 updates, all open/closed HTML equal; separate projection-only measurement and independent author144-trial reanalysis. | PASS method scope |
+| Standard browser/CSS/control behavior |19 serial actual React/CSS browser cases and7 controls pass; same system Chromium154, no retries, matched-download403 restriction respected. Real coordinate/margin/ripple/TTS and HUD lifecycle cases preserved. | PASS scoped |
+| Final product CI / frozen binding | Raw job120921859541/run40110781409 metadata/logs explicitly checkout7056c67; actual install/typecheck/lint317unit/build19browser7controls succeeded with hosted matched Chromium156/v1248. Evidence CI is separate. | PASS |
