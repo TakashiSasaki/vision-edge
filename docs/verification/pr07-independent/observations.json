@@ -1,0 +1,72 @@
+{
+  "evidenceLevel": "Readback from completed tool results; local raw log files became inaccessible at executor disconnect. Do not treat this JSON as recovered raw output.",
+  "invalidManifests": [
+    {
+      "case": "empty-assets",
+      "manifest": {
+        "schema": 1,
+        "assets": []
+      },
+      "exit": 0,
+      "rows": []
+    },
+    {
+      "case": "unsupported-schema",
+      "manifest": {
+        "schema": 999,
+        "assets": []
+      },
+      "exit": 0,
+      "rows": []
+    },
+    {
+      "case": "only-installed-sdk-entry",
+      "exit": 0,
+      "rows": [
+        {
+          "id": "vision_bundle.mjs",
+          "status": "pass",
+          "size": 136870,
+          "sha256": "e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669"
+        }
+      ]
+    },
+    {
+      "case": "invalid-json",
+      "exit": 1,
+      "error": "SyntaxError: Expected property name or '}' in JSON at position 1"
+    }
+  ],
+  "checkerCounterexamples": {
+    "exit": 0,
+    "asserted": [
+      "Exact extracted negative-scene loop accepted10 failed attempted calls with one unchanged empty processed record",
+      "Actual summarizeRun returned inferenceExecuted:true with raw:[] and zero retained calls"
+    ],
+    "syntheticControlOnly": true,
+    "actualSdkInference": 0,
+    "notFullSuiteExecution": true
+  },
+  "nativeAcquisition": {
+    "exit": 0,
+    "tests": 3,
+    "scope": "Original installCamera fixture + separately bundled exact product frameScheduler in native Chromium; actual VideoFrame / owned Canvas / HTMLVideoElement input types, 512x512, >3 acquisitions each, close balance and track release asserted. No SDK/model called, no inference output supplied.",
+    "artifacts": "/tmp/pr07-native-inputs; not recovered before disconnect"
+  },
+  "realSDK": {
+    "supportedCommandExit": 2,
+    "childDiagnostics": "Two genuine-SDK controlled model HTTP503 tests passed; six inference tests blocked before execution",
+    "output": "/tmp/pr07-review-current/.cache/real-sdk-runs/<unique timestamp-random>",
+    "rawArtifacts": "Not recovered before disconnect; raw command log hash from completed ledger is in commands.json.",
+    "inferenceExecuted": 0
+  },
+  "regressions": {
+    "current": "Typecheck/lint/unit/build/isolation, ordinary browser and controls exited0; all ordinary tests unchanged.",
+    "baseline": "Install/typecheck/lint/unit/build exited0. Browser/control sequence launched, final receipt not recovered: UNKNOWN, not pass."
+  },
+  "preservation": {
+    "beforeTrackedPaths": 715,
+    "afterLocalHashComparison": "BLOCKED by environment unavailable",
+    "remoteSourceDiff": "Only package.json modifies an existing path;89 total paths; other88 added. All existing product/ordinary tests/workflow/historical evidence blobs preserved in target. Evidence tree adds only new independent directory."
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "fixtureSources": [
+    {
+      "url": "https://github.com/scikit-image/scikit-image/blob/v0.24.0/skimage/data/_fetchers.py",
+      "blob": "37024709c0b05464c82992b0fd69abae9299133b",
+      "meaning": "NASA Eileen Collins photograph: source declares public domain, no known copyright restrictions."
+    },
+    {
+      "url": "https://github.com/scikit-image/scikit-image/blob/v0.24.0/skimage/data/_fetchers.py",
+      "blob": "37024709c0b05464c82992b0fd69abae9299133b",
+      "meaning": "Rachel Michetti coffee photograph: source declares CC0; courtesy Pikolo Espresso Bar."
+    }
+  ],
+  "registry": {
+    "url": "https://github.com/scikit-image/scikit-image/blob/v0.24.0/skimage/data/_registry.py",
+    "blob": "af92efcc528097401b8feeb2f3d67fa2ab97d976",
+    "astronautSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+    "coffeeSha256": "cc02f8ca188b167c775a7101b5d767d1e71792cf762c33d6fa15a4599b5a8de7"
+  },
+  "SDK": "0.10.14 unchanged npm lock integrity; actual module and loaders/WASM are separately pinned in target manifest. Author states Apache-2.0, installed package source inspected. No model license is inferred from SDK license.",
+  "storage": "No fixture/SDK/model binary added by this evidence PR. Raw local screenshots/artifacts not recovered after disconnect and not relabelled as published.",
+  "models": "Both null size/hash/retrievedAt. Exact original model source attempts recorded as curl -I --max-time25, exit56 HTTP403 CONNECT denial at 17:18:41Z and 17:19:06Z; raw initial curl transcript was not retained by author (setup-observations.json explicitly says so). This reviewer did not repeat them.",
+  "import": "Target e2e-real-sdk/README.md documents a reviewable size/SHA256/provenance/license manifest update and placement of exact lawful model bytes under .cache/real-sdk-assets. Local verifyAsset then revalidates every use. Current null pins refuse arbitrary supplied bytes; no automatic pin enrollment. This is manual reviewed import, not an unrestricted import command."
+}

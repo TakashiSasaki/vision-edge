@@ -1,0 +1,183 @@
+{
+  "recordKind": "Completed command receipts read from executor output before disconnect; raw local logs not recovered. Hashes identify original unavailable log bytes and do not imply their publication.",
+  "runtime": {
+    "node": "24.19.0 (observed in invalid-JSON stderr)",
+    "browserExecutable": "/usr/bin/chromium",
+    "browserVersion": "Not independently recovered in reviewer artifacts; author records154.0.8037.57. Do not confuse Desktop Chrome context UA156 with executable version.",
+    "workers": 1,
+    "retries": 0,
+    "browserDownload": "NOT attempted"
+  },
+  "sources": {
+    "current": "31721975d4eeef0ff31d29074aadafc801efae88",
+    "baseline": "9dd0f7998a8c700c2f19c770e31dc790c4774de4"
+  },
+  "commands": [
+    {
+      "name": "current-install",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm ci --cache /tmp/pr07-review-npm-cache",
+      "exit": 0,
+      "originalLogSha256": null,
+      "browserOverride": null
+    },
+    {
+      "name": "asset-controls",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "node --test scripts/real-sdk/assets.test.mjs",
+      "exit": 0,
+      "originalLogSha256": "6279c2e345f044b2c0088832cb06d9ba147303e869c02db541af02214087e305",
+      "browserOverride": null
+    },
+    {
+      "name": "assets-before",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm run test:e2e:real-sdk:assets",
+      "exit": 2,
+      "originalLogSha256": "7568ba8c81855b942bd8cd283dd9704f934acb6168f22b6661f6e8a3bd14681a",
+      "browserOverride": null
+    },
+    {
+      "name": "acquire-pinned-nonmodel-assets",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm run test:e2e:real-sdk:acquire",
+      "exit": 2,
+      "originalLogSha256": "4c1abfba94f98fc829398eb2c0892b1c444aa8651fcda46ecf4ab2d90112a70a",
+      "browserOverride": null
+    },
+    {
+      "name": "current-typecheck",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm run typecheck",
+      "exit": 0,
+      "originalLogSha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "browserOverride": null
+    },
+    {
+      "name": "current-lint",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm run lint",
+      "exit": 0,
+      "originalLogSha256": "c5a95402c85690aab1dd91cd1794a87b47f12b6ca6184ac98b55259d5625de10",
+      "browserOverride": null
+    },
+    {
+      "name": "current-unit",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm test",
+      "exit": 0,
+      "originalLogSha256": "decbaefc8741e03db5275630354ab16f53065e9b9ce86632f58e4ec4b0be7358",
+      "browserOverride": null
+    },
+    {
+      "name": "current-build",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm run build",
+      "exit": 0,
+      "originalLogSha256": "bce914592cb2134c07fd141a939a319480c654c8e1e7b8d7ce2759141ae4d8a7",
+      "browserOverride": null
+    },
+    {
+      "name": "current-isolation",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "node scripts/real-sdk/audit.mjs",
+      "exit": 0,
+      "originalLogSha256": "7ff319b05571920ba9438d34cbe846994e00559291759a7caf73032471c0eecd",
+      "browserOverride": null
+    },
+    {
+      "name": "current-browser",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm run test:e2e",
+      "exit": 0,
+      "originalLogSha256": "d113f1ee60140671d8a7f2f2b0405d2b7c5a13c4dbfe8a14f7d4635721a53da2",
+      "browserOverride": "/usr/bin/chromium"
+    },
+    {
+      "name": "current-controls",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm run test:e2e:controls",
+      "exit": 0,
+      "originalLogSha256": "c89eca1b380efdef8eec003655672c850241a976412167165228b8fbd4271643",
+      "browserOverride": "/usr/bin/chromium"
+    },
+    {
+      "name": "independent-invalid-manifests",
+      "cwd": "/workspace/vision-edge",
+      "command": "python3 docs/verification/pr07-independent/probe-assets.py",
+      "exit": 0,
+      "originalLogSha256": "2d15ecf272fd7775a4043acb74185e15f85ff382f0cda58d6944a7e138d7f3c1",
+      "browserOverride": null
+    },
+    {
+      "name": "current-real-sdk",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "npm run test:e2e:real-sdk",
+      "exit": 2,
+      "originalLogSha256": "ef5b55e58b77aff2fa474a04115474ec1d37ca8103d8b6c193145327abe4b357",
+      "browserOverride": "/usr/bin/chromium"
+    },
+    {
+      "name": "independent-native-inputs",
+      "cwd": "/tmp/pr07-review-current",
+      "command": "node node_modules/@playwright/test/cli.js test --config playwright.real-sdk.config.ts --grep 'independent native acquisition'",
+      "exit": 0,
+      "originalLogSha256": "e535d48f60ce5c0ff25bc18ad5e0d90cf7e6c205d3e0ca3732d8f7d420158199",
+      "browserOverride": "/usr/bin/chromium"
+    },
+    {
+      "name": "baseline-install",
+      "cwd": "/tmp/pr07-review-baseline",
+      "command": "npm ci --cache /tmp/pr07-review-npm-cache",
+      "exit": 0,
+      "originalLogSha256": "914dd990afac6f350bd524969c97bfbe74e024b131ff3675bceb8ffcd2d73a27",
+      "browserOverride": null
+    },
+    {
+      "name": "baseline-typecheck",
+      "cwd": "/tmp/pr07-review-baseline",
+      "command": "npm run typecheck",
+      "exit": 0,
+      "originalLogSha256": "50a66bf3613c79f7c2427e49042c2d4af23d2d9cdb6d5f9f678ce2c9d6293b8a",
+      "browserOverride": null
+    },
+    {
+      "name": "baseline-lint",
+      "cwd": "/tmp/pr07-review-baseline",
+      "command": "npm run lint",
+      "exit": 0,
+      "originalLogSha256": "c5a95402c85690aab1dd91cd1794a87b47f12b6ca6184ac98b55259d5625de10",
+      "browserOverride": null
+    },
+    {
+      "name": "baseline-unit",
+      "cwd": "/tmp/pr07-review-baseline",
+      "command": "npm test",
+      "exit": 0,
+      "originalLogSha256": "a79eb7007e8e418688eee3fb8896062cdc3872bc7c96253ea4c772e5e28def10",
+      "browserOverride": null
+    },
+    {
+      "name": "baseline-build",
+      "cwd": "/tmp/pr07-review-baseline",
+      "command": "npm run build",
+      "exit": 0,
+      "originalLogSha256": "a95fdab8d89c117727c1d1347591378a701e454e128a24c4b4b23a3c7c3864a6",
+      "browserOverride": null
+    },
+    {
+      "name": "independent-checker-counterexamples",
+      "cwd": "/workspace/vision-edge",
+      "command": "node docs/verification/pr07-independent/probes/checker-counterexamples.mjs /tmp/pr07-review-current",
+      "exit": 0,
+      "originalLogSha256": "1a5fd8eb4c51928c06fbf0e644fc7c33a4653d96882cc6726c06860f20a5974c",
+      "browserOverride": null
+    }
+  ],
+  "uncertainCommands": [
+    "baseline-browser/control sequence launched after17:48:44Z; completion not observed",
+    "additional corrupt-cache/promotion/comparison command submitted at disconnect; no execution receipt"
+  ],
+  "isolation": "Current ordinary browser/control and optional real/native browser commands were serial. Baseline browser was started only after current browser processes had completed. Baseline install/static/unit overlapped real diagnostics; no inference/performance populations were collected.",
+  "artifacts": "Original logs under selected executor /workspace/vision-edge/docs/verification/pr07-independent/logs; unique real run under /tmp/pr07-review-current/.cache/real-sdk-runs; native /tmp/pr07-native-inputs. Recovery blocked. See blockers.json."
+}

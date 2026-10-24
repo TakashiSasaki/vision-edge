@@ -1,0 +1,35 @@
+// Review-only acquisition test. NO SDK calls/results or model inference.
+// Copy this file to e2e-real-sdk/independent-native-inputs.spec.ts in the disposable target worktree.
+import { test, expect } from '@playwright/test';
+import { readFile, writeFile } from 'node:fs/promises';
+import { installCamera, routeAssets, type InputMode } from './fixtures';
+for (const mode of ['VideoFrame', 'Canvas', 'HTMLVideoElement'] as InputMode[]) {
+  test(`independent native acquisition ${mode}`, async ({ context, page }, info) => {
+    await installCamera(context, mode, 'astronaut.png');
+    const requests = await routeAssets(context);
+    await context.route('http://127.0.0.1:4175/', route => route.fulfill({contentType:'text/html',body:'<video autoplay muted playsinline></video>'}));
+    await context.route('**/independent-scheduler.js', async route => route.fulfill({contentType:'application/javascript',body:await readFile('.cache/independent-scheduler/frameScheduler.js')}));
+    await page.goto('/');
+    const result = await page.evaluate(async () => {
+      const video = document.querySelector('video')!;
+      const stream = await navigator.mediaDevices.getUserMedia({video:true});
+      video.srcObject = stream; await video.play();
+      const scheduler = await import(/* @vite-ignore */ '/independent-scheduler.js');
+      const rows: Array<{kind:string;width:number;height:number}> = []; const errors: string[] = [];
+      const stop = scheduler.startFrameScheduler({video,lock:new scheduler.JobLock(),current:()=>true,input:()=>{},
+        work:(input: VideoFrame | HTMLCanvasElement | HTMLVideoElement) => {
+          rows.push({kind:input instanceof HTMLVideoElement ? 'HTMLVideoElement' : input instanceof HTMLCanvasElement ? 'Canvas' : 'VideoFrame',width: 'videoWidth' in input ? input.videoWidth : 'displayWidth' in input ? input.displayWidth : input.width,height:'videoHeight' in input ? input.videoHeight : 'displayHeight' in input ? input.displayHeight : input.height});
+        },adopt:()=>{},error:(e:unknown)=>errors.push(String(e)),captureError:(e:unknown)=>errors.push(String(e))});
+      await new Promise(resolve=>setTimeout(resolve,1800)); stop();
+      const beforeDispose = {liveTracks:window.__realCamera.liveTracks(),framesCreated:window.__realCamera.framesCreated,framesClosed:window.__realCamera.framesClosed,doubleCloses:window.__realCamera.doubleCloses};
+      const quality = video.getVideoPlaybackQuality?.().totalVideoFrames;
+      window.__realCamera.dispose();
+      return {rows,errors,quality,beforeDispose,liveTracks:window.__realCamera.liveTracks(),browserUA:navigator.userAgent};
+    });
+    await writeFile(info.outputPath('acquisition.json'),JSON.stringify({mode,result,requests,browserVersion:context.browser()?.version()},null,2));
+    expect(result.errors).toEqual([]); expect(result.rows.length).toBeGreaterThan(3);
+    expect(result.rows.every(r=>r.kind===mode&&r.width===512&&r.height===512)).toBe(true);
+    expect(result.liveTracks).toBe(0); expect(result.beforeDispose.doubleCloses).toBe(0);
+    expect(result.beforeDispose.framesCreated).toBe(result.beforeDispose.framesClosed);
+  });
+}

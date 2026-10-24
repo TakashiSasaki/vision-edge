@@ -1,0 +1,774 @@
+{
+  "phase": "independent review; reviewer separate from author",
+  "repo": "TakashiSasaki/vision-edge",
+  "targetPR": 17,
+  "base": "main",
+  "baseHead": "9dd0f7998a8c700c2f19c770e31dc790c4774de4",
+  "baseTree": "815f55307389f842d636f0381c206253630baabd",
+  "targetBranch": "test/real-mediapipe-integration",
+  "targetHead": "31721975d4eeef0ff31d29074aadafc801efae88",
+  "targetTree": "a8e8fab06e4144b39449bbbe511d1eae95dd458a",
+  "evidenceBranch": "review/pr07-real-sdk-independent",
+  "requiredSoleParent": "31721975d4eeef0ff31d29074aadafc801efae88",
+  "evidenceCommitAndTree": "Recorded in PR body after creation; no self-hash assertion.",
+  "refFetch": "git fetch origin main test/real-mediapipe-integration; explicit remote-tracking fetch completed; rev-parse HEAD/tree and main/tree matched.",
+  "targetState": {
+    "draft": true,
+    "state": "open",
+    "mergeable": true,
+    "merged": false,
+    "priorReviewSubmissions": 0,
+    "priorComments": 0,
+    "duplicateEvidenceBranch": false
+  },
+  "sourceBlobs": [
+    {
+      "path": "e2e-real-sdk/integration.spec.ts",
+      "blob": "295beb225843f51ce9eca8a069c2fe4f039e9be8"
+    },
+    {
+      "path": "scripts/real-sdk/assets.mjs",
+      "blob": "52ccfd7ca168532587bf1846681a642684507f41"
+    },
+    {
+      "path": "scripts/real-sdk/summarize.mjs",
+      "blob": "711e15cb3d2d7e126b62c55cb8cf67fbe98ec907"
+    }
+  ],
+  "comparison": {
+    "repository_full_name": "TakashiSasaki/vision-edge",
+    "base": "9dd0f7998a8c700c2f19c770e31dc790c4774de4",
+    "head": "31721975d4eeef0ff31d29074aadafc801efae88",
+    "status": "ahead",
+    "ahead_by": 4,
+    "behind_by": 0,
+    "total_commits": 4,
+    "too_large": null,
+    "base_commit": {
+      "sha": "9dd0f7998a8c700c2f19c770e31dc790c4774de4",
+      "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/commits/9dd0f7998a8c700c2f19c770e31dc790c4774de4",
+      "html_url": "https://github.com/TakashiSasaki/vision-edge/commit/9dd0f7998a8c700c2f19c770e31dc790c4774de4"
+    },
+    "merge_base_commit": {
+      "sha": "9dd0f7998a8c700c2f19c770e31dc790c4774de4",
+      "url": "https://api.github.com/repos/TakashiSasaki/vision-edge/commits/9dd0f7998a8c700c2f19c770e31dc790c4774de4",
+      "html_url": "https://github.com/TakashiSasaki/vision-edge/commit/9dd0f7998a8c700c2f19c770e31dc790c4774de4"
+    },
+    "files": [
+      {
+        "filename": "docs/verification/pr07-real-sdk/LICENSES.md",
+        "status": "added",
+        "additions": 15,
+        "deletions": 0,
+        "changes": 15,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/README.md",
+        "status": "added",
+        "additions": 69,
+        "deletions": 0,
+        "changes": 69,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/acquisition-with-proxy.json",
+        "status": "added",
+        "additions": 76,
+        "deletions": 0,
+        "changes": 76,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/acquisition.json",
+        "status": "added",
+        "additions": 64,
+        "deletions": 0,
+        "changes": 64,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/commands.jsonl",
+        "status": "added",
+        "additions": 27,
+        "deletions": 0,
+        "changes": 27,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/initial-real-sdk-run.tar.gz",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/acquisition-with-proxy.txt",
+        "status": "added",
+        "additions": 85,
+        "deletions": 0,
+        "changes": 85,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/acquisition.txt",
+        "status": "added",
+        "additions": 73,
+        "deletions": 0,
+        "changes": 73,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/asset-controls-source-2.txt",
+        "status": "added",
+        "additions": 15,
+        "deletions": 0,
+        "changes": 15,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/asset-controls.txt",
+        "status": "added",
+        "additions": 15,
+        "deletions": 0,
+        "changes": 15,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/browser-build.txt",
+        "status": "added",
+        "additions": 19,
+        "deletions": 0,
+        "changes": 19,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/browser.txt",
+        "status": "added",
+        "additions": 64,
+        "deletions": 0,
+        "changes": 64,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/build-source-2.txt",
+        "status": "added",
+        "additions": 19,
+        "deletions": 0,
+        "changes": 19,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/build.txt",
+        "status": "added",
+        "additions": 19,
+        "deletions": 0,
+        "changes": 19,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/controls.txt",
+        "status": "added",
+        "additions": 21,
+        "deletions": 0,
+        "changes": 21,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/diff-check.txt",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/evidence-lint.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/evidence-typecheck.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/install.txt",
+        "status": "added",
+        "additions": 7,
+        "deletions": 0,
+        "changes": 7,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/isolation-corrected.txt",
+        "status": "added",
+        "additions": 31,
+        "deletions": 0,
+        "changes": 31,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/isolation-source-2.txt",
+        "status": "added",
+        "additions": 31,
+        "deletions": 0,
+        "changes": 31,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/isolation.txt",
+        "status": "added",
+        "additions": 15,
+        "deletions": 0,
+        "changes": 15,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/lint-diagnostic-binding.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/lint-final-source.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/lint-initial.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/lint-second.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/lint-source-2.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/lint.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/real-sdk-final-source.txt",
+        "status": "added",
+        "additions": 219,
+        "deletions": 0,
+        "changes": 219,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/real-sdk-first.txt",
+        "status": "added",
+        "additions": 219,
+        "deletions": 0,
+        "changes": 219,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/real-sdk-source-2.txt",
+        "status": "added",
+        "additions": 219,
+        "deletions": 0,
+        "changes": 219,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/typecheck-diagnostic-binding.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/typecheck-final-source.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/typecheck-fourth.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/typecheck-initial.txt",
+        "status": "added",
+        "additions": 38,
+        "deletions": 0,
+        "changes": 38,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/typecheck-second.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/typecheck-source-2.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/typecheck-third.txt",
+        "status": "added",
+        "additions": 14,
+        "deletions": 0,
+        "changes": 14,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/typecheck.txt",
+        "status": "added",
+        "additions": 9,
+        "deletions": 0,
+        "changes": 9,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/unit-source-2.txt",
+        "status": "added",
+        "additions": 22,
+        "deletions": 0,
+        "changes": 22,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/logs/unit.txt",
+        "status": "added",
+        "additions": 22,
+        "deletions": 0,
+        "changes": 22,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/main-ci-excerpt.txt",
+        "status": "added",
+        "additions": 16,
+        "deletions": 0,
+        "changes": 16,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/manual-device-matrix.md",
+        "status": "added",
+        "additions": 23,
+        "deletions": 0,
+        "changes": 23,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/normal-browser-artifacts.tar.gz",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/open-prs-before-publication.json",
+        "status": "added",
+        "additions": 47,
+        "deletions": 0,
+        "changes": 47,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/prepublication-checks.json",
+        "status": "added",
+        "additions": 20,
+        "deletions": 0,
+        "changes": 20,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/preservation-and-bundles.json",
+        "status": "added",
+        "additions": 14,
+        "deletions": 0,
+        "changes": 14,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/protected-evidence-before.json",
+        "status": "added",
+        "additions": 561,
+        "deletions": 0,
+        "changes": 561,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/assets.json",
+        "status": "added",
+        "additions": 54,
+        "deletions": 0,
+        "changes": 54,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/browser/.last-run.json",
+        "status": "added",
+        "additions": 4,
+        "deletions": 0,
+        "changes": 4,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/browser/integration-asset-diagnostic-mediapipe/diagnostic.json",
+        "status": "added",
+        "additions": 86,
+        "deletions": 0,
+        "changes": 86,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/browser/integration-asset-diagnostic-mediapipe/diagnostic.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/browser/integration-asset-diagnostic-selfie-segmenter/diagnostic.json",
+        "status": "added",
+        "additions": 67,
+        "deletions": 0,
+        "changes": 67,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/browser/integration-asset-diagnostic-selfie-segmenter/diagnostic.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/command.json",
+        "status": "added",
+        "additions": 16,
+        "deletions": 0,
+        "changes": 16,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/command.txt",
+        "status": "added",
+        "additions": 25,
+        "deletions": 0,
+        "changes": 25,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/environment.json",
+        "status": "added",
+        "additions": 23,
+        "deletions": 0,
+        "changes": 23,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/matrix.json",
+        "status": "added",
+        "additions": 183,
+        "deletions": 0,
+        "changes": 183,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/measurements.json",
+        "status": "added",
+        "additions": 6,
+        "deletions": 0,
+        "changes": 6,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-02e2781/playwright.json",
+        "status": "added",
+        "additions": 209,
+        "deletions": 0,
+        "changes": 209,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/assets.json",
+        "status": "added",
+        "additions": 54,
+        "deletions": 0,
+        "changes": 54,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/browser/.last-run.json",
+        "status": "added",
+        "additions": 4,
+        "deletions": 0,
+        "changes": 4,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/browser/integration-asset-diagnostic-mediapipe/diagnostic.json",
+        "status": "added",
+        "additions": 86,
+        "deletions": 0,
+        "changes": 86,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/browser/integration-asset-diagnostic-mediapipe/diagnostic.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/browser/integration-asset-diagnostic-selfie-segmenter/diagnostic.json",
+        "status": "added",
+        "additions": 67,
+        "deletions": 0,
+        "changes": 67,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/browser/integration-asset-diagnostic-selfie-segmenter/diagnostic.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/command.json",
+        "status": "added",
+        "additions": 16,
+        "deletions": 0,
+        "changes": 16,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/command.txt",
+        "status": "added",
+        "additions": 25,
+        "deletions": 0,
+        "changes": 25,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/environment.json",
+        "status": "added",
+        "additions": 23,
+        "deletions": 0,
+        "changes": 23,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/matrix.json",
+        "status": "added",
+        "additions": 183,
+        "deletions": 0,
+        "changes": 183,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/measurements.json",
+        "status": "added",
+        "additions": 6,
+        "deletions": 0,
+        "changes": 6,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-0376222/playwright.json",
+        "status": "added",
+        "additions": 209,
+        "deletions": 0,
+        "changes": 209,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/run-command.py",
+        "status": "added",
+        "additions": 8,
+        "deletions": 0,
+        "changes": 8,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/setup-observations.json",
+        "status": "added",
+        "additions": 55,
+        "deletions": 0,
+        "changes": 55,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/source-binding.json",
+        "status": "added",
+        "additions": 135,
+        "deletions": 0,
+        "changes": 135,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/verification/pr07-real-sdk/starting-state.json",
+        "status": "added",
+        "additions": 85,
+        "deletions": 0,
+        "changes": 85,
+        "previous_filename": null
+      },
+      {
+        "filename": "e2e-real-sdk/README.md",
+        "status": "added",
+        "additions": 43,
+        "deletions": 0,
+        "changes": 43,
+        "previous_filename": null
+      },
+      {
+        "filename": "e2e-real-sdk/assets.lock.json",
+        "status": "added",
+        "additions": 129,
+        "deletions": 0,
+        "changes": 129,
+        "previous_filename": null
+      },
+      {
+        "filename": "e2e-real-sdk/fixtures.ts",
+        "status": "added",
+        "additions": 89,
+        "deletions": 0,
+        "changes": 89,
+        "previous_filename": null
+      },
+      {
+        "filename": "e2e-real-sdk/integration.spec.ts",
+        "status": "added",
+        "additions": 117,
+        "deletions": 0,
+        "changes": 117,
+        "previous_filename": null
+      },
+      {
+        "filename": "e2e-real-sdk/observer.ts",
+        "status": "added",
+        "additions": 118,
+        "deletions": 0,
+        "changes": 118,
+        "previous_filename": null
+      },
+      {
+        "filename": "package.json",
+        "status": "modified",
+        "additions": 4,
+        "deletions": 1,
+        "changes": 5,
+        "previous_filename": null
+      },
+      {
+        "filename": "playwright.real-sdk.config.ts",
+        "status": "added",
+        "additions": 26,
+        "deletions": 0,
+        "changes": 26,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/real-sdk/assets.mjs",
+        "status": "added",
+        "additions": 59,
+        "deletions": 0,
+        "changes": 59,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/real-sdk/assets.test.mjs",
+        "status": "added",
+        "additions": 43,
+        "deletions": 0,
+        "changes": 43,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/real-sdk/audit.mjs",
+        "status": "added",
+        "additions": 18,
+        "deletions": 0,
+        "changes": 18,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/real-sdk/run.mjs",
+        "status": "added",
+        "additions": 68,
+        "deletions": 0,
+        "changes": 68,
+        "previous_filename": null
+      },
+      {
+        "filename": "scripts/real-sdk/summarize.mjs",
+        "status": "added",
+        "additions": 38,
+        "deletions": 0,
+        "changes": 38,
+        "previous_filename": null
+      },
+      {
+        "filename": "vite.real-sdk.config.ts",
+        "status": "added",
+        "additions": 22,
+        "deletions": 0,
+        "changes": 22,
+        "previous_filename": null
+      }
+    ]
+  },
+  "scopeProof": "The complete fetched Git diff and connector diff were obtained. 89 paths, 4 commits ahead/0 behind. Only preexisting path modified is package.json, adding 3 scripts; all other paths added. No prior evidence/product/ordinary test/workflow path modified. Evidence tree will be built on target tree adding only this new directory.",
+  "limitations": "715 tracked paths were hashed before tests in protected source checkout. Final local after-hash comparison and raw local artifact recovery blocked by executor disconnection. No claim of independently recomputing all 559 author hashes after disconnect; Git object preservation and remote diff remain verifiable."
+}

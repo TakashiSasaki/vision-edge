@@ -1,0 +1,24 @@
+{
+  "targetHead": "31721975d4eeef0ff31d29074aadafc801efae88",
+  "run": 40116866600,
+  "job": 120939833450,
+  "runStatus": "completed",
+  "runConclusion": "success",
+  "jobStatus": "completed",
+  "jobConclusion": "success",
+  "rawLog": "target-job-120939833450.txt",
+  "sourceBinding": "Raw ref, fetch, checkout and git-log explicitly match target HEAD.",
+  "tests": {
+    "unit": 317,
+    "unitFiles": 14,
+    "browser": 19,
+    "controls": "2 intact successes + 5 specified negative assertion failures"
+  },
+  "optionalRealSDK": "NOT RUN in mandatory hosted CI",
+  "runtime": {
+    "node": "24.19.0",
+    "npm": "11.17.0",
+    "browser": "Chrome for Testing 156.0.8078.4 / Playwright v1248"
+  },
+  "url": "https://github.com/TakashiSasaki/vision-edge/actions/runs/40116866600/job/120939833450"
+}

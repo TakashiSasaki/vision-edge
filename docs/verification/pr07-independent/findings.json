@@ -1,0 +1,69 @@
+{
+  "targetHead": "31721975d4eeef0ff31d29074aadafc801efae88",
+  "foundationVerdict": "FAIL",
+  "realInferenceObjective": "BLOCKED / NOT ACHIEVED",
+  "noProductRepair": true,
+  "findings": [
+    {
+      "id": "PR07-F01",
+      "severity": "P2",
+      "status": "OPEN",
+      "title": "Asset verification accepts empty, unsupported or incomplete manifests as success",
+      "file": "scripts/real-sdk/assets.mjs",
+      "lines": [
+        10,
+        54,
+        58
+      ],
+      "reproducer": "python3 docs/verification/pr07-independent/probes/invalid-manifests.py /path/to/target-checkout",
+      "expected": "Schema and required SDK/WASM/loader/input/model entries are validated before acceptance; malformed or missing required entries exit1, distinct from deliberate null model pins exit2.",
+      "actual": "In isolated roots using exact target assets.mjs, {schema:1,assets:[]} exits0 with rows:[]; {schema:999,assets:[]} also exits0; a manifest containing only the verified installed SDK module exits0 despite missing both models, four loader/WASM entries and both inputs. Invalid JSON syntax exits1.",
+      "impact": "The documented standalone prerequisite/integrity command can give false success without checking required assets. This is a harness defect; it does not establish that the full Playwright suite passes with an empty manifest.",
+      "evidence": "observations.json; independent-invalid-manifests command receipt; exact target source blob in source-binding.json",
+      "acceptance": "Add manifest schema/completeness/uniqueness/pin validation and negative controls; preserve explicitly blocked null model pin status. Rerun the unchanged reproducer on old/new heads."
+    },
+    {
+      "id": "PR07-F02",
+      "severity": "P2",
+      "status": "OPEN",
+      "title": "Negative-scene assertions can accept a previous ready result after all new calls fail",
+      "file": "e2e-real-sdk/integration.spec.ts",
+      "lines": [
+        70,
+        71,
+        72,
+        73,
+        74,
+        75
+      ],
+      "reproducer": "node docs/verification/pr07-independent/probes/checker-counterexamples.mjs /path/to/target-checkout",
+      "expected": "Each scene requires fresh successful SDK calls and processed results bound to that scene, after the retention allowance. New SDK errors or no new processed output cannot satisfy negative semantic acceptance.",
+      "actual": "The exact extracted loop waits on probe.calls, incremented before the SDK attempt, and then reads processed.at(-1) without a new result ID/raw ID/scene boundary. A checker-only counterexample with 10 failed new attempts and one stale ready empty record passes both substeps. Concretely, a successful empty background result can satisfy the following empty-scene step even when all empty-scene attempts throw. Recoverable SDK errors are warnings, not pageerror.",
+      "impact": "Future model-enabled tests can report negative-scene coverage using stale output; this is a source/checker defect independently detectable without model bytes.",
+      "evidence": "Executed checker-counterexamples command exited0 after asserting false acceptance; original stdout hash recorded in commands.json. Control uses deliberately fabricated checker state only: no SDK result replacement, no product or six-scenario inference success claimed.",
+      "acceptance": "Bind successful raw and processed result IDs to scene transitions, reject unexpected SDK errors, and require fresh results/rendering for each scene. Preserve actual SDK calls, unchanged GPU request and input type checks; add a checker regression control."
+    },
+    {
+      "id": "PR07-F03",
+      "severity": "P2",
+      "status": "OPEN",
+      "title": "Measurement summary marks inference executed when evidence exists but zero SDK calls occurred",
+      "file": "scripts/real-sdk/summarize.mjs",
+      "lines": [
+        35
+      ],
+      "reproducer": "node docs/verification/pr07-independent/probes/checker-counterexamples.mjs /path/to/target-checkout",
+      "expected": "A failed initialization/ready wait with an evidence.json containing no raw SDK calls must retain inferenceExecuted:false and empty populations.",
+      "actual": "summarizeRun sets inferenceExecuted from files.length > 0. The actual summarizer was invoked on a zero-call initialization-failure evidence fixture and returned inferenceExecuted:true while every retainedSdkCalls count was0.",
+      "impact": "The evidence writer runs in finally; a later model-enabled startup failure can create evidence.json without any inference. The summary then mislabels execution, although the Playwright test can still be failed. Current blocked diagnostic-only run remains correctly empty.",
+      "evidence": "Executed checker-counterexamples command exited0 after asserting the incorrect true flag. Summary-only fixture, not an inference run.",
+      "acceptance": "Derive execution/attempt/success status from actual SDK observations, distinguish attempts from successful inference, and test zero-call startup failure plus failed/successful calls without fabricating model acceptance."
+    }
+  ],
+  "conditions": [
+    "Fix and independently re-review F01–F03 on a newly frozen head; no repair in this evidence PR.",
+    "Recover/re-run uncollected raw local evidence and final preservation checks when the selected executor is available.",
+    "Obtain explicitly authorized lawful exact model bytes and model-specific terms; review pins/provenance before any real model run. No renewed denied download, alternate host/account/machine, proxy or delegate bypass.",
+    "Run all six genuine SDK/model/input scenarios and physical-device/public-equality work separately; none is certified here."
+  ]
+}

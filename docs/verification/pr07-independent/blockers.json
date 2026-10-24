@@ -1,0 +1,45 @@
+{
+  "blockers": [
+    {
+      "action": "Acquire EfficientDet-Lite0 model",
+      "target": "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
+      "status": "DENIED in author session; not retried by reviewer",
+      "reason": "HTTP403 CONNECT denial; no model bytes or model hash",
+      "completed": "Optional foundation, permitted nonmodel assets, two genuine-SDK controlled failure diagnostics, independent review probes",
+      "remaining": "Materially new relevant authorization/evidence and lawful source/licensing/pinned bytes before acquisition; no bypass"
+    },
+    {
+      "action": "Acquire Selfie Segmenter model",
+      "target": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite",
+      "status": "DENIED in author session; not retried by reviewer",
+      "reason": "HTTP403 CONNECT denial; mutable latest bytes unknown",
+      "completed": "Same foundation/diagnostics; null pins respected",
+      "remaining": "Same; mutable URL is not reproducibility without reviewed pinned bytes"
+    },
+    {
+      "action": "Read selected executor and recover local raw artifacts / final local hashes",
+      "target": "ccarenv_b64_Y2NhcmVudl9kNDYxNWQ1Nzc3MzQ4MTkxYjViY2RjNmJkYzgyNTZjZg; /workspace/vision-edge/docs/verification/pr07-independent and /tmp/pr07-review-*",
+      "status": "BLOCKED; environment unavailable",
+      "reason": "exec-server transport disconnected; recovery timed out after25s. Followup read-only pwd returned No usable execution environment is available.",
+      "completed": "Command receipts through17:48:44Z retained in conversation; exact raw hosted CI log remains available via GitHub",
+      "remaining": "Recover same executor and inspect state before further local mutations; not permission denial"
+    },
+    {
+      "action": "Additional one-byte cached-WASM corruption probe, archive promotion and installed-vs-cache comparisons",
+      "target": "/tmp/pr07-review-current/.cache/real-sdk-assets/vision_wasm_internal.wasm and /workspace/vision-edge/docs/verification/pr07-independent",
+      "status": "UNCERTAIN / no execution receipt",
+      "reason": "Combined command submission failed at transport disconnect; no result",
+      "completed": "Author's7 integrity controls already passed independently; invalid-manifest and checker probes completed",
+      "remaining": "Read cache/source state first if environment recovers; verify restoration before any retry; do not report this additional probe as passed"
+    },
+    {
+      "action": "Finish/read baseline ordinary browser/control sequence",
+      "target": "/tmp/pr07-review-baseline; executor session33895",
+      "status": "UNCERTAIN / launched, completion not observed",
+      "reason": "Environment disconnected before final command receipts were read",
+      "completed": "Baseline install/typecheck/lint/unit/build exit0; target ordinary browser/controls exit0",
+      "remaining": "Recover status/raw logs first; no automatic repeat of a possibly running sequence"
+    }
+  ],
+  "scope": "No real model download retry, browser-download retry, restriction bypass, main write, merge, deploy or next phase. GitHub evidence publication continues via the already-authorized connector; it does not obtain model bytes or replace the unavailable execution environment."
+}
