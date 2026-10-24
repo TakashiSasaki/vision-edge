@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Camera, Volume2, AlertCircle, RefreshCw, SwitchCamera } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Camera, AlertCircle, SwitchCamera } from 'lucide-react';
 import { 
   BenchmarkStats, 
   DetectedObject, 
@@ -131,7 +131,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   useEffect(() => {
     let isRunning = true;
 
-    const renderLoop = (time: number) => {
+    const renderLoop = () => {
       if (!isRunning) return;
 
       const canvas = canvasRef.current;
@@ -245,6 +245,9 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
         cancelAnimationFrame(animFrameIdRef.current);
       }
     };
+    // Preserve existing loop restart behavior in PR-01. The drawOverlays closure
+    // (including stale clickRipple) needs a lifecycle review in PR-04/06.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCameraActive, activeModel, selectedBackend, renderOptions, ttsConfig, onStatsUpdate, selectedObjectId]);
 
   const drawOverlays = (

@@ -1,0 +1,77 @@
+Linux cloud workspace; Node v24.19.0; npm 11.9.0.
+Environment: npm_config_cache=/tmp/vision-edge-npm
+Environment: PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+System Chromium 154.0.8037.57 (not Playwright bundled Chromium).
+
+$ npm ci
+
+added 265 packages in 4s
+Exit code: 0
+
+$ npm run typecheck
+
+> vision-studio@1.0.0 typecheck
+> tsc --noEmit
+
+Exit code: 0
+
+$ npm run lint
+
+> vision-studio@1.0.0 lint
+> eslint . --max-warnings=0
+
+Exit code: 0
+
+$ npm test
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+
+ Test Files  3 passed (3)
+      Tests  8 passed (8)
+   Start at  00:58:25
+   Duration  1.09s (environment 64%, tests 11%, setup 11%, transform 8%, import 5%, worker 1%)
+
+Exit code: 0
+
+$ npm run build
+
+> vision-studio@1.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 1668 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   1.60 kB │ gzip:   0.79 kB
+dist/assets/index-CjOYpL8b.css   26.26 kB │ gzip:   5.59 kB
+dist/assets/index-vB5eVuha.js   401.52 kB │ gzip: 124.06 kB
+
+✓ built in 173ms
+Exit code: 0
+
+$ npm run test:e2e
+
+> vision-studio@1.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:2572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:2596) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › e2e/smoke.spec.ts:3:1 › production app loads and model controls work without camera or external services (725ms)
+
+  1 passed (1.7s)
+Exit code: 0
+
+$ git diff --check
+Exit code: 0
+

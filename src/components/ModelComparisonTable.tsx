@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Check, Sparkles } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 import { ModelType } from '../types/vision';
 
 interface ModelComparisonTableProps {

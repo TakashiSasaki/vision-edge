@@ -25,7 +25,7 @@ export default function App() {
 
   const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
   const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([]);
-  const [stats, setStats] = useState<BenchmarkStats>({
+  const [, setStats] = useState<BenchmarkStats>({
     inferenceTimeMs: 12,
     fps: 60,
     objectCount: 0,
