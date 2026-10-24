@@ -81,7 +81,10 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
   const handleCameraStop = useCallback(() => setIsCameraActive(false), []);
   const handleToggleCamera = useCallback(() => setIsCameraActive(previous => !previous), []);
 
-  const handleFrame = useCallback((frame: DetectionFrame | null) => { setLastFrame(frame); }, []);
+  const handleFrame = useCallback((frame: DetectionFrame | null) => {
+    setLastFrame(frame);
+    if (!frame) setSelectedObjectId(undefined);
+  }, []);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col font-sans">

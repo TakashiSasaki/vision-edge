@@ -118,7 +118,7 @@ it('cancels a queued old-generation inference and allows the replacement model t
   expect(onFrame).toHaveBeenLastCalledWith(expect.objectContaining({ model: 'selfie-segmenter', requestId: f.engine.getState().requestId, objects: [] }));
 });
 
-it('camera stop/restart clears the old scene without disposing or recreating the ready model', async () => {
+it('camera stop/restart clears the old scene and selection without recreating the ready model', async () => {
   const f = fixture();
   let container!: HTMLElement;
   await act(async () => { container = render(<App engine={f.engine} />).container; });
@@ -128,6 +128,9 @@ it('camera stop/restart clears the old scene without disposing or recreating the
   act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); });
   step();
   expect(screen.getByText('(dog)')).toBeInTheDocument();
+  const detection = f.detect.getMockImplementation()!;
+  act(() => { fireEvent.click(screen.getByText('(dog)')); });
+  expect(screen.getByText('(dog)').closest('.group')).toHaveClass('border-blue-500/80');
   await act(async () => { fireEvent.click(screen.getByRole('button', { name: '停止' })); });
   expect(screen.queryByText('(dog)')).not.toBeInTheDocument();
   expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mediapipe' });
@@ -140,6 +143,10 @@ it('camera stop/restart clears the old scene without disposing or recreating the
   step();
   expect(screen.queryByText('(dog)')).not.toBeInTheDocument();
   expect(screen.getByText('現在しきい値を超える物体はありません')).toBeInTheDocument();
+  f.detect.mockImplementation(detection);
+  act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); });
+  step();
+  expect(screen.getByText('(dog)').closest('.group')).not.toHaveClass('border-blue-500/80');
   expect(f.factory.detector).toHaveBeenCalledTimes(1);
   expect(f.detector.close).not.toHaveBeenCalled();
 });
