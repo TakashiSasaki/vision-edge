@@ -1,5 +1,6 @@
 import { FilesetResolver, ObjectDetector, ImageSegmenter, type ImageSegmenterResult } from '@mediapipe/tasks-vision';
 import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput } from '../types/vision';
+import { PipelineProbe, type PipelineObserver, type AttemptOutcome } from './pipelineMetrics';
 import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 
@@ -131,7 +132,8 @@ export class VisionEngine {
   public detectVideoFrame(
     videoElement: InferenceInput,
     model: RunnableModelType,
-    confidenceThreshold: number
+    confidenceThreshold: number,
+    instrumentation?: PipelineObserver
   ): FrameResult {
     requireRunnableModel(model);
     const state = this.state;
@@ -142,6 +144,13 @@ export class VisionEngine {
     if (state.status !== 'ready' || state.model !== model || active?.model !== model || !videoReady) {
       return { status: 'not-ready', model, requestId: state.requestId };
     }
+    const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
+    const engineStart = probe?.start();
+    let engineOutcome: AttemptOutcome = 'failed';
+    let postStart: ReturnType<PipelineProbe['start']>;
+    let postStarted = false;
+    let postActive = false;
+    let postMs: number | null = 0;
     try {
       const frameTimestamp = performance.now();
       let rawObjects: DetectedObject[] = [];
@@ -153,8 +162,14 @@ export class VisionEngine {
       if (active.model === 'selfie-segmenter') {
         let segResult: ImageSegmenterResult | null = null;
         try {
-          segResult = active.task.segmentForVideo(videoElement, frameTimestamp);
+          const sdkStart = probe?.start();
+          let sdkOutcome: AttemptOutcome = 'failed';
+          try { segResult = active.task.segmentForVideo(videoElement, frameTimestamp); sdkOutcome = 'success'; }
+          finally { probe?.end('sdk', sdkStart, sdkOutcome); }
+          postStart = probe?.start();
+          postStarted = true; postActive = true;
           if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+            engineOutcome = 'stale';
             return { status: 'not-ready', model, requestId: state.requestId };
           }
           const confMask = segResult.confidenceMasks?.[0];
@@ -240,19 +255,30 @@ export class VisionEngine {
             }
           }
         } finally {
+          if (postStarted && probe) postMs = probe.elapsed(postStart)?.ms ?? null;
+          postStart = undefined; postActive = false;
           if (segResult) {
+            const cleanupStart = probe?.start();
+            let cleanupOutcome: AttemptOutcome = 'failed';
             try {
               segResult.close();
+              cleanupOutcome = 'success';
             } catch (cause) {
               console.warn('Vision result cleanup failed', { cause });
-            }
+            } finally { probe?.end('cleanup', cleanupStart, cleanupOutcome); }
           }
         }
       }
 
       // EfficientDet-Lite0 produces boxes only; no substitute segmentation.
       if (active.model === 'mediapipe') {
-        const detectionResult = active.task.detectForVideo(videoElement, frameTimestamp);
+        const sdkStart = probe?.start();
+        let sdkOutcome: AttemptOutcome = 'failed';
+        let detectionResult;
+        try { detectionResult = active.task.detectForVideo(videoElement, frameTimestamp); sdkOutcome = 'success'; }
+        finally { probe?.end('sdk', sdkStart, sdkOutcome); }
+        postStart = probe?.start();
+        postStarted = true; postActive = true;
 
         if (detectionResult.detections && detectionResult.detections.length > 0) {
           rawObjects = detectionResult.detections.map((det, idx) => {
@@ -285,7 +311,10 @@ export class VisionEngine {
         }
       }
 
+      if (active.model === 'selfie-segmenter') { postStart = probe?.start(); postActive = true; }
+
       if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        engineOutcome = 'stale';
         return { status: 'not-ready', model, requestId: state.requestId };
       }
 
@@ -337,12 +366,22 @@ export class VisionEngine {
 
       // Synchronous SDK doubles/subscribers can reenter lifecycle methods too.
       if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        engineOutcome = 'stale';
         return { status: 'not-ready', model, requestId: state.requestId };
       }
+      engineOutcome = 'success';
       return { status: 'ready', model, requestId: state.requestId, objects: finalObjects };
     } catch (cause) {
       if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) this.resetOutputs();
       throw cause;
+    } finally {
+      if (postStarted && probe) {
+        // Segmenter transformations precede result.close; filtering/smoothing follow it.
+        // Publish one summed exclusive postprocess sample per attempted transform.
+        const tail = postActive ? probe.elapsed(postStart)?.ms ?? null : 0;
+        probe.duration('postprocess', postMs === null || tail === null ? null : postMs + tail, engineOutcome);
+      }
+      probe?.end('engine', engineStart, engineOutcome);
     }
   }
 

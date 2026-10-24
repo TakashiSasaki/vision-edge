@@ -4,6 +4,7 @@ import { speechService } from '../services/speechService';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from '../App';
+import { PipelineMetrics } from '../services/pipelineMetrics';
 import { VisionCanvas } from './VisionCanvas';
 import { VisionEngine, type SegmenterTask, type VisionTaskFactory } from '../services/visionEngine';
 
@@ -455,4 +456,71 @@ it('F01 real canvas/engine: a delayed arrival cannot adopt or announce the same 
   expect(inputs).toEqual([2]); expect(gate).toHaveBeenCalledTimes(1);
   expect(props.onFrame.mock.calls.filter(([frame]) => frame !== null)).toHaveLength(1);
   expect(screen.getByLabelText('推論FPS')).toHaveTextContent('未計測'); // One distinct successful input, not 2 FPS.
+});
+
+// PR06 uses the actual App, scheduler and Canvas copy, not onFrame callbacks.
+it('records a successful first Canvas draw for an empty immutable result once, including measured zero latency', async () => {
+  vi.stubGlobal('VideoFrame', class {
+    timestamp: number; displayWidth = 640; displayHeight = 480;
+    constructor(video: HTMLVideoElement) { this.timestamp = video.currentTime * 1000000; }
+    close() {}
+  });
+  const f = fixture(); const accepts = vi.spyOn(PipelineMetrics.prototype, 'accept'); const firstDraws = vi.spyOn(PipelineMetrics.prototype, 'firstDraw');
+  let container!: HTMLElement; await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); });
+  expect(accepts).toHaveBeenCalledTimes(1); expect(firstDraws).not.toHaveBeenCalled();
+  step(false); step(false); step(false);
+  expect(firstDraws).toHaveBeenCalledTimes(1);
+  expect(firstDraws.mock.calls[0][0]).toBe(accepts.mock.calls[0][0]);
+  const metrics = accepts.mock.contexts[0] as PipelineMetrics;
+  expect(metrics.snapshot()!.stages.latency.success).toMatchObject({ count: 1, mean: 0 });
+  expect(metrics.snapshot()!.results['first-draw']).toBe(1);
+  expect(f.segment).toHaveBeenCalledTimes(1);
+});
+it('records overwritten results separately and binds the first draw to the latest accepted job', async () => {
+  const f = fixture(); const accepts = vi.spyOn(PipelineMetrics.prototype, 'accept'); const draws = vi.spyOn(PipelineMetrics.prototype, 'firstDraw');
+  let container!: HTMLElement; await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); });
+  expect(accepts).toHaveBeenCalledTimes(1);
+  act(() => {
+    container.querySelector('video')!.currentTime += 1;
+    const [id, callback] = [...raf][0]; raf.delete(id); callback(0); // acquisition only; draw has not run
+    vi.advanceTimersByTime(0);
+  });
+  expect(accepts).toHaveBeenCalledTimes(2); expect(draws).not.toHaveBeenCalled();
+  const metrics = accepts.mock.contexts[0] as PipelineMetrics;
+  expect(metrics.snapshot()!.results.overwritten).toBe(1);
+  step(false); expect(draws.mock.calls[0][0]).toBe(accepts.mock.calls[1][0]);
+  expect(metrics.snapshot()!.results).toMatchObject({ overwritten: 1, 'first-draw': 1, unbound: 1 });
+});
+it.each(['hidden', 'stop', 'draw-failed'] as const)('never substitutes zero for %s result and prevents a later recovery latency', async outcome => {
+  const f = fixture(); const accepts = vi.spyOn(PipelineMetrics.prototype, 'accept'); const draws = vi.spyOn(PipelineMetrics.prototype, 'firstDraw');
+  let container!: HTMLElement; await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); });
+  const metrics = accepts.mock.contexts[0] as PipelineMetrics;
+  if (outcome === 'hidden') {
+    vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+    act(() => { document.dispatchEvent(new Event('visibilitychange')); });
+    step(false);
+  } else if (outcome === 'stop') {
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /^停止$/ })); });
+  } else {
+    const ctx = container.querySelector('canvas')!.getContext('2d')!;
+    vi.mocked(ctx.drawImage).mockImplementationOnce(() => { throw Error('copy'); }); step(false);
+    expect(screen.getByRole('alert')).toHaveTextContent('描画エラー');
+  }
+  expect(draws).not.toHaveBeenCalled();
+  expect(metrics.snapshot()!.stages.latency.success.mean).toBeNull();
+  expect(metrics.snapshot()!.results[outcome === 'stop' ? 'cancelled' : outcome]).toBe(1);
+});
+it('statistics exceptions and details toggles do not change SDK, camera, model or Canvas ownership', async () => {
+  const f = fixture(); const snapshot = vi.spyOn(PipelineMetrics.prototype, 'snapshot').mockImplementation(() => { throw Error('statistics'); });
+  let container!: HTMLElement; await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); }); step(false);
+  act(() => { vi.advanceTimersByTime(250); }); expect(snapshot).toHaveBeenCalled();
+  const loadCount = vi.mocked(f.factory.load).mock.calls.length;
+  for (let i = 0; i < 4; i++) fireEvent.click(screen.getByText('計測詳細 (JS wall time)'));
+  step(); act(() => { vi.advanceTimersByTime(0); }); step(false);
+  expect(f.segment).toHaveBeenCalledTimes(2); expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  expect(f.factory.load).toHaveBeenCalledTimes(loadCount); expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });
