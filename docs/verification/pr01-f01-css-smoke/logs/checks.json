@@ -1,0 +1,112 @@
+{
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "source_root": "/workspace/vision-edge",
+  "checks": [
+    {
+      "command": [
+        "node",
+        "--version"
+      ],
+      "exit": 0,
+      "log": "01-node---version.txt"
+    },
+    {
+      "command": [
+        "npm",
+        "--version"
+      ],
+      "exit": 0,
+      "log": "02-npm---version.txt"
+    },
+    {
+      "command": [
+        "npx",
+        "--no-install",
+        "playwright",
+        "--version"
+      ],
+      "exit": 0,
+      "log": "03-npx---no-install-playwright.txt"
+    },
+    {
+      "command": [
+        "chromium",
+        "--version"
+      ],
+      "exit": 0,
+      "log": "04-chromium---version.txt"
+    },
+    {
+      "command": [
+        "npm",
+        "ci",
+        "--cache",
+        "/tmp/vision-edge-npm-cache"
+      ],
+      "exit": 0,
+      "log": "05-npm-ci---cache.txt"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "log": "06-npm-run-typecheck.txt"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit": 0,
+      "log": "07-npm-run-lint.txt"
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit": 0,
+      "log": "08-npm-test.txt"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "log": "09-npm-run-build.txt"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "exit": 0,
+      "log": "10-npm-run-test-e2e.txt"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:e2e:controls"
+      ],
+      "exit": 0,
+      "log": "11-npm-run-test-e2e-controls.txt"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "log": "12-git-diff---check.txt"
+    }
+  ]
+}

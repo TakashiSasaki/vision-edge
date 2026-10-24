@@ -1,0 +1,16 @@
+Command: ["npm", "test"]
+Environment: npm_config_cache=/tmp/vision-edge-npm-cache npm_config_update_notifier=false PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+Exit: 0
+
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+
+ Test Files  3 passed (3)
+      Tests  8 passed (8)
+   Start at  01:29:23
+   Duration  2.68s (environment 56%, setup 15%, tests 11%, transform 10%, import 7%)

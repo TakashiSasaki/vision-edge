@@ -59,6 +59,7 @@ changing dependencies.
 | `npm run build` | Write production assets to `dist/` |
 | `npm run preview` | Serve an existing production build locally (default port 4173) |
 | `npm run test:e2e` | Run Playwright against production preview; build first |
+| `npm run test:e2e:controls` | Check production-smoke sensitivity using disposable healthy and faulty builds |
 | `npm run clean` | Remove `dist/` and legacy generated `server.js`, using Node filesystem APIs |
 
 The clean script avoids shell-specific deletion commands. Linux was exercised in
@@ -96,30 +97,41 @@ npm test
 npm run build
 npx playwright install --with-deps chromium
 npm run test:e2e
+npm run test:e2e:controls
 ```
 
-Vitest uses jsdom and React Testing Library. Tests cover dictionary/speech boundaries, supported model selection, staged
-initialization errors, explicit retry, shared requests, cancellation, task ownership
+Vitest uses jsdom and React Testing Library. Tests cover dictionary/speech boundaries,
+supported model selection, staged initialization errors, explicit retry, shared
+requests (including synchronous subscriber reentrancy), cancellation, task ownership
 and controlled out-of-order completion. The actual engine/state/UI run with the
 MediaPipe creation boundary injected. Canvas bridge tests use a controlled RAF,
 timers and canvas context, and exercise successful inference dispatch as well as
-old-result invalidation. Camera acquisition is rejected or held pending by tests;
-these are not device tests.
+old-result invalidation. Camera acquisition uses controlled Promises and synthetic
+streams in tests; these are not device tests.
 Unit tests do not evaluate real GPU inference, canvas rendering, or audible speech.
 
-The additional camera lifecycle browser test controls only acquisition, using
-native MediaStreams/tracks from synthetic canvas video. Actual app/UI rendering,
-video playback and track stopping run in Chromium. It checks render stability,
+The camera lifecycle browser test controls only acquisition, using native
+MediaStreams/tracks from synthetic canvas video. Actual app/UI rendering, video
+playback and track stopping run in Chromium. It checks render stability,
 stop/restart, delayed acquisition and out-of-order facing changes. It is not a
 physical camera or inference test. Unit hook tests separately cover unmount,
 StrictMode, stale rejection, playback failure and ended-track cleanup.
 
 Playwright starts a fresh Vite production preview at `127.0.0.1:4173` and runs the
-real built app in Chromium. It denies camera access and blocks every external
-request, including model/WASM/CDN/font resources. It verifies the header, model
-supported/disabled model choices, comparison UI, model-load error/retry, continued
-camera controls, required stylesheet CSS MIME/rules/applied styles, successful local
-resources, and no uncaught JavaScript exception. It does not replace app modules or mock model outputs.
+real built app in Chromium. The separate offline production smoke denies camera
+access and blocks every external request, including model/WASM/CDN/font resources.
+It verifies supported/disabled model choices, comparison UI, model-load error/retry,
+continued camera controls, required stylesheet CSS MIME/rules/applied styles,
+successful local resources, and no uncaught JavaScript exception. It does not
+replace app modules or mock model outputs.
+
+The stylesheet controls rerun `e2e/smoke.spec.ts` explicitly with retries disabled
+on disposable copies of the build. Two intact builds must pass. Missing CSS,
+removed stylesheet links, empty CSS, unrelated valid CSS, and fatal JavaScript
+must each fail at the intended assertion. A setup failure or the wrong diagnostic
+does not satisfy a control. The original build is preserved. Selecting the smoke
+explicitly keeps these seven controls independent of other browser test files.
+
 If a compatible Chromium is already installed, a local-only override is available:
 
 ```sh
@@ -130,9 +142,12 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
 `.github/workflows/ci.yml` runs on every pull request and pushes to `main`, using
 the lockfile and pinned Node version. PR runs explicitly check out the PR head SHA.
 The job runs install, typecheck, ESLint, unit tests, production build, browser
-installation, and smoke tests in that order. Failures stop subsequent verification
+installation, all browser tests, and stylesheet controls in that order. Failures stop subsequent verification
 steps and fail the job. Browser reports and failure traces/screenshots are uploaded
 for 14 days. CI needs no application secrets and does not deploy or merge.
+
+See [PR-02/03 integration verification](docs/verification/integration-2026-10-24.md)
+for the reentrancy correction, CSS reconciliation, source bindings and CI receipts.
 
 See [PR-03 camera verification](docs/verification/pr03.md) for session ownership,
 controlled races and remaining device/scheduler limits.

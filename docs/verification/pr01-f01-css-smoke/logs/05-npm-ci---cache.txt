@@ -1,0 +1,6 @@
+Command: ["npm", "ci", "--cache", "/tmp/vision-edge-npm-cache"]
+Environment: npm_config_cache=/tmp/vision-edge-npm-cache npm_config_update_notifier=false PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+Exit: 0
+
+
+added 265 packages in 10s
