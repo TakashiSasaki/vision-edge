@@ -1,0 +1,48 @@
+
+> vision-studio@1.0.0 test
+> vitest run src/services/videoCoordinates.test.ts src/components/VisionCanvas.test.tsx
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ src/components/VisionCanvas.test.tsx (23 tests | 1 failed) 681ms
+   × passes video-normalized coordinates to existing maskCanvas hit testing and drawing 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > passes video-normalized coordinates to existing maskCanvas hit testing and drawing
+AssertionError: expected last "vi.fn()" call to have been called with [ 188, 138, 24, +0, 6.283185307179586 ]
+
+- Expected:
+[
+  188,
+  138,
+  24,
+  0,
+  6.283185307179586,
+]
+
++ Received:
+undefined
+
+ ❯ src/components/VisionCanvas.test.tsx:315:19
+    313|   act(() => { fireEvent.click(canvas, { clientX: 331.5, clientY: 155.2…
+    314|   expect(props.onSelectObject).toHaveBeenCalledWith(object);
+    315|   expect(ctx.arc).toHaveBeenLastCalledWith(188, 138, 24, 0, Math.PI * …
+       |                   ^
+    316|   if (kind === 'maskCanvas') {
+    317|     expect(pixel).toHaveBeenCalledWith(94, 69, 1, 1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 62 passed (63)
+   Start at  11:37:14
+   Duration  1.96s (environment 51%, tests 26%, transform 9%, setup 9%, import 4%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

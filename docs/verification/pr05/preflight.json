@@ -1,0 +1,53 @@
+{
+  "observedDate": "2026-10-24",
+  "phase": "Author implementation",
+  "repo": "TakashiSasaki/vision-edge",
+  "base": "f97e19ac5f9f07eca23732003844b5082cd27d37",
+  "baseTree": "e357f512a371df5c86950913cf3a43208f0321ce",
+  "pr7": {
+    "merged": true,
+    "mergeCommit": "f97e19ac5f9f07eca23732003844b5082cd27d37",
+    "head": "d92b7b40c7d2dc11572147d052f69f11657540e2"
+  },
+  "baselineCI": {
+    "run": 40089950572,
+    "job": 120860416797,
+    "conclusion": "success"
+  },
+  "openPRs": [
+    {
+      "number": 10,
+      "title": "review: PR-04 compatibility correction — PASS WITH CONDITIONS",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/10"
+    },
+    {
+      "number": 9,
+      "title": "review: PR-04 corrections — F02 closed, F01 compatibility defect remains",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/9"
+    },
+    {
+      "number": 8,
+      "title": "review: independently assess PR-04 — FAIL (duplicate input and missing first frame)",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/8"
+    },
+    {
+      "number": 4,
+      "title": "review: independently validate PR-01 F01 CSS smoke correction — PASS",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/4"
+    },
+    {
+      "number": 2,
+      "title": "review: PR-01 foundation — PASS WITH CONDITIONS",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/2"
+    }
+  ],
+  "instructions": "No AGENTS.md or .agents/skills SKILL.md found in checkout or workspace ancestors; cloud coordinate-codex-review-cycle skill read.",
+  "branchInspection": "Fetched all remote heads. Implementation branches are ancestors of main. Five unmerged review commits add historical evidence only; no overlapping coordinate work. Main unchanged at verified checkpoint.",
+  "githubAccess": "gh GraphQL/REST read attempts returned Forbidden; connected GitHub tools succeeded. git fetch and new-branch push succeeded.",
+  "toolchain": {
+    "node": "24.19.0",
+    "npm": "11.9.0",
+    "packageManager": "npm@11.9.0",
+    "cache": "/workspace/.npm-cache"
+  }
+}

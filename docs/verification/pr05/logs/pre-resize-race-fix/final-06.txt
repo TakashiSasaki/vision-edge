@@ -1,0 +1,14 @@
+
+> vision-studio@1.0.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 1674 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   1.59 kB │ gzip:   0.77 kB
+dist/assets/index-9bRTD2dn.css   26.34 kB │ gzip:   5.70 kB
+dist/assets/index-D3xj8EHJ.js   409.50 kB │ gzip: 127.27 kB
+
+✓ built in 229ms

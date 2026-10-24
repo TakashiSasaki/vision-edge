@@ -1,0 +1,37 @@
+
+> vision-studio@1.0.0 test:e2e
+> playwright test e2e/coordinates.spec.ts
+
+[WebServer] (node:4576) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4589) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4614) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4627) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] npm notice
+[WebServer] npm notice New major version of npm available! 11.9.0 -> 12.2.1
+[WebServer] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+[WebServer] npm notice To update run: npm install -g npm@12.2.1
+[WebServer] npm notice
+[WebServer] (node:4658) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4671) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:4695) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+coordinate observation {"scenario":{"name":"4x3 in wide display","width":640,"height":480,"viewport":{"width":1600,"height":550}},"geometry":{"pixels":{"videoBackground":[24,50,79,255],"videoObject":[199,230,164,255],"sdkBackground":[24,50,79,255],"sdkObject":[199,230,164,255],"sdkPixelLength":1228800,"sdkSourceKind":"video-frame"},"video":{"left":177,"top":97,"width":826,"height":436,"objectFit":"contain","objectPosition":"50% 50%","transform":"none"},"canvas":{"left":177,"top":97,"width":826,"height":436,"objectFit":"contain","objectPosition":"50% 50%","transform":"none"},"intrinsic":[640,480],"backing":[640,480],"dpr":2},"content":{"left":299.3333333333333,"top":97,"width":581.3333333333334,"height":436},"point":{"x":470.09999999999997,"y":222.35},"margin":{"x":297.3333333333333,"y":187.83333333333331},"marginObservation":{"speech":[],"arcs":[]},"marginSelected":false,"observations":{"speech":["「犬」、信頼度90%"],"arcs":[[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24],[187.88990825688074,137.61467889908258,24]],"requests":1,"creates":2}}
+  ✓  1 [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 4x3 in wide display (1.6s)
+coordinate observation {"scenario":{"name":"16x9 in narrow display","width":1280,"height":720,"viewport":{"width":550,"height":900}},"geometry":{"pixels":{"videoBackground":[24,50,79,255],"videoObject":[199,230,164,255],"sdkBackground":[24,50,79,255],"sdkObject":[199,230,164,255],"sdkPixelLength":3686400,"sdkSourceKind":"video-frame"},"video":{"left":11,"top":91,"width":528,"height":518.25,"objectFit":"contain","objectPosition":"50% 50%","transform":"none"},"canvas":{"left":11,"top":91,"width":528,"height":518.25,"objectFit":"contain","objectPosition":"50% 50%","transform":"none"},"intrinsic":[1280,720],"backing":[1280,720],"dpr":2},"content":{"left":11,"top":201.625,"width":528,"height":297},"point":{"x":88.55,"y":258.55},"margin":{"x":52.25,"y":199.625},"marginObservation":{"speech":[],"arcs":[]},"marginSelected":false,"observations":{"speech":["「犬」、信頼度90%"],"arcs":[[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24],[186.66666666666669,136.66666666666669,24]],"requests":1,"creates":2}}
+  ✓  2 [chromium] › e2e/coordinates.spec.ts:16:3 › pointer selects displayed object and excludes margins: 16x9 in narrow display (1.3s)
+
+  2 passed (5.8s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

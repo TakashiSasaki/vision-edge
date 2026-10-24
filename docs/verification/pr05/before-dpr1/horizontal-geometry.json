@@ -1,0 +1,60 @@
+{
+  "scenario": {
+    "name": "4x3 in wide display",
+    "width": 640,
+    "height": 480,
+    "viewport": {
+      "width": 1600,
+      "height": 650
+    }
+  },
+  "geometry": {
+    "video": {
+      "left": 177,
+      "top": 97,
+      "width": 826,
+      "height": 536,
+      "objectFit": "contain",
+      "objectPosition": "50% 50%",
+      "transform": "none"
+    },
+    "canvas": {
+      "left": 177,
+      "top": 97,
+      "width": 826,
+      "height": 536,
+      "objectFit": "contain",
+      "objectPosition": "50% 50%",
+      "transform": "none"
+    },
+    "intrinsic": [
+      640,
+      480
+    ],
+    "backing": [
+      640,
+      480
+    ],
+    "dpr": 1
+  },
+  "content": {
+    "left": 232.66666666666663,
+    "top": 97,
+    "width": 714.6666666666667,
+    "height": 536
+  },
+  "point": {
+    "x": 442.59999999999997,
+    "y": 251.1
+  },
+  "margin": {
+    "x": 230.66666666666663,
+    "y": 208.66666666666669
+  },
+  "observations": {
+    "speech": [],
+    "arcs": [],
+    "requests": 1,
+    "creates": 2
+  }
+}

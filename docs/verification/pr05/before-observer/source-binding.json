@@ -1,0 +1,20 @@
+{
+  "base": "f97e19ac5f9f07eca23732003844b5082cd27d37",
+  "tree": "e357f512a371df5c86950913cf3a43208f0321ce",
+  "productFiles": {
+    "src/components/VisionCanvas.tsx": "9d668d4483cb42cc64440bafa1f8b22ee60d3083f62a096e0e8856b755146c00",
+    "src/services/visionEngine.ts": "d6fef5b413d4d1eddd7bbc339f956c58f98ede99fe7be5a6656758bc9644b36c",
+    "src/hooks/useCameraStream.ts": "69ef9ec6891dee3ed0e8c6822405d72fea3f1d8061edab40f5e5ea73158edc73",
+    "src/types/vision.ts": "1634ef6981db2cf5161b029b63b7aa0c44b8ad31e5857954094bb9385cb93e70",
+    "src/index.css": "76f6a5812150a612c363c9105a8dfc4eb5a068b1ff3296a4100a3a2f0f765087",
+    "vite.config.ts": "5d1c39a3dc2a764c55479a7329c75ec54970f4cf3bb52e94fc0ff5d2b291e8f2",
+    "playwright.config.ts": "087cf75c3e18abc52082eb67a4aa8f7e220f6ca4394eaaf86b654de5e021ab57",
+    "e2e/fixtures/visionSdk.ts": "412d511b18585b59dff7adaee4c69ed85867fcb395f7ce6b834d7f14cc3af633",
+    "package-lock.json": "1501945de52bc26a7411bd139358604ab1a189b51608c011a93d3164baa6de5b",
+    "package.json": "d58b9ead5548b0ac8e6f10c153640b3d59c7a46b0569bb50a848a0a4b9ad7ca6"
+  },
+  "testSha256": "e764cb6ae18cf2a7fe6b89747a9a03dde35129a0d3db92b01c4d67564fb44584",
+  "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e -- e2e/coordinates.spec.ts",
+  "exit": 1,
+  "result": "2 failed: horizontal margin caused false selection/speech/ripple; vertical visible-box selection missed. Final vectors use DPR 2."
+}
