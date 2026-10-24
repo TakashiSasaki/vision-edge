@@ -1,0 +1,21 @@
+2026-10-24T01:02:45.0931423Z Ubuntu
+2026-10-24T01:02:45.0935868Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-24T01:02:46.8912248Z   ref: f20474be156522ee6141cde9c2b3a958db8d2457
+2026-10-24T01:02:47.8238999Z HEAD is now at f20474b chore: pin supported Node 24 GitHub Actions
+2026-10-24T01:02:47.8495723Z   cache: npm
+2026-10-24T01:02:47.9256909Z Resolved .nvmrc as 24.19.0
+2026-10-24T01:02:52.4051603Z node: v24.19.0
+2026-10-24T01:02:52.4051875Z npm: 11.17.0
+2026-10-24T01:02:52.4061627Z [command]/opt/hostedtoolcache/node/24.19.0/x64/bin/npm config get cache
+2026-10-24T01:02:52.6209929Z Cache hit for: node-cache-Linux-x64-npm-1679cf5362cabd1ede55054c727810ea8d7c2f758d5f5207d3f436a086a60f4d
+2026-10-24T01:02:53.7541247Z Cache restored successfully
+2026-10-24T01:02:53.7580346Z Cache restored from key: node-cache-Linux-x64-npm-1679cf5362cabd1ede55054c727810ea8d7c2f758d5f5207d3f436a086a60f4d
+2026-10-24T01:02:56.7321131Z added 265 packages, and audited 266 packages in 3s
+2026-10-24T01:03:00.8945943Z  Test Files  3 passed (3)
+2026-10-24T01:03:00.8946473Z       Tests  8 passed (8)
+2026-10-24T01:03:01.7336254Z ✓ built in 359ms
+2026-10-24T01:03:19.4811248Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+2026-10-24T01:03:22.6614026Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to /home/runner/.cache/ms-playwright/chromium-1248
+2026-10-24T01:03:25.4137372Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+2026-10-24T01:03:27.7827330Z   1 passed (1.9s)
+2026-10-24T01:03:29.1555656Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-1679cf5362cabd1ede55054c727810ea8d7c2f758d5f5207d3f436a086a60f4d, not saving cache.

@@ -1,0 +1,143 @@
+[
+  {
+    "name": "negative-eslint-typescript",
+    "command": [
+      "/workspace/pr01-independent-review/node_modules/.bin/eslint",
+      "--stdin",
+      "--stdin-filename",
+      "src/review-negative.ts"
+    ],
+    "exit": 1,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "negative-eslint-hooks",
+    "command": [
+      "/workspace/pr01-independent-review/node_modules/.bin/eslint",
+      "--stdin",
+      "--stdin-filename",
+      "src/review-negative.tsx"
+    ],
+    "exit": 1,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "exception-without-suppression",
+    "command": [
+      "/workspace/pr01-independent-review/node_modules/.bin/eslint",
+      "--stdin",
+      "--stdin-filename",
+      "src/components/VisionCanvas.tsx"
+    ],
+    "exit": 1,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "exception-new-omission",
+    "command": [
+      "/workspace/pr01-independent-review/node_modules/.bin/eslint",
+      "--stdin",
+      "--stdin-filename",
+      "src/components/VisionCanvas.tsx"
+    ],
+    "exit": 0,
+    "expected": "success",
+    "control_passed": true
+  },
+  {
+    "name": "negative-typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 2,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "negative-dictionary-known",
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "src/services/dictionary.test.ts"
+    ],
+    "exit": 1,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "negative-dictionary-unknown",
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "src/services/dictionary.test.ts"
+    ],
+    "exit": 1,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "negative-color",
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "src/services/dictionary.test.ts"
+    ],
+    "exit": 1,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "negative-tts",
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "src/services/speechService.test.ts"
+    ],
+    "exit": 1,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "negative-app-ui",
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "src/App.test.tsx"
+    ],
+    "exit": 1,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "negative-browser-fatal",
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 1,
+    "expected": "failure",
+    "control_passed": true
+  },
+  {
+    "name": "negative-browser-asset",
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "exit": 0,
+    "expected": "failure",
+    "control_passed": false
+  }
+]

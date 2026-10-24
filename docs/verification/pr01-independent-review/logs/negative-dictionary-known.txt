@@ -1,0 +1,44 @@
+Command: ['npm', 'test', '--', 'src/services/dictionary.test.ts']
+Exit: 1
+Expected: failure
+
+
+> vision-studio@1.0.0 test
+> vitest run src/services/dictionary.test.ts
+
+
+ RUN  v5.0.5 /tmp/pr01-review-control-qdf_fegd
+
+ ❯ src/services/dictionary.test.ts (4 tests | 1 failed) 17ms
+   ❯ getLabelInfo (3)
+     × translates known COCO labels and normalizes whitespace and case 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/services/dictionary.test.ts > getLabelInfo > translates known COCO labels and normalizes whitespace and case
+AssertionError: expected { ja: 'BROKEN', category: '動物' } to deeply equal { ja: '犬', category: '動物' }
+
+- Expected
++ Received
+
+  {
+    "category": "動物",
+-   "ja": "犬",
++   "ja": "BROKEN",
+  }
+
+ ❯ src/services/dictionary.test.ts:6:35
+      4| describe('getLabelInfo', () => {
+      5|   it('translates known COCO labels and normalizes whitespace and case'…
+      6|     expect(getLabelInfo(' DOG ')).toEqual({ ja: '犬', category: '動物' });
+       |                                   ^
+      7|     expect(getLabelInfo('cell phone')).toEqual({ ja: 'スマートフォン', catego…
+      8|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  01:16:57
+   Duration  1.12s (environment 78%, setup 13%, transform 5%, tests 2%, worker 1%, import 1%)

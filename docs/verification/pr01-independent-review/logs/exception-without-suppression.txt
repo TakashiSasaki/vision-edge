@@ -1,0 +1,9 @@
+Command: ['/workspace/pr01-independent-review/node_modules/.bin/eslint', '--stdin', '--stdin-filename', 'src/components/VisionCanvas.tsx']
+Exit: 1
+Expected: failure
+
+
+/tmp/pr01-review-control-qdf_fegd/src/components/VisionCanvas.tsx
+  250:6  error  React Hook useEffect has a missing dependency: 'drawOverlays'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 1 problem (1 error, 0 warnings)

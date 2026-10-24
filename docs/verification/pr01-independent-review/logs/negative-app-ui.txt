@@ -1,0 +1,13 @@
+Assertion excerpt from full captured disposable-control output; repetitive rendered DOM omitted.
+Command: ['npm', 'test', '--', 'src/App.test.tsx']
+Exit: 1
+Expected: failure
+VisionTasks init failed: Error: Offline unit test
+    at /tmp/pr01-review-control-qdf_fegd/src/App.test.tsx:8:64
+ ❯ src/App.test.tsx (1 test | 1 failed) 217ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/App.test.tsx > renders the app with denied camera and unavailable external models, then switches model UI
+TestingLibraryElementError: Unable to find an element with the text: VisionStudio AI. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ ❯ src/App.test.tsx:26:25
+ Test Files  1 failed (1)
+      Tests  1 failed (1)

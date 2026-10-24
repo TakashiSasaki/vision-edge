@@ -1,0 +1,41 @@
+Command: ['npm', 'test', '--', 'src/services/dictionary.test.ts']
+Exit: 1
+Expected: failure
+
+
+> vision-studio@1.0.0 test
+> vitest run src/services/dictionary.test.ts
+
+
+ RUN  v5.0.5 /tmp/pr01-review-control-qdf_fegd
+
+ ❯ src/services/dictionary.test.ts (4 tests | 1 failed) 10ms
+   ❯ getCategoryColor (1)
+     × returns stable hex colors across repeated and reordered calls 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/services/dictionary.test.ts > getCategoryColor > returns stable hex colors across repeated and reordered calls
+AssertionError: expected 'quantum widget11' to match /^#[0-9A-F]{6}$/
+
+- Expected:
+/^#[0-9A-F]{6}$/
+
++ Received:
+"quantum widget11"
+
+ ❯ src/services/dictionary.test.ts:27:39
+     25|     for (const label of [...labels].reverse()) {
+     26|       expect(getCategoryColor(label)).toBe(colors.get(label));
+     27|       expect(getCategoryColor(label)).toMatch(/^#[0-9A-F]{6}$/);
+       |                                       ^
+     28|     }
+     29|     expect(new Set(colors.values()).size).toBeGreaterThan(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  01:17:00
+   Duration  881ms (environment 77%, setup 13%, transform 7%, tests 1%, worker 1%, import 1%)

@@ -1,0 +1,61 @@
+Command: ['npm', 'test', '--', 'src/services/speechService.test.ts']
+Exit: 1
+Expected: failure
+
+
+> vision-studio@1.0.0 test
+> vitest run src/services/speechService.test.ts
+
+
+ RUN  v5.0.5 /tmp/pr01-review-control-qdf_fegd
+
+ ❯ src/services/speechService.test.ts (3 tests | 2 failed) 31ms
+   ❯ speechService (3)
+     × starts with empty history and available browser voices without speaking 26ms
+     × returns false safely when speech synthesis is unavailable 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/services/speechService.test.ts > speechService > starts with empty history and available browser voices without speaking
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/services/speechService.test.ts:28:76
+     26|     expect(speechService.canSpeakLabel('dog', 3)).toBe(true);
+     27|     expect(synth.speak).not.toHaveBeenCalled();
+     28|     expect(speechService.speak('犬', 'dog', { ...config, enabled: false…
+       |                                                                            ^
+     29|     expect(synth.speak).not.toHaveBeenCalled();
+     30|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/services/speechService.test.ts > speechService > returns false safely when speech synthesis is unavailable
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/services/speechService.test.ts:39:64
+     37|     expect(speechService.getVoices()).toEqual([]);
+     38|     for (const trigger of ['auto', 'tap', 'manual'] as const) {
+     39|       expect(speechService.speak('犬', 'dog', config, trigger)).toBe(fa…
+       |                                                                ^
+     40|     }
+     41|     expect(() => speechService.cancel()).not.toThrow();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  01:17:01
+   Duration  1.05s (environment 79%, setup 12%, transform 4%, tests 3%, worker 1%)

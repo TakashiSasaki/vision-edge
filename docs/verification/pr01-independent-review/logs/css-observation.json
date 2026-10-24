@@ -1,0 +1,46 @@
+{
+  "original": {
+    "cssResponses": [
+      {
+        "url": "http://127.0.0.1:4173/assets/index-Bohi0K68.css",
+        "status": 200,
+        "contentType": "text/css"
+      }
+    ],
+    "errors": [
+      "Failed to load resource: net::ERR_FAILED",
+      "Failed to load resource: net::ERR_FAILED"
+    ],
+    "pageErrors": [],
+    "appearance": {
+      "bodyBackground": "rgb(7, 11, 20)",
+      "bodyMargin": "0px",
+      "cssRuleCounts": [
+        null,
+        48
+      ]
+    }
+  },
+  "missing_required_css": {
+    "cssResponses": [
+      {
+        "url": "http://127.0.0.1:4173/assets/review-missing.css",
+        "status": 200,
+        "contentType": "text/html"
+      }
+    ],
+    "errors": [
+      "Failed to load resource: net::ERR_FAILED",
+      "Failed to load resource: net::ERR_FAILED"
+    ],
+    "pageErrors": [],
+    "appearance": {
+      "bodyBackground": "rgba(0, 0, 0, 0)",
+      "bodyMargin": "8px",
+      "cssRuleCounts": [
+        null,
+        0
+      ]
+    }
+  }
+}

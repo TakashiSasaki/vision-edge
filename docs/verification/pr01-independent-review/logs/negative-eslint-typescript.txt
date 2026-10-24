@@ -1,0 +1,10 @@
+Command: ['/workspace/pr01-independent-review/node_modules/.bin/eslint', '--stdin', '--stdin-filename', 'src/review-negative.ts']
+Exit: 1
+Expected: failure
+
+
+/tmp/pr01-review-control-qdf_fegd/src/review-negative.ts
+  1:7   error  'unused' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  1:15  error  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+✖ 2 problems (2 errors, 0 warnings)

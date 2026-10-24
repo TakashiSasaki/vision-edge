@@ -1,0 +1,44 @@
+Command: ['npm', 'test', '--', 'src/services/dictionary.test.ts']
+Exit: 1
+Expected: failure
+
+
+> vision-studio@1.0.0 test
+> vitest run src/services/dictionary.test.ts
+
+
+ RUN  v5.0.5 /tmp/pr01-review-control-qdf_fegd
+
+ ❯ src/services/dictionary.test.ts (4 tests | 1 failed) 17ms
+   ❯ getLabelInfo (3)
+     × provides a readable fallback for unknown and empty labels 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/services/dictionary.test.ts > getLabelInfo > provides a readable fallback for unknown and empty labels
+AssertionError: expected { ja: 'BROKEN', category: 'その他' } to deeply equal { ja: 'Quantum widget', …(1) }
+
+- Expected
++ Received
+
+  {
+    "category": "その他",
+-   "ja": "Quantum widget",
++   "ja": "BROKEN",
+  }
+
+ ❯ src/services/dictionary.test.ts:16:46
+     14|
+     15|   it('provides a readable fallback for unknown and empty labels', () =…
+     16|     expect(getLabelInfo(' QUANTUM WIDGET ')).toEqual({ ja: 'Quantum wi…
+       |                                              ^
+     17|     expect(getLabelInfo('')).toEqual({ ja: '', category: 'その他' });
+     18|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  01:16:58
+   Duration  1.05s (environment 80%, setup 12%, transform 5%, tests 2%, worker 1%, import 1%)

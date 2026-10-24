@@ -1,0 +1,121 @@
+{
+  "queried_at_utc": "2026-10-24T01:12Z",
+  "source_pr": 1,
+  "head_sha": "f20474be156522ee6141cde9c2b3a958db8d2457",
+  "head_branch": "chore/build-ci-test-foundation",
+  "base_sha": "90323c00a6cd9a8157bf3eec853dbe5a857f07a1",
+  "run_id": 40047953579,
+  "event": "pull_request",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2026-10-24T01:02:41Z",
+  "updated_at": "2026-10-24T01:03:32Z",
+  "html_url": "https://github.com/TakashiSasaki/vision-edge/actions/runs/40047953579",
+  "jobs": [
+    {
+      "id": 120733858384,
+      "name": "verify",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40047953579,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Typecheck",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "ESLint",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Unit and component tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Production build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Browser smoke tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Upload browser evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        }
+      ]
+    }
+  ],
+  "initial_reviews": [],
+  "initial_review_threads": [],
+  "initial_comments": [],
+  "initial_pull_requests": [
+    1
+  ],
+  "initial_branches": [
+    "main",
+    "chore/build-ci-test-foundation"
+  ],
+  "instructions": "No AGENTS.md or .agents/skills files in source/base trees; /workspace/.agents empty."
+}

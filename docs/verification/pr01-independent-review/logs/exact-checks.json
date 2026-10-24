@@ -1,0 +1,81 @@
+[
+  {
+    "name": "versions",
+    "command": [
+      "bash",
+      "-c",
+      "node --version && npm --version && uname -srm && chromium --version"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "install",
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "dependency-tree",
+    "command": [
+      "npm",
+      "ls",
+      "--all"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "lint",
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "unit",
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "smoke",
+    "exit": 0
+  },
+  {
+    "git_status": "",
+    "lock_sha256": "1501945de52bc26a7411bd139358604ab1a189b51608c011a93d3164baa6de5b",
+    "utc_completed": "2026-10-24T01:15:36.152528+00:00"
+  }
+]

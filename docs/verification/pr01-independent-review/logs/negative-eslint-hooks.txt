@@ -1,0 +1,10 @@
+Command: ['/workspace/pr01-independent-review/node_modules/.bin/eslint', '--stdin', '--stdin-filename', 'src/review-negative.tsx']
+Exit: 1
+Expected: failure
+
+
+/tmp/pr01-review-control-qdf_fegd/src/review-negative.tsx
+  3:11  error  React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  3:52  error  React Hook useEffect has a missing dependency: 'value'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+
+✖ 2 problems (2 errors, 0 warnings)

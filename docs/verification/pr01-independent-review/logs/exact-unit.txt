@@ -1,0 +1,15 @@
+Command: ['npm', 'test']
+Exit: 0
+
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /tmp/pr01-exact-source
+
+
+ Test Files  3 passed (3)
+      Tests  8 passed (8)
+   Start at  01:15:29
+   Duration  1.74s (environment 68%, setup 9%, transform 9%, tests 9%, import 4%)

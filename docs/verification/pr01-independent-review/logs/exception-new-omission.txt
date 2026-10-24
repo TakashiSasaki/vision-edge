@@ -1,0 +1,3 @@
+Command: ['/workspace/pr01-independent-review/node_modules/.bin/eslint', '--stdin', '--stdin-filename', 'src/components/VisionCanvas.tsx']
+Exit: 0
+Expected: success
