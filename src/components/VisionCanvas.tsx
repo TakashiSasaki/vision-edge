@@ -100,6 +100,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
   useLayoutEffect(() => {
     if (!fault) return;
+    setPipelineStats(null);
     schedulerGeneration.current++;
     latestFrameRef.current = null;
     engine.clearDetections();

@@ -524,3 +524,14 @@ it('statistics exceptions and details toggles do not change SDK, camera, model o
   expect(f.segment).toHaveBeenCalledTimes(2); expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
   expect(f.factory.load).toHaveBeenCalledTimes(loadCount); expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });
+
+it('invalidates the published detail snapshot when a fatal draw fault stops its generation', async () => {
+  const f = fixture(); let container!: HTMLElement;
+  await act(async () => { container = render(<App engine={f.engine} />).container; });
+  makeVideoReady(container); step(); act(() => { vi.advanceTimersByTime(0); }); step(false);
+  act(() => { vi.advanceTimersByTime(250); });
+  const count = () => container.querySelector('table[aria-label="success interval statistics"] tbody tr td')!.textContent;
+  expect(count()).toMatch(/[1-9]\d* \/ [1-9]\d* \/ 0/);
+  vi.mocked(container.querySelector('canvas')!.getContext('2d')!.drawImage).mockImplementationOnce(() => { throw Error('copy'); });
+  step(false); expect(screen.getByRole('alert')).toHaveTextContent('描画エラー'); expect(count()).toBe('未計測');
+});
