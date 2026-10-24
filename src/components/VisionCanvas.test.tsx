@@ -363,6 +363,30 @@ it('ignores unavailable/zero/nonfinite video geometry before hit testing or spee
   expect(find).not.toHaveBeenCalled(); expect(props.onSelectObject).not.toHaveBeenCalled();
   expect(speak).not.toHaveBeenCalled(); expect(canvas.getContext('2d')!.arc).not.toHaveBeenCalled();
 });
+
+it('selects exact rational content edges but keeps adjacent fractional margins silent (PR05-F01)', async () => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const props = canvasProps(f);
+  const speak = vi.spyOn(speechService, 'speak').mockReturnValue(true);
+  const find = vi.spyOn(f.engine, 'findObjectAtPoint');
+  const view = render(<VisionCanvas {...props} />); await act(async () => {}); makeVideoReady(view.container);
+  step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); }); step();
+  props.onFrame.mock.calls.at(-1)![0]!.objects[0].bbox = { x: 0, y: 0, width: 1, height: 1 };
+  const canvas = view.container.querySelector('canvas')!;
+  vi.spyOn(view.container.querySelector('video')!, 'getBoundingClientRect').mockReturnValue({ left: 37.25, top: 82.5, width: 960.75, height: 540.25 } as DOMRect);
+  for (const clientX of [157.45833333333331, 877.7916666666667]) {
+    act(() => { fireEvent.click(canvas, { clientX, clientY: 352.625 }); });
+  }
+  expect(find).not.toHaveBeenCalled(); expect(speak).not.toHaveBeenCalled();
+  expect(props.onSelectObject).not.toHaveBeenCalled();
+  for (const [clientX, x] of [[3779 / 24, 0], [21067 / 24, 1]]) {
+    act(() => { fireEvent.click(canvas, { clientX, clientY: 352.625 }); }); step(false);
+    expect(find).toHaveBeenLastCalledWith(x, 0.5, expect.any(Array));
+    expect(canvas.getContext('2d')!.arc).toHaveBeenLastCalledWith(x * 640, 240, 24, 0, Math.PI * 2);
+  }
+  expect(props.onSelectObject).toHaveBeenCalledTimes(2); expect(speak).toHaveBeenCalledTimes(2);
+  expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  expect(f.factory.detector).toHaveBeenCalledTimes(1);
+});
 it('cancels both loops and pending execution on StrictMode teardown without duplicated callbacks', async () => {
   const f = fixture(); await f.engine.initialize('mediapipe');
   const view = render(<StrictMode><VisionCanvas {...canvasProps(f)} /></StrictMode>); await act(async () => {});

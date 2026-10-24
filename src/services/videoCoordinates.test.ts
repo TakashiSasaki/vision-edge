@@ -76,3 +76,45 @@ it.each([NaN, Infinity, -Infinity])('rejects nonfinite pointer/rectangle origins
 it('rejects finite inputs whose calculated content underflows', () => {
   expect(clientPointToVideo(0, 0, { left: 0, top: 0, width: Number.MIN_VALUE, height: Number.MIN_VALUE }, Number.MAX_VALUE, 1)).toBeNull();
 });
+
+// PR05-F01: fixed exact-rational edges, rounded only at the final division.
+// These values do not come from the production geometry implementation.
+const fractionalEdges = [
+  { left: 37.25, top: 82.5, lo: 3779 / 24, hi: 21067 / 24 },
+  { left: 500, top: 250, lo: 14885 / 24, hi: 32173 / 24 },
+  { left: -20, top: -250, lo: 2405 / 24, hi: 19693 / 24 },
+];
+function adjacentFloat(value: number, direction: -1 | 1): number {
+  if (value === 0) return direction * Number.MIN_VALUE;
+  const bits = new DataView(new ArrayBuffer(8));
+  bits.setFloat64(0, value);
+  bits.setBigUint64(0, bits.getBigUint64(0) + BigInt((value > 0) === (direction > 0) ? 1 : -1));
+  return bits.getFloat64(0);
+}
+for (const transpose of [false, true]) {
+  for (const dpr of [1, 1.25, 2, 3]) {
+    it.each(fractionalEdges)(`accepts rational edges and rejects the next outside float (transpose=${transpose}, DPR=${dpr}, origin=$left)`, c => {
+      vi.stubGlobal('devicePixelRatio', dpr);
+      const rect = transpose ? { left: c.top, top: c.left, width: 540.25, height: 960.75 }
+        : { left: c.left, top: c.top, width: 960.75, height: 540.25 };
+      const point = (x: number, y: number) => transpose
+        ? clientPointToVideo(y, x, rect, 480, 640) : clientPointToVideo(x, y, rect, 640, 480);
+      for (const [x, nx] of [[c.lo, 0], [c.hi, 1]]) {
+        for (const [y, ny] of [[c.top, 0], [c.top + 540.25, 1], [c.top + 270.125, 0.5]]) {
+          expect(point(x, y)).toEqual(transpose ? { x: ny, y: nx } : { x: nx, y: ny });
+        }
+      }
+      const middleX = (c.lo + c.hi) / 2;
+      const middleY = c.top + 270.125;
+      for (const [edge, direction] of [[c.lo, -1], [c.hi, 1]] as const) {
+        expect(point(adjacentFloat(edge, direction), middleY)).toBeNull();
+        expect(point(adjacentFloat(edge, direction === -1 ? 1 : -1), middleY)).not.toBeNull();
+        for (const distance of [1e-12, 0.001]) expect(point(edge + direction * distance, middleY)).toBeNull();
+      }
+      for (const [edge, direction] of [[c.top, -1], [c.top + 540.25, 1]] as const) {
+        expect(point(middleX, adjacentFloat(edge, direction))).toBeNull();
+        expect(point(middleX, adjacentFloat(edge, direction === -1 ? 1 : -1))).not.toBeNull();
+      }
+    });
+  }
+}
