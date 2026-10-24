@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "--config",
+    "playwright.real-sdk.config.ts",
+    "--grep",
+    "asset diagnostic"
+  ],
+  "cwd": "/workspace/vision-edge/",
+  "env": {
+    "REAL_SDK_RUN_DIR": "/workspace/vision-edge/.cache/real-sdk-runs/2026-10-24T18-12-38.413Z-52a0b93d",
+    "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+  }
+}

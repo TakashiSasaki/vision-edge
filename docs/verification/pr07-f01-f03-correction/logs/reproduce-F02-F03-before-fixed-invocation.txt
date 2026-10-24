@@ -1,0 +1,109 @@
+{
+  "control": "negative-scene acceptance predicate",
+  "extractedSource": "for (const scene of ['background', 'empty']) {\n          const before = await page.evaluate(scene => { window.__realCamera.scene = scene; return window.__realSdkProbe.calls; }, scene);\n          await expect.poll(() => page.evaluate(before => window.__realSdkProbe.calls - before, before)).toBeGreaterThanOrEqual(5);\n          const latest = await page.evaluate(() => window.__realSdkProbe.processed.at(-1)!);\n          expect(latest.status).toBe('ready');\n          expect(latest.objects.filter((obj: { label: string }) => obj.label === expected)).toEqual([]);\n        }\n        ",
+  "checkerAccepted": true,
+  "successfulCallsInEitherNewScene": 0,
+  "freshProcessedResults": 0,
+  "steps": [
+    {
+      "scene": "background",
+      "function": "scene => { window.__realCamera.scene = scene; return window.__realSdkProbe.calls; }",
+      "result": 10
+    },
+    {
+      "scene": "background",
+      "function": "before => window.__realSdkProbe.calls - before",
+      "result": 5
+    },
+    {
+      "scene": "background",
+      "function": "() => window.__realSdkProbe.processed.at(-1)",
+      "result": {
+        "id": 1,
+        "status": "ready",
+        "objects": []
+      }
+    },
+    {
+      "scene": "empty",
+      "function": "scene => { window.__realCamera.scene = scene; return window.__realSdkProbe.calls; }",
+      "result": 15
+    },
+    {
+      "scene": "empty",
+      "function": "before => window.__realSdkProbe.calls - before",
+      "result": 5
+    },
+    {
+      "scene": "empty",
+      "function": "() => window.__realSdkProbe.processed.at(-1)",
+      "result": {
+        "id": 1,
+        "status": "ready",
+        "objects": []
+      }
+    }
+  ],
+  "limitation": "Counterexample to checker logic only, NOT execution of the full six tests, NOT real SDK/model success or product failure."
+}
+{
+  "control": "zero-call summary",
+  "actual": {
+    "units": "milliseconds JavaScript wall time; observation overhead present in product metrics, original-call-only raw.ms excludes later observation",
+    "inferenceExecuted": true,
+    "populations": [
+      {
+        "file": "browser/startup-failed/evidence.json",
+        "model": "mediapipe",
+        "runtime": {
+          "control": "zero SDK calls after initialization failure"
+        },
+        "initialization": [],
+        "retainedSdkCalls": 0,
+        "droppedSdkCalls": 0,
+        "warmup": null,
+        "steadyStateSdkWall": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null,
+          "populationVariance": null
+        },
+        "missingSdkDurations": 0,
+        "coverage": "all retained actual SDK calls; first positive excluded as warmup",
+        "snapshots": []
+      },
+      {
+        "file": "browser/startup-failed/evidence.json",
+        "model": "selfie-segmenter",
+        "runtime": {
+          "control": "zero SDK calls after initialization failure"
+        },
+        "initialization": [
+          {
+            "model": "selfie-segmenter",
+            "error": "initialization failed"
+          }
+        ],
+        "retainedSdkCalls": 0,
+        "droppedSdkCalls": 0,
+        "warmup": null,
+        "steadyStateSdkWall": {
+          "count": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null,
+          "populationVariance": null
+        },
+        "missingSdkDurations": 0,
+        "coverage": "all retained actual SDK calls; first positive excluded as warmup",
+        "snapshots": []
+      }
+    ],
+    "limits": "No physical GPU duration/utilization, CPU utilization, camera FPS, camera-to-display latency or real-device guarantee; overlapping stages must not be summed. No timing pass threshold."
+  },
+  "expectedInferenceExecuted": false,
+  "limitation": "Summary logic fixture only; NO model bytes or inference executed."
+}

@@ -1,0 +1,23 @@
+{
+  "start": "2026-10-24T18:12:38.475Z",
+  "sourceHead": "ab7ce723d5336e5af52ae2ed824f113597524203",
+  "sourceTree": "f7bd58cc80a65ade0be415436c734dcf8fe0efb2",
+  "worktreeStatus": "?? docs/verification/pr07-f01-f03-correction/",
+  "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "manifestSha256": "32299afe278d3df6f86b102401457989cbd3d37449b15fc653166f8ebccfa24b",
+  "os": {
+    "platform": "linux",
+    "release": "6.18.55",
+    "arch": "x64"
+  },
+  "node": "v24.19.0",
+  "npm": "11.9.0",
+  "chromium": "/usr/bin/chromium",
+  "mode": "verified local routing; all other external browser requests blocked",
+  "resolution": [
+    512,
+    512
+  ],
+  "delegate": "GPU (unchanged product request); physical device unknown",
+  "population": "Per scenario: initialization separate; first successful SDK call warmup; next >=3 positive inference calls steady state; background/empty >=5 calls each. HUD rolling 5s/2048 events/latest300 quantiles; no physical timing threshold."
+}

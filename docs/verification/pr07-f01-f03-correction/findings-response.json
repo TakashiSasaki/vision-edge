@@ -1,0 +1,38 @@
+{
+  "phase": "author correction; independent closure pending",
+  "reviewedHead": "31721975d4eeef0ff31d29074aadafc801efae88",
+  "reviewEvidenceHead": "e1414072fe2facf00b70720d7c706b1c2328712c",
+  "sourceCorrection": "ab7ce723d5336e5af52ae2ed824f113597524203",
+  "findings": [
+    {
+      "id": "PR07-F01",
+      "severity": "P2",
+      "status": "AUTHOR_FIXED_INDEPENDENT_CLOSURE_PENDING",
+      "before": "Unchanged published Python probe: empty/schema999/SDK-only child exits0 incorrectly; malformed JSON exits1.",
+      "change": "Validate schema1, complete exact9-asset inventory, uniqueness, original references/package paths, required flags, paired pins and explicit blocked null-model entries before cache/network work. Invalid manifests use INVALID_ASSET_MANIFEST and exit1; valid null-model prerequisites remain exit2.",
+      "after": "Unchanged published Python probe child exits1 for all4cases with specific manifest diagnostics.30new F01controls cover29invalid manifests and valid inventory/null-model eligibility, separate from original7asset controls.",
+      "evidence": ["logs/reproduce-F01-before.txt", "logs/reproduce-F01-after.txt", "logs/final-focused.txt"]
+    },
+    {
+      "id": "PR07-F02",
+      "severity": "P2",
+      "status": "AUTHOR_FIXED_INDEPENDENT_CLOSURE_PENDING",
+      "before": "Unchanged published JS probe accepts both negative scenes with10failed new attempts and1stale empty result; no SDK executes in this checker counterexample.",
+      "change": "Decode scene/revision/session from the actual SDK input. Bind new raw/result IDs, successful SDK return, model/input/request generation, retention eligibility, real App adoption and matching visible draw. Unknown/failed/truncated/duplicate/stale evidence cannot pass.",
+      "after": "26checker-only F02controls cover complete eligible chain, published stale/failure pattern and model/input/generation/scene/revision/session/result/adoption/draw counterexamples.3model-free native tests verify actual input marker transitions through the unchanged scheduler. None certifies model semantics.",
+      "originalProbeAfter": "Unchanged combined old adapter cannot invoke the extracted new loop: it lacks the new negativeCheck bridge and exits1 TypeError. This adapter failure is disclosed and NOT used as closure proof; actual new shared checker regression controls are the after evidence.",
+      "evidence": ["logs/reproduce-F02-F03-before-fixed-invocation.txt", "logs/reproduce-original-checker-after.txt", "logs/final-focused.txt", "native-final"]
+    },
+    {
+      "id": "PR07-F03",
+      "severity": "P2",
+      "status": "AUTHOR_FIXED_INDEPENDENT_CLOSURE_PENDING",
+      "before": "Original actual summarizer returns inferenceExecuted:true from a zero-call initialization-failure evidence file.",
+      "change": "Use explicit SDK observations/counters and retention consistency, with separate attempts, successful SDK returns, linked ready processing, actual adoption and rendering. No success from file existence, failed/unknown calls or stale processed output.",
+      "after": "Identical zero-call payload through exact old/new summarizers yields old true/new false with no inference populations.10new F03controls cover zero, failed, unknown, successful-return-only, processing/adoption/render separation, stale chains and inconsistent/invented counters.",
+      "evidence": ["logs/F03-identical-before-after.txt", "logs/original-summary-only-after.txt", "logs/final-focused.txt", "real-sdk-final/measurements.json"]
+    }
+  ],
+  "scope": "73focused Node controls =7original+66correction. Eligibility controls deliberately construct checker-only data; no SDK/model result is supplied to App or VisionEngine.",
+  "remaining": "All6actual model/input inference scenarios BLOCKED. Both denied URLs remain unrequested; no lawful new asset prerequisite was supplied. Physical-device/public-version equality and independent closure remain not-run/pending."
+}

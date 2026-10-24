@@ -1,0 +1,40 @@
+{
+  "mode": "Canvas",
+  "result": {
+    "rows": [
+      {
+        "kind": "Canvas",
+        "stamp": {
+          "scene": "astronaut.png",
+          "revision": 2,
+          "stream": 1
+        }
+      },
+      {
+        "kind": "Canvas",
+        "stamp": {
+          "scene": "empty",
+          "revision": 3,
+          "stream": 1
+        }
+      }
+    ],
+    "errors": [],
+    "sdkObservationPresent": false,
+    "created": 0,
+    "closed": 0,
+    "liveTracks": 0
+  },
+  "requests": [
+    {
+      "url": "http://127.0.0.1:4175/fixtures/astronaut.png",
+      "status": "verified local bytes"
+    },
+    {
+      "url": "http://127.0.0.1:4175/fixtures/coffee.png",
+      "status": "verified local bytes"
+    }
+  ],
+  "browserVersion": "154.0.8037.57",
+  "scope": "actual native inputs/unchanged scheduler ONLY; NO SDK/model inference"
+}
