@@ -1,0 +1,43 @@
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ src/services/frameScheduler.test.ts (8 tests | 1 failed) 30ms
+   × uses presented-frame identity with coarse media timestamps and ignores invalid metadata 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/services/frameScheduler.test.ts > uses presented-frame identity with coarse media timestamps and ignores invalid metadata
+TypeError: Failed to set the 'currentTime' property on 'HTMLMediaElement': The provided value is not a finite floating-point value.
+ ❯ makeException node_modules/webidl-conversions/lib/index.js:7:10
+ ❯ exports.double node_modules/webidl-conversions/lib/index.js:194:11
+ ❯ set currentTime node_modules/jsdom/lib/generated/idl/HTMLMediaElement.js:329:32
+ ❯ Object.frame src/services/frameScheduler.test.ts:25:11
+     23|   const stop = startFrameScheduler({ video, current: () => current, wo…
+     24|   const frame = (time: number, count = time) => {
+     25|     video.currentTime = time;
+       |           ^
+     26|     const callbacks = native ? rvfc : raf;
+     27|     const entry = callbacks.entries().next().value!; callbacks.delete(…
+ ❯ src/services/frameScheduler.test.ts:87:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  1 failed | 84 passed (85)
+   Start at  06:29:57
+   Duration  6.34s (environment 62%, tests 16%, setup 10%, import 7%, transform 5%)
+
+Environment  jsdom was created 9 times · 9.64s total, 62% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

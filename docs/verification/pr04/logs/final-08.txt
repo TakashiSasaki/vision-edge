@@ -1,0 +1,16 @@
+
+> vision-studio@1.0.0 test:e2e:controls
+> node scripts/smoke-css-controls.mjs
+
+intact: exit=0; passed=1; failed=0
+missing-css-html-fallback: exit=1; passed=0; failed=1
+  Expected failure confirmed: required stylesheet MIME
+absent-stylesheet-link: exit=1; passed=0; failed=1
+  Expected failure confirmed: required local stylesheet links
+empty-css: exit=1; passed=0; failed=1
+  Expected failure confirmed: required stylesheet parsed rules
+irrelevant-css: exit=1; passed=0; failed=1
+  Expected failure confirmed: required stylesheet applied body reset
+fatal-javascript: exit=1; passed=0; failed=1
+  Expected failure confirmed: F01 fatal JavaScript control
+intact-after-controls: exit=0; passed=1; failed=0

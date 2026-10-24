@@ -251,3 +251,22 @@ it.each(['mediapipe', 'selfie-segmenter'] as const)('passes the reported delegat
   expect(engine.getState()).toMatchObject({ status: 'ready', delegate: 'GPU' });
   engine.dispose();
 });
+
+it('repairs temporary smoothing state after an SDK exception so empty recovery cannot resurrect old objects', async () => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const v = video();
+  expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [expect.objectContaining({ label: 'dog' })] });
+  f.detect.mockImplementationOnce(() => { throw new Error('SDK failure'); });
+  expect(() => f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toThrow('SDK failure');
+  f.detect.mockReturnValue({ detections: [] });
+  expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [] });
+  expect(f.factory.detector).toHaveBeenCalledTimes(1); expect(f.detector.close).not.toHaveBeenCalled();
+});
+it('does not refill smoothing state if the scene is cleared reentrantly during SDK execution', async () => {
+  const f = fixture(); await f.engine.initialize('mediapipe'); const v = video();
+  const detect = f.detect.getMockImplementation()!;
+  f.detect.mockImplementationOnce(() => { f.engine.clearDetections(); return detect(); });
+  expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject({ status: 'not-ready' });
+  f.detect.mockReturnValue({ detections: [] });
+  expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject({ status: 'ready', objects: [] });
+  expect(f.engine.getState()).toMatchObject({ status: 'ready', requestId: 1 });
+});

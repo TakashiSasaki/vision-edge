@@ -14,10 +14,15 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: {
+  webServer: [{
     command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: false,
     timeout: 30_000,
-  },
+  }, {
+    command: 'npm run build -- --mode e2e --outDir .cache/vision-edge-e2e && npm run preview -- --outDir .cache/vision-edge-e2e --host 127.0.0.1 --port 4174 --strictPort',
+    url: 'http://127.0.0.1:4174',
+    reuseExistingServer: false,
+    timeout: 30_000,
+  }],
 });

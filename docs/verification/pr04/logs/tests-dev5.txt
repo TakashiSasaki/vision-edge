@@ -1,0 +1,46 @@
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ src/components/VisionCanvas.test.tsx (14 tests | 1 failed) 937ms
+   × rejects a result invalidated synchronously during inference by camera generation 24ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > rejects a result invalidated synchronously during inference by camera generation
+AssertionError: expected [ [ { status: 'ready', …(3) } ] ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ src/components/VisionCanvas.test.tsx:295:72
+    293|   });
+    294|   step(); act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTim…
+    295|   expect(props.onFrame.mock.calls.filter(([frame]) => frame !== null))…
+       |                                                                        ^
+    296|   expect(screen.queryByText('(dog)')).not.toBeInTheDocument();
+    297| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  1 failed | 81 passed (82)
+   Start at  06:27:44
+   Duration  4.92s (environment 65%, tests 18%, setup 10%, import 4%, transform 3%, worker 1%)
+
+Environment  jsdom was created 9 times · 7.93s total, 65% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

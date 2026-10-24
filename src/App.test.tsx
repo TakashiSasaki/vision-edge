@@ -55,7 +55,7 @@ it('uses only the two implemented choices in both UI paths and shows read-only b
   expect(model).toHaveValue('selfie-segmenter');
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(screen.queryByText('現在しきい値を超える物体はありません')).not.toBeInTheDocument();
-  expect(screen.getByText('性能：計測未整備')).toBeInTheDocument();
+  expect(screen.getByLabelText('推論FPS')).toHaveTextContent('推論: 未計測');
   expect(document.body).not.toHaveTextContent(/\d+\s*FPS|\d+ms|稼働中/);
 });
 

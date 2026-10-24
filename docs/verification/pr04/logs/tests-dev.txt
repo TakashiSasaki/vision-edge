@@ -1,0 +1,605 @@
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+ ❯ src/components/VisionCanvas.test.tsx (4 tests | 4 failed) 1220ms
+   × runs the ready model through the real App/canvas bridge and removes old list/overlays on switch 923ms
+   × cancels a queued old-generation inference and allows the replacement model to run 76ms
+   × camera stop/restart clears the old scene and selection without recreating the ready model 203ms
+   × does not infer from stale video frames while camera acquisition or playback is pending 14ms
+ ❯ src/App.test.tsx (6 tests | 1 failed) 1901ms
+   × uses only the two implemented choices in both UI paths and shows read-only backend settings 1190ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/App.test.tsx > uses only the two implemented choices in both UI paths and shows read-only backend settings
+TestingLibraryElementError: Unable to find an element with the text: 性能：計測未整備. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col font-sans"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"h-12 border-b border-slate-800 bg-[#0c111e] px-3 sm:px-5 flex items-center justify-between gap-2 shrink-0 select-none z-30"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2 shrink-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layers w-3.5 h-3.5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-sm font-bold tracking-tight text-white whitespace-nowrap"[39m
+          [36m>[39m
+            [0mVisionStudio AI[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1.5 sm:gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] text-slate-400 font-medium whitespace-nowrap hidden sm:inline"[39m
+            [36m>[39m
+              [0mモデル:[0m
+            [36m</span>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"モデル"[39m
+              [33mclass[39m=[32m"bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mvalue[39m=[32m"selfie-segmenter"[39m
+              [36m>[39m
+                [0mSelfie Segmenter[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mvalue[39m=[32m"mediapipe"[39m
+              [36m>[39m
+                [0mEfficientDet-Lite0[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mvalue[39m=[32m"yolo-seg"[39m
+              [36m>[39m
+                [0mYOLO-seg[0m
+                [0m（未実装・選択不可）[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mvalue[39m=[32m"segformer"[39m
+              [36m>[39m
+                [0mSegFormer[0m
+                [0m（未実装・選択不可）[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-cpu w-3 h-3 text-blue-400 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 2v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M17 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M17 2v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 17h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 7h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 12h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 17h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 7h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M7 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M7 2v2"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"16"[39m
+                [33mrx[39m=[32m"2"[39m
+                [33mwidth[39m=[32m"16"[39m
+                [33mx[39m=[32m"4"[39m
+                [33my[39m=[32m"4"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"8"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"8"[39m
+                [33mx[39m=[32m"8"[39m
+                [33my[39m=[32m"8"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-label[39m=[32m"バックエンド状態"[39m
+        ...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/App.test.tsx:58:17
+     56|   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+     57|   expect(screen.queryByText('現在しきい値を超える物体はありません')).not.toBeInTheDocume…
+     58|   expect(screen.getByText('性能：計測未整備')).toBeInTheDocument();
+       |                 ^
+     59|   expect(document.body).not.toHaveTextContent(/\d+\s*FPS|\d+ms|稼働中/);
+     60| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > runs the ready model through the real App/canvas bridge and removes old list/overlays on switch
+TestingLibraryElementError: Unable to find an element with the text: (dog). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col font-sans"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"h-12 border-b border-slate-800 bg-[#0c111e] px-3 sm:px-5 flex items-center justify-between gap-2 shrink-0 select-none z-30"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2 shrink-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layers w-3.5 h-3.5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-sm font-bold tracking-tight text-white whitespace-nowrap"[39m
+          [36m>[39m
+            [0mVisionStudio AI[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1.5 sm:gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] text-slate-400 font-medium whitespace-nowrap hidden sm:inline"[39m
+            [36m>[39m
+              [0mモデル:[0m
+            [36m</span>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"モデル"[39m
+              [33mclass[39m=[32m"bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mvalue[39m=[32m"selfie-segmenter"[39m
+              [36m>[39m
+                [0mSelfie Segmenter[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mvalue[39m=[32m"mediapipe"[39m
+              [36m>[39m
+                [0mEfficientDet-Lite0[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mvalue[39m=[32m"yolo-seg"[39m
+              [36m>[39m
+                [0mYOLO-seg[0m
+                [0m（未実装・選択不可）[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mvalue[39m=[32m"segformer"[39m
+              [36m>[39m
+                [0mSegFormer[0m
+                [0m（未実装・選択不可）[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-cpu w-3 h-3 text-blue-400 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 2v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M17 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M17 2v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 17h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 7h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 12h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 17h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 7h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M7 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M7 2v2"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"16"[39m
+                [33mrx[39m=[32m"2"[39m
+                [33mwidth[39m=[32m"16"[39m
+                [33mx[39m=[32m"4"[39m
+                [33my[39m=[32m"4"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"8"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"8"[39m
+                [33mx[39m=[32m"8"[39m
+                [33my[39m=[32m"8"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-label[39m=[32m"バックエンド状態"[39m
+        ...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/VisionCanvas.test.tsx:71:17
+     69|   act(() => { vi.advanceTimersByTime(250); });
+     70|   step();
+     71|   expect(screen.getByText('(dog)')).toBeInTheDocument();
+       |                 ^
+     72|   expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+     73|   const pending = deferred<SegmenterTask>();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > cancels a queued old-generation inference and allows the replacement model to run
+AssertionError: expected last "vi.fn()" call to have been called with [ ObjectContaining{…} ]
+
+- Expected
++ Received
+
+  [
+-   ObjectContaining {
+-     "model": "selfie-segmenter",
+-     "objects": [],
+-     "requestId": 2,
+-   },
++   null,
+  ]
+
+ ❯ src/components/VisionCanvas.test.tsx:118:19
+    116|   act(() => { vi.advanceTimersByTime(250); });
+    117|   step();
+    118|   expect(onFrame).toHaveBeenLastCalledWith(expect.objectContaining({ m…
+       |                   ^
+    119| });
+    120|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > camera stop/restart clears the old scene and selection without recreating the ready model
+TestingLibraryElementError: Unable to find an element with the text: (dog). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col font-sans"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"h-12 border-b border-slate-800 bg-[#0c111e] px-3 sm:px-5 flex items-center justify-between gap-2 shrink-0 select-none z-30"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2 shrink-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layers w-3.5 h-3.5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-sm font-bold tracking-tight text-white whitespace-nowrap"[39m
+          [36m>[39m
+            [0mVisionStudio AI[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1.5 sm:gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] text-slate-400 font-medium whitespace-nowrap hidden sm:inline"[39m
+            [36m>[39m
+              [0mモデル:[0m
+            [36m</span>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"モデル"[39m
+              [33mclass[39m=[32m"bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mvalue[39m=[32m"selfie-segmenter"[39m
+              [36m>[39m
+                [0mSelfie Segmenter[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mvalue[39m=[32m"mediapipe"[39m
+              [36m>[39m
+                [0mEfficientDet-Lite0[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mvalue[39m=[32m"yolo-seg"[39m
+              [36m>[39m
+                [0mYOLO-seg[0m
+                [0m（未実装・選択不可）[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mclass[39m=[32m"bg-slate-900 text-white"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mvalue[39m=[32m"segformer"[39m
+              [36m>[39m
+                [0mSegFormer[0m
+                [0m（未実装・選択不可）[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-cpu w-3 h-3 text-blue-400 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 2v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M17 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M17 2v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 17h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 7h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 12h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 17h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 7h2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M7 20v2"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M7 2v2"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"16"[39m
+                [33mrx[39m=[32m"2"[39m
+                [33mwidth[39m=[32m"16"[39m
+                [33mx[39m=[32m"4"[39m
+                [33my[39m=[32m"4"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"8"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"8"[39m
+                [33mx[39m=[32m"8"[39m
+                [33my[39m=[32m"8"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-label[39m=[32m"バックエンド状態"[39m
+        ...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/VisionCanvas.test.tsx:130:17
+    128|   act(() => { vi.advanceTimersByTime(0); vi.advanceTimersByTime(250); …
+    129|   step();
+    130|   expect(screen.getByText('(dog)')).toBeInTheDocument();
+       |                 ^
+    131|   const detection = f.detect.getMockImplementation()!;
+    132|   act(() => { fireEvent.click(screen.getByText('(dog)')); });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > does not infer from stale video frames while camera acquisition or playback is pending
+Error: Render loop stopped scheduling
+ ❯ src/components/VisionCanvas.test.tsx:32:22
+     30|   act(() => {
+     31|     const next = raf.entries().next().value;
+     32|     if (!next) throw new Error('Render loop stopped scheduling');
+       |                      ^
+     33|     raf.delete(next[0]);
+     34|     next[1](performance.now());
+ ❯ node_modules/@testing-library/react/dist/act-compat.js:47:24
+ ❯ process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:890:22
+ ❯ node_modules/@testing-library/react/dist/act-compat.js:46:25
+ ❯ step src/components/VisionCanvas.test.tsx:30:3
+ ❯ src/components/VisionCanvas.test.tsx:169:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed | 7 passed (9)
+      Tests  5 failed | 65 passed (70)
+   Start at  06:23:36
+   Duration  7.55s (environment 63%, tests 18%, setup 9%, transform 6%, import 4%)
+
+Environment  jsdom was created 9 times · 12.60s total, 63% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

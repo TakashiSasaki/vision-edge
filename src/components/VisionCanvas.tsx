@@ -11,6 +11,8 @@ import {
 } from '../types/vision';
 import { speechService } from '../services/speechService';
 import { VisionEngine } from '../services/visionEngine';
+import { JobLock, startFrameScheduler } from '../services/frameScheduler';
+import { HUD_INTERVAL_MS, PerformanceMetrics, type PerformanceSnapshot } from '../services/performanceMetrics';
 import { modelMetadata } from '../services/modelRegistry';
 import { useCameraStream } from '../hooks/useCameraStream';
 
@@ -53,147 +55,166 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   const [currentFrame, setCurrentFrame] = useState<DetectionFrame | null>(null);
   const modelReady = modelState.status === 'ready' && modelState.model === activeModel;
   const requestId = modelState.requestId;
+  const threshold = renderOptions.confidenceThreshold;
   const currentObjects = cameraReady && modelReady && currentFrame?.model === activeModel && currentFrame.requestId === requestId
     ? currentFrame.objects : [];
 
-  const animFrameIdRef = useRef<number | null>(null);
-  const lastReportedTimeRef = useRef<number>(0);
   const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const isInferringRef = useRef<boolean>(false);
   const latestFrameRef = useRef<DetectionFrame | null>(null);
-
-  // Clear the visible old overlay before paint; initialization and camera state
-  // remain separate. New results carry the engine generation, not just a label.
+  const lockRef = useRef(new JobLock());
+  const schedulerGeneration = useRef(0);
+  const [inferenceError, setInferenceError] = useState(false);
+  const [fault, setFault] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
+  const [stats, setStats] = useState<PerformanceSnapshot>({ inferenceFps: null, drawFps: null, processingMs: null, stalled: false });
+  const latest = useRef({ onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel });
   useLayoutEffect(() => {
+    latest.current = { onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel };
+  });
+  const drawRef = useRef<(ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[]) => void>(() => {});
+
+  useLayoutEffect(() => {
+    const generationOwner = schedulerGeneration;
+    generationOwner.current++;
     latestFrameRef.current = null;
     engine.clearDetections();
     setCurrentFrame(null);
     setClickRipple(null);
-    onFrame(null);
+    setFault(null);
+    setInferenceError(false);
+    setStats({ inferenceFps: null, drawFps: null, processingMs: null, stalled: false });
+    try { latest.current.onFrame(null); }
+    catch { setFault('結果通知エラー'); }
     const canvas = canvasRef.current;
-    if (canvas) canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
-  }, [activeModel, requestId, isCameraActive, facingMode, cameraReady, cameraRequestId, onFrame, engine]);
+    try { if (canvas) canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height); }
+    catch { setFault('描画エラー'); }
+    return () => { generationOwner.current++; };
+  }, [activeModel, requestId, isCameraActive, facingMode, cameraReady, cameraRequestId, engine, retry, threshold]);
 
-  // Main rendering loop for video frames and overlay canvas (Double-buffered & Decoupled)
+  useLayoutEffect(() => {
+    if (!fault) return;
+    schedulerGeneration.current++;
+    latestFrameRef.current = null;
+    engine.clearDetections();
+    setCurrentFrame(null);
+    const canvas = canvasRef.current;
+    if (canvas) { const width = canvas.width; canvas.width = width; }
+    try { latest.current.onFrame(null); } catch { /* The stopped notification error is already visible. */ }
+  }, [fault, engine]);
+
   useEffect(() => {
-    let isRunning = true;
-    let inferenceTimer: ReturnType<typeof setTimeout> | undefined;
-
-    const renderLoop = () => {
-      if (!isRunning) return;
-
-      const canvas = canvasRef.current;
-      const video = videoRef.current;
-
-      if (!canvas || !video) {
-        animFrameIdRef.current = requestAnimationFrame(renderLoop);
-        return;
-      }
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        animFrameIdRef.current = requestAnimationFrame(renderLoop);
-        return;
-      }
-
-      // Sync canvas dimensions with video
-      if (isCameraActive && cameraReady && modelReady && video.readyState >= 2) {
-        const targetW = video.videoWidth || 640;
-        const targetH = video.videoHeight || 480;
-
-        if (canvas.width !== targetW || canvas.height !== targetH) {
-          canvas.width = targetW;
-          canvas.height = targetH;
-        }
-
-        // DOUBLE BUFFERING: Ensure offscreen memory buffer matches dimensions
-        if (!offscreenCanvasRef.current) {
-          offscreenCanvasRef.current = document.createElement('canvas');
-        }
-        const offscreen = offscreenCanvasRef.current;
-        if (offscreen.width !== targetW || offscreen.height !== targetH) {
-          offscreen.width = targetW;
-          offscreen.height = targetH;
-        }
-
-        // Preserve the existing timer-based scheduling. Cancel its one pending
-        // callback when readiness changes so the new generation can start.
-        if (!isInferringRef.current) {
-          isInferringRef.current = true;
-          inferenceTimer = setTimeout(() => {
-            try {
-              if (!isRunning || engine.getState().requestId !== requestId) return;
-              const result = engine.detectVideoFrame(video, activeModel, renderOptions.confidenceThreshold);
-              latestFrameRef.current = result.status === 'ready' && result.requestId === requestId ? result : null;
-            } catch (cause) {
-              console.warn('Vision frame failed', { model: activeModel, cause });
-              latestFrameRef.current = null;
-            } finally {
-              isInferringRef.current = false;
+    const video = videoRef.current;
+    if (!video || !isCameraActive || !cameraReady || !modelReady || fault) return;
+    const generation = schedulerGeneration.current;
+    let stopped = false;
+    let drawId: number | null = null;
+    let dirty = false;
+    let reported: DetectionFrame | null = null;
+    let warned = false;
+    let inferenceFailed = false;
+    const metrics = new PerformanceMetrics();
+    const current = () => {
+      const props = latest.current;
+      const state = engine.getState();
+      return !stopped && generation === schedulerGeneration.current && props.isCameraActive && props.cameraReady && props.modelReady
+        && props.requestId === requestId && props.cameraRequestId === cameraRequestId && props.activeModel === activeModel
+        && state.status === 'ready' && state.requestId === requestId && state.model === activeModel;
+    };
+    let cancelAcquisition = () => {};
+    const fail = (stage: string) => {
+      if (!current()) return;
+      stopped = true;
+      cancelAcquisition();
+      if (drawId !== null) cancelAnimationFrame(drawId);
+      latestFrameRef.current = null;
+      engine.clearDetections();
+      setCurrentFrame(null);
+      setFault(stage);
+    };
+    cancelAcquisition = startFrameScheduler({
+      video, current, lock: lockRef.current, input: () => metrics.input(),
+      work: () => {
+        const start = performance.now();
+        const result = engine.detectVideoFrame(video, activeModel, latest.current.renderOptions.confidenceThreshold);
+        const end = performance.now();
+        return { result, start, end };
+      },
+      adopt: ({ result, start, end }) => {
+        if (!current() || result.status !== 'ready' || result.requestId !== requestId || result.model !== activeModel) return;
+        inferenceFailed = false;
+        metrics.inferenceCompleted(start, end);
+        latestFrameRef.current = result;
+        dirty = true;
+        const config = latest.current.ttsConfig;
+        if (config.enabled && config.autoReadout) {
+          try {
+            for (const obj of [...result.objects].sort((a, b) => b.confidence - a.confidence)) {
+              if (speechService.canSpeakLabel(obj.labelJa, config.cooldownSec)) {
+                speechService.speak(`${obj.labelJa}を認識しました`, obj.labelJa, config, 'auto');
+                break;
+              }
             }
-          }, 0);
+          } catch { fail('音声エラー'); }
         }
-
+      },
+      error: cause => {
+        if (!current()) return;
+        // Repair only temporary scene state, retaining the ready model/task.
+        inferenceFailed = true;
+        engine.clearDetections();
+        latestFrameRef.current = null;
+        dirty = true;
+        if (!warned) { warned = true; console.warn('Vision frame failed; waiting for a new frame', { cause }); }
+      },
+    });
+    const draw = () => {
+      if (!current()) return;
+      try {
+        const canvas = canvasRef.current;
         const frame = latestFrameRef.current;
-        const currentDetections = frame?.requestId === requestId ? frame.objects : [];
-
-        // 1. RENDER OVERLAYS ONTO IN-MEMORY OFFSCREEN BUFFER (NEVER BLANK ON SCREEN)
-        const offCtx = offscreen.getContext('2d');
-        if (offCtx) {
-          offCtx.clearRect(0, 0, offscreen.width, offscreen.height);
-          drawOverlays(offCtx, offscreen.width, offscreen.height, currentDetections);
-
-          // Copy the overlay buffer to the visible canvas.
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(offscreen, 0, 0);
+        if (canvas) {
+          if (video.videoWidth > 0 && canvas.width !== video.videoWidth) canvas.width = video.videoWidth;
+          if (video.videoHeight > 0 && canvas.height !== video.videoHeight) canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Overlay context unavailable');
+          if (frame && video.readyState >= 2) {
+            const offscreen = offscreenCanvasRef.current ??= document.createElement('canvas');
+            // Assigning dimensions also resets context state after a failed draw.
+            offscreen.width = canvas.width; offscreen.height = canvas.height;
+            const offCtx = offscreen.getContext('2d');
+            if (!offCtx) throw new Error('Overlay buffer unavailable');
+            drawRef.current(offCtx, offscreen.width, offscreen.height, frame.objects);
+            if (!current()) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(offscreen, 0, 0);
+            metrics.drawCompleted();
+          } else ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-
+      } catch { fail('描画エラー'); }
+      finally { if (current()) drawId = requestAnimationFrame(draw); }
+    };
+    drawId = requestAnimationFrame(draw);
+    const hud = setInterval(() => {
+      if (!current()) return;
+      setStats(metrics.snapshot());
+      setInferenceError(inferenceFailed);
+      if (dirty) {
+        dirty = false;
+        const frame = latestFrameRef.current;
         setCurrentFrame(frame);
-
-        // Rate limit parent state updates (max once per 200ms) to prevent React DOM re-render thrashing
-        const nowMs = performance.now();
-        if (nowMs - lastReportedTimeRef.current >= 200) {
-          lastReportedTimeRef.current = nowMs;
-          onFrame(frame);
+        if (frame !== reported) {
+          reported = frame;
+          try { latest.current.onFrame(frame); } catch { fail('結果通知エラー'); }
         }
-
-        // Auto TTS if enabled
-        if (ttsConfig.enabled && ttsConfig.autoReadout && currentDetections.length > 0) {
-          const prioritized = [...currentDetections].sort((a, b) => b.confidence - a.confidence);
-          for (const obj of prioritized) {
-            if (speechService.canSpeakLabel(obj.labelJa, ttsConfig.cooldownSec)) {
-              speechService.speak(
-                `${obj.labelJa}を認識しました`,
-                obj.labelJa,
-                ttsConfig,
-                'auto'
-              );
-              break;
-            }
-          }
-        }
-      } else {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
-
-      animFrameIdRef.current = requestAnimationFrame(renderLoop);
-    };
-
-    animFrameIdRef.current = requestAnimationFrame(renderLoop);
-
+    }, HUD_INTERVAL_MS);
     return () => {
-      isRunning = false;
-      clearTimeout(inferenceTimer);
-      isInferringRef.current = false;
-      if (animFrameIdRef.current) {
-        cancelAnimationFrame(animFrameIdRef.current);
-      }
+      stopped = true;
+      cancelAcquisition();
+      clearInterval(hud);
+      if (drawId !== null) cancelAnimationFrame(drawId);
     };
-    // Retain the existing drawOverlays closure exception (including clickRipple).
-    // Model and camera readiness/generations cancel obsolete queued callbacks;
-    // full rendering/scheduler and overlay closure repair stays in PR-04/06.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCameraActive, cameraReady, cameraRequestId, facingMode, activeModel, engine, modelReady, requestId, renderOptions, ttsConfig, onFrame, selectedObjectId]);
+  }, [isCameraActive, cameraReady, cameraRequestId, activeModel, engine, modelReady, requestId, fault, retry, threshold]);
 
   const drawOverlays = (
     ctx: CanvasRenderingContext2D,
@@ -307,6 +328,10 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     }
   };
 
+  useLayoutEffect(() => { drawRef.current = drawOverlays; });
+  const rippleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (rippleTimer.current !== null) clearTimeout(rippleTimer.current); }, []);
+
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -318,17 +343,18 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     const hit = engine.findObjectAtPoint(clickX, clickY, currentObjects);
 
     if (hit) {
-      onSelectObject(hit);
+      try { onSelectObject(hit); } catch { setFault('結果通知エラー'); return; }
       setClickRipple({ x: clickX, y: clickY, label: hit.labelJa });
-      setTimeout(() => setClickRipple(null), 1200);
+      if (rippleTimer.current !== null) clearTimeout(rippleTimer.current);
+      rippleTimer.current = setTimeout(() => setClickRipple(null), 1200);
 
       // Force speak on direct user tap
-      speechService.speak(
+      try { speechService.speak(
         `「${hit.labelJa}」、信頼度${Math.round(hit.confidence * 100)}%`,
         hit.labelJa,
         { ...ttsConfig, enabled: true },
         'tap'
-      );
+      ); } catch { setFault('音声エラー'); }
     }
   };
 
@@ -387,8 +413,13 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none px-2.5 py-1 rounded-md bg-black/60 text-[11px]">
         <span>{modelMetadata(activeModel).name}</span>
         <span aria-label="カメラ状態" className="ml-2">{cameraReady ? 'カメラ映像を取得しました' : isCameraActive && !cameraError ? 'カメラ準備中' : 'カメラ停止中'}</span>
-        <span className="ml-2">性能：計測未整備</span>
+        <span aria-label="性能状態" className="ml-2">{fault ?? (modelState.status === 'error' ? 'モデルエラー' : !isCameraActive ? '停止中' : !modelReady ? 'モデル読込中' : !cameraReady ? 'カメラ準備中' : inferenceError ? '推論エラー：次の映像を待機' : stats.stalled ? '映像入力停滞' : '計測中')}</span>
+        <span aria-label="推論FPS" className="ml-2">推論: {stats.inferenceFps === null || fault || !cameraReady || !modelReady ? '未計測' : `${stats.inferenceFps.toFixed(1)} FPS`}</span>
+        <span aria-label="描画FPS" className="ml-2">描画: {stats.drawFps === null || fault || !cameraReady || !modelReady ? '未計測' : `${stats.drawFps.toFixed(1)} FPS`}</span>
+        <span aria-label="フレーム処理時間" className="ml-2">フレーム処理: {stats.processingMs === null || fault || !cameraReady || !modelReady ? '未計測' : `${stats.processingMs.toFixed(1)} ms`}</span>
       </div>
+
+      {fault && <div className="absolute bottom-10 z-30 bg-slate-900 p-2 text-xs" role="alert">{fault}：処理を停止しました。<button onClick={() => setRetry(value => value + 1)}>処理を再試行</button></div>}
 
       {/* Tap Hint (Bottom Center) */}
       {isCameraActive && (

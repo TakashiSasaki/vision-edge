@@ -1,0 +1,75 @@
+
+> vision-studio@1.0.0 test
+> vitest run src/components/VisionCanvas.test.tsx src/services/visionEngine.test.ts
+
+
+ RUN  v5.0.5 /workspace/vision-edge-baseline
+
+ ❯ src/services/visionEngine.test.ts (22 tests | 1 failed) 37ms
+   × repairs temporary smoothing state after an SDK exception so empty recovery cannot resurrect old objects 11ms
+ ❯ src/components/VisionCanvas.test.tsx (5 tests | 1 failed) 598ms
+   × does not infer the same fallback frame repeatedly, while still drawing and publishing at bounded frequency 23ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/VisionCanvas.test.tsx > does not infer the same fallback frame repeatedly, while still drawing and publishing at bounded frequency
+AssertionError: expected "vi.fn()" to be called 1 times, but got 21 times
+ ❯ src/components/VisionCanvas.test.tsx:205:20
+    203|     });
+    204|   }
+    205|   expect(f.detect).toHaveBeenCalledTimes(1);
+       |                    ^
+    206|   expect(props.onFrame.mock.calls.filter(([frame]) => frame !== null))…
+    207|   act(() => { vi.advanceTimersByTime(50); });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/services/visionEngine.test.ts > repairs temporary smoothing state after an SDK exception so empty recovery cannot resurrect old objects
+AssertionError: expected { status: 'ready', …(3) } to match object { status: 'ready', objects: [] }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "objects": [],
++   "objects": [
++     {
++       "bbox": {
++         "height": 0.2,
++         "width": 0.2,
++         "x": 0.1,
++         "y": 0.1,
++       },
++       "category": "動物",
++       "color": "#6366F1",
++       "confidence": 0.765,
++       "id": "det-0-dog",
++       "label": "dog",
++       "labelJa": "犬",
++     },
++   ],
+    "status": "ready",
+  }
+
+ ❯ src/services/visionEngine.test.ts:261:58
+    259|   expect(() => f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toThrow…
+    260|   f.detect.mockReturnValue({ detections: [] });
+    261|   expect(f.engine.detectVideoFrame(v, 'mediapipe', 0.3)).toMatchObject…
+       |                                                          ^
+    262|   expect(f.factory.detector).toHaveBeenCalledTimes(1); expect(f.detect…
+    263| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 25 passed (27)
+   Start at  06:26:35
+   Duration  2.10s (environment 48%, tests 20%, setup 13%, import 12%, transform 7%)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

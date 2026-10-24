@@ -1,0 +1,7 @@
+f20474be156522ee6141cde9c2b3a958db8d2457	refs/heads/chore/build-ci-test-foundation
+1b4db0a98605d403994c2f6b34e10720de30c7cd	refs/heads/fix/camera-lifecycle
+5ed8109f67768f7684af91104868fc0e0678adbd	refs/heads/fix/model-capabilities-and-initialization
+27a5c034cdc7f1e367b704a5f38c6998077d7de7	refs/heads/fix/pr01-css-smoke-validation
+f1a0d0bbe343b666c75eae053340ceefc6730d5d	refs/heads/main
+67e0c15e652d88c773a82b06f615b2befa27a695	refs/heads/review/pr01-build-ci-test-foundation
+fc0e643afef17fdcd7ab888e59e34991b85cd2a7	refs/heads/review/pr01-css-smoke-validation

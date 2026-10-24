@@ -70,7 +70,8 @@ test('production app loads and model controls work without camera or external se
   await expect(page.getByRole('alert')).toContainText(/モデル(実行環境の読み込み|の生成)に失敗しました/);
   await expect(header.getByLabel('バックエンド状態')).toHaveText('バックエンド未準備');
   await expect(page.getByText('現在しきい値を超える物体はありません')).toHaveCount(0);
-  await expect(page.getByText('性能：計測未整備')).toBeVisible();
+  await expect(page.getByLabel('推論FPS')).toBeVisible();
+  await expect(page.getByLabel('推論FPS')).toHaveText('推論: 未計測');
   await page.getByRole('button', { name: 'モデルを再試行' }).click();
   await expect(page.getByRole('alert')).toContainText(/モデル(実行環境の読み込み|の生成)に失敗しました/);
 

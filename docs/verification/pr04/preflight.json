@@ -1,0 +1,47 @@
+{
+  "base": "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+  "tree": "941c586c76bec45fff68d10cc8cb5b6761bd59d4",
+  "openPRs": [
+    {
+      "number": 4,
+      "title": "review: independently validate PR-01 F01 CSS smoke correction — PASS",
+      "head": "fc0e643afef17fdcd7ab888e59e34991b85cd2a7",
+      "branch": "review/pr01-css-smoke-validation",
+      "base": "fix/pr01-css-smoke-validation",
+      "draft": true,
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/4"
+    },
+    {
+      "number": 2,
+      "title": "review: PR-01 foundation — PASS WITH CONDITIONS",
+      "head": "67e0c15e652d88c773a82b06f615b2befa27a695",
+      "branch": "review/pr01-build-ci-test-foundation",
+      "base": "chore/build-ci-test-foundation",
+      "draft": true,
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/2"
+    }
+  ],
+  "runs": [
+    {
+      "id": 40067080275,
+      "head": "f1a0d0bbe343b666c75eae053340ceefc6730d5d",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/TakashiSasaki/vision-edge/actions/runs/40067080275"
+    },
+    {
+      "id": 40066897675,
+      "head": "1b4db0a98605d403994c2f6b34e10720de30c7cd",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/TakashiSasaki/vision-edge/actions/runs/40066897675"
+    },
+    {
+      "id": 40066694837,
+      "head": "d3cafd523617d77c75bcb919da72dce033b5632a",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/TakashiSasaki/vision-edge/actions/runs/40066694837"
+    }
+  ]
+}

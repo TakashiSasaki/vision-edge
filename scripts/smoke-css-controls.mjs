@@ -25,7 +25,7 @@ const controls = [
 ];
 
 try {
-  for (const file of ['package.json', 'playwright.config.ts', 'vite.config.ts', 'e2e']) {
+  for (const file of ['package.json', 'playwright.config.ts', 'vite.config.ts', 'e2e', 'index.html', 'src']) {
     cpSync(path.join(root, file), path.join(probe, file), { recursive: true });
   }
   symlinkSync(path.join(root, 'node_modules'), path.join(probe, 'node_modules'), 'junction');
