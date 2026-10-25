@@ -11,21 +11,12 @@ on:
         description: Exact full commit SHA approved by a human
         required: true
         type: string
-  # One-time bootstrap of the explicitly requested v1.0.0 tag.
-  # Later pushes will not tag anything; future tags require workflow_dispatch.
-  push:
-    branches: [main]
-    paths:
-      - .github/workflows/manual-version-tag.yml
 
 permissions:
   contents: write
 
 jobs:
   create_tag:
-    if: >-
-      ${{ github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.event.head_commit.message == 'fix: validate tag workflow YAML and bootstrap approved v1.0.0') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -35,18 +26,12 @@ jobs:
       - name: Validate version and create the approved annotated tag
         shell: bash
         env:
-          EVENT_NAME: ${{ github.event_name }}
           INPUT_TAG: ${{ inputs.tag }}
           INPUT_TARGET_SHA: ${{ inputs.target_sha }}
         run: |
           set -euo pipefail
-          if [[ "$EVENT_NAME" == 'push' ]]; then
-            tag=v1.0.0
-            target=e9db305770779a2a1a9624c92bf898a037fbea58
-          else
-            tag="$INPUT_TAG"
-            target="$INPUT_TARGET_SHA"
-          fi
+          tag="$INPUT_TAG"
+          target="$INPUT_TARGET_SHA"
           if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
             echo 'Invalid SemVer tag format' >&2; exit 1
           fi
@@ -68,6 +53,6 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git tag -a "$tag" "$target" -m "vision-edge $tag - human-approved baseline"
+          git tag -a "$tag" "$target" -m "vision-edge $tag - human-approved tag"
           git push origin "refs/tags/$tag"
           echo "Created annotated tag $tag at $target"
