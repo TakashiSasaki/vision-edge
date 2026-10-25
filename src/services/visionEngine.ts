@@ -6,6 +6,7 @@ import { getCategoryColor, getLabelInfo } from './dictionary';
 import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
 import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
 import { unknownOnnxBackend } from './onnxSession';
+import { resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSource } from './modelAssetResolver';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
@@ -19,15 +20,63 @@ export interface VisionTaskFactory {
 }
 const DELEGATE = 'GPU' as const;
 const defaultFactory: VisionTaskFactory = {
-  load: () => FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'),
-  detector: (fileset, delegate) => ObjectDetector.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite', delegate },
-    scoreThreshold: 0.25, runningMode: 'VIDEO',
-  }),
-  segmenter: (fileset, delegate) => ImageSegmenter.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite', delegate },
-    runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
-  }),
+  load: async () => {
+    const wasm = await resolveMediaPipeWasmUrls();
+    try {
+      const fileset = await FilesetResolver.forVisionTasks(wasm.primaryUrl);
+      recordResolvedSource('wasm-mediapipe', wasm.source);
+      return fileset;
+    } catch (primaryError) {
+      if (wasm.fallbackUrl) {
+        const fileset = await FilesetResolver.forVisionTasks(wasm.fallbackUrl);
+        recordResolvedSource('wasm-mediapipe', 'external-fallback');
+        return fileset;
+      }
+      throw primaryError;
+    }
+  },
+  detector: async (fileset, delegate) => {
+    const asset = await resolveModelAssetUrls('mediapipe');
+    try {
+      const task = await ObjectDetector.createFromOptions(fileset, {
+        baseOptions: { modelAssetPath: asset.primaryUrl, delegate },
+        scoreThreshold: 0.25, runningMode: 'VIDEO',
+      });
+      recordResolvedSource('mediapipe', asset.source);
+      return task;
+    } catch (primaryError) {
+      if (asset.fallbackUrl) {
+        const task = await ObjectDetector.createFromOptions(fileset, {
+          baseOptions: { modelAssetPath: asset.fallbackUrl, delegate },
+          scoreThreshold: 0.25, runningMode: 'VIDEO',
+        });
+        recordResolvedSource('mediapipe', 'external-fallback');
+        return task;
+      }
+      throw primaryError;
+    }
+  },
+  segmenter: async (fileset, delegate) => {
+    const asset = await resolveModelAssetUrls('selfie-segmenter');
+    try {
+      const task = await ImageSegmenter.createFromOptions(fileset, {
+        baseOptions: { modelAssetPath: asset.primaryUrl, delegate },
+        runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
+      });
+      recordResolvedSource('selfie-segmenter', asset.source);
+      return task;
+    } catch (primaryError) {
+      if (asset.fallbackUrl) {
+        const task = await ImageSegmenter.createFromOptions(fileset, {
+          baseOptions: { modelAssetPath: asset.fallbackUrl, delegate },
+          runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
+        });
+        recordResolvedSource('selfie-segmenter', 'external-fallback');
+        return task;
+      }
+      throw primaryError;
+    }
+  },
   yoloSeg: (options) => createYoloSegTask(options),
   segformer: (options) => createSegFormerTask(options),
 };

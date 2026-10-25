@@ -55,6 +55,10 @@ export interface ModelMetadata {
   runtime: string;
   outputType: string;
   description: string;
+  license?: string;
+  licenseNote?: string;
+  upstreamUrl?: string;
+  localCachePath?: string;
 }
 
 export type ModelState =

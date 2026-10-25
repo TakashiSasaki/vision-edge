@@ -2,6 +2,7 @@ import * as ort from 'onnxruntime-web';
 import type { DetectedObject, InferenceInput, OnnxBackendInfo } from '../types/vision';
 import { OnnxSessionOwner, OnnxInferenceError, createOrtSession, disposeTensors, unknownOnnxBackend } from './onnxSession';
 import { getCategoryColor, getLabelInfo } from './dictionary';
+import { resolveModelAssetUrls } from './modelAssetResolver';
 
 export const COCO_CLASSES: readonly string[] = [
   'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
@@ -330,8 +331,22 @@ export class YoloSegEngine implements YoloSegTask {
 }
 
 export async function createYoloSegTask(options: YoloSegTaskOptions = {}): Promise<YoloSegTask> {
-  const modelUrl = options.modelUrl || DEFAULT_YOLO_SEG_URL;
-
-  const {session,backend}=await createOrtSession(modelUrl,options.delegate);
-  return new YoloSegEngine(session,backend);
+  if (options.modelUrl) {
+    const { session, backend } = await createOrtSession(options.modelUrl, options.delegate, {
+      modelId: 'yolo-seg',
+      primarySource: 'external',
+    });
+    return new YoloSegEngine(session, backend);
+  }
+  const resolved = await resolveModelAssetUrls('yolo-seg');
+  const { session, backend } = await createOrtSession(
+    resolved.primaryUrl || DEFAULT_YOLO_SEG_URL,
+    options.delegate,
+    {
+      fallbackModelUrl: resolved.fallbackUrl,
+      modelId: 'yolo-seg',
+      primarySource: resolved.source,
+    }
+  );
+  return new YoloSegEngine(session, backend);
 }

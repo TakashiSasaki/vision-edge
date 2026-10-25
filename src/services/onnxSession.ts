@@ -1,5 +1,10 @@
 import * as ort from 'onnxruntime-web';
-import type { OnnxBackendInfo } from '../types/vision';
+import type { OnnxBackendInfo, RunnableModelType } from '../types/vision';
+import {
+    recordResolvedSource,
+    resolveOrtWasmUrls,
+    type AssetDeliverySource,
+} from './modelAssetResolver';
 export class OnnxInferenceError extends Error {
     constructor(public readonly model: string, public readonly stage: 'input' | 'run' | 'output' | 'closed', cause: unknown) {
         super(`${model} ${stage}: ${cause instanceof Error ? cause.message : String(cause)}`, { cause });
@@ -57,18 +62,22 @@ export function disposeTensors(values: Iterable<ort.Tensor>) { for (const t of n
     catch (cause) {
         console.warn('ONNX tensor cleanup failed', cause);
     } }
-export async function createOrtSession(modelUrl: string, delegate?: 'GPU' | 'WebGPU' | 'WASM') {
-    if (typeof window !== 'undefined') {
-        ort.env.logLevel = 'error';
-        const isolated = typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated;
-        ort.env.wasm.numThreads = isolated ? Math.min(4, Math.max(1, (navigator.hardwareConcurrency || 2) - 1)) : 1;
-        ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/';
-    }
+
+export interface OrtSessionResolutionOptions {
+    fallbackModelUrl?: string | null;
+    modelId?: Extract<RunnableModelType, 'yolo-seg' | 'segformer'>;
+    primarySource?: AssetDeliverySource;
+}
+
+async function createOrtSessionWithUrl(
+    targetUrl: string,
+    delegate?: 'GPU' | 'WebGPU' | 'WASM'
+): Promise<{ session: ort.InferenceSession; backend: OnnxBackendInfo }> {
     const requestedProvider = delegate === 'WASM' ? 'wasm' : delegate ? 'webgpu' : 'auto';
     const available = typeof navigator !== 'undefined' && !!navigator.gpu;
     const providers = delegate === 'WASM' || !available ? ['wasm'] : ['webgpu', 'wasm'];
     const backend: OnnxBackendInfo = { runtime: 'onnxruntime-web', requestedProvider, configuredProviders: providers, fallbackReason: delegate !== 'WASM' && !available ? 'WebGPU API unavailable; WASM configured' : null, actualBackend: 'unmeasured' };
-    const create = (executionProviders: string[]) => ort.InferenceSession.create(modelUrl, { executionProviders, graphOptimizationLevel: 'all', logSeverityLevel: 3 });
+    const create = (executionProviders: string[]) => ort.InferenceSession.create(targetUrl, { executionProviders, graphOptimizationLevel: 'all', logSeverityLevel: 3 });
     try {
         return { session: await create(providers), backend };
     }
@@ -82,5 +91,41 @@ export async function createOrtSession(modelUrl: string, delegate?: 'GPU' | 'Web
         catch (error) {
             throw new Error(`ONNX WASM fallback initialization failed: ${String(error)}`, { cause: error });
         }
+    }
+}
+
+export async function createOrtSession(
+    modelUrl: string,
+    delegate?: 'GPU' | 'WebGPU' | 'WASM',
+    resolution?: OrtSessionResolutionOptions
+) {
+    const wasm = await resolveOrtWasmUrls();
+    if (typeof window !== 'undefined') {
+        ort.env.logLevel = 'error';
+        const isolated = typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated;
+        ort.env.wasm.numThreads = isolated ? Math.min(4, Math.max(1, (navigator.hardwareConcurrency || 2) - 1)) : 1;
+        ort.env.wasm.wasmPaths = wasm.primaryUrl;
+    }
+    try {
+        const created = await createOrtSessionWithUrl(modelUrl, delegate);
+        recordResolvedSource('wasm-ort', wasm.source);
+        if (resolution?.modelId) {
+            recordResolvedSource(resolution.modelId, resolution.primarySource ?? 'external');
+        }
+        return created;
+    }
+    catch (primaryError) {
+        if (resolution?.fallbackModelUrl && resolution.fallbackModelUrl !== modelUrl) {
+            if (typeof window !== 'undefined' && wasm.fallbackUrl) {
+                ort.env.wasm.wasmPaths = wasm.fallbackUrl;
+            }
+            const created = await createOrtSessionWithUrl(resolution.fallbackModelUrl, delegate);
+            recordResolvedSource('wasm-ort', wasm.fallbackUrl ? 'external-fallback' : wasm.source);
+            if (resolution.modelId) {
+                recordResolvedSource(resolution.modelId, 'external-fallback');
+            }
+            return created;
+        }
+        throw primaryError;
     }
 }

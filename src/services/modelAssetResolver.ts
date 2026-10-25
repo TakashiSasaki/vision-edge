@@ -1,0 +1,293 @@
+import type { RunnableModelType } from '../types/vision.ts';
+
+export type AssetDeliverySource = 'container-cache' | 'external-fallback' | 'external';
+
+export type AssetCacheState = 'cached' | 'downloading' | 'unavailable';
+
+export interface ModelAssetCatalogEntry {
+  id: RunnableModelType;
+  file: string;
+  upstreamUrl: string;
+  localUrl: string;
+  license: string;
+  licenseNote: string;
+}
+
+export interface WasmAssetCatalogEntry {
+  id: 'mediapipe' | 'ort';
+  upstreamUrl: string;
+  localUrl: string;
+  license: string;
+}
+
+export interface ContainerModelStatusEntry {
+  id: RunnableModelType;
+  file: string;
+  status: AssetCacheState;
+  size: number | null;
+  cachedAt: string | null;
+  error: string | null;
+  localUrl: string;
+  upstreamUrl: string;
+  license: string;
+}
+
+export interface ContainerCacheStatusResponse {
+  enabled: boolean;
+  wasm: {
+    mediapipe: {
+      available: boolean;
+      localUrl: string;
+      upstreamUrl: string;
+      license: string;
+    };
+    ort: {
+      available: boolean;
+      localUrl: string;
+      upstreamUrl: string;
+      license: string;
+    };
+  };
+  models: Record<RunnableModelType, ContainerModelStatusEntry>;
+}
+
+export interface ResolvedAssetUrls {
+  primaryUrl: string;
+  fallbackUrl: string | null;
+  source: AssetDeliverySource;
+}
+
+export const UPSTREAM_MEDIAPIPE_WASM_URL =
+  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
+export const LOCAL_MEDIAPIPE_WASM_URL = '/api/model-cache/wasm/mediapipe';
+
+export const UPSTREAM_ORT_WASM_URL =
+  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/';
+export const LOCAL_ORT_WASM_URL = '/api/model-cache/wasm/ort/';
+
+export const WASM_ASSET_CATALOG: Record<'mediapipe' | 'ort', WasmAssetCatalogEntry> = {
+  mediapipe: {
+    id: 'mediapipe',
+    upstreamUrl: UPSTREAM_MEDIAPIPE_WASM_URL,
+    localUrl: LOCAL_MEDIAPIPE_WASM_URL,
+    license: 'Apache-2.0',
+  },
+  ort: {
+    id: 'ort',
+    upstreamUrl: UPSTREAM_ORT_WASM_URL,
+    localUrl: LOCAL_ORT_WASM_URL,
+    license: 'MIT',
+  },
+};
+
+export const MODEL_ASSET_CATALOG: Record<RunnableModelType, ModelAssetCatalogEntry> = {
+  'selfie-segmenter': {
+    id: 'selfie-segmenter',
+    file: 'selfie_segmenter.tflite',
+    upstreamUrl:
+      'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite',
+    localUrl: '/api/model-cache/models/selfie_segmenter.tflite',
+    license: 'Apache-2.0',
+    licenseNote: 'Google MediaPipe / Apache License 2.0（コンテナキャッシュ・再配布可）',
+  },
+  mediapipe: {
+    id: 'mediapipe',
+    file: 'efficientdet_lite0.tflite',
+    upstreamUrl:
+      'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite',
+    localUrl: '/api/model-cache/models/efficientdet_lite0.tflite',
+    license: 'Apache-2.0',
+    licenseNote: 'Google MediaPipe / Apache License 2.0（コンテナキャッシュ・再配布可）',
+  },
+  'yolo-seg': {
+    id: 'yolo-seg',
+    file: 'yolov8n-seg.onnx',
+    upstreamUrl:
+      'https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/yolov8n-seg.onnx',
+    localUrl: '/api/model-cache/models/yolov8n-seg.onnx',
+    license: 'AGPL-3.0',
+    licenseNote: 'Ultralytics YOLOv8 / GNU AGPLv3（OSS・非商用デモ前提でキャッシュ配信）',
+  },
+  segformer: {
+    id: 'segformer',
+    file: 'segformer-b0-quantized.onnx',
+    upstreamUrl:
+      'https://huggingface.co/Xenova/segformer-b0-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx',
+    localUrl: '/api/model-cache/models/segformer-b0-quantized.onnx',
+    license: 'NVIDIA Source Code License (Non-Commercial)',
+    licenseNote: 'NVIDIA SegFormer-B0 / 研究・非商用デモ限定ライセンス',
+  },
+};
+
+declare global {
+  interface Window {
+    __CONTAINER_MODEL_CACHE_ENABLED__?: boolean;
+  }
+}
+
+let testOverrideEnabled: boolean | null = null;
+let cachedStatusResponse: ContainerCacheStatusResponse | null = null;
+let cachedStatusAt = 0;
+const STATUS_TTL_MS = 5_000;
+
+const resolvedSources: Record<string, AssetDeliverySource> = {};
+const listeners = new Set<() => void>();
+
+function notifyListeners(): void {
+  listeners.forEach(listener => listener());
+}
+
+export function subscribeAssetResolution(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function isContainerModelCacheEnabled(): boolean {
+  if (testOverrideEnabled !== null) return testOverrideEnabled;
+  if (typeof window === 'undefined') return false;
+  return Boolean(window.__CONTAINER_MODEL_CACHE_ENABLED__);
+}
+
+export function setContainerModelCacheEnabledForTest(enabled: boolean | null): void {
+  testOverrideEnabled = enabled;
+  cachedStatusResponse = null;
+  cachedStatusAt = 0;
+  for (const key of Object.keys(resolvedSources)) {
+    delete resolvedSources[key];
+  }
+  notifyListeners();
+}
+
+export function recordResolvedSource(
+  assetKey: RunnableModelType | 'wasm-mediapipe' | 'wasm-ort',
+  source: AssetDeliverySource
+): void {
+  resolvedSources[assetKey] = source;
+  notifyListeners();
+}
+
+export function getResolvedSource(
+  assetKey: RunnableModelType | 'wasm-mediapipe' | 'wasm-ort'
+): AssetDeliverySource {
+  if (resolvedSources[assetKey]) return resolvedSources[assetKey];
+  return isContainerModelCacheEnabled() ? 'container-cache' : 'external';
+}
+
+export async function fetchContainerCacheStatus(
+  forceRefresh = false
+): Promise<ContainerCacheStatusResponse | null> {
+  if (!isContainerModelCacheEnabled()) return null;
+  const now = Date.now();
+  if (!forceRefresh && cachedStatusResponse && now - cachedStatusAt < STATUS_TTL_MS) {
+    return cachedStatusResponse;
+  }
+  if (typeof fetch !== 'function') return null;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3_500);
+  try {
+    const response = await fetch('/api/model-cache/status', {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    });
+    if (!response.ok) return null;
+    const contentType = response.headers.get('content-type') ?? '';
+    if (!contentType.includes('application/json')) return null;
+    const data = (await response.json()) as ContainerCacheStatusResponse;
+    if (!data || typeof data !== 'object' || !data.models || !data.wasm) return null;
+    cachedStatusResponse = data;
+    cachedStatusAt = Date.now();
+    notifyListeners();
+    return data;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export function getLatestContainerCacheStatus(): ContainerCacheStatusResponse | null {
+  return cachedStatusResponse;
+}
+
+export async function resolveMediaPipeWasmUrls(): Promise<ResolvedAssetUrls> {
+  if (!isContainerModelCacheEnabled()) {
+    return {
+      primaryUrl: UPSTREAM_MEDIAPIPE_WASM_URL,
+      fallbackUrl: null,
+      source: 'external',
+    };
+  }
+  const status = await fetchContainerCacheStatus();
+  if (status?.wasm?.mediapipe?.available) {
+    return {
+      primaryUrl: status.wasm.mediapipe.localUrl || LOCAL_MEDIAPIPE_WASM_URL,
+      fallbackUrl: UPSTREAM_MEDIAPIPE_WASM_URL,
+      source: 'container-cache',
+    };
+  }
+  return {
+    primaryUrl: UPSTREAM_MEDIAPIPE_WASM_URL,
+    fallbackUrl: null,
+    source: 'external-fallback',
+  };
+}
+
+export async function resolveOrtWasmUrls(): Promise<ResolvedAssetUrls> {
+  if (!isContainerModelCacheEnabled()) {
+    return {
+      primaryUrl: UPSTREAM_ORT_WASM_URL,
+      fallbackUrl: null,
+      source: 'external',
+    };
+  }
+  const status = await fetchContainerCacheStatus();
+  if (status?.wasm?.ort?.available) {
+    const rawLocal = status.wasm.ort.localUrl || LOCAL_ORT_WASM_URL;
+    const localWithSlash = rawLocal.endsWith('/') ? rawLocal : `${rawLocal}/`;
+    const origin =
+      typeof window !== 'undefined' && window.location?.origin
+        ? window.location.origin
+        : '';
+    return {
+      primaryUrl: origin ? `${origin}${localWithSlash}` : localWithSlash,
+      fallbackUrl: UPSTREAM_ORT_WASM_URL,
+      source: 'container-cache',
+    };
+  }
+  return {
+    primaryUrl: UPSTREAM_ORT_WASM_URL,
+    fallbackUrl: null,
+    source: 'external-fallback',
+  };
+}
+
+export async function resolveModelAssetUrls(
+  model: RunnableModelType
+): Promise<ResolvedAssetUrls> {
+  const entry = MODEL_ASSET_CATALOG[model];
+  if (!isContainerModelCacheEnabled()) {
+    return {
+      primaryUrl: entry.upstreamUrl,
+      fallbackUrl: null,
+      source: 'external',
+    };
+  }
+  const status = await fetchContainerCacheStatus();
+  const modelStatus = status?.models?.[model];
+  if (modelStatus && (modelStatus.status === 'cached' || modelStatus.status === 'downloading')) {
+    return {
+      primaryUrl: modelStatus.localUrl || entry.localUrl,
+      fallbackUrl: entry.upstreamUrl,
+      source: 'container-cache',
+    };
+  }
+  return {
+    primaryUrl: entry.upstreamUrl,
+    fallbackUrl: null,
+    source: 'external-fallback',
+  };
+}

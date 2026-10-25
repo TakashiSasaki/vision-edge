@@ -2,6 +2,7 @@ import * as ort from 'onnxruntime-web';
 import type { BoundingBox, DetectedObject, InferenceInput, OnnxBackendInfo } from '../types/vision';
 import { ADE20K_CLASSES, getADE20KInfo } from './ade20kDictionary';
 import { OnnxSessionOwner, OnnxInferenceError, createOrtSession, disposeTensors, unknownOnnxBackend } from './onnxSession';
+import { resolveModelAssetUrls } from './modelAssetResolver';
 export interface SegFormerTaskOptions {
     modelUrl?: string;
     delegate?: 'GPU' | 'WebGPU' | 'WASM';
@@ -150,4 +151,23 @@ export class SegFormerEngine implements SegFormerTask {
         });
     }
 }
-export async function createSegFormerTask(options: SegFormerTaskOptions = {}): Promise<SegFormerTask> { const { session, backend } = await createOrtSession(options.modelUrl || DEFAULT_SEGFORMER_URL, options.delegate); return new SegFormerEngine(session, backend); }
+export async function createSegFormerTask(options: SegFormerTaskOptions = {}): Promise<SegFormerTask> {
+    if (options.modelUrl) {
+        const { session, backend } = await createOrtSession(options.modelUrl, options.delegate, {
+            modelId: 'segformer',
+            primarySource: 'external',
+        });
+        return new SegFormerEngine(session, backend);
+    }
+    const resolved = await resolveModelAssetUrls('segformer');
+    const { session, backend } = await createOrtSession(
+        resolved.primaryUrl || DEFAULT_SEGFORMER_URL,
+        options.delegate,
+        {
+            fallbackModelUrl: resolved.fallbackUrl,
+            modelId: 'segformer',
+            primarySource: resolved.source,
+        }
+    );
+    return new SegFormerEngine(session, backend);
+}

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 /* Agent tooling and its documentation must not contribute application utilities. */
 @source not "../.agents";
+@source not "../.aistudio";
 @source not "../AGENTS.md";
 @source not "../scripts/testing";
 @source not "../docs/test-output.md";
