@@ -1,0 +1,175 @@
+{
+  "base": "d7577f18bc99b7087337c86df3928d94250a4399",
+  "baseTree": "28c22d88a0aeaacceeabe6dcad916a509edb78dd",
+  "baseSrcTree": "be4d4b64b900855f1e737337af64295c6240c65e",
+  "restoreFrom": "460bdabb244d0958e78b60e364d81c2096e9b0b1",
+  "sourceBinding": "final HEAD/tree and hosted CI in Draft PR; product source unchanged from layout base",
+  "changes": {
+    "restoredLogs": 48,
+    "restoredNpmLockExact": true,
+    "removedBunLock": true,
+    "productSourceChanges": 0,
+    "workflowChanges": 0,
+    "dependenciesAdded": 0
+  },
+  "runtime": {
+    "node": "v24.19.0",
+    "npm": "11.9.0",
+    "browser": "system Chromium154.0.8037.57",
+    "platform": "Linux"
+  },
+  "install": {
+    "command": "npm_config_registry=https://registry.npmjs.org npm_config_cache=/workspace/npm-four-model-cache npm run --silent ci:install",
+    "run": "2026-10-25T12-22-40.110Z-59bd520e",
+    "exit": 0
+  },
+  "offline": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+    "run": "2026-10-25T12-23-10.478Z-06f0f016",
+    "exit": 0,
+    "phases": {
+      "typecheck": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lint": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 369,
+          "passed": 369,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "3eac73799ac166c6269f1e574e5486d4bc398c3fdaa90e112de62a6aba099755"
+      },
+      "foundation": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "9ca6916cf0eb50f9d56b2c2f6778d32a072ecaaed7300823ce53d73ce57316ab"
+      },
+      "delegate": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "9dc7dfebbd67eeeb8233738dd56e2d97f28f4316d5c3bb076df9950093b5cce3"
+      },
+      "output": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "2230cbb6b9a0059d4aaa419f4a699d6032416bd866ee05fb79e2fa5fce8a4196"
+      },
+      "build": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "d1f489ae49a285fe702a201521f3704400c0ef3d7cdb259f0f8d167fce15d962"
+      },
+      "browser": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 19,
+          "passed": 19,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logSha256": "fa795d57aad69d700d408474475e3004960f13570807bb98c63688aa39388ab3"
+      },
+      "controls": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      }
+    }
+  },
+  "historical": {
+    "total": 702,
+    "mismatches": []
+  },
+  "productionBuild": {
+    "baseline": "d7577f18bc99b7087337c86df3928d94250a4399",
+    "equal": true,
+    "baselineFiles": {
+      "index.html": "d27b008a2efd59b55450973d1ab919ab319753696a0521c498de3ce2858be390",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-DeVE7SjL.css": "62262fc9138dadd719feeb6d3abcf96a34db24e5419573661ef563df76660d47",
+      "assets/index-LocuHLUJ.js": "e0e33060dfa44e6a850ccc0e65bb0314a8bf56ad8ea1751ec5eb753333cf0958",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+    },
+    "restoredFiles": {
+      "index.html": "d27b008a2efd59b55450973d1ab919ab319753696a0521c498de3ce2858be390",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-LocuHLUJ.js": "e0e33060dfa44e6a850ccc0e65bb0314a8bf56ad8ea1751ec5eb753333cf0958",
+      "assets/index-DeVE7SjL.css": "62262fc9138dadd719feeb6d3abcf96a34db24e5419573661ef563df76660d47",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b"
+    }
+  },
+  "baseFailure": {
+    "run": 40192055190,
+    "job": 121164937397,
+    "source": "d7577f18bc99b7087337c86df3928d94250a4399",
+    "stage": "setup-node lockfile detection",
+    "actualChecks": "skipped"
+  }
+}

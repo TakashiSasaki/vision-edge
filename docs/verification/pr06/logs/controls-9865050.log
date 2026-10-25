@@ -1,0 +1,21 @@
+
+> vision-studio@1.0.0 test:e2e:controls
+> node scripts/smoke-css-controls.mjs
+
+intact: exit=0; passed=1; failed=0
+missing-css-html-fallback: exit=1; passed=0; failed=1
+  Expected failure confirmed: required stylesheet MIME
+absent-stylesheet-link: exit=1; passed=0; failed=1
+  Expected failure confirmed: required local stylesheet links
+empty-css: exit=1; passed=0; failed=1
+  Expected failure confirmed: required stylesheet parsed rules
+irrelevant-css: exit=1; passed=0; failed=1
+  Expected failure confirmed: required stylesheet applied body reset
+fatal-javascript: exit=1; passed=0; failed=1
+  Expected failure confirmed: F01 fatal JavaScript control
+intact-after-controls: exit=0; passed=1; failed=0
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
