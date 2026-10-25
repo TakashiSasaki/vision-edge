@@ -7,7 +7,7 @@ export function drawCanvasFrame(
   video: Pick<HTMLVideoElement, 'videoWidth' | 'videoHeight' | 'readyState'>,
   frame: DetectionFrame | null,
   buffer: { current: HTMLCanvasElement | null },
-  overlays: (ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[]) => void,
+  overlays: (ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[], semanticMask?: HTMLCanvasElement) => void,
   current: () => boolean,
 ): boolean {
   if (video.videoWidth > 0 && canvas.width !== video.videoWidth) canvas.width = video.videoWidth;
@@ -20,7 +20,8 @@ export function drawCanvasFrame(
     offscreen.width = canvas.width; offscreen.height = canvas.height;
     const offCtx = offscreen.getContext('2d');
     if (!offCtx) throw new Error('Overlay buffer unavailable');
-    overlays(offCtx, offscreen.width, offscreen.height, frame.objects);
+    if(frame.semanticMask)overlays(offCtx, offscreen.width, offscreen.height, frame.objects,frame.semanticMask);
+    else overlays(offCtx, offscreen.width, offscreen.height, frame.objects);
     if (!current()) return false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(offscreen, 0, 0);

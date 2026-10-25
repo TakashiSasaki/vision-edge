@@ -29,7 +29,10 @@ export function modelMetadata(id: RunnableModelType): ModelMetadata {
 }
 
 export function backendDescription(state: ModelState): string {
-  return state.status === 'ready'
-    ? `${state.delegate} delegate 指定・初期化済み（GPU実動作は未計測）`
-    : 'バックエンド未準備';
+  if(state.status!=='ready')return 'バックエンド未準備';
+  if(state.model==='mediapipe'||state.model==='selfie-segmenter')return `${state.delegate} delegate 指定・初期化済み（GPU実動作は未計測）`;
+  const backend=state.backend;
+  const requested=backend?.requestedProvider==='auto'?'自動(WebGPU優先)':backend?.requestedProvider==='webgpu'?'WebGPU優先':backend?.requestedProvider==='wasm'?'WASM':'未報告';
+  const configured=backend?.configuredProviders.length?backend.configuredProviders.map(p=>p==='wasm'?'WASM':'WebGPU').join(' → '):'未報告';
+  return `ONNX 要求: ${requested}／設定: ${configured}${backend?.fallbackReason?`／理由: ${backend.fallbackReason.slice(0,180)}`:''}（実行バックエンドは未計測）`;
 }

@@ -9,6 +9,6 @@
 
 # Runtime Environment & Package Manager Note (Google AI Studio)
 
-- **Standard Runtime**: Node.js (`v22.x`) and `npm` are the canonical, active runtime and package manager for this application in Google AI Studio (`npm run dev`, `npm ci`, etc.).
-- **Bun / `bun.lock`**: The presence of `bun.lock` in the repository root is a legacy bootstrap/import artifact. Do **NOT** use `bun` or attempt to run `bun` commands. Node.js and `npm` are strictly enforced by `.nvmrc`, `package.json` (`engines`, `packageManager`), and `.github/workflows/ci.yml`.
+- **Standard Runtime**: Node.js (`v24.x`, CI24.19.0) and `npm` are the canonical, active runtime and package manager for this application in Google AI Studio (`npm run dev`, `npm ci`, etc.).
+- **Lockfile**: `package-lock.json` is the sole dependency lock. Do not use Bun or introduce competing lockfiles. Preserve the pinned Node24/npm11 setup and canonical registry URLs.
 

@@ -20,6 +20,7 @@ import { useCameraStream } from '../hooks/useCameraStream';
 import { drawCanvasFrame } from '../services/canvasRenderer';
 import { PipelineDetails } from './PipelineDetails';
 import { clientPointToVideo } from '../services/videoCoordinates';
+import { confidenceDescription } from '../services/confidenceDescription';
 
 interface VisionCanvasProps {
   activeModel: RunnableModelType;
@@ -57,15 +58,15 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
   const { cameraError, clearError, cameraReady, cameraRequestId } = useCameraStream(videoRef, isCameraActive, facingMode, onCameraStop);
   const [clickRipple, setClickRipple] = useState<{ x: number; y: number; label: string } | null>(null);
-  const [currentFrame, setCurrentFrame] = useState<DetectionFrame | null>(null);
   const modelReady = modelState.status === 'ready' && modelState.model === activeModel;
   const requestId = modelState.requestId;
   const threshold = renderOptions.confidenceThreshold;
-  const currentObjects = cameraReady && modelReady && currentFrame?.model === activeModel && currentFrame.requestId === requestId
-    ? currentFrame.objects : [];
 
   const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const latestFrameRef = useRef<DetectionFrame | null>(null);
+  // Pointer inspection follows the frame actually copied to the Canvas. HUD
+  // publication is throttled and can still describe an older accepted result.
+  const drawnFrameRef = useRef<DetectionFrame | null>(null);
   const lockRef = useRef(new JobLock());
   const schedulerGeneration = useRef(0);
   const previousScheduler = useRef<{ engine: VisionEngine; activeModel: RunnableModelType; requestId: number; cameraRequestId: number; threshold: number; retry: number } | null>(null);
@@ -78,14 +79,14 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   useLayoutEffect(() => {
     latest.current = { onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel };
   });
-  const drawRef = useRef<(ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[]) => void>(() => {});
+  const drawRef = useRef<(ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[], semanticMask?: HTMLCanvasElement) => void>(() => {});
 
   useLayoutEffect(() => {
     const generationOwner = schedulerGeneration;
     generationOwner.current++;
     latestFrameRef.current = null;
+    drawnFrameRef.current = null;
     engine.clearDetections();
-    setCurrentFrame(null);
     setClickRipple(null);
     setFault(null);
     setInferenceError(false);
@@ -104,8 +105,8 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     setPipelineStats(null);
     schedulerGeneration.current++;
     latestFrameRef.current = null;
+    drawnFrameRef.current = null;
     engine.clearDetections();
-    setCurrentFrame(null);
     const canvas = canvasRef.current;
     if (canvas) { const width = canvas.width; canvas.width = width; }
     try { latest.current.onFrame(null); } catch { /* The stopped notification error is already visible. */ }
@@ -152,8 +153,8 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       cancelAcquisition();
       if (drawId !== null) cancelAnimationFrame(drawId);
       latestFrameRef.current = null;
+      drawnFrameRef.current = null;
       engine.clearDetections();
-      setCurrentFrame(null);
       setFault(stage);
     };
     cancelAcquisition = startFrameScheduler({
@@ -200,6 +201,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
         inferenceFailed = true;
         engine.clearDetections();
         latestFrameRef.current = null;
+        drawnFrameRef.current = null;
         dirty = true;
         if (!warned) { warned = true; console.warn('Vision frame failed; waiting for a new frame', { cause }); }
       },
@@ -214,6 +216,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
         const frame = latestFrameRef.current;
         if (canvas) {
           const copied = drawCanvasFrame(canvas, video, frame, offscreenCanvasRef, drawRef.current, current);
+          drawnFrameRef.current = copied && current() ? frame : null;
           drawOutcome = current() ? 'success' : 'cancelled';
           drawProbe.end('draw', drawStart, drawOutcome); drawEnded = true;
           if (copied) {
@@ -237,7 +240,6 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       if (dirty) {
         dirty = false;
         const frame = latestFrameRef.current;
-        setCurrentFrame(frame);
         if (frame !== reported) {
           reported = frame;
           try { latest.current.onFrame(frame); } catch { fail('結果通知エラー'); }
@@ -248,6 +250,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       discard('cancelled');
       document.removeEventListener('visibilitychange', visibility);
       stopped = true;
+      drawnFrameRef.current = null;
       cancelAcquisition();
       clearInterval(hud);
       if (drawId !== null) cancelAnimationFrame(drawId);
@@ -258,10 +261,12 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     ctx: CanvasRenderingContext2D,
     width: number,
     height: number,
-    objects: DetectedObject[]
+    objects: DetectedObject[],
+    semanticMask?: HTMLCanvasElement
   ) => {
     // 1. Draw Masks
     if (renderOptions.showMasks) {
+      if(semanticMask){ctx.save();ctx.globalAlpha=renderOptions.maskOpacity;ctx.drawImage(semanticMask,0,0,width,height);ctx.restore();}
       objects.forEach((obj) => {
         const isSelected = obj.id === selectedObjectId;
         const opacity = isSelected ? Math.min(1, renderOptions.maskOpacity + 0.3) : renderOptions.maskOpacity;
@@ -322,7 +327,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
         if (renderOptions.showLabels) {
           const confText = renderOptions.showConfidence
-            ? ` ${Math.round(obj.confidence * 100)}%`
+            ? ` ${obj.confidenceKind?`${confidenceDescription(obj)} `:''}${Math.round(obj.confidence * 100)}%`
             : '';
           const fullLabel = `${obj.labelJa}${confText}`;
 
@@ -372,14 +377,18 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const video = videoRef.current;
-    if (!video || video.readyState < 2) return;
+    const frame = drawnFrameRef.current;
+    const state = engine.getState();
+    if (!video || video.readyState < 2 || !isCameraActive || !cameraReady || !modelReady || fault
+      || !frame || frame !== latestFrameRef.current || frame.model !== activeModel || frame.requestId !== requestId
+      || state.status !== 'ready' || state.model !== frame.model || state.requestId !== frame.requestId) return;
     // Read current geometry at input time, including a resize or new source size
     // that has not reached the next overlay drawing frame yet.
     const point = clientPointToVideo(e.clientX, e.clientY, video.getBoundingClientRect(), video.videoWidth, video.videoHeight);
     if (!point) return;
     const { x: clickX, y: clickY } = point;
 
-    const hit = engine.findObjectAtPoint(clickX, clickY, currentObjects);
+    const hit = engine.findObjectAtPoint(clickX, clickY, frame.objects);
 
     if (hit) {
       try { onSelectObject(hit); } catch { setFault('結果通知エラー'); return; }
@@ -389,7 +398,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
       // Force speak on direct user tap
       try { speechService.speak(
-        `「${hit.labelJa}」、信頼度${Math.round(hit.confidence * 100)}%`,
+        `「${hit.labelJa}」、${confidenceDescription(hit)}${Math.round(hit.confidence * 100)}%`,
         hit.labelJa,
         { ...ttsConfig, enabled: true },
         'tap'

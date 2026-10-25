@@ -25,7 +25,7 @@ export function ModelComparisonTable({ isOpen, onClose, activeModel, onSelectMod
             <p>{model.description}</p>
           </div>
         ))}
-        <p className="text-xs text-slate-400">GPU delegate を指定します。実機での GPU 利用・速度は未計測です。</p>
+        <p className="text-xs text-slate-400">MediaPipeはGPU delegateを指定します。ONNXはWebGPU優先で、利用不能時はWASMを設定します。設定とフォールバック理由はヘッダーに表示し、実際の実行バックエンド・速度は未計測です。</p>
         <button type="button" onClick={onClose} className="px-3 py-1 bg-slate-800 rounded">閉じる</button>
       </section>
     </div>

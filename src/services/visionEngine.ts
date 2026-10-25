@@ -5,6 +5,7 @@ import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
 import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
+import { unknownOnnxBackend } from './onnxSession';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
@@ -50,6 +51,7 @@ export class VisionEngine {
   private lastStableObjects: DetectedObject[] = [];
   private emptyFrameBufferCount = 0;
   private outputGeneration = 0;
+  private acceptedInspector: {task:SegFormerTask;objects:DetectedObject[];generation:number;requestId:number}|null=null;
 
   constructor(private readonly factory: VisionTaskFactory = defaultFactory) {}
 
@@ -68,6 +70,8 @@ export class VisionEngine {
     this.emptyFrameBufferCount = 0;
     this.offscreenMaskCanvas = null;
     this.maskImageData = null;
+    this.acceptedInspector=null;
+    if(this.activeTask?.model==='segformer')this.activeTask.task.clearResult?.();
   }
   // A new camera session must not inherit temporal detections from another scene.
   // Keep the ready model task and its initialization generation intact.
@@ -75,7 +79,7 @@ export class VisionEngine {
 
   private closeTask(active: ActiveTask | null): void {
     if (!active) return;
-    try { active.task.close(); }
+    try { const closing=active.task.close();if(closing)Promise.resolve(closing).catch(cause=>console.warn('Vision task cleanup failed',{model:active.model,cause})); }
     catch (cause) { console.warn('Vision task cleanup failed', { model: active.model, cause }); }
   }
 
@@ -127,7 +131,7 @@ export class VisionEngine {
         }
         if (!current()) { this.closeTask(active); return cancelled(); }
         this.activeTask = active;
-        const ready = { status: 'ready' as const, model, requestId, delegate: DELEGATE };
+        const ready = { status: 'ready' as const, model, requestId, ...(active.model==='yolo-seg'||active.model==='segformer'?{backend:active.task.backend??unknownOnnxBackend()}:{delegate:DELEGATE}) };
         this.publish(ready);
         return ready;
       } catch (cause) {
@@ -474,7 +478,7 @@ export class VisionEngine {
       if (filteredObjects.length > 0) {
         finalObjects = filteredObjects.map(obj => {
           const prev = this.lastStableObjects.find(p => p.label === obj.label);
-          if (prev) {
+          if (prev && !obj.maskCanvas) {
             return {
               ...obj,
               bbox: {
@@ -509,8 +513,8 @@ export class VisionEngine {
       engineOutcome = 'success';
       return { status: 'ready', model: 'yolo-seg', requestId: state.requestId, objects: finalObjects };
     } catch (cause) {
-      if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) this.resetOutputs();
-      throw cause;
+      if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) {this.resetOutputs();throw cause;}
+      engineOutcome='stale';return {status:'not-ready',model:'yolo-seg',requestId:state.requestId};
     } finally {
       if (postStarted && probe) {
         const tail = postActive ? probe.elapsed(postStart)?.ms ?? null : 0;
@@ -556,16 +560,18 @@ export class VisionEngine {
 
       this.lastStableObjects = rawObjects;
       this.emptyFrameBufferCount = 0;
+      const semantic=active.task.acceptResult?.(rawObjects);
 
       if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
         engineOutcome = 'stale';
         return { status: 'not-ready', model: 'segformer', requestId: state.requestId };
       }
+      this.acceptedInspector={task:active.task,objects:rawObjects,generation:outputGeneration,requestId:state.requestId};
       engineOutcome = 'success';
-      return { status: 'ready', model: 'segformer', requestId: state.requestId, objects: rawObjects };
+      return { status: 'ready', model: 'segformer', requestId: state.requestId, objects: rawObjects, ...(semantic?{semanticMask:semantic.maskCanvas}:{}) };
     } catch (cause) {
-      if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) this.resetOutputs();
-      throw cause;
+      if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) {this.resetOutputs();throw cause;}
+      engineOutcome='stale';return {status:'not-ready',model:'segformer',requestId:state.requestId};
     } finally {
       if (postStarted && probe) {
         const tail = postActive ? probe.elapsed(postStart)?.ms ?? null : 0;
@@ -581,20 +587,24 @@ export class VisionEngine {
     objects: DetectedObject[]
   ): DetectedObject | null {
     if (this.activeTask?.model === 'segformer' && this.activeTask.task.getPixelClass) {
+      const accepted=this.acceptedInspector;
+      if(!accepted||accepted.task!==this.activeTask.task||accepted.objects!==objects||accepted.generation!==this.outputGeneration||accepted.requestId!==this.state.requestId)return null;
       const pixelInfo = this.activeTask.task.getPixelClass(normX, normY);
       if (pixelInfo) {
         const matched = objects.find(o => o.id === `segformer-${pixelInfo.id}`);
-        if (matched) return matched;
+        if (matched) return pixelInfo.confidence===undefined?matched:{...matched,confidence:pixelInfo.confidence,confidenceKind:'semantic-softmax-pixel'};
+        if(pixelInfo.confidence===undefined||!Number.isFinite(pixelInfo.confidence))return null;
         return {
           id: `segformer-${pixelInfo.id}`,
           label: pixelInfo.en,
           labelJa: pixelInfo.ja,
           category: pixelInfo.category,
-          confidence: 0.95,
-          bbox: { x: Math.max(0, normX - 0.05), y: Math.max(0, normY - 0.05), width: 0.1, height: 0.1 },
+          confidence: pixelInfo.confidence, confidenceKind:'semantic-softmax-pixel', areaFraction:pixelInfo.areaFraction,
+          bbox: pixelInfo.bbox??{x:normX,y:normY,width:0,height:0},
           color: pixelInfo.color,
         };
       }
+      return null;
     }
 
     const sorted = [...objects].sort((a, b) => {

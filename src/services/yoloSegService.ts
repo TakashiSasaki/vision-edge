@@ -1,5 +1,6 @@
 import * as ort from 'onnxruntime-web';
-import type { DetectedObject, InferenceInput } from '../types/vision';
+import type { DetectedObject, InferenceInput, OnnxBackendInfo } from '../types/vision';
+import { OnnxSessionOwner, OnnxInferenceError, createOrtSession, disposeTensors, unknownOnnxBackend } from './onnxSession';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 
 export const COCO_CLASSES: readonly string[] = [
@@ -15,7 +16,8 @@ export const COCO_CLASSES: readonly string[] = [
 
 export interface YoloSegTask {
   detectForVideo: (input: InferenceInput, confidenceThreshold: number) => Promise<DetectedObject[]> | DetectedObject[];
-  close: () => void;
+  close: () => void | Promise<void>;
+  readonly backend?: OnnxBackendInfo;
 }
 
 export interface YoloSegTaskOptions {
@@ -62,26 +64,19 @@ function calculateIoU(
 export class YoloSegEngine implements YoloSegTask {
   private inputCanvas: HTMLCanvasElement | null = null;
   private inputCtx: CanvasRenderingContext2D | null = null;
-  private isClosed = false;
+  private readonly owner: OnnxSessionOwner;
 
-  constructor(private readonly session: ort.InferenceSession) {}
+  constructor(private readonly session: ort.InferenceSession, public readonly backend: OnnxBackendInfo = unknownOnnxBackend()) {this.owner=new OnnxSessionOwner(session,'YOLO-seg');}
 
-  public close(): void {
-    this.isClosed = true;
-    try {
-      void this.session.release();
-    } catch (cause) {
-      console.warn('YOLO-seg session release error', cause);
-    }
-    this.inputCanvas = null;
-    this.inputCtx = null;
+  public close(): Promise<void> {
+    this.inputCanvas=null;this.inputCtx=null;return this.owner.close();
   }
 
   public async detectForVideo(
     input: InferenceInput,
     confidenceThreshold: number
   ): Promise<DetectedObject[]> {
-    if (this.isClosed) return [];
+    return this.owner.use(async()=>{
 
     // 1. Prepare 640x480 input canvas and get normalized tensor
     if (!this.inputCanvas) {
@@ -91,7 +86,7 @@ export class YoloSegEngine implements YoloSegTask {
       this.inputCtx = this.inputCanvas.getContext('2d', { willReadFrequently: true });
     }
     const ctx = this.inputCtx;
-    if (!ctx) return [];
+    if (!ctx) throw new OnnxInferenceError('YOLO-seg','input','2D context unavailable');
 
     ctx.drawImage(input, 0, 0, TARGET_INPUT_WIDTH, TARGET_INPUT_HEIGHT);
     const imgData = ctx.getImageData(0, 0, TARGET_INPUT_WIDTH, TARGET_INPUT_HEIGHT);
@@ -109,16 +104,18 @@ export class YoloSegEngine implements YoloSegTask {
     const inputName = this.session.inputNames[0] || 'images';
     const inputTensor = new ort.Tensor('float32', float32Data, [1, 3, TARGET_INPUT_HEIGHT, TARGET_INPUT_WIDTH]);
 
+    const owned:ort.Tensor[]=[inputTensor];
+    try {
     // 2. Run inference
     let results: Record<string, ort.Tensor>;
     try {
       const feeds: Record<string, ort.Tensor> = { [inputName]: inputTensor };
       results = await this.session.run(feeds);
     } catch (err) {
-      console.error('[YOLO-seg] session.run failed:', err);
-      return [];
+      throw new OnnxInferenceError('YOLO-seg','run',err);
     }
-    if (this.isClosed) return [];
+    owned.push(...Object.values(results));
+    if (this.owner.closed) return [];
 
     // 3. Identify output0 (boxes & mask coefficients) and output1 (proto masks)
     const outputNames = this.session.outputNames;
@@ -141,13 +138,15 @@ export class YoloSegEngine implements YoloSegTask {
     if (!protoTensor && outputNames.length >= 2) protoTensor = results[outputNames[1]];
 
     if (!detTensor || !protoTensor) {
-      return [];
+      throw new OnnxInferenceError('YOLO-seg','output','missing detection/prototype tensors');
     }
 
     const detData = detTensor.data as Float32Array;
     const protoData = protoTensor.data as Float32Array;
     const detDims = detTensor.dims; // e.g. [1, 116, 8400] or [1, 8400, 116]
 
+    if(detDims.length!==3||detDims[0]!==1||!detDims.every(n=>Number.isSafeInteger(n)&&n>=0)||!(detDims[1]===116||detDims[2]===116)||protoTensor.dims.length!==4||!protoTensor.dims.every(n=>Number.isSafeInteger(n)&&n>0)||protoTensor.dims[0]!==1||protoTensor.dims[1]!==32)throw new OnnxInferenceError('YOLO-seg','output','unexpected tensor shape');
+    if(detData.length!==detDims.reduce((a,b)=>a*b,1)||protoData.length!==protoTensor.dims.reduce((a,b)=>a*b,1)||!detData.every(Number.isFinite)||!protoData.every(Number.isFinite))throw new OnnxInferenceError('YOLO-seg','output','invalid tensor data');
     const isChannelsFirst = detDims[1] === 116;
     const numCandidates = isChannelsFirst ? detDims[2] : detDims[1];
 
@@ -204,10 +203,11 @@ export class YoloSegEngine implements YoloSegTask {
 
       if (maxScore < threshold) continue;
 
-      const normX = Math.max(0, (cx - w / 2) / TARGET_INPUT_WIDTH);
-      const normY = Math.max(0, (cy - h / 2) / TARGET_INPUT_HEIGHT);
-      const normW = Math.min(1 - normX, w / TARGET_INPUT_WIDTH);
-      const normH = Math.min(1 - normY, h / TARGET_INPUT_HEIGHT);
+      if(w<=0||h<=0)continue;
+      const clamp=(n:number)=>Math.max(0,Math.min(1,n));
+      const normX=clamp((cx-w/2)/TARGET_INPUT_WIDTH),right=clamp((cx+w/2)/TARGET_INPUT_WIDTH);
+      const normY=clamp((cy-h/2)/TARGET_INPUT_HEIGHT),bottom=clamp((cy+h/2)/TARGET_INPUT_HEIGHT);
+      const normW=right-normX,normH=bottom-normY;
 
       if (normW <= 0.01 || normH <= 0.01) continue;
 
@@ -277,13 +277,15 @@ export class YoloSegEngine implements YoloSegTask {
 
         // Bounding box bounds in proto coordinates
         const minPx = Math.max(0, Math.floor(item.bbox.x * protoW));
-        const maxPx = Math.min(protoW - 1, Math.ceil((item.bbox.x + item.bbox.width) * protoW));
+        const maxPx = Math.min(protoW, Math.ceil((item.bbox.x + item.bbox.width) * protoW));
         const minPy = Math.max(0, Math.floor(item.bbox.y * protoH));
-        const maxPy = Math.min(protoH - 1, Math.ceil((item.bbox.y + item.bbox.height) * protoH));
+        const maxPy = Math.min(protoH, Math.ceil((item.bbox.y + item.bbox.height) * protoH));
 
-        for (let py = minPy; py <= maxPy; py++) {
+        for (let py = minPy; py < maxPy; py++) {
           const rowOffset = py * protoW;
-          for (let px = minPx; px <= maxPx; px++) {
+          for (let px = minPx; px < maxPx; px++) {
+            const x=(px+.5)/protoW,y=(py+.5)/protoH;
+            if(x<item.bbox.x||x>=item.bbox.x+item.bbox.width||y<item.bbox.y||y>=item.bbox.y+item.bbox.height)continue;
             let logit = 0;
             const pIdx = rowOffset + px;
 
@@ -321,58 +323,15 @@ export class YoloSegEngine implements YoloSegTask {
       });
     }
 
-    if (detectedObjects.length > 0) {
-      console.log(`[YOLO-seg] Detected ${detectedObjects.length} object(s):`,
-        detectedObjects.map(o => `${o.labelJa} (${Math.round(o.confidence * 100)}%)`).join(', '));
-    }
-
     return detectedObjects;
+    } finally {disposeTensors(owned);}
+    });
   }
 }
 
 export async function createYoloSegTask(options: YoloSegTaskOptions = {}): Promise<YoloSegTask> {
   const modelUrl = options.modelUrl || DEFAULT_YOLO_SEG_URL;
 
-  if (typeof window !== 'undefined') {
-    ort.env.logLevel = 'error';
-    const isIsolated = typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated;
-    ort.env.wasm.numThreads = isIsolated ? Math.min(4, Math.max(1, (navigator.hardwareConcurrency || 2) - 1)) : 1;
-    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/';
-  }
-
-  // Choose WebGPU if available and not explicitly disabled
-  const hasWebGPU = typeof navigator !== 'undefined' && 'gpu' in navigator;
-  const executionProviders = options.delegate === 'WASM'
-    ? ['wasm']
-    : hasWebGPU
-    ? ['webgpu', 'wasm']
-    : ['wasm'];
-
-  const sessionOptions: ort.InferenceSession.SessionOptions = {
-    executionProviders,
-    graphOptimizationLevel: 'all',
-    logSeverityLevel: 3,
-  };
-
-  try {
-    const session = await ort.InferenceSession.create(modelUrl, sessionOptions);
-    return new YoloSegEngine(session);
-  } catch (error) {
-    // If WebGPU failed, fallback to WASM directly
-    if (executionProviders.includes('webgpu')) {
-      try {
-        const fallbackSession = await ort.InferenceSession.create(modelUrl, {
-          executionProviders: ['wasm'],
-          graphOptimizationLevel: 'all',
-          logSeverityLevel: 3,
-        });
-        return new YoloSegEngine(fallbackSession);
-      } catch (fallbackError) {
-        throw new Error(`Failed to create YOLO-seg session with WASM fallback: ${String(fallbackError)}`, {
-          cause: fallbackError,
-        });
-      }
-    }
-    throw new Error(`Failed to initialize YOLO-seg model: ${String(error)}`, { cause: error });
-  }
+  const {session,backend}=await createOrtSession(modelUrl,options.delegate);
+  return new YoloSegEngine(session,backend);
 }
