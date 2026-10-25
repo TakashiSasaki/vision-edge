@@ -1,0 +1,164 @@
+{
+  "reviewedHead": "b1913199f8851a8f3306bb513b16ca2889c8b387",
+  "reviewedTree": "389837c847a517a9183f38cd02c61be6975508d0",
+  "review": "https://github.com/TakashiSasaki/vision-edge/pull/24#pullrequestreview-5642792403",
+  "source": "final residual product/test working tree before evidence-only additions; frozen commit binding in PR",
+  "runtime": {
+    "node": "v24.19.0",
+    "npm": "11.9.0",
+    "browser": "system Chromium154.0.8037.57",
+    "platform": "Linux"
+  },
+  "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+  "run": "2026-10-25T10-53-09.744Z-75fc080b",
+  "exit": 0,
+  "phases": {
+    "typecheck": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lint": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "unit": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 366,
+        "passed": 366,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "42ab62ce2abdec841ee1237c02d6445f04119354731132248c192dab9c131b37"
+    },
+    "foundation": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "dceed5cbe30251e1d72cb12f45ae61d5874c187ddd8a04e0d3f06b81caa18fe5"
+    },
+    "delegate": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 40,
+        "passed": 40,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "29d75d207ca650a1470de62e05c00cd1570ddff03a249816fccd8e5b2580e483"
+    },
+    "output": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 37,
+        "passed": 37,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "1985289003031ea5301b41f2c60e09ff8dd2efd55acd8ee87dd1a58e23df15d1"
+    },
+    "build": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logSha256": "64e5a9b21dce9befc76f0124350e0cec81386935f2691984a8631c3da4e0ba2b"
+    },
+    "browser": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "44c1aa4ecd459490987eed5866425858ac661cf40a1e53c6d64b8b8056b86dc7"
+    },
+    "controls": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 7,
+        "healthy": 2,
+        "expectedFaults": 5
+      },
+      "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+    }
+  },
+  "historicalEvidence": {
+    "source": "63bd34294f37db2da3aa45687ce5c07c31af4e6c",
+    "total": 702,
+    "mismatches": []
+  },
+  "productionCss": {
+    "bytes": 27898,
+    "sha256": "3c60bb7d9314d6bc99c7d29821748ea2b56c49eeaa3ba29f5ea6c8b3cefba5a4",
+    "matchesPriorCorrection": true
+  },
+  "focused": {
+    "run": "2026-10-25T10-51-27.207Z-1f1b8691",
+    "exit": 0,
+    "total": 79,
+    "passed": 79,
+    "newComponentCases": 5
+  },
+  "failedAttempts": [
+    {
+      "run": "2026-10-25T10-49-14.454Z-1d3f952d",
+      "source": "b191319 product plus four new controls",
+      "exit": 1,
+      "passed": 1,
+      "failed": 3
+    },
+    {
+      "run": "2026-10-25T10-51-08.038Z-1d31934f",
+      "source": "intermediate drawn-ref correction before live engine-state guard",
+      "exit": 1,
+      "passed": 4,
+      "failed": 1
+    }
+  ],
+  "intermediateOffline": {
+    "run": "2026-10-25T10-50-21.504Z-8758bea3",
+    "exit": 0,
+    "qualification": "started before the strengthened switch control and final live-state guard; not final-source evidence"
+  }
+}
