@@ -1,0 +1,269 @@
+{
+  "reviewedHead": "9dcf8115be613f4c696788068661577ea587eef1",
+  "reviewedTree": "09491a793cf463c8e4d21976e372f14ab9e7a226",
+  "baselineHead": "c5e08cc20a66ea0a0e58e222f2e291a0c7c22e6d",
+  "originalReproducerCommit": "821e025d1a5238631c93455517cf21cfb7cb9d43",
+  "originalReproducerSha256": "72787a1c6a108d3285b3c289ff9a618851f2a6abf233f02eb5a3cf33e8f6a29c",
+  "reproducerOnlyShaConstantChanged": true,
+  "originalVectors": {
+    "head": "9dcf8115be613f4c696788068661577ea587eef1",
+    "nativeFourthFailure": {
+      "testExit": 1,
+      "readerExit": 0,
+      "falseNoMatch": false,
+      "fullReportContainsSentinel": true
+    },
+    "binary": {
+      "bytes": 96010,
+      "exact": true,
+      "state": "PASS"
+    },
+    "unit-contradiction": {
+      "state": "FAIL",
+      "exit": 1,
+      "counts": null
+    },
+    "browser-contradiction": {
+      "state": "FAIL",
+      "exit": 1,
+      "counts": null
+    },
+    "nestedCleanup": {
+      "timeoutMs": 1500,
+      "graceMs": 100,
+      "observedAfterMs": 3000,
+      "completed": true,
+      "receiptState": "FAIL",
+      "detachedDescendantAlive": false
+    }
+  },
+  "longLineSearch": {
+    "childExit": 7,
+    "exit": 7,
+    "head": {
+      "code": 0,
+      "truncationDisclosed": true
+    },
+    "suffix": {
+      "code": 0,
+      "sentinelFound": true,
+      "prefixDisclosed": true,
+      "suffixDisclosed": true,
+      "bytes": 4391
+    },
+    "logBytes": 11024
+  },
+  "genericLifecycle": {
+    "timeoutMs": 200,
+    "graceMs": 50,
+    "completeBy1200ms": true,
+    "receipt": "FAIL",
+    "problem": "command timeout",
+    "observedPidState": "Z (non-running zombie, PPID1)",
+    "remainingObservedLivePids": []
+  },
+  "focusedReceipts": [
+    {
+      "task": "output",
+      "selection": "default",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 37,
+        "passed": 37,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logBytes": 7434,
+      "logHashMatches": true,
+      "head": "9dcf8115be613f4c696788068661577ea587eef1",
+      "tree": "09491a793cf463c8e4d21976e372f14ab9e7a226",
+      "dirty": false,
+      "remainingObservedPids": []
+    },
+    {
+      "task": "unit",
+      "selection": "default",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 317,
+        "passed": 317,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logBytes": 114,
+      "logHashMatches": true,
+      "head": "9dcf8115be613f4c696788068661577ea587eef1",
+      "tree": "09491a793cf463c8e4d21976e372f14ab9e7a226",
+      "dirty": false,
+      "remainingObservedPids": []
+    },
+    {
+      "task": "foundation",
+      "selection": "default",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logBytes": 12689,
+      "logHashMatches": true,
+      "head": "9dcf8115be613f4c696788068661577ea587eef1",
+      "tree": "09491a793cf463c8e4d21976e372f14ab9e7a226",
+      "dirty": false,
+      "remainingObservedPids": []
+    },
+    {
+      "task": "build",
+      "selection": "default",
+      "exit": 0,
+      "state": "PASS",
+      "counts": null,
+      "logBytes": 353,
+      "logHashMatches": true,
+      "head": "9dcf8115be613f4c696788068661577ea587eef1",
+      "tree": "09491a793cf463c8e4d21976e372f14ab9e7a226",
+      "dirty": false,
+      "remainingObservedPids": []
+    },
+    {
+      "task": "browser",
+      "selection": "custom",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logBytes": 1740,
+      "logHashMatches": true,
+      "head": "9dcf8115be613f4c696788068661577ea587eef1",
+      "tree": "09491a793cf463c8e4d21976e372f14ab9e7a226",
+      "dirty": false,
+      "remainingObservedPids": []
+    },
+    {
+      "task": "controls",
+      "selection": "default",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 7,
+        "healthy": 2,
+        "expectedFaults": 5
+      },
+      "logBytes": 624,
+      "logHashMatches": true,
+      "head": "9dcf8115be613f4c696788068661577ea587eef1",
+      "tree": "09491a793cf463c8e4d21976e372f14ab9e7a226",
+      "dirty": false,
+      "remainingObservedPids": []
+    },
+    {
+      "task": "unit",
+      "selection": "custom",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 3,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 1,
+        "todo": 1
+      },
+      "logBytes": 114,
+      "logHashMatches": true,
+      "head": "9dcf8115be613f4c696788068661577ea587eef1",
+      "tree": "09491a793cf463c8e4d21976e372f14ab9e7a226",
+      "dirty": false,
+      "remainingObservedPids": []
+    },
+    {
+      "task": "browser",
+      "selection": "custom",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 3,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 1,
+        "flaky": 0
+      },
+      "logBytes": 476,
+      "logHashMatches": true,
+      "head": "9dcf8115be613f4c696788068661577ea587eef1",
+      "tree": "09491a793cf463c8e4d21976e372f14ab9e7a226",
+      "dirty": false,
+      "remainingObservedPids": []
+    }
+  ],
+  "productionParity": {
+    "mainHead": "c5e08cc20a66ea0a0e58e222f2e291a0c7c22e6d",
+    "targetHead": "9dcf8115be613f4c696788068661577ea587eef1",
+    "exactProductionParity": true,
+    "target": {
+      "index.html": {
+        "bytes": 1593,
+        "sha256": "d41e262012b17b2d810d49ea7edf8581ee4116d6833c8518142c3d326c218abe"
+      },
+      "assets/index-D6IuPB0e.css": {
+        "bytes": 27898,
+        "sha256": "3c60bb7d9314d6bc99c7d29821748ea2b56c49eeaa3ba29f5ea6c8b3cefba5a4"
+      },
+      "assets/index-DnOec5Bl.js": {
+        "bytes": 423041,
+        "sha256": "1d1d27901e2d1f589ac4b3555a36f5ba69e8760f7b4396582fd3006de2a489ba"
+      },
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": {
+        "bytes": 772699,
+        "sha256": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323"
+      },
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": {
+        "bytes": 137914,
+        "sha256": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+      },
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": {
+        "bytes": 797410,
+        "sha256": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b"
+      }
+    }
+  },
+  "historicalEvidence": {
+    "mainFiles": 698,
+    "changedFiles": 0
+  },
+  "hosted": {
+    "run": 40167527615,
+    "job": 121091528010,
+    "checkoutVerified": true,
+    "unit": 317,
+    "foundation": 73,
+    "protocol": 37,
+    "browser": 19,
+    "controls": 7,
+    "artifactId": 12588454790,
+    "zipContents": "UNVERIFIED \u2014 no acquisition attempted"
+  },
+  "unexecuted": [
+    "full local19-browser suite in this re-review (one production smoke selected instead)",
+    "local typecheck/lint this turn (hosted steps inspected)",
+    "Windows/macOS cleanup",
+    "hard host kill",
+    "hosted failure/cancellation artifact upload",
+    "hosted artifact ZIP contents",
+    "six real-model inference scenarios"
+  ]
+}
