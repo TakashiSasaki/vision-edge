@@ -1,0 +1,126 @@
+{
+  "reviewedHead": "1c9a485841d89edcd79dabb6a6d1efdd6e632630",
+  "reviewEvidenceCommit": "821e025d1a5238631c93455517cf21cfb7cb9d43",
+  "correctedImplementationHead": "d4f73078620b5e42a67df17852556c91418d1325",
+  "before": {
+    "head": "1c9a485841d89edcd79dabb6a6d1efdd6e632630",
+    "nativeFourthFailure": {
+      "testExit": 1,
+      "readerExit": 0,
+      "falseNoMatch": true,
+      "fullReportContainsSentinel": true
+    },
+    "binary": {
+      "bytes": 96010,
+      "exact": true,
+      "state": "PASS"
+    },
+    "unit-contradiction": {
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    "browser-contradiction": {
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "flaky": 0
+      }
+    },
+    "nestedCleanup": {
+      "timeoutMs": 1500,
+      "graceMs": 100,
+      "observedAfterMs": 3000,
+      "completed": true,
+      "receiptState": "FAIL",
+      "detachedDescendantAlive": true
+    }
+  },
+  "after": {
+    "head": "d4f73078620b5e42a67df17852556c91418d1325",
+    "nativeFourthFailure": {
+      "testExit": 1,
+      "readerExit": 0,
+      "falseNoMatch": false,
+      "fullReportContainsSentinel": true
+    },
+    "binary": {
+      "bytes": 96010,
+      "exact": true,
+      "state": "PASS"
+    },
+    "unit-contradiction": {
+      "state": "FAIL",
+      "exit": 1,
+      "counts": null
+    },
+    "browser-contradiction": {
+      "state": "FAIL",
+      "exit": 1,
+      "counts": null
+    },
+    "nestedCleanup": {
+      "timeoutMs": 1500,
+      "graceMs": 100,
+      "observedAfterMs": 3000,
+      "completed": true,
+      "receiptState": "FAIL",
+      "detachedDescendantAlive": false
+    }
+  },
+  "css": {
+    "baselineBytes": 27898,
+    "reviewedBytes": 29121,
+    "correctedBytes": 27898,
+    "baselineAndCorrectedSha256": "3c60bb7d9314d6bc99c7d29821748ea2b56c49eeaa3ba29f5ea6c8b3cefba5a4",
+    "reviewedSha256": "5e1881f7ea2b9b2d1c16da9cd5cf37f1d0205be61a52a2920e6d1662c90782f1",
+    "identicalJavaScriptSha256": "1d1d27901e2d1f589ac4b3555a36f5ba69e8760f7b4396582fd3006de2a489ba"
+  },
+  "attempts": [
+    {
+      "command": "reviewer reproduction, before",
+      "exit": 0,
+      "meaning": "script completed; R1/R2/R4 bugs reproduced, not acceptance"
+    },
+    {
+      "command": "CSS measurement Python glob before is_file guard",
+      "exit": 1,
+      "error": "IsADirectoryError on dist/assets/aistudio; fixed measurement only; builds exited0"
+    },
+    {
+      "command": "existing protocol tests before adding new vectors",
+      "exit": 0,
+      "passed": 22
+    },
+    {
+      "command": "focused protocol initial corrections",
+      "exit": 0,
+      "passed": 35
+    },
+    {
+      "command": "focused protocol with incomplete/skip vectors",
+      "exit": 0,
+      "passed": 37
+    },
+    {
+      "command": "focused protocol after parent reaping/identity guard",
+      "exit": 0,
+      "passed": 37
+    },
+    {
+      "command": "reviewer reproduction, after",
+      "exit": 0,
+      "meaning": "R1 found, R2 no live PID, R4 fail closed; negative unit child exit1 retained"
+    }
+  ]
+}

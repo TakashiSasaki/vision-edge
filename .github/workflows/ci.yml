@@ -25,29 +25,33 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - name: Install locked dependencies
-        run: npm ci
+        run: npm run --silent ci:install
       - name: Typecheck
-        run: npm run typecheck
+        run: node scripts/testing/run.mjs typecheck
       - name: ESLint
-        run: npm run lint
+        run: node scripts/testing/run.mjs lint
       - name: Unit and component tests
-        run: npm test
+        run: npm run --silent test
       - name: Real-SDK foundation regressions (offline)
-        run: node --test scripts/real-sdk/assets.test.mjs scripts/real-sdk/corrections.test.mjs
+        run: npm run --silent test:foundation
+      - name: Test output protocol regressions
+        run: npm run --silent test:output
       - name: Production build
-        run: npm run build
+        run: node scripts/testing/run.mjs build
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npm run --silent ci:browser
       - name: Browser smoke tests
-        run: npm run test:e2e
+        run: npm run --silent test:e2e
       - name: Stylesheet smoke controls
-        run: npm run test:e2e:controls
+        run: npm run --silent test:e2e:controls
       - name: Upload browser evidence
-        if: ${{ !cancelled() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report
           path: |
             playwright-report/
             test-results/
+            .cache/test-runs/
+          include-hidden-files: true
           retention-days: 14

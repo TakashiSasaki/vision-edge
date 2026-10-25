@@ -3,7 +3,7 @@ interface PipelineCameraProbe { requests: number; frames: number; paused: boolea
 declare global { interface Window { pipelineCameraProbe: PipelineCameraProbe; pipelineGateResolve: () => void } }
 test.use({ baseURL: 'http://127.0.0.1:4174' });
 for (const mode of ['immutable', 'rgba', 'live-quality'] as const) {
-  test(`pipeline details show measured units, expiry and lifecycle without toggle restarts (${mode})`, async ({ context, page }) => {
+  test(`pipeline details show measured units, expiry and lifecycle without toggle restarts (${mode})`, async ({ context, page }, testInfo) => {
     await context.route('**/*', route => new URL(route.request().url()).origin === 'http://127.0.0.1:4174' ? route.continue() : route.abort());
     await context.addInitScript(({ mode }) => {
       window.visionSdkGate = new Promise<void>(resolve => { window.pipelineGateResolve = resolve; });
@@ -45,10 +45,10 @@ for (const mode of ['immutable', 'rgba', 'live-quality'] as const) {
       if (mode === 'rgba') await expect(row('comparison').getByRole('cell').nth(0)).toHaveText(/[1-9]\d* \/ [1-9]\d* \/ 0/);
       const before = await page.evaluate(() => ({ cameras: window.pipelineCameraProbe.requests, creates: window.visionSdkProbe.creates }));
       await panel.locator(':scope > summary').click();
-      await page.screenshot({ path: `docs/verification/pr06/screenshots/normal-${mode}.png` });
+      await page.screenshot({ path: testInfo.outputPath(`normal-${mode}.png`) });
       await panel.locator(':scope > summary').click();
       expect(await page.evaluate(() => ({ cameras: window.pipelineCameraProbe.requests, creates: window.visionSdkProbe.creates }))).toEqual(before);
-      await page.screenshot({ path: `docs/verification/pr06/screenshots/details-${mode}.png` });
+      await page.screenshot({ path: testInfo.outputPath(`details-${mode}.png`) });
       await page.evaluate(() => { window.pipelineCameraProbe.paused = true; });
       await expect(row('sdk').getByRole('cell').nth(1)).toHaveText('未計測', { timeout: 10_000 });
       await expect(row('latency').getByRole('cell').nth(1)).toHaveText('未計測');

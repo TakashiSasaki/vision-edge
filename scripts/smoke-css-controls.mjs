@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 
 const root = path.resolve(import.meta.dirname, '..');
 const probe = mkdtempSync(path.join(tmpdir(), 'vision-edge-css-controls-'));
+const evidence = process.env.TEST_LOG_DIR ?? path.join(root, '.cache', `controls-${randomUUID()}`);
+mkdirSync(evidence, { recursive: true });
 const html = readFileSync(path.join(root, 'dist/index.html'), 'utf8');
 const links = (html.match(/<link\b[^>]*\brel="stylesheet"[^>]*>/g) ?? [])
   .filter(link => link.match(/href="([^"]+)"/)?.[1].startsWith('/'));
@@ -30,6 +33,7 @@ try {
   }
   symlinkSync(path.join(root, 'node_modules'), path.join(probe, 'node_modules'), 'junction');
   for (const control of controls) {
+    const controlDir = path.join(evidence, control.name); mkdirSync(controlDir);
     const dist = path.join(probe, 'dist');
     rmSync(dist, { recursive: true, force: true });
     cpSync(path.join(root, 'dist'), dist, { recursive: true });
@@ -55,10 +59,12 @@ try {
     // are added. Ordinary CI still runs the complete browser test suite.
     const result = spawnSync(process.execPath, [path.join(root, 'node_modules/@playwright/test/cli.js'), 'test', 'e2e/smoke.spec.ts', '--retries=0', '--reporter=json'], {
       cwd: probe,
-      env: process.env,
+      env: { ...process.env, TEST_LOG_DIR: controlDir },
       encoding: 'utf8',
       timeout: 90_000,
     });
+    writeFileSync(path.join(controlDir, 'playwright.json'), result.stdout ?? '');
+    writeFileSync(path.join(controlDir, 'stderr.log'), result.stderr ?? '');
     assert.ifError(result.error);
     const report = JSON.parse(result.stdout);
     const errors = report.suites.flatMap(suite => suite.specs.flatMap(spec =>

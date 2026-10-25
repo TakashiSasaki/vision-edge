@@ -89,6 +89,11 @@ builds and automated static/unit/smoke checks do not require these model service
 
 ## Tests and CI
 
+For compact agent-facing output, complete raw artifacts and targeted diagnostics, see
+[Compact verification output](docs/test-output.md). With dependencies and an authorized installed browser available,
+`npm run --silent verify:offline` runs the installed checks without downloading browsers or models.
+
+
 ```sh
 npm ci
 npm run typecheck

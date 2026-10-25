@@ -1,11 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'node:path';
+const logDir = process.env.TEST_LOG_DIR;
 
 export default defineConfig({
   testDir: './e2e',
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: 1,
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: logDir ? [['json', { outputFile: path.join(logDir, 'browser.json') }], ['html', { open: 'never', outputFolder: path.join(logDir, 'html') }]] : [['list'], ['html', { open: 'never' }]],
+  ...(logDir ? { outputDir: path.join(logDir, 'results') } : {}),
   use: {
     baseURL: 'http://127.0.0.1:4173',
     launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH },

@@ -1,4 +1,11 @@
 @import "tailwindcss";
+/* Agent tooling and its documentation must not contribute application utilities. */
+@source not "../.agents";
+@source not "../AGENTS.md";
+@source not "../scripts/testing";
+@source not "../docs/test-output.md";
+@source not "../docs/verification/test-output*";
+@source not "../docs/verification/pr22-output-corrections";
 
 html, body, #root {
   height: 100%;

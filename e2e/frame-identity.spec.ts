@@ -152,7 +152,6 @@ for (const fallback of [false, true]) {
         reservedImageTimestamp: window.nativeFrameProbe.reservedImageTimestamp, reservedPixels: window.nativeFrameProbe.reservedPixels, reservedFrames: window.nativeFrameProbe.reservedFrames, delayed: window.nativeFrameProbe.delayed, blocked: window.nativeFrameProbe.blocked, requests: window.nativeFrameProbe.requests }));
       const evidence = { ...result, samePixelsAcrossInputs: result.inputs.slice(1).map(input => input.pixels.every((value, i) => value === result.inputs[0].pixels[i])), reservedPixels: undefined, reservedPixelSha256: createHash('sha256').update(Buffer.from(result.reservedPixels)).digest('hex'), inputs: result.inputs.map(input => ({ sourceKind: input.sourceKind, time: input.time,
         qualityFrames: input.qualityFrames, pixelSha256: createHash('sha256').update(Buffer.from(input.pixels)).digest('hex') })) };
-      console.log('F01 native input', JSON.stringify(evidence));
       await testInfo.attach('consumed-native-input.json', { body: JSON.stringify(evidence, null, 2), contentType: 'application/json' });
       expect(result.delayed).toBe(1); expect(result.blocked).toBe(1);
       expect(result.calls).toBe(1); expect(result.inputs).toHaveLength(1);
@@ -192,7 +191,6 @@ for (const fallback of [false, true]) {
       expect(result.inputs[2].qualityFrames).toBeGreaterThanOrEqual(2);
       expect(result.creates).toBe(creates); expect(result.requests).toBe(3); expect(result.delayed).toBe(1);
       await expect(page.getByLabel('推論FPS')).toHaveText('推論: 未計測');
-      console.log('F02 native scenes', JSON.stringify(result));
       await testInfo.attach('first-frame-scenes.json', { body: JSON.stringify(result, null, 2), contentType: 'application/json' });
     } finally { await page.evaluate(() => window.nativeFrameProbe.dispose()); }
   });
