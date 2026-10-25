@@ -4,6 +4,7 @@ import { openSync, writeSync, closeSync } from 'node:fs';
 import { mkdir, writeFile, open } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
+import { processTree } from './process-tree.mjs';
 export const hash = value => createHash('sha256').update(value).digest('hex');
 export const DISPLAY_BYTES = 6000;
 export function excerpt(value, limit = DISPLAY_BYTES) {
@@ -31,8 +32,10 @@ export async function execute(task, { root, runDir, emit = line => console.log(l
   const save = () => writeFile(path.join(dir, 'result.json'), JSON.stringify(receipt, null, 2) + '\n');
   await save();
   const fd = openSync(log, 'wx'); const digest = createHash('sha256'); let bytes = 0; let stdoutTail = Buffer.alloc(0); let child; let timer; let killTimer; let problem; let interrupted; let closed = false;
-  const terminate = () => { if (!child?.pid || closed) return; try { if (process.platform === 'win32') child.kill('SIGTERM'); else process.kill(-child.pid, 'SIGTERM'); } catch { /* already closed */ }
-    killTimer ??= setTimeout(() => { try { if (process.platform === 'win32') child.kill('SIGKILL'); else process.kill(-child.pid, 'SIGKILL'); } catch { /* already closed */ } }, graceMs); };
+  let tree;let drainTimer;let pipeTimer;
+  const kill = signal => { tree?.signal(signal);try { if(process.platform==='win32')child.kill(signal);else if(tree?.ownsGroup())process.kill(-child.pid,signal); }catch{/* exited */} };
+  const terminate = () => { if (!child?.pid || closed) return;kill('SIGTERM');
+    killTimer ??= setTimeout(() => {tree?.signal('SIGKILL');drainTimer=setTimeout(()=>{kill('SIGKILL');pipeTimer=setTimeout(()=>{if(!closed){problem+='; inherited pipes did not close; capture incomplete';child.stdout.destroy();child.stderr.destroy();}},500);},100);}, graceMs); };
   const onInterrupt = () => { interrupted = 'SIGINT'; terminate(); }; const onTerminate = () => { interrupted = 'SIGTERM'; terminate(); };
   const append = (chunk, isStdout) => {
     const kept = chunk.subarray(0, Math.max(0, maxLogBytes - bytes));
@@ -49,16 +52,18 @@ export async function execute(task, { root, runDir, emit = line => console.log(l
   let outcome;
   try {
     const childEnvironment = { ...process.env, ...task.env };
+    childEnvironment.TEST_CAPTURE_PROCESS_GROUP='1';
     // npm --silent should hide its own banner, not erase nested install diagnostics.
     if (childEnvironment.npm_config_loglevel === 'silent') childEnvironment.npm_config_loglevel = 'notice';
     child = spawn(task.command, task.args, { cwd: root, env: childEnvironment, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] });
+    if(child.pid)tree=processTree(child.pid);
     process.once('SIGINT', onInterrupt); process.once('SIGTERM', onTerminate);
     timer = setTimeout(() => { problem = 'command timeout'; terminate(); }, timeoutMs);
     const consume = (b, stdout) => { try { append(b, stdout); } catch(error) { problem = `capture failed: ${String(error)}`; terminate(); } };
     child.stdout.on('data', b => consume(b, true)); child.stderr.on('data', b => consume(b, false));
-    outcome = await new Promise(resolve => { child.once('error', error => { problem = String(error); }); child.once('close', (code, signal) => { if (process.platform !== 'win32' && (code !== 0 || signal || problem || interrupted)) { try { process.kill(-child.pid, 'SIGKILL'); } catch { /* no descendants remain */ } } closed = true; resolve({ code, signal }); }); });
+    outcome = await new Promise(resolve => { child.once('error', error => { problem = String(error); }); child.once('close', (code, signal) => { if(code!==0||signal||problem||interrupted)kill('SIGKILL');closed = true; resolve({ code, signal }); }); });
   } finally {
-    clearTimeout(timer); clearTimeout(killTimer); process.removeListener('SIGINT', onInterrupt); process.removeListener('SIGTERM', onTerminate); closeSync(fd);
+    clearTimeout(timer); clearTimeout(killTimer);clearTimeout(drainTimer);clearTimeout(pipeTimer);tree?.stop();process.removeListener('SIGINT', onInterrupt); process.removeListener('SIGTERM', onTerminate); closeSync(fd);
   }
   let exit = interrupted ? (interrupted === 'SIGINT' ? 130 : 143) : problem ? 1 : outcome.code ?? 1;
   let counts;
@@ -67,7 +72,7 @@ export async function execute(task, { root, runDir, emit = line => console.log(l
       if (outcome.code === 0 && ((counts.failed ?? 0) > 0 || (counts.cancelled ?? 0) > 0)) throw new Error('Child exited0 but test report contains failures/cancellations'); }
     catch (error) { receipt.reportError = String(error); if (exit === 0 || task.blockedCodes?.includes(exit)) exit = 1; }
   }
-  Object.assign(receipt, { end: new Date().toISOString(), childExit: outcome.code, signal: outcome.signal, interrupted: interrupted ?? null, problem: problem ?? null, exit, state: exit === 0 ? 'PASS' : task.blockedCodes?.includes(exit) && !problem && !interrupted ? 'BLOCKED' : 'FAIL', counts: counts ?? null, logBytes: bytes, logSha256: digest.digest('hex') });
+  Object.assign(receipt, { end: new Date().toISOString(), childExit: outcome.code, signal: outcome.signal, interrupted: interrupted ?? null, problem: problem ?? null, cleanupScope:process.platform==='linux'?'process group and observed descendants':'process group only; descendant tracking unverified', remainingObservedPids:tree?.remaining()??[], exit, state: exit === 0 ? 'PASS' : task.blockedCodes?.includes(exit) && !problem && !interrupted ? 'BLOCKED' : 'FAIL', counts: counts ?? null, logBytes: bytes, logSha256: digest.digest('hex') });
   await save();
   emit(`${task.name}: ${receipt.state} exit=${exit}${receipt.selection !== 'default' ? ' selection=custom' : ''}${counts ? ' ' + Object.entries(counts).map(([k,v]) => `${k}=${v}`).join(' ') : ''}`);
   emit(`artifacts: ${dir}`);

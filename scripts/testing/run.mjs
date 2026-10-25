@@ -14,7 +14,7 @@ else {
     const dir=path.join(runDir,phase); const node=(args, rest={})=>({name:phase,command:process.execPath,args,selection:extra.length?'custom':'default',...rest});
     const assetRows = async () => { const r=JSON.parse(await readFile(path.join(dir,'output.log'),'utf8')); if(!Array.isArray(r.rows)||!r.rows.length||r.rows.some(x=>!['pass','fail','blocked'].includes(x.status)))throw new Error('Invalid asset report');return r.rows; };
     const assetTask = args => node(args,{blockedCodes:[2],summarize:async()=>{const rows=await assetRows();return {pass:rows.filter(x=>x.status==='pass').length,fail:rows.filter(x=>x.status==='fail').length,blocked:rows.filter(x=>x.status==='blocked').length};},diagnose:async()=> (await assetRows()).filter(x=>x.status!=='pass').map(x=>`${x.id}: ${x.status}; ${x.reason}`).join('\n')});
-    const testFiles=phase==='output'?['scripts/testing/runner.test.mjs']:['scripts/real-sdk/assets.test.mjs','scripts/real-sdk/corrections.test.mjs'];
+    const testFiles=phase==='output'?['scripts/testing/runner.test.mjs','scripts/testing/corrections.test.mjs']:['scripts/real-sdk/assets.test.mjs','scripts/real-sdk/corrections.test.mjs'];
     const tasks={
       typecheck:()=>node(['node_modules/typescript/bin/tsc','--noEmit']),
       lint:()=>node(['node_modules/eslint/bin/eslint.js','.','--max-warnings=0']),

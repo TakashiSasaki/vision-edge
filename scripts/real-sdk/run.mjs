@@ -1,4 +1,5 @@
 import { spawn, execFileSync } from 'node:child_process';
+import { openSync, writeFileSync, closeSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
@@ -30,19 +31,24 @@ await writeFile(path.join(run, 'environment.json'), JSON.stringify(environment, 
 await writeFile(path.join(run, 'assets.json'), JSON.stringify(checked, null, 2) + '\n');
 console.log(`Real SDK run: ${run}\nPrerequisites: ${corrupt ? 'corrupt; browser not run' : complete ? 'all verified' : 'BLOCKED; running asset diagnostics only'}`);
 let childExit = null;
+let childSignal=null;let interrupted=null;let timedOut=false;
 if (!corrupt) {
   const args = ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.real-sdk.config.ts'];
   if (!complete) args.push('--grep', 'asset diagnostic');
   await writeFile(path.join(run, 'command.json'), JSON.stringify({ argv: [process.execPath, ...args], cwd: root, env: { REAL_SDK_RUN_DIR: run, PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? null } }, null, 2) + '\n');
-  const log = [];
-  const child = spawn(process.execPath, args, { cwd: root, detached: true, env: { ...process.env, REAL_SDK_RUN_DIR: run }, stdio: ['ignore', 'pipe', 'pipe'] });
-  const stop = () => { try { process.kill(-child.pid, 'SIGTERM'); } catch { /* Already closed. */ } };
-  process.once('SIGINT', stop); process.once('SIGTERM', stop);
-  const timer = setTimeout(stop, 660_000);
-  for (const stream of [child.stdout, child.stderr]) stream.on('data', bytes => { log.push(bytes); if (process.env.TEST_OUTPUT === 'verbose') process.stdout.write(bytes); });
-  childExit = await new Promise(resolve => { child.once('error', error => { log.push(Buffer.from(String(error))); resolve(1); }); child.once('close', code => resolve(code ?? 1)); });
-  clearTimeout(timer); process.removeListener('SIGINT', stop); process.removeListener('SIGTERM', stop);
-  await writeFile(path.join(run, 'command.txt'), Buffer.concat(log));
+  const logFd=openSync(path.join(run,'command.txt'),'wx');
+  const detached=process.platform!=='win32'&&process.env.TEST_CAPTURE_PROCESS_GROUP!=='1';
+  const child = spawn(process.execPath, args, { cwd: root, detached, env: { ...process.env, REAL_SDK_RUN_DIR: run }, stdio: ['ignore', 'pipe', 'pipe'] });
+  let killTimer;
+  const signal=value=>{try{if(detached)process.kill(-child.pid,value);else child.kill(value);}catch{/* Already closed. */}};
+  const stop = () => {signal('SIGTERM');killTimer??=setTimeout(()=>signal('SIGKILL'),5000);};
+  const onInt=()=>{interrupted='SIGINT';stop();};const onTerm=()=>{interrupted='SIGTERM';stop();};
+  process.once('SIGINT', onInt); process.once('SIGTERM', onTerm);
+  const timer = setTimeout(()=>{timedOut=true;stop();}, 660_000);
+  for (const stream of [child.stdout, child.stderr]) stream.on('data', bytes => { writeFileSync(logFd,bytes); if (process.env.TEST_OUTPUT === 'verbose') process.stdout.write(bytes); });
+  childExit = await new Promise(resolve => { child.once('error', error => { writeFileSync(logFd,String(error)); }); child.once('close', (code,signal) => {childSignal=signal;resolve(code);}); });
+  clearTimeout(timer);clearTimeout(killTimer); process.removeListener('SIGINT', onInt); process.removeListener('SIGTERM', onTerm);
+  closeSync(logFd);
 }
 let report;
 try { report = JSON.parse(await readFile(path.join(run, 'playwright.json'), 'utf8')); } catch { /* startup failure is visible below */ }
@@ -60,9 +66,9 @@ for (const model of ['mediapipe', 'selfie-segmenter']) for (const input of ['Vid
 }
 for (const model of ['mediapipe', 'selfie-segmenter']) matrix.push({ model, input: 'controlled asset HTTP503', runtime: 'cloud Chromium actual SDK', ...outcome(`asset diagnostic ${model}`) });
 for (const runtime of ['physical desktop camera/GPU/audio', 'physical mobile camera/GPU/audio', 'public application code equality', 'CPU diagnostic (product delegate unchanged)']) matrix.push({ runtime, model: 'both', status: 'not-run', reason: 'Outside this cloud run; separate authorization/environment needed' });
-const exit = corrupt || childExit !== 0 ? 1 : complete ? 0 : 2;
+const exit = interrupted ? interrupted==='SIGINT'?130:143 : corrupt || timedOut || childExit !== 0 ? 1 : complete ? 0 : 2;
 await summarizeRun(run);
-const result = { start, end: new Date().toISOString(), childExit, exit, complete, matrix };
+const result = { start, end: new Date().toISOString(), childExit, childSignal, interrupted, timedOut, exit, complete, matrix };
 await writeFile(path.join(run, 'matrix.json'), JSON.stringify(result, null, 2) + '\n');
 await writeFile(path.join(root, '.cache/real-sdk-last-run.txt'), run + '\n');
 const counts = Object.fromEntries(['pass', 'fail', 'blocked', 'not-run'].map(status => [status, matrix.filter(row => row.status === status).length]));
