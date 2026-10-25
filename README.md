@@ -30,6 +30,7 @@ PR-04. No fixed speed, accuracy or zero-latency guarantee is made.
 
 - Node.js 24 LTS, at least 24.15.0 and below 25; `.nvmrc` and CI use 24.19.0.
 - npm 11; the lockfile was generated with npm 11.9.0.
+- Note on Bun: Node.js and `npm` are the standard, active runtime and package manager for this application in Google AI Studio. The `bun.lock` file in the root directory is a legacy environment bootstrap/import artifact and is not used. Do not run `bun` commands.
 - A modern browser with WebAssembly and WebGL for real inference.
 
 ```sh

@@ -6,3 +6,9 @@
 - Preserve exit codes, actual test/skip/failure counts and raw failure diagnostics. Never hide failures using `|| true`, discard raw logs, weaken assertions/timeouts/retries, or call BLOCKED inference a pass.
 - Keep historical verification evidence read-only. Test screenshots belong in `testInfo.outputPath`, not `docs/verification/**`. Do not retry or bypass the recorded model-download403 restrictions. No merge/deploy follows from a test PASS.
 - Search complete structured reports when an excerpt omits a failure. Validate aggregate counts against detailed records. New subprocess commands must share capture ownership or implement bounded child cleanup; test the actual nested runner. Compare production CSS/JS after adding docs or skills because Tailwind scans prose too.
+
+# Runtime Environment & Package Manager Note (Google AI Studio)
+
+- **Standard Runtime**: Node.js (`v22.x`) and `npm` are the canonical, active runtime and package manager for this application in Google AI Studio (`npm run dev`, `npm ci`, etc.).
+- **Bun / `bun.lock`**: The presence of `bun.lock` in the repository root is a legacy bootstrap/import artifact. Do **NOT** use `bun` or attempt to run `bun` commands. Node.js and `npm` are strictly enforced by `.nvmrc`, `package.json` (`engines`, `packageManager`), and `.github/workflows/ci.yml`.
+
