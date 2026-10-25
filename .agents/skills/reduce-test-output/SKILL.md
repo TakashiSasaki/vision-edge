@@ -14,6 +14,6 @@ description: テスト・オフライン CI・検証ログが長く、コーデ�
 7. 次を実測で守る：非ゼロ exit を伝搬、レポート欠落/破損/矛盾を緑にしない、exit2 はその意味を定義した asset/real-SDK task のみ BLOCKED、skip を成功件数に加えない。起動障害・timeout・signal・log 上限到達は明示。保存前に `>/dev/null`、`|| true`、終了コード未確認の pipe、warning 全消去を使わない。
 8. reporter/表示/保存先を改善しても assertion、待機時間、retry、検証対象、GPU/model/input を変更しない。期待される故障 control の子 exit1 と全体失敗を区別する。HTTP503 診断・checker-only データを実推論成功にしない。拒否済み download は再試行・迂回しない。
 9. 完全ログは CI artifact に含める。通常の試験は `testInfo.outputPath` へ保存し、歴史的 screenshot/証拠を上書きしない。大量 raw データの新規コミットも避ける。
-10. ログラッパー変更は最低限、成功・非ゼロ・欠損/不正 report・大量出力・signal/timeout・保存先衝突を試す。件数・終了状態・診断到達性を旧動作と比較し、測定条件と未実行を明記する。
+10. ログラッパー変更は最低限、成功・非ゼロ・欠損/不正 report・大量出力・signal/timeout・保存先衝突を試す。assertion 実行前の import/collection 失敗では suite message や global errors も読む。0件を成功にしない。件数・終了状態・診断到達性を旧動作と比較し、測定条件と未実行を明記する。
 
 個別 reporter や完全なストリームを調べるときは既存の直接 CLI、`npm run test:raw`、または `TEST_OUTPUT=verbose` を明示的に使う。既定の入力へ巨大な JSON を戻さない。絞り込み実行は全件検証と区別する。Node は filter で除外したケースを skip として数えない場合があるため、存在しない skip 件数を補わない。

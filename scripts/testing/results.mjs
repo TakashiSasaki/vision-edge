@@ -30,7 +30,10 @@ export function controlCounts({ stdout }) {
 
 export async function unitFailures(dir) {
   const r = JSON.parse(await readFile(path.join(dir, 'unit.json'), 'utf8'));
-  return r.testResults.flatMap(file => file.assertionResults.filter(t => t.status === 'failed').slice(0,3).map(t => `${t.fullName}:\n${(t.failureMessages ?? []).join('\n')}`)).slice(0,3).join('\n');
+  return r.testResults.flatMap(file => {
+    const assertions = (file.assertionResults ?? []).filter(t => t.status === 'failed').slice(0,3).map(t => `${t.fullName}:\n${(t.failureMessages ?? []).join('\n')}`);
+    return assertions.length ? assertions : file.message ? [`${file.name ?? 'suite'}:\n${file.message}`] : [];
+  }).slice(0,3).join('\n');
 }
 export async function browserFailures(dir) {
   const r = JSON.parse(await readFile(path.join(dir, 'browser.json'), 'utf8')); const errors = [...r.errors ?? []];

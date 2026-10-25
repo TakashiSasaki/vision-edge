@@ -41,6 +41,11 @@ test('a report contradiction is failure, and file-only assertion details are dis
  const {result,lines}=await fixture(`require('node:fs').writeFileSync('probe/unit.json',${JSON.stringify(JSON.stringify(report))})`,{task:{summarize:unitCounts,diagnose:unitFailures}});
  assert.equal(result.exit,1);assert(lines.join('\n').includes('FILE_ONLY_ROOT_CAUSE'));
 });
+test('suite startup errors available only in JSON remain reachable with no test assertions',async()=>{
+ const report={success:false,numTotalTests:0,numPassedTests:0,numFailedTests:0,numPendingTests:0,numTodoTests:0,testResults:[{name:'startup.fixture',message:'SUITE_IMPORT_ROOT_SENTINEL',assertionResults:[]}]};
+ const {result,lines}=await fixture(`require('node:fs').writeFileSync('probe/unit.json',${JSON.stringify(JSON.stringify(report))});process.exitCode=1`,{task:{summarize:unitCounts,diagnose:unitFailures}});
+ assert.equal(result.exit,1);assert.equal(result.state,'FAIL');assert(lines.join('\n').includes('SUITE_IMPORT_ROOT_SENTINEL'));
+});
 test('malformed or zero-test TAP is rejected rather than summarized as a pass',()=>{
  for(const stdout of ['# tests 73\n# pass 73\n','# tests 0\n# pass 0\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n'])assert.throws(()=>tapCounts({stdout}));
 });
