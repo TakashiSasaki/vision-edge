@@ -23,7 +23,9 @@ permissions:
 
 jobs:
   create_tag:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.head_commit.message == 'chore: bootstrap human-approved v1.0.0 baseline tag and version policy') }}
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.event.head_commit.message == 'fix: validate tag workflow YAML and bootstrap approved v1.0.0') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
