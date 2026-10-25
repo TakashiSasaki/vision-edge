@@ -407,7 +407,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full max-h-[calc(100vh-4.5rem)] aspect-[4/3] sm:aspect-video mx-auto bg-[#040711] rounded-xl overflow-hidden border border-slate-800 shadow-xl flex items-center justify-center select-none">
+    <div className="relative w-full h-full min-h-0 min-w-0 max-h-[45vh] md:max-h-[calc(100vh-4.5rem)] aspect-[4/3] sm:aspect-video mx-auto bg-[#040711] rounded-xl overflow-hidden border border-slate-800 shadow-xl flex items-center justify-center select-none">
       {/* Video Stream Element */}
       <video
         ref={videoRef}

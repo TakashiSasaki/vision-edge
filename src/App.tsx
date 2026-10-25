@@ -104,9 +104,9 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
       <ModelStatus state={modelState} onRetry={() => { void engine.initialize(activeModel); }} />
 
       {/* Zero-Scroll Main Stage (Side-by-Side) */}
-      <main className="flex-1 overflow-hidden p-2.5 sm:p-4 max-w-7xl w-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch">
+      <main className="flex-1 min-h-0 overflow-hidden p-2.5 sm:p-4 max-w-7xl w-full mx-auto grid grid-cols-1 grid-rows-[auto_1fr] md:grid-rows-1 md:grid-cols-12 gap-3 items-stretch">
         {/* Left Column: Compact Camera Preview with In-Preview Flip Button */}
-        <div className="md:col-span-8 h-full flex flex-col justify-center overflow-hidden">
+        <div className="md:col-span-8 h-full min-h-0 min-w-0 flex flex-col justify-center overflow-hidden">
           <VisionCanvas
             activeModel={activeModel}
             engine={engine}
@@ -125,7 +125,7 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
         </div>
 
         {/* Right Column: Compact Control & Detection Dock */}
-        <div className="md:col-span-4 h-full flex flex-col overflow-hidden">
+        <div className="md:col-span-4 h-full min-h-0 min-w-0 flex flex-col overflow-hidden">
           <ControlPanel
             activeModel={activeModel}
             renderOptions={renderOptions}

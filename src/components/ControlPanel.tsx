@@ -59,7 +59,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0c111e] border border-slate-800 rounded-xl overflow-hidden shadow-lg select-none">
+    <div className="w-full h-full min-h-0 flex flex-col bg-[#0c111e] border border-slate-800 rounded-xl overflow-hidden shadow-lg select-none">
       {/* Tab Switcher */}
       <div className="flex border-b border-slate-800 bg-[#090d18] shrink-0">
         <button
@@ -91,7 +91,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       </div>
 
       {/* Tab Body (Internal scroll only) */}
-      <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 text-xs">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3.5 text-xs">
         {activeModel==='segformer'&&<p className="text-slate-400">全画素マスクは最大スコアの分類です。softmaxスコアは正答率の保証ではありません。しきい値は一覧・ラベルに適用し、タップでは小さい領域や低スコアの画素も確認できます。面積は別表示です。</p>}
         {/* Tab 1: Detection List */}
         {activeTab === 'detection' && (
