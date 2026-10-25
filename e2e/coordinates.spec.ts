@@ -79,7 +79,6 @@ for (const scenario of [
       await page.waitForTimeout(150);
       const observations = await page.evaluate(() => ({ speech: window.coordinateProbe.speech, arcs: window.coordinateProbe.arcs, requests: window.coordinateProbe.requests, creates: window.visionSdkProbe.creates }));
       const evidence = { scenario, geometry, content: { left, top, width: scenario.width * scale, height: scenario.height * scale }, point, margin, marginObservation, marginSelected, observations };
-      console.log('coordinate observation', JSON.stringify(evidence));
       await testInfo.attach('geometry.json', { body: JSON.stringify(evidence, null, 2), contentType: 'application/json' });
       await testInfo.attach('display.png', { body: await page.screenshot(), contentType: 'image/png' });
       expect(marginObservation.speech).toEqual([]); expect(marginObservation.arcs).toEqual([]); expect(marginSelected).toBe(false);

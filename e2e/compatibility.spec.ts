@@ -51,7 +51,6 @@ for (const mode of ['immutable', 'quality', 'pixels-rvfc', 'pixels-raf', 'zero-q
       expect(await page.evaluate(() => window.visionSdkProbe.creates)).toBe(1);
       await testInfo.attach(`compatibility-${mode}.json`, { body: JSON.stringify({ mode, callsAfterStill: still.calls, fpsAfterStill: still.fps,
         statusAfterStill: still.status, sourceKind: still.input.sourceKind, red: still.input.pixels.slice(0, 4), blue: [0, 0, 255, 255] }), contentType: 'application/json' });
-      console.log('COMPATIBILITY', JSON.stringify({ mode, callsAfterStill: still.calls, fpsAfterStill: still.fps, statusAfterStill: still.status, sourceKind: still.input.sourceKind }));
       expect(errors).toEqual([]);
     } finally {
       await page.getByRole('banner').getByRole('button', { name: '停止', exact: true }).click();

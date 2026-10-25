@@ -4,6 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { summarizeRun } from './summarize.mjs';
 import { randomUUID } from 'node:crypto';
+import { excerpt } from '../testing/capture.mjs';
 import { root, manifest, verifyAsset, hash } from './assets.mjs';
 
 const run = path.join(root, '.cache/real-sdk-runs', `${new Date().toISOString().replaceAll(':', '-')}-${randomUUID().slice(0, 8)}`);
@@ -38,7 +39,7 @@ if (!corrupt) {
   const stop = () => { try { process.kill(-child.pid, 'SIGTERM'); } catch { /* Already closed. */ } };
   process.once('SIGINT', stop); process.once('SIGTERM', stop);
   const timer = setTimeout(stop, 660_000);
-  for (const stream of [child.stdout, child.stderr]) stream.on('data', bytes => { log.push(bytes); process.stdout.write(bytes); });
+  for (const stream of [child.stdout, child.stderr]) stream.on('data', bytes => { log.push(bytes); if (process.env.TEST_OUTPUT === 'verbose') process.stdout.write(bytes); });
   childExit = await new Promise(resolve => { child.once('error', error => { log.push(Buffer.from(String(error))); resolve(1); }); child.once('close', code => resolve(code ?? 1)); });
   clearTimeout(timer); process.removeListener('SIGINT', stop); process.removeListener('SIGTERM', stop);
   await writeFile(path.join(run, 'command.txt'), Buffer.concat(log));
@@ -64,5 +65,8 @@ await summarizeRun(run);
 const result = { start, end: new Date().toISOString(), childExit, exit, complete, matrix };
 await writeFile(path.join(run, 'matrix.json'), JSON.stringify(result, null, 2) + '\n');
 await writeFile(path.join(root, '.cache/real-sdk-last-run.txt'), run + '\n');
-console.log(JSON.stringify(result, null, 2));
+const counts = Object.fromEntries(['pass', 'fail', 'blocked', 'not-run'].map(status => [status, matrix.filter(row => row.status === status).length]));
+console.log(`Real SDK: ${exit === 0 ? 'PASS' : exit === 2 ? 'BLOCKED' : 'FAIL'} exit=${exit} ${JSON.stringify(counts)}; matrix: ${path.join(run, 'matrix.json')}`);
+for (const asset of checked.filter(row => row.status !== 'pass')) console.log(`${asset.id}: ${asset.status}; ${asset.reason}`);
+if (childExit !== 0 && childExit !== null && process.env.TEST_OUTPUT !== 'verbose') console.error(excerpt(await readFile(path.join(run, 'command.txt'), 'utf8')));
 process.exitCode = exit;

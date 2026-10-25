@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reduce test output"
+  short_description: "Keep test diagnostics while reducing agent log input"
+  default_prompt: "Use $reduce-test-output to reduce test and CI output without hiding failures or losing raw evidence."
