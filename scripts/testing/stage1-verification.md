@@ -1,5 +1,10 @@
 # Stage1 npm/evidence contract checkpoint
 
+Correction note: the initial cache-order claim below was incomplete because
+setup-node enabled implicit npm caching. S1-F1/S1-F2 corrections and new exact-head
+evidence are documented separately in `stage1-guard-corrections.md`; this earlier
+checkpoint remains bound to its original runs and is not relabelled as new proof.
+
 Base `fdd37780930ef83431edcca404447b72a9c21976`, tree
 `c16e5399e811a44a6ce5cbeb85527d149b57051e`. Implementation is bounded to
 restoration, dependency-free preflight/controls, CI order and import guidance.

@@ -43,3 +43,27 @@ test('missing Node pin fails explicitly', () => fixture(async f => { await rm(pa
 test('invalid npm lock schema fails', () => fixture(async f => { f.lock.lockfileVersion = 2; await f.write('package-lock.json', f.lock); has(await f.check(), 'LOCK_SCHEMA'); }));
 test('protected parent-directory symlink is rejected', () => fixture(async f => { await mkdir(path.join(f.root, 'elsewhere')); await rm(path.join(f.root, 'docs/verification'), { recursive: true }); await symlink(path.join(f.root, 'elsewhere'), path.join(f.root, 'docs/verification')); has(await f.check(), 'EVIDENCE_MISSING_OR_INVALID'); }));
 test('canonical lock symlink is rejected', () => fixture(async f => { await f.write('elsewhere.json', f.lock); await rm(path.join(f.root, 'package-lock.json')); await symlink(path.join(f.root, 'elsewhere.json'), path.join(f.root, 'package-lock.json')); has(await f.check(), 'LOCK_MISSING_OR_INVALID'); }));
+
+for (const [kind, value] of [['array', ['1.0.4']], ['object', { version: '1.0.4' }], ['number', 104], ['boolean', true], ['null', null]]) {
+  test(`S1-F2 actual CLI rejects ${kind} package version with structured diagnosis`, () => fixture(async f => {
+    f.pkg.version = value;
+    await f.write('package.json', f.pkg);
+    await copyFile(path.join(repositoryRoot, 'scripts/testing/preflight.mjs'), path.join(f.root, 'scripts/testing/preflight.mjs'));
+    const r = spawnSync(process.execPath, [path.join(f.root, 'scripts/testing/preflight.mjs'), '--json'], { encoding: 'utf8', timeout: 15_000 });
+    assert.equal(r.error, undefined); assert.equal(r.status, 1); assert.equal(r.signal, null);
+    assert(r.stdout.length > 0, r.stderr); has(JSON.parse(r.stdout), 'PACKAGE_VERSION'); assert(!r.stderr.includes('TypeError'));
+  }));
+}
+test('S1-F2 array runtime Node returns NODE_CONTRACT without throwing', () => fixture(async f => has(await f.check({ nodeVersion: ['24.19.0'] }), 'NODE_CONTRACT')));
+test('S1-F2 array runtime npm returns NPM_CONTRACT without throwing', () => fixture(async f => has(await f.check({ npmVersion: ['11.9.0'] }), 'NPM_CONTRACT')));
+test('S1-F2 array packageManager returns NPM_CONTRACT', () => fixture(async f => { f.pkg.packageManager = ['npm@11.9.0']; await f.write('package.json', f.pkg); has(await f.check(), 'NPM_CONTRACT'); }));
+test('S1-F2 array engine range returns NODE_CONTRACT', () => fixture(async f => { f.pkg.engines.node = ['>=24.15.0 <25']; await f.write('package.json', f.pkg); has(await f.check(), 'NODE_CONTRACT'); }));
+test('S1-F1 actual negative control accepts only the intended missing-lock failure', () => fixture(async f => {
+  for (const name of ['preflight.mjs', 'missing-lock-control.mjs']) await copyFile(path.join(repositoryRoot, 'scripts/testing', name), path.join(f.root, 'scripts/testing', name));
+  const run = () => spawnSync(process.execPath, [path.join(f.root, 'scripts/testing/missing-lock-control.mjs')], { encoding: 'utf8', timeout: 15_000 });
+  const valid = run(); assert.equal(valid.status, 1); assert.match(valid.stderr, /requires an already-missing/);
+  await rm(path.join(f.root, 'package-lock.json'));
+  const intended = run(); assert.equal(intended.error, undefined); assert.equal(intended.status, 0, intended.stdout + intended.stderr); assert.match(intended.stdout, /PASS expectedChildExit=1 intended=LOCK_MISSING_OR_INVALID/);
+  await f.write('bun.lock', 'unexpected additional failure');
+  const unrelated = run(); assert.equal(unrelated.status, 1); assert(!unrelated.stdout.includes('PASS'));
+}));

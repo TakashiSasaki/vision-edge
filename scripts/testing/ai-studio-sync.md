@@ -43,6 +43,10 @@ contract JSON limit4MiB, npm-version probe10 seconds and captured preflight budg
 60 seconds; preflight controls have120 seconds. Full JSON diagnostics are retained
 in the printed unique .cache/test-runs directory; ordinary display is bounded.
 
+The first setup-node must explicitly set `package-manager-cache: false`: omitting
+`cache` alone still enables automatic npm cache when packageManager declares npm.
+An isolated CI negative checkout removes its lock before that action and requires
+the guard's exact missing-lock diagnostic; setup/cache failures cannot pass it.
 CI pins Node without dependency cache, checks the contract and controls, then sets
 up npm cache and executes all original required checks. Existing readonly CI
 permissions, timeouts and human-only tag workflow remain unchanged. This guard

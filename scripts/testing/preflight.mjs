@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 const conflicts = ['bun.lock', 'bun.lockb', 'yarn.lock', 'pnpm-lock.yaml', 'npm-shrinkwrap.json'];
-const version = s => /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(s ?? '') ? s.split('.').map(Number) : null;
+const version = s => typeof s === 'string' && /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(s ?? '') ? s.split('.').map(Number) : null;
 function matches(v, range) {
   const actual = version(v);
   if (!actual || typeof range !== 'string') return false;
@@ -52,7 +52,7 @@ export async function checkRepository({ root = repositoryRoot, nodeVersion = pro
   catch (error) { fail('NODE_PIN_INVALID', '.nvmrc', error.message); }
   if (!version(pin) || version(pin)[0] !== 24) fail('NODE_PIN_INVALID', '.nvmrc', 'expected a precise Node24 version');
   if (!version(nodeVersion) || version(nodeVersion)[0] !== 24 || nodeVersion !== pin || !matches(nodeVersion, pkg?.engines?.node) || !matches(pin, pkg?.engines?.node)) fail('NODE_CONTRACT', 'package.json/.nvmrc', 'Node24 runtime must match .nvmrc; runtime and pin must satisfy the declared comparator engine range');
-  if (!/^npm@11\.\d+\.\d+$/.test(pkg?.packageManager ?? '') || !version(npmVersion) || version(npmVersion)[0] !== 11 || !matches(npmVersion, pkg?.engines?.npm) || !matches(pkg?.packageManager?.slice(4), pkg?.engines?.npm)) fail('NPM_CONTRACT', 'package.json', 'npm11 runtime and packageManager must satisfy the declared comparator engine range');
+  if (typeof pkg?.packageManager !== 'string' || !/^npm@11\.\d+\.\d+$/.test(pkg?.packageManager ?? '') || !version(npmVersion) || version(npmVersion)[0] !== 11 || !matches(npmVersion, pkg?.engines?.npm) || !matches(pkg?.packageManager?.slice(4), pkg?.engines?.npm)) fail('NPM_CONTRACT', 'package.json', 'npm11 runtime and packageManager must satisfy the declared comparator engine range');
   if (!version(pkg?.version)) fail('PACKAGE_VERSION', 'package.json', 'expected MAJOR.MINOR.PATCH version');
   if (lock) {
     const entry = lock.packages?.[''];
