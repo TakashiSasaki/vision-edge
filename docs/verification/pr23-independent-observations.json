@@ -1,0 +1,261 @@
+{
+  "head": "a21e7509636c364650418ba236a7e330a813f0c2",
+  "tree": "2c7ae44ba55b8019cfebb871f9bdd875ee26a12d",
+  "verdict": "FAIL \u2014 F1/P2; B1 runtime/build verification additionally BLOCKED",
+  "summaryVectors": [
+    {
+      "kind": "cpu-observed",
+      "requested": "CPU",
+      "observed": [
+        "CPU"
+      ],
+      "errors": [],
+      "inferenceExecuted": true,
+      "populations": 1
+    },
+    {
+      "kind": "gpu-observed",
+      "requested": "CPU",
+      "observed": [
+        "GPU"
+      ],
+      "errors": [
+        "observed SDK delegate differs from requested delegate"
+      ],
+      "inferenceExecuted": false,
+      "populations": 0
+    },
+    {
+      "kind": "missing-create",
+      "requested": "CPU",
+      "observed": [],
+      "errors": [],
+      "inferenceExecuted": true,
+      "populations": 1
+    },
+    {
+      "kind": "missing-delegate",
+      "requested": "CPU",
+      "observed": [
+        null
+      ],
+      "errors": [
+        "observed SDK delegate differs from requested delegate"
+      ],
+      "inferenceExecuted": false,
+      "populations": 0
+    },
+    {
+      "kind": "wrong-model-only",
+      "requested": "CPU",
+      "observed": [
+        "CPU"
+      ],
+      "errors": [],
+      "inferenceExecuted": true,
+      "populations": 1
+    }
+  ],
+  "modelFreeEngineBoundary": [
+    {
+      "mode": "GPU",
+      "boundary": "LOCAL RECORDER; not genuine SDK, no inference",
+      "observed": [
+        {
+          "model": "mediapipe",
+          "options": {
+            "baseOptions": {
+              "modelAssetPath": "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
+              "delegate": "GPU"
+            },
+            "scoreThreshold": 0.25,
+            "runningMode": "VIDEO"
+          }
+        },
+        {
+          "model": "selfie-segmenter",
+          "options": {
+            "baseOptions": {
+              "modelAssetPath": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite",
+              "delegate": "GPU"
+            },
+            "runningMode": "VIDEO",
+            "outputConfidenceMasks": true,
+            "outputCategoryMask": false
+          }
+        }
+      ]
+    },
+    {
+      "mode": "CPU",
+      "boundary": "LOCAL RECORDER; not genuine SDK, no inference",
+      "observed": [
+        {
+          "model": "mediapipe",
+          "options": {
+            "baseOptions": {
+              "modelAssetPath": "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
+              "delegate": "CPU"
+            },
+            "scoreThreshold": 0.25,
+            "runningMode": "VIDEO"
+          }
+        },
+        {
+          "model": "selfie-segmenter",
+          "options": {
+            "baseOptions": {
+              "modelAssetPath": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite",
+              "delegate": "CPU"
+            },
+            "runningMode": "VIDEO",
+            "outputConfidenceMasks": true,
+            "outputCategoryMask": false
+          }
+        }
+      ]
+    }
+  ],
+  "sourceAndRuns": {
+    "historicalEvidence": {
+      "files": 702,
+      "mismatches": []
+    },
+    "localUnavailableRuntime": [
+      {
+        "path": "/workspace/pr23-review/.cache/real-sdk-runs/2026-10-25T06-58-09.382Z-266fcf3b",
+        "sourceHead": "a21e7509636c364650418ba236a7e330a813f0c2",
+        "sourceTree": "2c7ae44ba55b8019cfebb871f9bdd875ee26a12d",
+        "requested": "GPU",
+        "production": "GPU",
+        "forwardedEnv": "GPU",
+        "childExit": 1,
+        "exit": 1,
+        "sixInference": [
+          "blocked",
+          "blocked",
+          "blocked",
+          "blocked",
+          "blocked",
+          "blocked"
+        ],
+        "diagnostics": [
+          "not-run",
+          "not-run"
+        ],
+        "inferenceExecuted": false,
+        "inferenceAttempted": false,
+        "resultRendered": false,
+        "populations": 0
+      },
+      {
+        "path": "/workspace/pr23-review/.cache/real-sdk-cpu-runs/2026-10-25T06-58-08.890Z-77ee34b9",
+        "sourceHead": "a21e7509636c364650418ba236a7e330a813f0c2",
+        "sourceTree": "2c7ae44ba55b8019cfebb871f9bdd875ee26a12d",
+        "requested": "CPU",
+        "production": "GPU",
+        "forwardedEnv": "CPU",
+        "childExit": 1,
+        "exit": 1,
+        "sixInference": [
+          "blocked",
+          "blocked",
+          "blocked",
+          "blocked",
+          "blocked",
+          "blocked"
+        ],
+        "diagnostics": [
+          "not-run",
+          "not-run"
+        ],
+        "inferenceExecuted": false,
+        "inferenceAttempted": false,
+        "resultRendered": false,
+        "populations": 0
+      }
+    ],
+    "noSourceOrDependencyChanges": true,
+    "clean": true
+  },
+  "receipts": [
+    {
+      "task": "delegate",
+      "state": "FAIL",
+      "exit": 1,
+      "selection": "custom",
+      "counts": {
+        "total": 15,
+        "passed": 13,
+        "failed": 2,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logBytes": 5564,
+      "logHashMatches": true,
+      "sourceHead": "a21e7509636c364650418ba236a7e330a813f0c2",
+      "sourceTree": "2c7ae44ba55b8019cfebb871f9bdd875ee26a12d",
+      "dirty": false
+    },
+    {
+      "task": "real-sdk-cpu",
+      "state": "FAIL",
+      "exit": 1,
+      "selection": "default",
+      "counts": null,
+      "logBytes": 2448,
+      "logHashMatches": true,
+      "sourceHead": "a21e7509636c364650418ba236a7e330a813f0c2",
+      "sourceTree": "2c7ae44ba55b8019cfebb871f9bdd875ee26a12d",
+      "dirty": false
+    },
+    {
+      "task": "real-sdk",
+      "state": "FAIL",
+      "exit": 1,
+      "selection": "default",
+      "counts": null,
+      "logBytes": 2440,
+      "logHashMatches": true,
+      "sourceHead": "a21e7509636c364650418ba236a7e330a813f0c2",
+      "sourceTree": "2c7ae44ba55b8019cfebb871f9bdd875ee26a12d",
+      "dirty": false
+    },
+    {
+      "task": "delegate",
+      "state": "PASS",
+      "exit": 0,
+      "selection": "custom",
+      "counts": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logBytes": 2490,
+      "logHashMatches": true,
+      "sourceHead": "a21e7509636c364650418ba236a7e330a813f0c2",
+      "sourceTree": "2c7ae44ba55b8019cfebb871f9bdd875ee26a12d",
+      "dirty": false
+    }
+  ],
+  "hosted": {
+    "run": 40170433242,
+    "job": 121099987877,
+    "rawCheckoutVerified": true,
+    "counts": {
+      "unit": 317,
+      "foundation": 73,
+      "protocol": 37,
+      "delegate": 15,
+      "browser": 19,
+      "controls": 7
+    },
+    "artifact": 12590205384,
+    "zipContents": "UNVERIFIED; no acquisition attempted"
+  },
+  "prohibitedActionsAttempted": []
+}
