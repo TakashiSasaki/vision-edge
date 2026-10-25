@@ -6,14 +6,13 @@ import {
   RenderOptions,
   TTSConfig,
   PerModelParameterConfig,
-  DEFAULT_MODEL_PARAMS,
-  ExtraInferenceOptions
+  DEFAULT_MODEL_PARAMS
 } from './types/vision';
 import { Header } from './components/Header';
 import { VisionCanvas } from './components/VisionCanvas';
 import { ControlPanel } from './components/ControlPanel';
 import { ModelComparisonTable } from './components/ModelComparisonTable';
-import { VisionEngine } from './services/visionEngine';
+import { VisionEngine, type ExtraInferenceOptions } from './services/visionEngine';
 import { modelMetadata, isRunnableModel, getVariantMetadata } from './services/modelRegistry';
 import { ModelStatus } from './components/ModelStatus';
 import { speechService } from './services/speechService';
@@ -51,7 +50,7 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
 
   const activeParams = modelParams[activeModel] || DEFAULT_MODEL_PARAMS[activeModel];
   const activeRenderOptions = activeParams.render;
-  const activeInferenceParams = activeParams.inference as ExtraInferenceOptions;
+  const activeInferenceParams = activeParams.inference;
 
   const handleChangeRenderOptions = (opts: Partial<RenderOptions>) => {
     setModelParams(prev => {

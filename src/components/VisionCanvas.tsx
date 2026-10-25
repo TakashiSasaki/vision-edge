@@ -10,7 +10,7 @@ import {
   TTSConfig
 } from '../types/vision';
 import { speechService } from '../services/speechService';
-import { VisionEngine } from '../services/visionEngine';
+import { VisionEngine, type ExtraInferenceOptions } from '../services/visionEngine';
 import { JobLock, startFrameScheduler } from '../services/frameScheduler';
 import { HUD_INTERVAL_MS, PerformanceMetrics, type PerformanceSnapshot } from '../services/performanceMetrics';
 import { PipelineMetrics, PipelineProbe, telemetry, type InferenceMeasurement } from '../services/pipelineMetrics';
