@@ -23,7 +23,9 @@
     "verify:offline": "node scripts/testing/run.mjs offline",
     "test:logs": "node scripts/testing/read-log.mjs",
     "ci:install": "node scripts/testing/run.mjs install",
-    "ci:browser": "node scripts/testing/run.mjs browser-install"
+    "ci:browser": "node scripts/testing/run.mjs browser-install",
+    "test:e2e:real-sdk:cpu": "node scripts/testing/run.mjs real-sdk-cpu",
+    "test:real-sdk:delegate": "node scripts/testing/run.mjs delegate"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.14",

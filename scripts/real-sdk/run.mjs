@@ -7,8 +7,11 @@ import { summarizeRun } from './summarize.mjs';
 import { randomUUID } from 'node:crypto';
 import { excerpt } from '../testing/capture.mjs';
 import { root, manifest, verifyAsset, hash } from './assets.mjs';
+import { commandDelegate, delegatePaths } from './delegate.mjs';
+const delegate=commandDelegate(process.argv.slice(2));
+const paths=delegatePaths(delegate);
 
-const run = path.join(root, '.cache/real-sdk-runs', `${new Date().toISOString().replaceAll(':', '-')}-${randomUUID().slice(0, 8)}`);
+const run = path.join(root, paths.runs, `${new Date().toISOString().replaceAll(':', '-')}-${randomUUID().slice(0, 8)}`);
 await mkdir(run, { recursive: true });
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
 const checked = [];
@@ -24,7 +27,9 @@ const environment = {
   npm: execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim(),
   chromium: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? 'Playwright matched browser (no system fallback)',
   mode: 'verified local routing; all other external browser requests blocked', resolution: [512, 512],
-  delegate: 'GPU (unchanged product request); physical device unknown',
+  delegate, requestedDelegate:delegate, productionDelegate:'GPU',
+  verificationVariant:delegate==='CPU'?'test-build engine constant CPU; production source unchanged':'unchanged product GPU request',
+  executionBackend:'unverified; SDK option observed separately, not hardware/backend proof',
   population: 'Per scenario: initialization separate; first successful SDK call warmup; next >=3 positive inference calls steady state; background/empty >=5 calls each. HUD rolling 5s/2048 events/latest300 quantiles; no physical timing threshold.',
 };
 await writeFile(path.join(run, 'environment.json'), JSON.stringify(environment, null, 2) + '\n');
@@ -35,10 +40,10 @@ let childSignal=null;let interrupted=null;let timedOut=false;
 if (!corrupt) {
   const args = ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.real-sdk.config.ts'];
   if (!complete) args.push('--grep', 'asset diagnostic');
-  await writeFile(path.join(run, 'command.json'), JSON.stringify({ argv: [process.execPath, ...args], cwd: root, env: { REAL_SDK_RUN_DIR: run, PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? null } }, null, 2) + '\n');
+  await writeFile(path.join(run, 'command.json'), JSON.stringify({ argv: [process.execPath, ...args], cwd: root, env: { REAL_SDK_RUN_DIR: run, REAL_SDK_DELEGATE:delegate, PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? null } }, null, 2) + '\n');
   const logFd=openSync(path.join(run,'command.txt'),'wx');
   const detached=process.platform!=='win32'&&process.env.TEST_CAPTURE_PROCESS_GROUP!=='1';
-  const child = spawn(process.execPath, args, { cwd: root, detached, env: { ...process.env, REAL_SDK_RUN_DIR: run }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, args, { cwd: root, detached, env: { ...process.env, REAL_SDK_RUN_DIR: run, REAL_SDK_DELEGATE:delegate }, stdio: ['ignore', 'pipe', 'pipe'] });
   let killTimer;
   const signal=value=>{try{if(detached)process.kill(-child.pid,value);else child.kill(value);}catch{/* Already closed. */}};
   const stop = () => {signal('SIGTERM');killTimer??=setTimeout(()=>signal('SIGKILL'),5000);};
@@ -62,17 +67,17 @@ const outcome = title => {
 };
 const matrix = [];
 for (const model of ['mediapipe', 'selfie-segmenter']) for (const input of ['VideoFrame', 'Canvas', 'HTMLVideoElement']) {
-  matrix.push({ model, input, runtime: 'cloud Chromium / unchanged GPU request', ...(complete ? outcome(`real inference ${model} ${input}`) : { status: corrupt ? 'fail' : 'blocked', reason: checked.filter(c => c.status !== 'pass'), executedInference: 0 }) });
+  matrix.push({ model, input, requestedDelegate:delegate, runtime: `cloud Chromium / explicit ${delegate} request`, ...(complete ? outcome(`real inference ${model} ${input}`) : { status: corrupt ? 'fail' : 'blocked', reason: checked.filter(c => c.status !== 'pass'), executedInference: 0 }) });
 }
-for (const model of ['mediapipe', 'selfie-segmenter']) matrix.push({ model, input: 'controlled asset HTTP503', runtime: 'cloud Chromium actual SDK', ...outcome(`asset diagnostic ${model}`) });
-for (const runtime of ['physical desktop camera/GPU/audio', 'physical mobile camera/GPU/audio', 'public application code equality', 'CPU diagnostic (product delegate unchanged)']) matrix.push({ runtime, model: 'both', status: 'not-run', reason: 'Outside this cloud run; separate authorization/environment needed' });
+for (const model of ['mediapipe', 'selfie-segmenter']) matrix.push({ model, input: 'controlled asset HTTP503', requestedDelegate:delegate, runtime: 'cloud Chromium actual SDK', ...outcome(`asset diagnostic ${model}`) });
+for (const runtime of ['physical desktop camera/GPU/audio', 'physical mobile camera/GPU/audio', 'public application code equality', delegate==='CPU'?'GPU verification (separate explicit command)':'CPU diagnostic (product delegate unchanged)']) matrix.push({ runtime, model: 'both', status: 'not-run', reason: 'Outside this run; separate explicit execution/environment needed' });
 const exit = interrupted ? interrupted==='SIGINT'?130:143 : corrupt || timedOut || childExit !== 0 ? 1 : complete ? 0 : 2;
 await summarizeRun(run);
 const result = { start, end: new Date().toISOString(), childExit, childSignal, interrupted, timedOut, exit, complete, matrix };
 await writeFile(path.join(run, 'matrix.json'), JSON.stringify(result, null, 2) + '\n');
-await writeFile(path.join(root, '.cache/real-sdk-last-run.txt'), run + '\n');
+await writeFile(path.join(root, paths.last), run + '\n');
 const counts = Object.fromEntries(['pass', 'fail', 'blocked', 'not-run'].map(status => [status, matrix.filter(row => row.status === status).length]));
-console.log(`Real SDK: ${exit === 0 ? 'PASS' : exit === 2 ? 'BLOCKED' : 'FAIL'} exit=${exit} ${JSON.stringify(counts)}; matrix: ${path.join(run, 'matrix.json')}`);
+console.log(`Real SDK ${delegate}: ${exit === 0 ? 'PASS' : exit === 2 ? 'BLOCKED' : 'FAIL'} exit=${exit} ${JSON.stringify(counts)}; matrix: ${path.join(run, 'matrix.json')}`);
 for (const asset of checked.filter(row => row.status !== 'pass')) console.log(`${asset.id}: ${asset.status}; ${asset.reason}`);
 if (childExit !== 0 && childExit !== null && process.env.TEST_OUTPUT !== 'verbose') console.error(excerpt(await readFile(path.join(run, 'command.txt'), 'utf8')));
 process.exitCode = exit;

@@ -1,15 +1,20 @@
 import path from 'node:path';
 import { defineConfig, mergeConfig } from 'vite';
 import base from './vite.config';
+import { requestedDelegate, delegatePaths, cpuEngineVariant } from './scripts/real-sdk/delegate.mjs';
+const delegate=requestedDelegate();
+const paths=delegatePaths(delegate);
 
 // Independent build only. The ordinary production config has no observer imports.
 export default defineConfig(async env => mergeConfig(
   typeof base === 'function' ? await base({ ...env, mode: 'production' }) : base,
   {
-    build: { outDir: '.cache/vision-edge-real-sdk', emptyOutDir: true },
+    build: { outDir: paths.build, emptyOutDir: true },
     plugins: [{
       name: 'real-sdk-observation-only',
+      enforce: 'pre',
       transform(code: string, id: string) {
+        if(delegate==='CPU'&&id===path.resolve('src/services/visionEngine.ts'))return cpuEngineVariant(code,id);
         if (id === path.resolve('src/main.tsx')) return `import '../e2e-real-sdk/observer';\n${code}`;
         if (id === path.resolve('src/components/VisionCanvas.tsx')) {
           const anchor = 'latestFrameRef.current = result;';

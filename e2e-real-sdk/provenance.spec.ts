@@ -2,13 +2,15 @@ import { test, expect } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { installCamera, routeAssets, type InputMode } from './fixtures';
 import type { Stamp } from './acceptance';
+import { delegatePaths, requestedDelegate } from '../scripts/real-sdk/delegate.mjs';
+const paths=delegatePaths(requestedDelegate());
 
 for (const mode of ['VideoFrame', 'Canvas', 'HTMLVideoElement'] as InputMode[]) {
   test(`input provenance without models ${mode}`, async ({ context, page }, info) => {
     await installCamera(context, mode, 'astronaut.png');
     const requests = await routeAssets(context);
-    await context.route('http://127.0.0.1:4175/', route => route.fulfill({ contentType: 'text/html', body: '<video autoplay muted playsinline></video>' }));
-    await context.route('**/native-probe.js', async route => route.fulfill({ contentType: 'application/javascript', body: await readFile('.cache/pr07-native-probe/native-probe.js') }));
+    await context.route(`${paths.origin}/`, route => route.fulfill({ contentType: 'text/html', body: '<video autoplay muted playsinline></video>' }));
+    await context.route('**/native-probe.js', async route => route.fulfill({ contentType: 'application/javascript', body: await readFile(`${paths.probe}/native-probe.js`) }));
     try {
       await page.goto('/');
       const result = await page.evaluate(async () => {

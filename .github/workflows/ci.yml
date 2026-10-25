@@ -36,6 +36,8 @@ jobs:
         run: npm run --silent test:foundation
       - name: Test output protocol regressions
         run: npm run --silent test:output
+      - name: Explicit SDK delegate controls (model-free)
+        run: npm run --silent test:real-sdk:delegate
       - name: Production build
         run: node scripts/testing/run.mjs build
       - name: Install Chromium
