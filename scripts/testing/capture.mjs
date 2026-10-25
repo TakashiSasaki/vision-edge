@@ -48,7 +48,10 @@ export async function execute(task, { root, runDir, emit = line => console.log(l
   };
   let outcome;
   try {
-    child = spawn(task.command, task.args, { cwd: root, env: { ...process.env, ...task.env }, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] });
+    const childEnvironment = { ...process.env, ...task.env };
+    // npm --silent should hide its own banner, not erase nested install diagnostics.
+    if (childEnvironment.npm_config_loglevel === 'silent') childEnvironment.npm_config_loglevel = 'notice';
+    child = spawn(task.command, task.args, { cwd: root, env: childEnvironment, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] });
     process.once('SIGINT', onInterrupt); process.once('SIGTERM', onTerminate);
     timer = setTimeout(() => { problem = 'command timeout'; terminate(); }, timeoutMs);
     const consume = (b, stdout) => { try { append(b, stdout); } catch(error) { problem = `capture failed: ${String(error)}`; terminate(); } };
@@ -68,9 +71,11 @@ export async function execute(task, { root, runDir, emit = line => console.log(l
   await save();
   emit(`${task.name}: ${receipt.state} exit=${exit}${receipt.selection !== 'default' ? ' selection=custom' : ''}${counts ? ' ' + Object.entries(counts).map(([k,v]) => `${k}=${v}`).join(' ') : ''}`);
   emit(`artifacts: ${dir}`);
-  if (receipt.state !== 'PASS' && !verbose) {
+  if (receipt.state !== 'PASS') {
     let details; try { details = await task.diagnose?.(dir); } catch { /* raw files still identify report failure */ }
-    emit(excerpt([problem, receipt.reportError, details, details ? null : await readTail(log, 4000)].filter(Boolean).join('\n')));
+    const diagnostic = excerpt([problem, receipt.reportError, details, details ? null : await readTail(log, 4000)].filter(Boolean).join('\n'));
+    await writeFile(path.join(dir, 'diagnostic.txt'), diagnostic + '\n');
+    emit(diagnostic);
   }
   return receipt;
 }

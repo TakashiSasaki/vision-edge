@@ -1,0 +1,222 @@
+{
+  "baselineHead": "c5e08cc20a66ea0a0e58e222f2e291a0c7c22e6d",
+  "benchmarkImplementation": "ba06d5d (full SHA in per-run source.json)",
+  "environment": {
+    "node": "24.19.0",
+    "npm": "11.9.0",
+    "browser": "system Chromium154.0.8037.57"
+  },
+  "units": "raw terminal UTF-8 bytes and newline count, not tokenizer/billing tokens or timing",
+  "method": "Before: original npm commands/direct node foundation command. After: recommended silent task invocations and phase slices from verify:offline. Excludes saved JSON/HTML/log artifacts and common hosted Actions boilerplate. Same original test/assertion counts; new output protocol tests20 are additional.",
+  "rows": [
+    {
+      "task": "unit",
+      "beforeBytes": 760,
+      "afterBytes": 162,
+      "beforeLines": 22,
+      "afterLines": 2,
+      "byteReductionPercent": 78.7,
+      "beforeExit": 0,
+      "afterExit": 0
+    },
+    {
+      "task": "foundation",
+      "beforeBytes": 5095,
+      "afterBytes": 184,
+      "beforeLines": 81,
+      "afterLines": 2,
+      "byteReductionPercent": 96.4,
+      "beforeExit": 0,
+      "afterExit": 0
+    },
+    {
+      "task": "build",
+      "beforeBytes": 396,
+      "afterBytes": 117,
+      "beforeLines": 14,
+      "afterLines": 2,
+      "byteReductionPercent": 70.5,
+      "beforeExit": 0,
+      "afterExit": 0
+    },
+    {
+      "task": "browser",
+      "beforeBytes": 8625,
+      "afterBytes": 167,
+      "beforeLines": 48,
+      "afterLines": 2,
+      "byteReductionPercent": 98.1,
+      "beforeExit": 0,
+      "afterExit": 0
+    },
+    {
+      "task": "controls",
+      "beforeBytes": 704,
+      "afterBytes": 158,
+      "beforeLines": 16,
+      "afterLines": 2,
+      "byteReductionPercent": 77.6,
+      "beforeExit": 0,
+      "afterExit": 0
+    },
+    {
+      "task": "real-sdk",
+      "beforeBytes": 7317,
+      "afterBytes": 742,
+      "beforeLines": 207,
+      "afterLines": 8,
+      "byteReductionPercent": 89.9,
+      "beforeExit": 2,
+      "afterExit": 2
+    },
+    {
+      "task": "typecheck",
+      "beforeBytes": 49,
+      "afterBytes": 125,
+      "beforeLines": 4,
+      "afterLines": 2,
+      "byteReductionPercent": -155.1,
+      "beforeExit": 0,
+      "afterExit": 0
+    },
+    {
+      "task": "lint",
+      "beforeBytes": 57,
+      "afterBytes": 115,
+      "beforeLines": 4,
+      "afterLines": 2,
+      "byteReductionPercent": -101.8,
+      "beforeExit": 0,
+      "afterExit": 0
+    }
+  ],
+  "afterTasks": {
+    "typecheck": {
+      "bytes": 125,
+      "lines": 2,
+      "exit": 0,
+      "counts": null,
+      "sourceHead": "ba06d5d4c3eb0e37c079773e0dc00d4a6048ae99"
+    },
+    "lint": {
+      "bytes": 115,
+      "lines": 2,
+      "exit": 0,
+      "counts": null,
+      "sourceHead": "ba06d5d4c3eb0e37c079773e0dc00d4a6048ae99"
+    },
+    "unit": {
+      "bytes": 162,
+      "lines": 2,
+      "exit": 0,
+      "counts": {
+        "total": 317,
+        "passed": 317,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "sourceHead": "ba06d5d4c3eb0e37c079773e0dc00d4a6048ae99"
+    },
+    "foundation": {
+      "bytes": 184,
+      "lines": 2,
+      "exit": 0,
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "sourceHead": "ba06d5d4c3eb0e37c079773e0dc00d4a6048ae99"
+    },
+    "output": {
+      "bytes": 176,
+      "lines": 2,
+      "exit": 0,
+      "counts": {
+        "total": 20,
+        "passed": 20,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "sourceHead": "ba06d5d4c3eb0e37c079773e0dc00d4a6048ae99"
+    },
+    "build": {
+      "bytes": 117,
+      "lines": 2,
+      "exit": 0,
+      "counts": null,
+      "sourceHead": "ba06d5d4c3eb0e37c079773e0dc00d4a6048ae99"
+    },
+    "browser": {
+      "bytes": 167,
+      "lines": 2,
+      "exit": 0,
+      "counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "sourceHead": "ba06d5d4c3eb0e37c079773e0dc00d4a6048ae99"
+    },
+    "controls": {
+      "bytes": 158,
+      "lines": 2,
+      "exit": 0,
+      "counts": {
+        "total": 7,
+        "healthy": 2,
+        "expectedFaults": 5
+      },
+      "sourceHead": "ba06d5d4c3eb0e37c079773e0dc00d4a6048ae99"
+    },
+    "real-sdk": {
+      "bytes": 742,
+      "lines": 8,
+      "exit": 2
+    },
+    "assets": {
+      "bytes": 432,
+      "lines": 4,
+      "exit": 2
+    }
+  },
+  "allAfterOffline": {
+    "bytes": 1204,
+    "lines": 16,
+    "exit": 0
+  },
+  "historicalHostedLog": {
+    "run": 40141811269,
+    "job": 121014945080,
+    "bytes": 74103,
+    "lines": 735,
+    "newHostedComparison": "Pending exact-head run; no estimated total substituted."
+  },
+  "diagnostics": {
+    "realVitestControl": {
+      "exit": 1,
+      "displayBytes": 1135,
+      "readerExit": 0,
+      "readerBytes": 417,
+      "scope": "intentional failing fixture, not a product regression"
+    },
+    "independentSkillForwardTest": {
+      "sourceHead": "5a4276e0d1aa3af026e2920adea91a582640e14b",
+      "passRawBytes": 327860,
+      "passDisplayBytes": 167,
+      "failRawBytes": 328507,
+      "failDisplayBytes": 4168,
+      "failExit": 1,
+      "diagnosisBytes": 402,
+      "scope": "independent temporary Node fixture; no SDK/model/inference"
+    }
+  }
+}

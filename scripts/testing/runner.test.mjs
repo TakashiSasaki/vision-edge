@@ -15,7 +15,7 @@ async function fixture(code, options={}) {
   const result=await execute(task,{root,runDir:root,emit:s=>lines.push(s),...rest});
   const log=await readFile(path.join(root,'probe/output.log'));
   const saved=JSON.parse(await readFile(path.join(root,'probe/result.json'),'utf8'));
-  assert.deepEqual(saved,result);assert.equal(saved.logSha256,hash(log));
+  assert.deepEqual(saved,result);assert.equal(saved.logSha256,hash(log));if(saved.state!=='PASS'){const diagnostic=await readFile(path.join(root,'probe/diagnostic.txt'),'utf8');assert(diagnostic.length>0);assert(Buffer.byteLength(diagnostic)<6100);}
   return {result,log,lines,root};
  } finally{await rm(root,{recursive:true,force:true});}
 }
@@ -70,7 +70,7 @@ test('separate invocations never overwrite an existing task report',async()=>{
 });
 test('log reader selects bounded diagnostics and discloses the complete file path',async()=>{
  const root=await mkdtemp(path.join(tmpdir(),'compact-reader-'));
- try{await execute({name:'probe',command:process.execPath,args:['-e',"console.log('needle: important');console.log('x'.repeat(30000))"]},{root,runDir:root,emit:()=>{}});const r=spawnSync(process.execPath,[path.join(base,'scripts/testing/read-log.mjs'),root,'probe','needle'],{encoding:'utf8'});assert.equal(r.status,0);assert.match(r.stdout,/needle: important/);assert.match(r.stdout,/full log:/);assert(r.stdout.length<1000);}finally{await rm(root,{recursive:true,force:true});}
+ try{await execute({name:'probe',command:process.execPath,args:['-e',"console.log('needle: important');console.log('x'.repeat(30000))"]},{root,runDir:root,emit:()=>{}});const r=spawnSync(process.execPath,[path.join(base,'scripts/testing/read-log.mjs'),root,'probe','needle'],{encoding:'utf8'});assert.equal(r.status,0);assert.match(r.stdout,/needle: important/);assert.match(r.stdout,/full log:/);assert(r.stdout.length<1000);const direct=spawnSync(process.execPath,[path.join(base,'scripts/testing/read-log.mjs'),path.join(root,'probe'),'needle'],{encoding:'utf8'});assert.equal(direct.status,0);assert.equal(direct.stdout,r.stdout);}finally{await rm(root,{recursive:true,force:true});}
 });
 
 test('CLI test filters select a subset without inventing skipped counts',async()=>{
@@ -89,4 +89,8 @@ test('a nested TAP failure exposes the inner diagnostic without passing-case cha
 
 test('a malformed report cannot be mislabeled BLOCKED just because child exited2',async()=>{
  const {result}=await fixture('process.exitCode=2',{task:{blockedCodes:[2],summarize:unitCounts}});assert.equal(result.childExit,2);assert.equal(result.exit,1);assert.equal(result.state,'FAIL');
+});
+
+test('outer npm silence does not erase the child command diagnostic level',async()=>{
+ const {result,log}=await fixture("console.log(process.env.npm_config_loglevel);console.warn('retained warning')",{task:{env:{npm_config_loglevel:'silent'}}});assert.equal(result.exit,0);assert(log.includes('notice'));assert(log.includes('retained warning'));
 });
