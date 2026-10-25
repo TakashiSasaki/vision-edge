@@ -5,7 +5,7 @@ import { execute, newRun } from './capture.mjs';
 import { tapCounts, unitCounts, browserCounts, controlCounts, unitFailures, browserFailures, tapFailures } from './results.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const [name, ...extra] = process.argv.slice(2);
-const offline = ['typecheck','lint','unit','foundation','delegate','output','build','browser','controls'];
+const offline = ['preflight','preflight-tests','typecheck','lint','unit','foundation','delegate','output','build','browser','controls'];
 const names = new Set([...offline,'install','browser-install','real-sdk','real-sdk-cpu','assets','acquire','audit']);
 if ((name !== 'offline' && !names.has(name)) || (['offline','real-sdk','real-sdk-cpu'].includes(name) && extra.length)) { console.error(`Usage: node scripts/testing/run.mjs <${[...names,'offline'].join('|')}> [test arguments]; real-sdk modes accept no extra arguments; select real-sdk-cpu explicitly`); process.exitCode=1; }
 else {
@@ -15,7 +15,10 @@ else {
     const assetRows = async () => { const r=JSON.parse(await readFile(path.join(dir,'output.log'),'utf8')); if(!Array.isArray(r.rows)||!r.rows.length||r.rows.some(x=>!['pass','fail','blocked'].includes(x.status)))throw new Error('Invalid asset report');return r.rows; };
     const assetTask = args => node(args,{blockedCodes:[2],summarize:async()=>{const rows=await assetRows();return {pass:rows.filter(x=>x.status==='pass').length,fail:rows.filter(x=>x.status==='fail').length,blocked:rows.filter(x=>x.status==='blocked').length};},diagnose:async()=> (await assetRows()).filter(x=>x.status!=='pass').map(x=>`${x.id}: ${x.status}; ${x.reason}`).join('\n')});
     const testFiles=phase==='output'?['scripts/testing/runner.test.mjs','scripts/testing/corrections.test.mjs']:['scripts/real-sdk/assets.test.mjs','scripts/real-sdk/corrections.test.mjs'];
+    const preflightReport = async () => { const r=JSON.parse(await readFile(path.join(dir,'output.log'),'utf8')); if(!['pass','fail'].includes(r.status)||!Array.isArray(r.issues)||r.violations!==r.issues.length||!Number.isSafeInteger(r.protectedCount)||r.protectedCount<0||(r.status==='pass'&&r.protectedCount===0)||(r.status==='pass')!==(r.violations===0))throw new Error('Invalid preflight report');return r; };
     const tasks={
+      preflight:()=>node(['scripts/testing/preflight.mjs','--json',...extra],{summarize:async({childExit})=>{const r=await preflightReport();if(childExit===0&&r.status!=='pass')throw new Error('Preflight report contradicts exit0');return {protected:r.protectedCount,violations:r.violations};},diagnose:async()=>{const r=await preflightReport();return r.issues.slice(0,8).map(i=>`${i.code} ${JSON.stringify(i.file)}: ${i.message}`).join('\n')+(r.issues.length>8?'\nMore issues retained in full output.log.':'');}}),
+      'preflight-tests':()=>node(['--test','--test-reporter=tap',...extra,'scripts/testing/preflight.test.mjs'],{summarize:tapCounts,diagnose:tapFailures}),
       typecheck:()=>node(['node_modules/typescript/bin/tsc','--noEmit']),
       lint:()=>node(['node_modules/eslint/bin/eslint.js','.','--max-warnings=0']),
       unit:()=>node(['node_modules/vitest/vitest.mjs','run','--reporter=json',`--outputFile=${path.join(dir,'unit.json')}`,...extra],{summarize:unitCounts,diagnose:unitFailures}),
@@ -33,7 +36,7 @@ else {
       acquire:()=>assetTask(['--use-env-proxy','scripts/real-sdk/assets.mjs','--acquire']),
       audit:()=>node(['scripts/real-sdk/audit.mjs']),
     };
-    try { const result=await execute(tasks[phase](),{root,runDir}); if(result.exit!==0){process.exitCode=result.exit;break;} }
+    try { const result=await execute(tasks[phase](),{root,runDir,...(phase==='preflight'?{timeoutMs:60_000}:phase==='preflight-tests'?{timeoutMs:120_000}:{})}); if(result.exit!==0){process.exitCode=result.exit;break;} }
     catch(error) { console.error(`runner: FAIL ${String(error)}; artifacts: ${runDir}`);process.exitCode=1;break; }
   }
 }

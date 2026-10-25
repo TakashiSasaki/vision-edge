@@ -11,6 +11,7 @@
 
 - **Standard Runtime**: Node.js (`v24.x`, CI24.19.0) and `npm` are the canonical, active runtime and package manager for this application in Google AI Studio (`npm run dev`, `npm ci`, etc.).
 - **Lockfile**: `package-lock.json` is the sole dependency lock. Do not use Bun or introduce competing lockfiles. Preserve the pinned Node24/npm11 setup and canonical registry URLs.
+- Before cache/install, run `npm run --silent preflight` and `npm run --silent test:preflight` using the pinned Node. Follow `scripts/testing/ai-studio-sync.md` when reconciling imports. Preserve reviewed historical bytes; guard failures require reconciliation, not automatic repair or removal of ledger entries. CI guards do not prevent direct-main writes.
 
 # Application versioning and tags (mandatory for all coding agents)
 
