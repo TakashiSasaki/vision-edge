@@ -28,7 +28,7 @@ const environment = {
 };
 await writeFile(path.join(run, 'environment.json'), JSON.stringify(environment, null, 2) + '\n');
 await writeFile(path.join(run, 'assets.json'), JSON.stringify(checked, null, 2) + '\n');
-console.log(`Real SDK run: ${run}\nPrerequisites: ${complete ? 'all verified' : 'BLOCKED or corrupt; running asset diagnostics only'}`);
+console.log(`Real SDK run: ${run}\nPrerequisites: ${corrupt ? 'corrupt; browser not run' : complete ? 'all verified' : 'BLOCKED; running asset diagnostics only'}`);
 let childExit = null;
 if (!corrupt) {
   const args = ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.real-sdk.config.ts'];

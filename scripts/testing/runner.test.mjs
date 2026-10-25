@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { execute, hash, excerpt } from './capture.mjs';
-import { tapCounts, unitCounts, browserCounts, unitFailures } from './results.mjs';
+import { tapCounts, unitCounts, browserCounts, unitFailures, tapFailures } from './results.mjs';
 const base=path.resolve(import.meta.dirname,'../..');
 async function fixture(code, options={}) {
  const root=await mkdtemp(path.join(tmpdir(),'compact-output-'));const lines=[];
@@ -80,4 +80,13 @@ test('CLI test filters select a subset without inventing skipped counts',async()
 test('a false global unit report flag is not ignored even when individual counts pass',async()=>{
  const report={success:false,numTotalTests:1,numPassedTests:1,numFailedTests:0,numPendingTests:0,numTodoTests:0};
  const {result}=await fixture(`require('node:fs').writeFileSync('probe/unit.json',${JSON.stringify(JSON.stringify(report))})`,{task:{summarize:unitCounts}});assert.equal(result.exit,1);assert.match(result.reportError,/does not confirm/);
+});
+
+test('a nested TAP failure exposes the inner diagnostic without passing-case chatter',async()=>{
+ const tap='# Subtest: outer\n    not ok 1 - inner\n      ---\n      error: NESTED_ROOT_SENTINEL\n      ...\nnot ok 1 - outer\n  ---\n  error: subtest failed\n  ...\n1..1\n# tests 2\n# pass 0\n# fail 2\n# cancelled 0\n# skipped 0\n# todo 0\n';
+ const {result,lines}=await fixture(`process.stdout.write(${JSON.stringify(tap)});process.exitCode=1`,{task:{summarize:tapCounts,diagnose:tapFailures}});assert.equal(result.exit,1);assert(lines.join('\n').includes('NESTED_ROOT_SENTINEL'));
+});
+
+test('a malformed report cannot be mislabeled BLOCKED just because child exited2',async()=>{
+ const {result}=await fixture('process.exitCode=2',{task:{blockedCodes:[2],summarize:unitCounts}});assert.equal(result.childExit,2);assert.equal(result.exit,1);assert.equal(result.state,'FAIL');
 });

@@ -35,7 +35,13 @@ export async function execute(task, { root, runDir, emit = line => console.log(l
     killTimer ??= setTimeout(() => { try { if (process.platform === 'win32') child.kill('SIGKILL'); else process.kill(-child.pid, 'SIGKILL'); } catch { /* already closed */ } }, graceMs); };
   const onInterrupt = () => { interrupted = 'SIGINT'; terminate(); }; const onTerminate = () => { interrupted = 'SIGTERM'; terminate(); };
   const append = (chunk, isStdout) => {
-    const kept = chunk.subarray(0, Math.max(0, maxLogBytes - bytes)); writeSync(fd, kept); digest.update(kept); bytes += kept.length;
+    const kept = chunk.subarray(0, Math.max(0, maxLogBytes - bytes));
+    let offset = 0;
+    while (offset < kept.length) {
+      const written = writeSync(fd, kept, offset, kept.length - offset);
+      if (!written) throw new Error('zero-byte log write');
+      digest.update(kept.subarray(offset, offset + written)); bytes += written; offset += written;
+    }
     if (isStdout) stdoutTail = Buffer.concat([stdoutTail, kept]).subarray(-32_768);
     if (verbose) (isStdout ? process.stdout : process.stderr).write(kept);
     if (kept.length !== chunk.length) { problem = 'log limit exceeded; capture incomplete'; terminate(); }
@@ -56,7 +62,7 @@ export async function execute(task, { root, runDir, emit = line => console.log(l
   if (task.summarize) {
     try { counts = await task.summarize({ dir, stdout: stdoutTail.toString('utf8'), childExit: outcome.code });
       if (outcome.code === 0 && ((counts.failed ?? 0) > 0 || (counts.cancelled ?? 0) > 0)) throw new Error('Child exited0 but test report contains failures/cancellations'); }
-    catch (error) { receipt.reportError = String(error); if (exit === 0) exit = 1; }
+    catch (error) { receipt.reportError = String(error); if (exit === 0 || task.blockedCodes?.includes(exit)) exit = 1; }
   }
   Object.assign(receipt, { end: new Date().toISOString(), childExit: outcome.code, signal: outcome.signal, interrupted: interrupted ?? null, problem: problem ?? null, exit, state: exit === 0 ? 'PASS' : task.blockedCodes?.includes(exit) && !problem && !interrupted ? 'BLOCKED' : 'FAIL', counts: counts ?? null, logBytes: bytes, logSha256: digest.digest('hex') });
   await save();

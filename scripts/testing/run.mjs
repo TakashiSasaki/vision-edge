@@ -12,6 +12,8 @@ else {
   const runDir = await newRun(root);
   for (const phase of name === 'offline' ? offline : [name]) {
     const dir=path.join(runDir,phase); const node=(args, rest={})=>({name:phase,command:process.execPath,args,selection:extra.length?'custom':'default',...rest});
+    const assetRows = async () => { const r=JSON.parse(await readFile(path.join(dir,'output.log'),'utf8')); if(!Array.isArray(r.rows)||!r.rows.length||r.rows.some(x=>!['pass','fail','blocked'].includes(x.status)))throw new Error('Invalid asset report');return r.rows; };
+    const assetTask = args => node(args,{blockedCodes:[2],summarize:async()=>{const rows=await assetRows();return {pass:rows.filter(x=>x.status==='pass').length,fail:rows.filter(x=>x.status==='fail').length,blocked:rows.filter(x=>x.status==='blocked').length};},diagnose:async()=> (await assetRows()).filter(x=>x.status!=='pass').map(x=>`${x.id}: ${x.status}; ${x.reason}`).join('\n')});
     const testFiles=phase==='output'?['scripts/testing/runner.test.mjs']:['scripts/real-sdk/assets.test.mjs','scripts/real-sdk/corrections.test.mjs'];
     const tasks={
       typecheck:()=>node(['node_modules/typescript/bin/tsc','--noEmit']),
@@ -25,8 +27,8 @@ else {
       install:()=>{if(!process.env.npm_execpath)throw new Error('Run install through npm run ci:install');return node([process.env.npm_execpath,'ci']);},
       'browser-install':()=>node(['node_modules/@playwright/test/cli.js','install','--with-deps','chromium']),
       'real-sdk':()=>node(['scripts/real-sdk/run.mjs'],{blockedCodes:[2]}),
-      assets:()=>node(['scripts/real-sdk/assets.mjs'],{blockedCodes:[2],summarize:async()=>{const r=JSON.parse(await readFile(path.join(dir,'output.log'),'utf8'));return {pass:r.rows.filter(x=>x.status==='pass').length,fail:r.rows.filter(x=>x.status==='fail').length,blocked:r.rows.filter(x=>x.status==='blocked').length};}}),
-      acquire:()=>node(['--use-env-proxy','scripts/real-sdk/assets.mjs','--acquire'],{blockedCodes:[2]}),
+      assets:()=>assetTask(['scripts/real-sdk/assets.mjs']),
+      acquire:()=>assetTask(['--use-env-proxy','scripts/real-sdk/assets.mjs','--acquire']),
       audit:()=>node(['scripts/real-sdk/audit.mjs']),
     };
     try { const result=await execute(tasks[phase](),{root,runDir}); if(result.exit!==0){process.exitCode=result.exit;break;} }

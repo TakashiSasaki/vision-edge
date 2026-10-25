@@ -39,6 +39,12 @@ export async function browserFailures(dir) {
 }
 export async function tapFailures(dir) {
   const { readTail } = await import('./capture.mjs');
-  const text = await readTail(path.join(dir, 'output.log'), 32_768);
-  return [...text.matchAll(/^not ok [\s\S]*?(?=^# Subtest:|^ok \d|^not ok |^1\.\.|^# tests |$(?![\s\S]))/gm)].slice(0,3).map(m=>m[0]).join('\n');
+  const lines = (await readTail(path.join(dir, 'output.log'), 32_768)).split('\n'); const blocks=[];
+  for(let i=0;i<lines.length&&blocks.length<3;i++) {
+    if(!/^\s*not ok \d+/.test(lines[i])) continue;
+    const block=[lines[i]];
+    for(let j=i+1;j<lines.length;j++) { block.push(lines[j]); if(/^\s+\.\.\.$/.test(lines[j])) { i=j;break; } }
+    blocks.push(block.join('\n'));
+  }
+  return blocks.join('\n');
 }
