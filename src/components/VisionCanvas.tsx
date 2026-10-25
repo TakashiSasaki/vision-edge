@@ -161,9 +161,12 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       captureError: () => fail('映像フレーム取得エラー'),
       work: input => {
         const start = performance.now();
-        const result = engine.detectVideoFrame(input, activeModel, latest.current.renderOptions.confidenceThreshold, pipeline);
+        const res = engine.detectVideoFrame(input, activeModel, latest.current.renderOptions.confidenceThreshold, pipeline);
+        if (res instanceof Promise) {
+          return res.then(result => ({ result, start, end: performance.now() }));
+        }
         const end = performance.now();
-        return { result, start, end };
+        return { result: res, start, end };
       },
       adopt: ({ result, start, end }, measurement) => {
         if (!current() || result.status !== 'ready' || result.requestId !== requestId || result.model !== activeModel) return;

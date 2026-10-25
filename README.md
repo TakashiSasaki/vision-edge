@@ -5,10 +5,11 @@ person segmentation, Japanese labels, and optional speech synthesis. It uses Vit
 Tailwind CSS, and MediaPipe Tasks Vision. Published app: https://vision-edge.ai.studio.
 
 The runnable models are **Selfie Segmenter** (MediaPipe ImageSegmenter: person
-region mask and enclosing box, not per-person instance segmentation) and
-**EfficientDet-Lite0** (MediaPipe ObjectDetector: boxes and class labels).
-YOLO-seg and SegFormer are unimplemented future candidates and cannot be selected
-or run. `src/services/modelRegistry.ts` defines the names, implementation status,
+region mask and enclosing box, not per-person instance segmentation),
+**EfficientDet-Lite0** (MediaPipe ObjectDetector: boxes and class labels), and
+**YOLO-seg** (ONNX Runtime Web YOLOv8n-seg: 80 COCO classes with instance segmentation masks).
+SegFormer is an unimplemented future candidate and cannot be selected or run.
+`src/services/modelRegistry.ts` defines the names, implementation status,
 outputs and descriptions shared by the engine, selectors, model dialog and HUD.
 
 Each App owns one engine and at most one active task. Model state is separate from

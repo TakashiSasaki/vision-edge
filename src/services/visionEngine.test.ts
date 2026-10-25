@@ -33,12 +33,47 @@ function video() {
 }
 beforeEach(() => { vi.spyOn(console, 'warn').mockImplementation(() => {}); });
 
-it.each(['yolo-seg', 'segformer', 'unknown', 'constructor'])('rejects unsupported runtime ID %s without creating or running another model', id => {
+it.each(['segformer', 'unknown', 'constructor'])('rejects unsupported runtime ID %s without creating or running another model', id => {
   const f = fixture();
   expect(() => f.engine.initialize(id as RunnableModelType)).toThrow('Unsupported model ID');
   expect(() => f.engine.detectVideoFrame(video(), id as RunnableModelType, 0.3)).toThrow('Unsupported model ID');
   expect(f.factory.load).not.toHaveBeenCalled();
   expect(f.detect).not.toHaveBeenCalled();
+});
+
+it('initializes yolo-seg through factory and runs asynchronous inference with maskCanvas', async () => {
+  const f = fixture();
+  const mockDetect = vi.fn(async () => [
+    {
+      id: 'yolo-test-1',
+      label: 'cat',
+      labelJa: '猫',
+      category: '動物',
+      confidence: 0.92,
+      bbox: { x: 0.2, y: 0.2, width: 0.4, height: 0.4 },
+      color: '#fbbf24',
+      maskCanvas: document.createElement('canvas'),
+    }
+  ]);
+  const yoloTask = { detectForVideo: mockDetect, close: vi.fn() };
+  f.factory.yoloSeg = vi.fn(async () => yoloTask);
+
+  const initResult = await f.engine.initialize('yolo-seg');
+  expect(initResult.status).toBe('ready');
+  expect(f.factory.yoloSeg).toHaveBeenCalledTimes(1);
+  expect(f.factory.load).not.toHaveBeenCalled();
+
+  const v = video();
+  const frameResult = await f.engine.detectVideoFrame(v, 'yolo-seg', 0.3);
+  expect(frameResult.status).toBe('ready');
+  if (frameResult.status === 'ready') {
+    expect(frameResult.objects).toHaveLength(1);
+    expect(frameResult.objects[0].label).toBe('cat');
+    expect(frameResult.objects[0].maskCanvas).toBeDefined();
+  }
+
+  f.engine.dispose();
+  expect(yoloTask.close).toHaveBeenCalledTimes(1);
 });
 
 it('shares the in-progress Promise and creates only the selected task; ready reaches actual detector dispatch without polygons', async () => {
@@ -289,3 +324,4 @@ it('uses a caller-owned compatibility canvas as the actual SDK image with its ow
   expect(f.engine.detectVideoFrame(canvas, 'selfie-segmenter', 0.3)).toMatchObject({ status: 'ready', objects: [] });
   expect(f.segment).toHaveBeenCalledWith(canvas, expect.any(Number)); expect(canvas.width).toBe(640);
 });
+

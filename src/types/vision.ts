@@ -1,6 +1,6 @@
 export type ModelType = 'selfie-segmenter' | 'yolo-seg' | 'mediapipe' | 'segformer';
 
-export type RunnableModelType = 'selfie-segmenter' | 'mediapipe';
+export type RunnableModelType = 'selfie-segmenter' | 'mediapipe' | 'yolo-seg';
 
 // An immutable browser video frame is preferred when the platform supports it.
 export type InferenceInput = HTMLVideoElement | VideoFrame | HTMLCanvasElement;

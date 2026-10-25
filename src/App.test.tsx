@@ -12,11 +12,13 @@ function deferred<T>() {
 function fixture() {
   const detector = { detectForVideo: vi.fn(() => ({ detections: [] })), close: vi.fn() };
   const segmenter: SegmenterTask = { segmentForVideo: vi.fn(), close: vi.fn() };
+  const yoloTask = { detectForVideo: vi.fn(async () => []), close: vi.fn() };
   const factory: VisionTaskFactory = {
     load: vi.fn(async () => ({ wasmLoaderPath: 'loader', wasmBinaryPath: 'wasm' })),
     detector: vi.fn(async () => detector), segmenter: vi.fn(async () => segmenter),
+    yoloSeg: vi.fn(async () => yoloTask),
   };
-  return { engine: new VisionEngine(factory), factory, detector, segmenter };
+  return { engine: new VisionEngine(factory), factory, detector, segmenter, yoloTask };
 }
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -27,7 +29,7 @@ beforeEach(() => {
 });
 afterEach(() => Reflect.deleteProperty(navigator, 'mediaDevices'));
 
-it('uses only the two implemented choices in both UI paths and shows read-only backend settings', async () => {
+it('uses the implemented choices in both UI paths and shows read-only backend settings', async () => {
   const f = fixture();
   const user = userEvent.setup();
   render(<App engine={f.engine} />);
@@ -35,16 +37,17 @@ it('uses only the two implemented choices in both UI paths and shows read-only b
   const header = screen.getByRole('banner');
   const model = within(header).getByRole('combobox', { name: 'モデル' });
   const enabled = within(model).getAllByRole('option').filter(option => !(option as HTMLOptionElement).disabled);
-  expect(enabled.map(option => (option as HTMLOptionElement).value)).toEqual(['selfie-segmenter', 'mediapipe']);
+  expect(enabled.map(option => (option as HTMLOptionElement).value)).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg']);
   expect(within(header).getAllByRole('combobox')).toHaveLength(1);
   expect(within(header).getByLabelText('バックエンド状態')).toHaveTextContent('GPU delegate 指定・初期化済み（GPU実動作は未計測）');
   await user.selectOptions(model, 'yolo-seg');
-  expect(model).toHaveValue('selfie-segmenter');
+  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'yolo-seg' }));
+  expect(model).toHaveValue('yolo-seg');
   await user.selectOptions(model, 'mediapipe');
   await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mediapipe' }));
   await user.click(within(header).getByRole('button', { name: '仕様' }));
   const dialog = screen.getByRole('dialog');
-  for (const name of [/YOLO-seg/, /SegFormer/]) {
+  for (const name of [/SegFormer/]) {
     const button = within(dialog).getByRole('button', { name });
     expect(button).toBeDisabled();
     await user.click(button);

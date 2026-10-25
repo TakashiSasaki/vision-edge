@@ -3,6 +3,7 @@ import type { DetectedObject, RunnableModelType, ModelState, FrameResult, Infere
 import { PipelineProbe, type PipelineObserver, type AttemptOutcome } from './pipelineMetrics';
 import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
+import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
@@ -11,6 +12,7 @@ export interface VisionTaskFactory {
   load: () => Promise<Fileset>;
   detector: (fileset: Fileset, delegate: 'GPU') => Promise<DetectorTask>;
   segmenter: (fileset: Fileset, delegate: 'GPU') => Promise<SegmenterTask>;
+  yoloSeg?: (options?: YoloSegTaskOptions) => Promise<YoloSegTask>;
 }
 const DELEGATE = 'GPU' as const;
 const defaultFactory: VisionTaskFactory = {
@@ -23,8 +25,12 @@ const defaultFactory: VisionTaskFactory = {
     baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite', delegate },
     runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
   }),
+  yoloSeg: (options) => createYoloSegTask(options),
 };
-type ActiveTask = { model: 'mediapipe'; task: DetectorTask } | { model: 'selfie-segmenter'; task: SegmenterTask };
+type ActiveTask =
+  | { model: 'mediapipe'; task: DetectorTask }
+  | { model: 'selfie-segmenter'; task: SegmenterTask }
+  | { model: 'yolo-seg'; task: YoloSegTask };
 type InitializationResult = Extract<ModelState, { status: 'ready' | 'error' }> | { status: 'cancelled'; model: RunnableModelType; requestId: number };
 
 // One owner, one active task, no task cache. Pending tasks cannot be aborted by
@@ -93,13 +99,22 @@ export class VisionEngine {
       let stage: 'wasm' | 'task' = 'wasm';
       try {
         if (!current()) return cancelled();
-        const fileset = await this.factory.load();
-        if (!current()) return cancelled();
-        stage = 'task';
-        const active: ActiveTask = model === 'mediapipe'
-          ? { model, task: await this.factory.detector(fileset, DELEGATE) }
-          : { model, task: await this.factory.segmenter(fileset, DELEGATE) };
-        if (!active.task) throw new Error('Model task was not created');
+        let active: ActiveTask;
+        if (model === 'yolo-seg') {
+          stage = 'task';
+          const yoloCreator = this.factory.yoloSeg ?? createYoloSegTask;
+          const task = await yoloCreator();
+          if (!task) throw new Error('Model task was not created');
+          active = { model, task };
+        } else {
+          const fileset = await this.factory.load();
+          if (!current()) return cancelled();
+          stage = 'task';
+          active = model === 'mediapipe'
+            ? { model, task: await this.factory.detector(fileset, DELEGATE) }
+            : { model, task: await this.factory.segmenter(fileset, DELEGATE) };
+          if (!active.task) throw new Error('Model task was not created');
+        }
         if (!current()) { this.closeTask(active); return cancelled(); }
         this.activeTask = active;
         const ready = { status: 'ready' as const, model, requestId, delegate: DELEGATE };
@@ -131,10 +146,28 @@ export class VisionEngine {
 
   public detectVideoFrame(
     videoElement: InferenceInput,
+    model: 'selfie-segmenter' | 'mediapipe',
+    confidenceThreshold: number,
+    instrumentation?: PipelineObserver
+  ): FrameResult;
+  public detectVideoFrame(
+    videoElement: InferenceInput,
+    model: 'yolo-seg',
+    confidenceThreshold: number,
+    instrumentation?: PipelineObserver
+  ): Promise<FrameResult>;
+  public detectVideoFrame(
+    videoElement: InferenceInput,
     model: RunnableModelType,
     confidenceThreshold: number,
     instrumentation?: PipelineObserver
-  ): FrameResult {
+  ): FrameResult | Promise<FrameResult>;
+  public detectVideoFrame(
+    videoElement: InferenceInput,
+    model: RunnableModelType,
+    confidenceThreshold: number,
+    instrumentation?: PipelineObserver
+  ): FrameResult | Promise<FrameResult> {
     requireRunnableModel(model);
     const state = this.state;
     const active = this.activeTask;
@@ -143,6 +176,9 @@ export class VisionEngine {
       ? videoElement.displayWidth > 0 && videoElement.displayHeight > 0 : videoElement.width > 0 && videoElement.height > 0;
     if (state.status !== 'ready' || state.model !== model || active?.model !== model || !videoReady) {
       return { status: 'not-ready', model, requestId: state.requestId };
+    }
+    if (active.model === 'yolo-seg') {
+      return this.detectYoloVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration);
     }
     const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
     const engineStart = probe?.start();
@@ -378,6 +414,92 @@ export class VisionEngine {
       if (postStarted && probe) {
         // Segmenter transformations precede result.close; filtering/smoothing follow it.
         // Publish one summed exclusive postprocess sample per attempted transform.
+        const tail = postActive ? probe.elapsed(postStart)?.ms ?? null : 0;
+        probe.duration('postprocess', postMs === null || tail === null ? null : postMs + tail, engineOutcome);
+      }
+      probe?.end('engine', engineStart, engineOutcome);
+    }
+  }
+
+  private async detectYoloVideoFrame(
+    videoElement: InferenceInput,
+    confidenceThreshold: number,
+    instrumentation: PipelineObserver | undefined,
+    state: Extract<ModelState, { status: 'ready' }>,
+    active: { model: 'yolo-seg'; task: YoloSegTask },
+    outputGeneration: number
+  ): Promise<FrameResult> {
+    const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
+    const engineStart = probe?.start();
+    let engineOutcome: AttemptOutcome = 'failed';
+    let postStart: ReturnType<PipelineProbe['start']>;
+    let postStarted = false;
+    let postActive = false;
+    const postMs: number | null = 0;
+    try {
+      const sdkStart = probe?.start();
+      let sdkOutcome: AttemptOutcome = 'failed';
+      let rawObjects: DetectedObject[] = [];
+      try {
+        const detectResult = active.task.detectForVideo(videoElement, confidenceThreshold);
+        rawObjects = detectResult instanceof Promise ? await detectResult : detectResult;
+        sdkOutcome = 'success';
+      } finally {
+        probe?.end('sdk', sdkStart, sdkOutcome);
+      }
+      postStart = probe?.start();
+      postStarted = true;
+      postActive = true;
+      if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        engineOutcome = 'stale';
+        return { status: 'not-ready', model: 'yolo-seg', requestId: state.requestId };
+      }
+
+      const filteredObjects = rawObjects.filter(obj => obj.confidence >= confidenceThreshold);
+      let finalObjects: DetectedObject[];
+
+      if (filteredObjects.length > 0) {
+        finalObjects = filteredObjects.map(obj => {
+          const prev = this.lastStableObjects.find(p => p.label === obj.label);
+          if (prev) {
+            return {
+              ...obj,
+              bbox: {
+                x: prev.bbox.x * 0.2 + obj.bbox.x * 0.8,
+                y: prev.bbox.y * 0.2 + obj.bbox.y * 0.8,
+                width: prev.bbox.width * 0.2 + obj.bbox.width * 0.8,
+                height: prev.bbox.height * 0.2 + obj.bbox.height * 0.8
+              }
+            };
+          }
+          return obj;
+        });
+        this.lastStableObjects = finalObjects;
+        this.emptyFrameBufferCount = 0;
+      } else {
+        this.emptyFrameBufferCount++;
+        if (this.emptyFrameBufferCount <= 2 && this.lastStableObjects.length > 0) {
+          finalObjects = this.lastStableObjects.map(obj => ({
+            ...obj,
+            confidence: obj.confidence * 0.85
+          }));
+        } else {
+          this.lastStableObjects = [];
+          finalObjects = [];
+        }
+      }
+
+      if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        engineOutcome = 'stale';
+        return { status: 'not-ready', model: 'yolo-seg', requestId: state.requestId };
+      }
+      engineOutcome = 'success';
+      return { status: 'ready', model: 'yolo-seg', requestId: state.requestId, objects: finalObjects };
+    } catch (cause) {
+      if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) this.resetOutputs();
+      throw cause;
+    } finally {
+      if (postStarted && probe) {
         const tail = postActive ? probe.elapsed(postStart)?.ms ?? null : 0;
         probe.duration('postprocess', postMs === null || tail === null ? null : postMs + tail, engineOutcome);
       }

@@ -7,8 +7,9 @@ export const MODEL_REGISTRY: readonly ModelMetadata[] = [
   { id: 'mediapipe', name: 'EfficientDet-Lite0', implemented: true,
     runtime: 'MediaPipe ObjectDetector', outputType: '検出矩形とクラスラベル',
     description: 'COCO の物体クラスを検出します。輪郭マスクは生成しません。' },
-  { id: 'yolo-seg', name: 'YOLO-seg', implemented: false,
-    runtime: '未実装', outputType: '未実装', description: '将来の実装候補です。現在は実行できません。' },
+  { id: 'yolo-seg', name: 'YOLO-seg', implemented: true,
+    runtime: 'ONNX Runtime Web (YOLOv8n-seg)', outputType: '80クラス矩形とインスタンス領域マスク',
+    description: 'COCOの物体を検出し、物体ごとの輪郭マスク（インスタンスセグメンテーション）を生成します。' },
   { id: 'segformer', name: 'SegFormer', implemented: false,
     runtime: '未実装', outputType: '未実装', description: '将来の実装候補です。現在は実行できません。' },
 ];
