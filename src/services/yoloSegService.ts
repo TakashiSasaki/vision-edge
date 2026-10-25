@@ -334,6 +334,7 @@ export async function createYoloSegTask(options: YoloSegTaskOptions = {}): Promi
   const modelUrl = options.modelUrl || DEFAULT_YOLO_SEG_URL;
 
   if (typeof window !== 'undefined') {
+    ort.env.logLevel = 'error';
     const isIsolated = typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated;
     ort.env.wasm.numThreads = isIsolated ? Math.min(4, Math.max(1, (navigator.hardwareConcurrency || 2) - 1)) : 1;
     ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/';
@@ -350,6 +351,7 @@ export async function createYoloSegTask(options: YoloSegTaskOptions = {}): Promi
   const sessionOptions: ort.InferenceSession.SessionOptions = {
     executionProviders,
     graphOptimizationLevel: 'all',
+    logSeverityLevel: 3,
   };
 
   try {
@@ -362,6 +364,7 @@ export async function createYoloSegTask(options: YoloSegTaskOptions = {}): Promi
         const fallbackSession = await ort.InferenceSession.create(modelUrl, {
           executionProviders: ['wasm'],
           graphOptimizationLevel: 'all',
+          logSeverityLevel: 3,
         });
         return new YoloSegEngine(fallbackSession);
       } catch (fallbackError) {

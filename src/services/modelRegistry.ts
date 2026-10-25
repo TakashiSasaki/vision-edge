@@ -10,8 +10,9 @@ export const MODEL_REGISTRY: readonly ModelMetadata[] = [
   { id: 'yolo-seg', name: 'YOLO-seg', implemented: true,
     runtime: 'ONNX Runtime Web (YOLOv8n-seg)', outputType: '80クラス矩形とインスタンス領域マスク',
     description: 'COCOの物体を検出し、物体ごとの輪郭マスク（インスタンスセグメンテーション）を生成します。' },
-  { id: 'segformer', name: 'SegFormer', implemented: false,
-    runtime: '未実装', outputType: '未実装', description: '将来の実装候補です。現在は実行できません。' },
+  { id: 'segformer', name: 'SegFormer (ADE20K)', implemented: true,
+    runtime: 'ONNX Runtime Web (SegFormer-B0)', outputType: '150クラス全画素セマンティックマスク',
+    description: '室内・都市景観の全画素（壁、床、家具、人物など150種）をリアルタイムに分類します。' },
 ];
 
 export function isRunnableModel(id: unknown): id is RunnableModelType {

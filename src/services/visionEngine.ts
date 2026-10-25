@@ -4,6 +4,7 @@ import { PipelineProbe, type PipelineObserver, type AttemptOutcome } from './pip
 import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
+import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
@@ -13,6 +14,7 @@ export interface VisionTaskFactory {
   detector: (fileset: Fileset, delegate: 'GPU') => Promise<DetectorTask>;
   segmenter: (fileset: Fileset, delegate: 'GPU') => Promise<SegmenterTask>;
   yoloSeg?: (options?: YoloSegTaskOptions) => Promise<YoloSegTask>;
+  segformer?: (options?: SegFormerTaskOptions) => Promise<SegFormerTask>;
 }
 const DELEGATE = 'GPU' as const;
 const defaultFactory: VisionTaskFactory = {
@@ -26,11 +28,13 @@ const defaultFactory: VisionTaskFactory = {
     runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
   }),
   yoloSeg: (options) => createYoloSegTask(options),
+  segformer: (options) => createSegFormerTask(options),
 };
 type ActiveTask =
   | { model: 'mediapipe'; task: DetectorTask }
   | { model: 'selfie-segmenter'; task: SegmenterTask }
-  | { model: 'yolo-seg'; task: YoloSegTask };
+  | { model: 'yolo-seg'; task: YoloSegTask }
+  | { model: 'segformer'; task: SegFormerTask };
 type InitializationResult = Extract<ModelState, { status: 'ready' | 'error' }> | { status: 'cancelled'; model: RunnableModelType; requestId: number };
 
 // One owner, one active task, no task cache. Pending tasks cannot be aborted by
@@ -106,6 +110,12 @@ export class VisionEngine {
           const task = await yoloCreator();
           if (!task) throw new Error('Model task was not created');
           active = { model, task };
+        } else if (model === 'segformer') {
+          stage = 'task';
+          const segformerCreator = this.factory.segformer ?? createSegFormerTask;
+          const task = await segformerCreator();
+          if (!task) throw new Error('Model task was not created');
+          active = { model, task };
         } else {
           const fileset = await this.factory.load();
           if (!current()) return cancelled();
@@ -152,7 +162,7 @@ export class VisionEngine {
   ): FrameResult;
   public detectVideoFrame(
     videoElement: InferenceInput,
-    model: 'yolo-seg',
+    model: 'yolo-seg' | 'segformer',
     confidenceThreshold: number,
     instrumentation?: PipelineObserver
   ): Promise<FrameResult>;
@@ -179,6 +189,9 @@ export class VisionEngine {
     }
     if (active.model === 'yolo-seg') {
       return this.detectYoloVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration);
+    }
+    if (active.model === 'segformer') {
+      return this.detectSegFormerVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration);
     }
     const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
     const engineStart = probe?.start();
@@ -507,11 +520,83 @@ export class VisionEngine {
     }
   }
 
+  private async detectSegFormerVideoFrame(
+    videoElement: InferenceInput,
+    confidenceThreshold: number,
+    instrumentation: PipelineObserver | undefined,
+    state: Extract<ModelState, { status: 'ready' }>,
+    active: { model: 'segformer'; task: SegFormerTask },
+    outputGeneration: number
+  ): Promise<FrameResult> {
+    const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
+    const engineStart = probe?.start();
+    let engineOutcome: AttemptOutcome = 'failed';
+    let postStart: ReturnType<PipelineProbe['start']>;
+    let postStarted = false;
+    let postActive = false;
+    const postMs: number | null = 0;
+    try {
+      const sdkStart = probe?.start();
+      let sdkOutcome: AttemptOutcome = 'failed';
+      let rawObjects: DetectedObject[] = [];
+      try {
+        const detectResult = active.task.detectForVideo(videoElement, confidenceThreshold);
+        rawObjects = detectResult instanceof Promise ? await detectResult : detectResult;
+        sdkOutcome = 'success';
+      } finally {
+        probe?.end('sdk', sdkStart, sdkOutcome);
+      }
+      postStart = probe?.start();
+      postStarted = true;
+      postActive = true;
+      if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        engineOutcome = 'stale';
+        return { status: 'not-ready', model: 'segformer', requestId: state.requestId };
+      }
+
+      this.lastStableObjects = rawObjects;
+      this.emptyFrameBufferCount = 0;
+
+      if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        engineOutcome = 'stale';
+        return { status: 'not-ready', model: 'segformer', requestId: state.requestId };
+      }
+      engineOutcome = 'success';
+      return { status: 'ready', model: 'segformer', requestId: state.requestId, objects: rawObjects };
+    } catch (cause) {
+      if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) this.resetOutputs();
+      throw cause;
+    } finally {
+      if (postStarted && probe) {
+        const tail = postActive ? probe.elapsed(postStart)?.ms ?? null : 0;
+        probe.duration('postprocess', postMs === null || tail === null ? null : postMs + tail, engineOutcome);
+      }
+      probe?.end('engine', engineStart, engineOutcome);
+    }
+  }
+
   public findObjectAtPoint(
     normX: number,
     normY: number,
     objects: DetectedObject[]
   ): DetectedObject | null {
+    if (this.activeTask?.model === 'segformer' && this.activeTask.task.getPixelClass) {
+      const pixelInfo = this.activeTask.task.getPixelClass(normX, normY);
+      if (pixelInfo) {
+        const matched = objects.find(o => o.id === `segformer-${pixelInfo.id}`);
+        if (matched) return matched;
+        return {
+          id: `segformer-${pixelInfo.id}`,
+          label: pixelInfo.en,
+          labelJa: pixelInfo.ja,
+          category: pixelInfo.category,
+          confidence: 0.95,
+          bbox: { x: Math.max(0, normX - 0.05), y: Math.max(0, normY - 0.05), width: 0.1, height: 0.1 },
+          color: pixelInfo.color,
+        };
+      }
+    }
+
     const sorted = [...objects].sort((a, b) => {
       const areaA = a.bbox.width * a.bbox.height;
       const areaB = b.bbox.width * b.bbox.height;

@@ -33,12 +33,53 @@ function video() {
 }
 beforeEach(() => { vi.spyOn(console, 'warn').mockImplementation(() => {}); });
 
-it.each(['segformer', 'unknown', 'constructor'])('rejects unsupported runtime ID %s without creating or running another model', id => {
+it.each(['unknown', 'constructor', 'invalid-model'])('rejects unsupported runtime ID %s without creating or running another model', id => {
   const f = fixture();
   expect(() => f.engine.initialize(id as RunnableModelType)).toThrow('Unsupported model ID');
   expect(() => f.engine.detectVideoFrame(video(), id as RunnableModelType, 0.3)).toThrow('Unsupported model ID');
   expect(f.factory.load).not.toHaveBeenCalled();
   expect(f.detect).not.toHaveBeenCalled();
+});
+
+it('initializes segformer through factory and runs asynchronous inference with full semantic mask and pixel inspection', async () => {
+  const f = fixture();
+  const mockMaskCanvas = document.createElement('canvas');
+  const mockDetect = vi.fn(async () => [
+    {
+      id: 'segformer-0',
+      label: 'wall',
+      labelJa: '壁',
+      category: '建築',
+      confidence: 0.95,
+      bbox: { x: 0, y: 0, width: 1, height: 1 },
+      color: '#94a3b8',
+      maskCanvas: mockMaskCanvas,
+    }
+  ]);
+  const mockGetPixelClass = vi.fn(() => ({ id: 0, en: 'wall', ja: '壁', category: '建築', color: '#94a3b8' }));
+  const segformerTask = { detectForVideo: mockDetect, getPixelClass: mockGetPixelClass, close: vi.fn() };
+  f.factory.segformer = vi.fn(async () => segformerTask);
+
+  const initResult = await f.engine.initialize('segformer');
+  expect(initResult.status).toBe('ready');
+  expect(f.factory.segformer).toHaveBeenCalledTimes(1);
+  expect(f.factory.load).not.toHaveBeenCalled();
+
+  const v = video();
+  const frameResult = await f.engine.detectVideoFrame(v, 'segformer', 0.3);
+  expect(frameResult.status).toBe('ready');
+  if (frameResult.status === 'ready') {
+    expect(frameResult.objects).toHaveLength(1);
+    expect(frameResult.objects[0].label).toBe('wall');
+    expect(frameResult.objects[0].maskCanvas).toBe(mockMaskCanvas);
+  }
+
+  const clickedObj = f.engine.findObjectAtPoint(0.5, 0.5, frameResult.status === 'ready' ? frameResult.objects : []);
+  expect(clickedObj).toMatchObject({ id: 'segformer-0', label: 'wall', labelJa: '壁' });
+  expect(mockGetPixelClass).toHaveBeenCalledWith(0.5, 0.5);
+
+  f.engine.dispose();
+  expect(segformerTask.close).toHaveBeenCalledTimes(1);
 });
 
 it('initializes yolo-seg through factory and runs asynchronous inference with maskCanvas', async () => {
