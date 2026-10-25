@@ -1,0 +1,71 @@
+name: Human-approved version tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Exact SemVer tag to create (for example v1.2.3)
+        required: true
+        type: string
+      target_sha:
+        description: Exact full commit SHA approved by a human
+        required: true
+        type: string
+  # One-time bootstrap of the explicitly requested v1.0.0 tag.
+  # Later pushes will not tag anything; future tags require workflow_dispatch.
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/manual-version-tag.yml
+
+permissions:
+  contents: write
+
+jobs:
+  create_tag:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.head_commit.message == 'chore: bootstrap human-approved v1.0.0 baseline tag and version policy') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Validate version and create the approved annotated tag
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_TARGET_SHA: ${{ inputs.target_sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == 'push' ]]; then
+            tag=v1.0.0
+            target=e9db305770779a2a1a9624c92bf898a037fbea58
+          else
+            tag="$INPUT_TAG"
+            target="$INPUT_TARGET_SHA"
+          fi
+          if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo 'Invalid SemVer tag format' >&2; exit 1
+          fi
+          if [[ ! "$target" =~ ^[0-9a-f]{40}$ ]]; then
+            echo 'Expected an exact 40-character commit SHA' >&2; exit 1
+          fi
+          git cat-file -e "${target}^{commit}"
+          actual="$(git show "${target}:package.json" | node -e "const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync(0,'utf8')).version)")"
+          if [[ "$tag" != "v${actual}" ]]; then
+            echo "Tag $tag does not match target package version $actual" >&2; exit 1
+          fi
+          if git ls-remote --exit-code --refs origin "refs/tags/$tag" > /dev/null; then
+            existing="$(git rev-parse "refs/tags/$tag^{commit}")"
+            if [[ "$existing" != "$target" ]]; then
+              echo "Tag $tag already points to a different commit" >&2; exit 1
+            fi
+            echo "Tag $tag already exists and matches the approved commit"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a "$tag" "$target" -m "vision-edge $tag - human-approved baseline"
+          git push origin "refs/tags/$tag"
+          echo "Created annotated tag $tag at $target"
