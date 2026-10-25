@@ -16,7 +16,11 @@ export const COCO_CLASSES: readonly string[] = [
 ] as const;
 
 export interface YoloSegTask {
-  detectForVideo: (input: InferenceInput, confidenceThreshold: number) => Promise<DetectedObject[]> | DetectedObject[];
+  detectForVideo: (
+    input: InferenceInput,
+    confidenceThreshold: number,
+    params?: { iouThreshold?: number; maxDetections?: number; maskThreshold?: number }
+  ) => Promise<DetectedObject[]> | DetectedObject[];
   close: () => void | Promise<void>;
   readonly backend?: OnnxBackendInfo;
 }
@@ -76,7 +80,8 @@ export class YoloSegEngine implements YoloSegTask {
 
   public async detectForVideo(
     input: InferenceInput,
-    confidenceThreshold: number
+    confidenceThreshold: number,
+    params?: { iouThreshold?: number; maxDetections?: number; maskThreshold?: number }
   ): Promise<DetectedObject[]> {
     return this.owner.use(async()=>{
 
@@ -237,10 +242,11 @@ export class YoloSegEngine implements YoloSegTask {
     // Sort descending by score
     candidates.sort((a, b) => b.score - a.score);
 
-    // Non-Maximum Suppression (IoU >= 0.45)
+    // Non-Maximum Suppression
     const selected: Candidate[] = [];
-    const IOU_THRESHOLD = 0.45;
-    const MAX_DETECTIONS = 20;
+    const IOU_THRESHOLD = params?.iouThreshold ?? 0.45;
+    const MAX_DETECTIONS = params?.maxDetections ?? 20;
+    const MASK_THRESHOLD = params?.maskThreshold ?? 0.50;
 
     for (const cand of candidates) {
       if (selected.length >= MAX_DETECTIONS) break;
@@ -298,7 +304,7 @@ export class YoloSegEngine implements YoloSegTask {
 
             // Sigmoid activation
             const sig = 1 / (1 + Math.exp(-logit));
-            if (sig > 0.5) {
+            if (sig > MASK_THRESHOLD) {
               const pixelIdx = pIdx * 4;
               mPixels[pixelIdx] = cr;
               mPixels[pixelIdx + 1] = cg;

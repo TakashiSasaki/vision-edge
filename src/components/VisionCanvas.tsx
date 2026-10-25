@@ -29,6 +29,7 @@ interface VisionCanvasProps {
   facingMode: CameraFacingMode;
   onToggleFacingMode: () => void;
   renderOptions: RenderOptions;
+  inferenceParams?: ExtraInferenceOptions;
   ttsConfig: TTSConfig;
   isCameraActive: boolean;
   onCameraStart: () => void;
@@ -45,6 +46,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   facingMode,
   onToggleFacingMode,
   renderOptions,
+  inferenceParams,
   ttsConfig,
   isCameraActive,
   onCameraStart,
@@ -75,9 +77,9 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   const [retry, setRetry] = useState(0);
   const [stats, setStats] = useState<PerformanceSnapshot>({ inferenceFps: null, drawFps: null, processingMs: null, stalled: false });
   const [pipelineStats, setPipelineStats] = useState<PipelineSnapshotView | null>(null);
-  const latest = useRef({ onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel });
+  const latest = useRef({ onFrame, renderOptions, inferenceParams, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel });
   useLayoutEffect(() => {
-    latest.current = { onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel };
+    latest.current = { onFrame, renderOptions, inferenceParams, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel };
   });
   const drawRef = useRef<(ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[], semanticMask?: HTMLCanvasElement) => void>(() => {});
 
@@ -98,7 +100,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     try { if (canvas) canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height); }
     catch { setFault('描画エラー'); }
     return () => { generationOwner.current++; };
-  }, [activeModel, requestId, isCameraActive, facingMode, cameraReady, cameraRequestId, engine, retry, threshold]);
+  }, [activeModel, requestId, isCameraActive, facingMode, cameraReady, cameraRequestId, engine, retry, threshold, inferenceParams]);
 
   useLayoutEffect(() => {
     if (!fault) return;
@@ -162,7 +164,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       captureError: () => fail('映像フレーム取得エラー'),
       work: input => {
         const start = performance.now();
-        const res = engine.detectVideoFrame(input, activeModel, latest.current.renderOptions.confidenceThreshold, pipeline);
+        const res = engine.detectVideoFrame(input, activeModel, latest.current.renderOptions.confidenceThreshold, pipeline, latest.current.inferenceParams);
         if (res instanceof Promise) {
           return res.then(result => ({ result, start, end: performance.now() }));
         }

@@ -4,7 +4,10 @@ import {
   CameraFacingMode,
   RunnableModelType,
   RenderOptions,
-  TTSConfig
+  TTSConfig,
+  PerModelParameterConfig,
+  DEFAULT_MODEL_PARAMS,
+  ExtraInferenceOptions
 } from './types/vision';
 import { Header } from './components/Header';
 import { VisionCanvas } from './components/VisionCanvas';
@@ -42,14 +45,50 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
   useEffect(() => () => engine.dispose(), [engine]);
   useEffect(() => { void engine.initialize(activeModel, activeVariant); }, [engine, activeModel, activeVariant]);
 
-  const [renderOptions, setRenderOptions] = useState<RenderOptions>({
-    showBoxes: true,
-    showMasks: true,
-    showLabels: true,
-    showConfidence: true,
-    maskOpacity: 0.35,
-    confidenceThreshold: 0.35
-  });
+  const [modelParams, setModelParams] = useState<PerModelParameterConfig>(() =>
+    JSON.parse(JSON.stringify(DEFAULT_MODEL_PARAMS))
+  );
+
+  const activeParams = modelParams[activeModel] || DEFAULT_MODEL_PARAMS[activeModel];
+  const activeRenderOptions = activeParams.render;
+  const activeInferenceParams = activeParams.inference as ExtraInferenceOptions;
+
+  const handleChangeRenderOptions = (opts: Partial<RenderOptions>) => {
+    setModelParams(prev => {
+      const current = prev[activeModel] || DEFAULT_MODEL_PARAMS[activeModel];
+      const newThreshold = opts.confidenceThreshold ?? current.render.confidenceThreshold;
+      return {
+        ...prev,
+        [activeModel]: {
+          ...current,
+          render: { ...current.render, ...opts },
+          inference: { ...current.inference, confidenceThreshold: newThreshold }
+        }
+      };
+    });
+  };
+
+  const handleChangeInferenceParams = (params: Partial<ExtraInferenceOptions>) => {
+    setModelParams(prev => {
+      const current = prev[activeModel] || DEFAULT_MODEL_PARAMS[activeModel];
+      const newThreshold = params.confidenceThreshold ?? current.inference.confidenceThreshold;
+      return {
+        ...prev,
+        [activeModel]: {
+          ...current,
+          inference: { ...current.inference, ...params },
+          render: { ...current.render, confidenceThreshold: newThreshold }
+        }
+      };
+    });
+  };
+
+  const handleResetModelParams = () => {
+    setModelParams(prev => ({
+      ...prev,
+      [activeModel]: JSON.parse(JSON.stringify(DEFAULT_MODEL_PARAMS[activeModel]))
+    }));
+  };
 
   // Default: Voice readout is OFF (enabled: false)
   const [ttsConfig, setTTSConfig] = useState<TTSConfig>({
@@ -162,7 +201,8 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
             modelState={modelState}
             facingMode={facingMode}
             onToggleFacingMode={handleToggleFacingMode}
-            renderOptions={renderOptions}
+            renderOptions={activeRenderOptions}
+            inferenceParams={activeInferenceParams}
             ttsConfig={ttsConfig}
             isCameraActive={isCameraActive}
             onCameraStart={handleCameraStart}
@@ -177,8 +217,11 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
         <div className="md:col-span-4 h-full min-h-0 min-w-0 flex flex-col overflow-hidden">
           <ControlPanel
             activeModel={activeModel}
-            renderOptions={renderOptions}
-            onChangeRenderOptions={(opts) => setRenderOptions(prev => ({ ...prev, ...opts }))}
+            renderOptions={activeRenderOptions}
+            onChangeRenderOptions={handleChangeRenderOptions}
+            inferenceParams={activeInferenceParams}
+            onChangeInferenceParams={handleChangeInferenceParams}
+            onResetModelParams={handleResetModelParams}
             ttsConfig={ttsConfig}
             onChangeTTSConfig={(cfg) => setTTSConfig(prev => ({ ...prev, ...cfg }))}
             detectedObjects={detectedObjects}

@@ -11,6 +11,14 @@ import { resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSource }
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
 export type SegmenterTask = Pick<ImageSegmenter, 'segmentForVideo' | 'close'>;
+export interface ExtraInferenceOptions {
+  minAreaPercent?: number;
+  maxDetections?: number;
+  bboxSmoothing?: number;
+  iouThreshold?: number;
+  maskThreshold?: number;
+}
+
 export interface VisionTaskFactory {
   load: () => Promise<Fileset>;
   detector: (fileset: Fileset, delegate: 'GPU', variantId?: string) => Promise<DetectorTask>;
@@ -216,25 +224,29 @@ export class VisionEngine {
     videoElement: InferenceInput,
     model: 'selfie-segmenter' | 'mediapipe',
     confidenceThreshold: number,
-    instrumentation?: PipelineObserver
+    instrumentation?: PipelineObserver,
+    extraOptions?: ExtraInferenceOptions
   ): FrameResult;
   public detectVideoFrame(
     videoElement: InferenceInput,
     model: 'yolo-seg' | 'segformer',
     confidenceThreshold: number,
-    instrumentation?: PipelineObserver
+    instrumentation?: PipelineObserver,
+    extraOptions?: ExtraInferenceOptions
   ): Promise<FrameResult>;
   public detectVideoFrame(
     videoElement: InferenceInput,
     model: RunnableModelType,
     confidenceThreshold: number,
-    instrumentation?: PipelineObserver
+    instrumentation?: PipelineObserver,
+    extraOptions?: ExtraInferenceOptions
   ): FrameResult | Promise<FrameResult>;
   public detectVideoFrame(
     videoElement: InferenceInput,
     model: RunnableModelType,
     confidenceThreshold: number,
-    instrumentation?: PipelineObserver
+    instrumentation?: PipelineObserver,
+    extraOptions?: ExtraInferenceOptions
   ): FrameResult | Promise<FrameResult> {
     requireRunnableModel(model);
     const state = this.state;
@@ -246,10 +258,10 @@ export class VisionEngine {
       return { status: 'not-ready', model, requestId: state.requestId };
     }
     if (active.model === 'yolo-seg') {
-      return this.detectYoloVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration);
+      return this.detectYoloVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration, extraOptions);
     }
     if (active.model === 'segformer') {
-      return this.detectSegFormerVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration);
+      return this.detectSegFormerVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration, extraOptions);
     }
     const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
     const engineStart = probe?.start();
@@ -333,8 +345,9 @@ export class VisionEngine {
                 }
               }
 
-              // If a person is present in the frame (> 0.5% of total pixels)
-              if (count > (mW * mH * 0.005)) {
+              // If a person is present in the frame (configurable minAreaPercent)
+              const minAreaPercent = extraOptions?.minAreaPercent ?? 0.5;
+              if (count > (mW * mH * (minAreaPercent / 100))) {
                 maskCtx.putImageData(this.maskImageData, 0, 0);
 
                 const normX = Math.max(0, minX / mW);
@@ -415,6 +428,12 @@ export class VisionEngine {
               color: getCategoryColor(label)
             };
           });
+
+          // Limit max detections
+          const maxDetections = extraOptions?.maxDetections ?? 10;
+          if (rawObjects.length > maxDetections) {
+            rawObjects = rawObjects.slice(0, maxDetections);
+          }
         }
       }
 
@@ -438,17 +457,19 @@ export class VisionEngine {
           // Immediate 1:1 real-time tracking for selfie segmenter (0 latency)
           finalObjects = filteredObjects;
         } else {
+          const smoothing = extraOptions?.bboxSmoothing ?? 0.20;
           // Exponential Moving Average (EMA) smoothing for bounding boxes to avoid jitter
           finalObjects = filteredObjects.map(obj => {
             const prev = this.lastStableObjects.find(p => p.label === obj.label);
-            if (prev) {
+            if (prev && smoothing > 0) {
+              const alpha = 1 - smoothing;
               return {
                 ...obj,
                 bbox: {
-                  x: prev.bbox.x * 0.2 + obj.bbox.x * 0.8,
-                  y: prev.bbox.y * 0.2 + obj.bbox.y * 0.8,
-                  width: prev.bbox.width * 0.2 + obj.bbox.width * 0.8,
-                  height: prev.bbox.height * 0.2 + obj.bbox.height * 0.8
+                  x: prev.bbox.x * smoothing + obj.bbox.x * alpha,
+                  y: prev.bbox.y * smoothing + obj.bbox.y * alpha,
+                  width: prev.bbox.width * smoothing + obj.bbox.width * alpha,
+                  height: prev.bbox.height * smoothing + obj.bbox.height * alpha
                 }
               };
             }
@@ -498,7 +519,8 @@ export class VisionEngine {
     instrumentation: PipelineObserver | undefined,
     state: Extract<ModelState, { status: 'ready' }>,
     active: { model: 'yolo-seg'; task: YoloSegTask },
-    outputGeneration: number
+    outputGeneration: number,
+    extraOptions?: ExtraInferenceOptions
   ): Promise<FrameResult> {
     const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
     const engineStart = probe?.start();
@@ -512,7 +534,11 @@ export class VisionEngine {
       let sdkOutcome: AttemptOutcome = 'failed';
       let rawObjects: DetectedObject[] = [];
       try {
-        const detectResult = active.task.detectForVideo(videoElement, confidenceThreshold);
+        const detectResult = active.task.detectForVideo(videoElement, confidenceThreshold, {
+          iouThreshold: extraOptions?.iouThreshold,
+          maxDetections: extraOptions?.maxDetections,
+          maskThreshold: extraOptions?.maskThreshold
+        });
         rawObjects = detectResult instanceof Promise ? await detectResult : detectResult;
         sdkOutcome = 'success';
       } finally {
@@ -530,16 +556,18 @@ export class VisionEngine {
       let finalObjects: DetectedObject[];
 
       if (filteredObjects.length > 0) {
+        const smoothing = extraOptions?.bboxSmoothing ?? 0.20;
         finalObjects = filteredObjects.map(obj => {
           const prev = this.lastStableObjects.find(p => p.label === obj.label);
-          if (prev && !obj.maskCanvas) {
+          if (prev && !obj.maskCanvas && smoothing > 0) {
+            const alpha = 1 - smoothing;
             return {
               ...obj,
               bbox: {
-                x: prev.bbox.x * 0.2 + obj.bbox.x * 0.8,
-                y: prev.bbox.y * 0.2 + obj.bbox.y * 0.8,
-                width: prev.bbox.width * 0.2 + obj.bbox.width * 0.8,
-                height: prev.bbox.height * 0.2 + obj.bbox.height * 0.8
+                x: prev.bbox.x * smoothing + obj.bbox.x * alpha,
+                y: prev.bbox.y * smoothing + obj.bbox.y * alpha,
+                width: prev.bbox.width * smoothing + obj.bbox.width * alpha,
+                height: prev.bbox.height * smoothing + obj.bbox.height * alpha
               }
             };
           }
@@ -584,7 +612,8 @@ export class VisionEngine {
     instrumentation: PipelineObserver | undefined,
     state: Extract<ModelState, { status: 'ready' }>,
     active: { model: 'segformer'; task: SegFormerTask },
-    outputGeneration: number
+    outputGeneration: number,
+    extraOptions?: ExtraInferenceOptions
   ): Promise<FrameResult> {
     const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
     const engineStart = probe?.start();
@@ -598,7 +627,9 @@ export class VisionEngine {
       let sdkOutcome: AttemptOutcome = 'failed';
       let rawObjects: DetectedObject[] = [];
       try {
-        const detectResult = active.task.detectForVideo(videoElement, confidenceThreshold);
+        const detectResult = active.task.detectForVideo(videoElement, confidenceThreshold, {
+          minAreaPercent: extraOptions?.minAreaPercent
+        });
         rawObjects = detectResult instanceof Promise ? await detectResult : detectResult;
         sdkOutcome = 'success';
       } finally {

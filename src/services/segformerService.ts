@@ -19,7 +19,7 @@ export interface SemanticPixel {
     bbox?: BoundingBox;
 }
 export interface SegFormerTask {
-    detectForVideo: (input: InferenceInput, confidenceThreshold: number) => Promise<DetectedObject[]>;
+    detectForVideo: (input: InferenceInput, confidenceThreshold: number, params?: { minAreaPercent?: number }) => Promise<DetectedObject[]>;
     getPixelClass?: (x: number, y: number) => SemanticPixel | null;
     acceptResult?: (objects: DetectedObject[]) => {
         maskCanvas: HTMLCanvasElement;
@@ -60,7 +60,7 @@ export class SegFormerEngine implements SegFormerTask {
         const i = py * s.width + px, id = s.grid[i];
         return { ...getADE20KInfo(id), confidence: s.scores[i], areaFraction: s.counts[id] / s.grid.length, bbox: s.boxes[id] };
     }
-    detectForVideo(input: InferenceInput, threshold: number): Promise<DetectedObject[]> {
+    detectForVideo(input: InferenceInput, threshold: number, params?: { minAreaPercent?: number }): Promise<DetectedObject[]> {
         return this.owner.use(async () => {
             if (!this.inputCanvas) {
                 this.inputCanvas = document.createElement('canvas');
@@ -131,7 +131,8 @@ export class SegFormerEngine implements SegFormerTask {
                 out.putImageData(image, 0, 0);
                 const boxes = Array.from({ length: classes }, (_, c) => counts[c] ? { x: minX[c] / width, y: minY[c] / height, width: (maxX[c] - minX[c] + 1) / width, height: (maxY[c] - minY[c] + 1) / height } : { x: 0, y: 0, width: 0, height: 0 });
                 const objects: DetectedObject[] = [];
-                const minArea = Math.max(40, Math.floor(area * .005));
+                const minAreaRatio = (params?.minAreaPercent ?? 0.5) / 100;
+                const minArea = Math.max(10, Math.floor(area * minAreaRatio));
                 for (let c = 0; c < classes; c++) {
                     if (counts[c] < minArea)
                         continue;
