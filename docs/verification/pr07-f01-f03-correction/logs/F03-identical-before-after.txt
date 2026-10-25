@@ -1,0 +1,139 @@
+[
+  {
+    "label": "reviewed-old",
+    "sourceSha256": "e3f4d55892ebbac5867f19b6457dc342edeb0e6b1c9df0af4fb891f32478b5da",
+    "exit": 0,
+    "fixture": {
+      "runtime": {
+        "scope": "CHECKER ONLY; no SDK/model call"
+      },
+      "evidence": {
+        "probe": {
+          "raw": [],
+          "creates": [
+            {
+              "model": "selfie-segmenter",
+              "error": "initialization failed"
+            }
+          ],
+          "snapshots": [],
+          "rawDropped": 0
+        }
+      }
+    },
+    "actual": {
+      "units": "milliseconds JavaScript wall time; observation overhead present in product metrics, original-call-only raw.ms excludes later observation",
+      "inferenceExecuted": true,
+      "populations": [
+        {
+          "file": "browser/failed/evidence.json",
+          "model": "mediapipe",
+          "runtime": {
+            "scope": "CHECKER ONLY; no SDK/model call"
+          },
+          "initialization": [],
+          "retainedSdkCalls": 0,
+          "droppedSdkCalls": 0,
+          "warmup": null,
+          "steadyStateSdkWall": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null,
+            "populationVariance": null
+          },
+          "missingSdkDurations": 0,
+          "coverage": "all retained actual SDK calls; first positive excluded as warmup",
+          "snapshots": []
+        },
+        {
+          "file": "browser/failed/evidence.json",
+          "model": "selfie-segmenter",
+          "runtime": {
+            "scope": "CHECKER ONLY; no SDK/model call"
+          },
+          "initialization": [
+            {
+              "model": "selfie-segmenter",
+              "error": "initialization failed"
+            }
+          ],
+          "retainedSdkCalls": 0,
+          "droppedSdkCalls": 0,
+          "warmup": null,
+          "steadyStateSdkWall": {
+            "count": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null,
+            "populationVariance": null
+          },
+          "missingSdkDurations": 0,
+          "coverage": "all retained actual SDK calls; first positive excluded as warmup",
+          "snapshots": []
+        }
+      ],
+      "limits": "No physical GPU duration/utilization, CPU utilization, camera FPS, camera-to-display latency or real-device guarantee; overlapping stages must not be summed. No timing pass threshold."
+    }
+  },
+  {
+    "label": "corrected",
+    "sourceSha256": "3047c8fb7fe5b2bafc4834e46527104f6d7bff99ca4bf4deb46bcc8b798c9889",
+    "exit": 0,
+    "fixture": {
+      "runtime": {
+        "scope": "CHECKER ONLY; no SDK/model call"
+      },
+      "evidence": {
+        "probe": {
+          "raw": [],
+          "creates": [
+            {
+              "model": "selfie-segmenter",
+              "error": "initialization failed"
+            }
+          ],
+          "snapshots": [],
+          "rawDropped": 0
+        }
+      }
+    },
+    "actual": {
+      "units": "milliseconds JavaScript wall time; observation overhead present in product metrics, original-call-only raw.ms excludes later observation",
+      "inferenceAttempted": false,
+      "inferenceExecuted": false,
+      "resultAdopted": false,
+      "resultRendered": false,
+      "execution": [
+        {
+          "file": "browser/failed/evidence.json",
+          "evidenceErrors": [],
+          "attempts": 0,
+          "retainedAttempts": 0,
+          "successfulSdkCalls": 0,
+          "retainedSuccessfulSdkCalls": 0,
+          "failedSdkCallsRetained": 0,
+          "unknownSdkOutcomesRetained": 0,
+          "readyProcessedResultsRetained": 0,
+          "adoptedResultsRetained": 0,
+          "renderedResultsRetained": 0,
+          "inferenceAttempted": false,
+          "inferenceExecuted": false,
+          "resultAdopted": false,
+          "resultRendered": false,
+          "coverage": "retained observations; unknown outcomes are not successes",
+          "initialization": [
+            {
+              "model": "selfie-segmenter",
+              "error": "initialization failed"
+            }
+          ]
+        }
+      ],
+      "populations": [],
+      "limits": "inferenceExecuted means an observed successful SDK return, not a semantic/model acceptance verdict. Attempts, processing, adoption and rendering are separate. No physical timing/utilization guarantee; overlapping stages must not be summed."
+    }
+  }
+]

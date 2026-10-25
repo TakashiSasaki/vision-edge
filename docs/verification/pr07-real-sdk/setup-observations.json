@@ -1,0 +1,55 @@
+{
+  "initialInstall": {
+    "argv": ["npm", "ci", "--no-audit", "--no-fund"],
+    "exit": 254,
+    "reason": "ENOENT mkdir /home/agent/.npm/_cacache (default cache not writable/available)",
+    "evidence": "Observed tool output; complete initial stderr was not saved as a file. No dependency/lock change."
+  },
+  "lockedInstall": {
+    "argv": ["npm", "ci", "--cache", "/tmp/vision-edge-pr07-npm-cache", "--no-audit", "--no-fund"],
+    "exit": 0,
+    "log": "logs/install.txt"
+  },
+  "directModelAcquisitionAttempts": [
+    {
+      "target": "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
+      "method": "curl -I --max-time 25",
+      "timeUTC": "2026-10-24T17:18:41Z",
+      "exit": 56,
+      "status": "blocked",
+      "response": "HTTP/1.1 403 Forbidden; CONNECT tunnel failed, response403",
+      "bodyAcquired": false,
+      "retryOrBypass": false
+    },
+    {
+      "target": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite",
+      "method": "curl -I --max-time 25",
+      "timeUTC": "2026-10-24T17:19:06Z",
+      "exit": 56,
+      "status": "blocked",
+      "response": "HTTP/1.1 403 Forbidden; CONNECT tunnel failed, response403",
+      "bodyAcquired": false,
+      "retryOrBypass": false
+    }
+  ],
+  "initialAssetAcquisition": {
+    "transport": "curl -fL --max-time 30 --max-filesize 15000000 for four CDN assets;25s/2MB for two scikit-image PNGs",
+    "status": "six genuine assets acquired; CDN WASM/loader bytes equal locked installed npm variants, PNG hashes equal official registry",
+    "manifest": "e2e-real-sdk/assets.lock.json",
+    "rawLog": "Initial curl stdout/headers observed in tool results; complete raw acquisition transcript not saved as file. Later supported acquisition command records independent full results."
+  },
+  "githubCli": {
+    "actions": ["gh pr list GraphQL", "gh api repos/TakashiSasaki/vision-edge/pulls?state=open REST"],
+    "status": "blocked HTTP Forbidden",
+    "fallback": "Available authorized GitHub connector succeeded; git fetch all refs succeeded. No denied API request retried."
+  },
+  "matchedBrowser": {
+    "status": "not-run locally",
+    "reason": "No installed matched browser; inherited prior HTTP403 download restriction respected without retry. System /usr/bin/chromium154 used explicitly."
+  },
+  "developmentFailures": {
+    "typecheck": "Initial observer/harness typing and one syntax mistake corrected; initial logs retained.",
+    "audit": "First audit incorrectly expected contiguous vision_wasm_internal text; actual SDK constructs that name. Corrected audit checks real graph/loader signatures and unaliased resolver instead; failed log retained.",
+    "nodeAcquisition": "Initial fetch did not consume configured environment proxy; TypeError fetch failed on available assets. Supported command now uses standard --use-env-proxy. Unpinned/denied model URLs were not requested. Initial acquisition report retained."
+  }
+}

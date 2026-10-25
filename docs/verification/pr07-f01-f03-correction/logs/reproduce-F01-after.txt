@@ -1,0 +1,64 @@
+[
+  {
+    "case": "empty-assets",
+    "manifest": {
+      "schema": 1,
+      "assets": []
+    },
+    "exit": 1,
+    "stdout": "",
+    "stderr": "file:///tmp/pr07-invalid-manifest-ap0i1u1i/scripts/real-sdk/assets.mjs:22\n  const invalid = message => { throw new Error(`INVALID_ASSET_MANIFEST: ${message}`); };\n                                     ^\n\nError: INVALID_ASSET_MANIFEST: missing required assets: vision_bundle.mjs, vision_wasm_internal.js, vision_wasm_internal.wasm, vision_wasm_nosimd_internal.js, vision_wasm_nosimd_internal.wasm, astronaut.png, coffee.png, efficientdet_lite0.tflite, selfie_segmenter.tflite\n    at invalid (file:///tmp/pr07-invalid-manifest-ap0i1u1i/scripts/real-sdk/assets.mjs:22:38)\n    at validateManifest (file:///tmp/pr07-invalid-manifest-ap0i1u1i/scripts/real-sdk/assets.mjs:40:23)\n    at file:///tmp/pr07-invalid-manifest-ap0i1u1i/scripts/real-sdk/assets.mjs:47:25\n\nNode.js v24.19.0\n",
+    "expected": "invalid manifest must fail before asset acceptance; never exit0"
+  },
+  {
+    "case": "wrong-schema",
+    "manifest": {
+      "schema": 999,
+      "assets": []
+    },
+    "exit": 1,
+    "stdout": "",
+    "stderr": "file:///tmp/pr07-invalid-manifest-cmevrcy1/scripts/real-sdk/assets.mjs:22\n  const invalid = message => { throw new Error(`INVALID_ASSET_MANIFEST: ${message}`); };\n                                     ^\n\nError: INVALID_ASSET_MANIFEST: schema must be 1\n    at invalid (file:///tmp/pr07-invalid-manifest-cmevrcy1/scripts/real-sdk/assets.mjs:22:38)\n    at validateManifest (file:///tmp/pr07-invalid-manifest-cmevrcy1/scripts/real-sdk/assets.mjs:23:90)\n    at file:///tmp/pr07-invalid-manifest-cmevrcy1/scripts/real-sdk/assets.mjs:47:25\n\nNode.js v24.19.0\n",
+    "expected": "invalid manifest must fail before asset acceptance; never exit0"
+  },
+  {
+    "case": "missing-required-models",
+    "manifest": {
+      "schema": 1,
+      "assets": [
+        {
+          "id": "vision_bundle.mjs",
+          "file": "vision_bundle.mjs",
+          "url": "https://registry.npmjs.org/@mediapipe/tasks-vision/-/tasks-vision-0.10.14.tgz",
+          "version": "0.10.14",
+          "size": 136870,
+          "sha256": "e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669",
+          "retrievedAt": null,
+          "license": "Apache-2.0",
+          "production": "Actual unaliased SDK import, bundled by Vite from npm lock integrity",
+          "required": true,
+          "packageFile": "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs",
+          "packageIntegrity": "sha512-vOifgZhkndgybdvoRITzRkIueWWSiCKuEUXXK6Q4FaJsFvRJuwgg++vqFUMlL0Uox62U5aEXFhHxlhV7Ja5e3Q==",
+          "retrievalTimePrecision": "npm ci run window; exact per-file download time not captured",
+          "licenseSource": "https://www.npmjs.com/package/@mediapipe/tasks-vision/v/0.10.14 (installed package.json license field)",
+          "retrievalWindowUTC": [
+            "2026-10-24T17:19:00Z",
+            "2026-10-24T17:20:10Z"
+          ]
+        }
+      ]
+    },
+    "exit": 1,
+    "stdout": "",
+    "stderr": "file:///tmp/pr07-invalid-manifest-ep4p5efq/scripts/real-sdk/assets.mjs:22\n  const invalid = message => { throw new Error(`INVALID_ASSET_MANIFEST: ${message}`); };\n                                     ^\n\nError: INVALID_ASSET_MANIFEST: missing required assets: vision_wasm_internal.js, vision_wasm_internal.wasm, vision_wasm_nosimd_internal.js, vision_wasm_nosimd_internal.wasm, astronaut.png, coffee.png, efficientdet_lite0.tflite, selfie_segmenter.tflite\n    at invalid (file:///tmp/pr07-invalid-manifest-ep4p5efq/scripts/real-sdk/assets.mjs:22:38)\n    at validateManifest (file:///tmp/pr07-invalid-manifest-ep4p5efq/scripts/real-sdk/assets.mjs:40:23)\n    at file:///tmp/pr07-invalid-manifest-ep4p5efq/scripts/real-sdk/assets.mjs:47:25\n\nNode.js v24.19.0\n",
+    "expected": "invalid manifest must fail before asset acceptance; never exit0"
+  },
+  {
+    "case": "invalid-json",
+    "manifest": null,
+    "exit": 1,
+    "stdout": "",
+    "stderr": "file:///tmp/pr07-invalid-manifest-uwbcvsti/scripts/real-sdk/assets.mjs:45\ncatch (error) { throw new Error(`INVALID_ASSET_MANIFEST: cannot read/parse JSON: ${error.message}`, { cause: error }); }\n                      ^\n\nError: INVALID_ASSET_MANIFEST: cannot read/parse JSON: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n    at file:///tmp/pr07-invalid-manifest-uwbcvsti/scripts/real-sdk/assets.mjs:45:23 {\n  [cause]: SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n      at JSON.parse (<anonymous>)\n      at file:///tmp/pr07-invalid-manifest-uwbcvsti/scripts/real-sdk/assets.mjs:44:21\n}\n\nNode.js v24.19.0\n",
+    "expected": "invalid manifest must fail before asset acceptance; never exit0"
+  }
+]

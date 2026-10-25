@@ -1,0 +1,6 @@
+{
+  "units": "milliseconds JavaScript wall time; observation overhead present in product metrics, original-call-only raw.ms excludes later observation",
+  "inferenceExecuted": false,
+  "populations": [],
+  "limits": "No physical GPU duration/utilization, CPU utilization, camera FPS, camera-to-display latency or real-device guarantee; overlapping stages must not be summed. No timing pass threshold."
+}

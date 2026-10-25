@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-24T17:34:57.961982+00:00",
+  "mainHead": "9dd0f7998a8c700c2f19c770e31dc790c4774de4",
+  "mainTree": "815f55307389f842d636f0381c206253630baabd",
+  "sourceHead": "03762228e55c3db38943013a06e74547d4a3eb9d",
+  "sourceTree": "6451a6a56f211cdbaba4c16391672b4f4a8e7daf",
+  "protectedFileCount": 559,
+  "changedProtectedFiles": [],
+  "newPathsOnly": [
+    "e2e-real-sdk",
+    "scripts/real-sdk",
+    "playwright.real-sdk.config.ts",
+    "vite.real-sdk.config.ts",
+    "docs/verification/pr07-real-sdk"
+  ],
+  "modifiedExistingPaths": [
+    "package.json (scripts only)"
+  ],
+  "priorReviewBranchesUntouched": true
+}

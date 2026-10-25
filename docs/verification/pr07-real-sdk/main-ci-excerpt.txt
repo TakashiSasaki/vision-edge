@@ -1,0 +1,16 @@
+2026-10-24T17:12:00.3875557Z   ref: 9dd0f7998a8c700c2f19c770e31dc790c4774de4
+2026-10-24T17:12:00.6605484Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 9dd0f7998a8c700c2f19c770e31dc790c4774de4
+2026-10-24T17:12:01.6801146Z  * branch            9dd0f7998a8c700c2f19c770e31dc790c4774de4 -> FETCH_HEAD
+2026-10-24T17:12:01.6810347Z [command]/usr/bin/git rev-parse --verify --quiet 9dd0f7998a8c700c2f19c770e31dc790c4774de4^{object}
+2026-10-24T17:12:01.6839596Z 9dd0f7998a8c700c2f19c770e31dc790c4774de4
+2026-10-24T17:12:01.6941100Z [command]/usr/bin/git checkout --progress --force 9dd0f7998a8c700c2f19c770e31dc790c4774de4
+2026-10-24T17:12:01.7766291Z Note: switching to '9dd0f7998a8c700c2f19c770e31dc790c4774de4'.
+2026-10-24T17:12:01.7865288Z 9dd0f7998a8c700c2f19c770e31dc790c4774de4
+2026-10-24T17:12:01.9442465Z Resolved .nvmrc as 24.19.0
+2026-10-24T17:12:01.9459001Z Attempting to download 24.19.0...
+2026-10-24T17:12:02.8963866Z Acquiring 24.19.0 - x64 from https://github.com/actions/node-versions/releases/download/24.19.0-30872449280/node-24.19.0-linux-x64.tar.gz
+2026-10-24T17:12:06.9350508Z node: v24.19.0
+2026-10-24T17:12:06.9350955Z npm: 11.17.0
+2026-10-24T17:12:06.9370701Z [command]/opt/hostedtoolcache/node/24.19.0/x64/bin/npm config get cache
+2026-10-24T17:12:31.7193938Z [2m      Tests [22m [1m[32m317 passed[39m[22m[90m (317)[39m
+2026-10-24T17:14:11.9887570Z   19 passed (1.3m)

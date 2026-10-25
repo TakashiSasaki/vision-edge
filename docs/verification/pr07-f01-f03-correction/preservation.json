@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-24T18:14:15.188294+00:00",
+  "protectedCount": 635,
+  "changedProtectedFiles": [],
+  "productLegacyPackageLockWorkflowChanges": [],
+  "reviewEvidenceHead": "e1414072fe2facf00b70720d7c706b1c2328712c",
+  "disposableStatus": "",
+  "productionJSIdenticalToReviewed": true,
+  "productionJSSha256": "1d1d27901e2d1f589ac4b3555a36f5ba69e8760f7b4396582fd3006de2a489ba",
+  "cssDifference": "one standard Tailwind .transition utility from new test text; no product logic change",
+  "reviewerUncertainActions": "NOT RECOVERED OR CERTIFIED; only this author environment verified",
+  "realSDKCommandExit": 2
+}

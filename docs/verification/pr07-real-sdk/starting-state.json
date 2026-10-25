@@ -1,0 +1,85 @@
+{
+  "checkedAt": "2026-10-24T17:23:38.247Z",
+  "openPRs": [
+    {
+      "n": 16,
+      "title": "review: PR06 F01 closed — scoped PASS with conditions",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/16"
+    },
+    {
+      "n": 15,
+      "title": "review: PR06 independent acceptance — FAIL (invalid statistics isolation)",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/15"
+    },
+    {
+      "n": 13,
+      "title": "docs: independent PR05 re-review — F01 closed, PASS with conditions",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/13"
+    },
+    {
+      "n": 12,
+      "title": "docs: independent PR-05 coordinate review — scoped PASS with conditions",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/12"
+    },
+    {
+      "n": 10,
+      "title": "review: PR-04 compatibility correction — PASS WITH CONDITIONS",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/10"
+    },
+    {
+      "n": 9,
+      "title": "review: PR-04 corrections — F02 closed, F01 compatibility defect remains",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/9"
+    },
+    {
+      "n": 8,
+      "title": "review: independently assess PR-04 — FAIL (duplicate input and missing first frame)",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/8"
+    },
+    {
+      "n": 4,
+      "title": "review: independently validate PR-01 F01 CSS smoke correction — PASS",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/4"
+    },
+    {
+      "n": 2,
+      "title": "review: PR-01 foundation — PASS WITH CONDITIONS",
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/2"
+    }
+  ],
+  "pullRequests": [
+    {
+      "number": 14,
+      "state": "closed",
+      "merged": true,
+      "merged_at": "2026-10-24T17:11:51Z",
+      "head": "feat/pipeline-performance-instrumentation",
+      "head_sha": "7056c67cd1f59c8d3e2237b84df05c223d99a25e",
+      "base": "main",
+      "base_sha": "18e94a4508a0fa316cf31171789c3c10a0a041c3",
+      "merge_commit_sha": "9dd0f7998a8c700c2f19c770e31dc790c4774de4"
+    },
+    {
+      "number": 15,
+      "state": "open",
+      "merged": false,
+      "merged_at": null,
+      "head": "review/pr06-pipeline-independent",
+      "head_sha": "3d6bf05fcef72ede7d66d03a2ef34185ea802f86",
+      "base": "feat/pipeline-performance-instrumentation",
+      "base_sha": "04a3530c6ec9755bb7b89c3e31c1c3e15c9b1ea9",
+      "merge_commit_sha": "c568b1c618f7d206d7a6dfe2587f047b1dfe2acc"
+    },
+    {
+      "number": 16,
+      "state": "open",
+      "merged": false,
+      "merged_at": null,
+      "head": "review/pr06-pipeline-rereview",
+      "head_sha": "ace2d04656ecc690991ef3dde5f0396bd90151ad",
+      "base": "feat/pipeline-performance-instrumentation",
+      "base_sha": "7056c67cd1f59c8d3e2237b84df05c223d99a25e",
+      "merge_commit_sha": "2702b2725db361d13790e9e92864292762ac4022"
+    }
+  ]
+}

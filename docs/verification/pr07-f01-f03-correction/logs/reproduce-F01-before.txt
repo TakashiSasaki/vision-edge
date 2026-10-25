@@ -1,0 +1,64 @@
+[
+  {
+    "case": "empty-assets",
+    "manifest": {
+      "schema": 1,
+      "assets": []
+    },
+    "exit": 0,
+    "stdout": "{\n  \"mode\": \"cached-byte-verification\",\n  \"at\": \"2026-10-24T17:59:28.816Z\",\n  \"rows\": []\n}\n",
+    "stderr": "",
+    "expected": "invalid manifest must fail before asset acceptance; never exit0"
+  },
+  {
+    "case": "wrong-schema",
+    "manifest": {
+      "schema": 999,
+      "assets": []
+    },
+    "exit": 0,
+    "stdout": "{\n  \"mode\": \"cached-byte-verification\",\n  \"at\": \"2026-10-24T17:59:28.854Z\",\n  \"rows\": []\n}\n",
+    "stderr": "",
+    "expected": "invalid manifest must fail before asset acceptance; never exit0"
+  },
+  {
+    "case": "missing-required-models",
+    "manifest": {
+      "schema": 1,
+      "assets": [
+        {
+          "id": "vision_bundle.mjs",
+          "file": "vision_bundle.mjs",
+          "url": "https://registry.npmjs.org/@mediapipe/tasks-vision/-/tasks-vision-0.10.14.tgz",
+          "version": "0.10.14",
+          "size": 136870,
+          "sha256": "e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669",
+          "retrievedAt": null,
+          "license": "Apache-2.0",
+          "production": "Actual unaliased SDK import, bundled by Vite from npm lock integrity",
+          "required": true,
+          "packageFile": "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs",
+          "packageIntegrity": "sha512-vOifgZhkndgybdvoRITzRkIueWWSiCKuEUXXK6Q4FaJsFvRJuwgg++vqFUMlL0Uox62U5aEXFhHxlhV7Ja5e3Q==",
+          "retrievalTimePrecision": "npm ci run window; exact per-file download time not captured",
+          "licenseSource": "https://www.npmjs.com/package/@mediapipe/tasks-vision/v/0.10.14 (installed package.json license field)",
+          "retrievalWindowUTC": [
+            "2026-10-24T17:19:00Z",
+            "2026-10-24T17:20:10Z"
+          ]
+        }
+      ]
+    },
+    "exit": 0,
+    "stdout": "{\n  \"mode\": \"cached-byte-verification\",\n  \"at\": \"2026-10-24T17:59:28.883Z\",\n  \"rows\": [\n    {\n      \"id\": \"vision_bundle.mjs\",\n      \"status\": \"pass\",\n      \"size\": 136870,\n      \"sha256\": \"e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669\"\n    }\n  ]\n}\n",
+    "stderr": "",
+    "expected": "invalid manifest must fail before asset acceptance; never exit0"
+  },
+  {
+    "case": "invalid-json",
+    "manifest": null,
+    "exit": 1,
+    "stdout": "",
+    "stderr": "<anonymous_script>:1\n{invalid\n ^\n\nSyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n    at JSON.parse (<anonymous>)\n    at file:///tmp/pr07-invalid-manifest-lsnbzu60/scripts/real-sdk/assets.mjs:10:30\n\nNode.js v24.19.0\n",
+    "expected": "invalid manifest must fail before asset acceptance; never exit0"
+  }
+]
