@@ -40,24 +40,28 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   const model = within(header).getByRole('combobox', { name: 'モデル' });
   const enabled = within(model).getAllByRole('option').filter(option => !(option as HTMLOptionElement).disabled);
   expect(enabled.map(option => (option as HTMLOptionElement).value)).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer']);
-  expect(within(header).getAllByRole('combobox')).toHaveLength(1);
+  expect(within(header).getAllByRole('combobox')).toHaveLength(2);
+  const variantSelect = within(header).getByRole('combobox', { name: 'バリアント' });
+  expect(variantSelect).toHaveValue('general');
   expect(within(header).getByLabelText('バックエンド状態')).toHaveTextContent('GPU delegate 指定・初期化済み（GPU実動作は未計測）');
   await user.selectOptions(model, 'yolo-seg');
-  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'yolo-seg' }));
+  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'yolo-seg', variantId: 'yolov8n-seg' }));
   expect(model).toHaveValue('yolo-seg');
+  expect(variantSelect).toHaveValue('yolov8n-seg');
   await user.selectOptions(model, 'segformer');
-  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'segformer' }));
+  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'segformer', variantId: 'b0' }));
   expect(model).toHaveValue('segformer');
+  expect(variantSelect).toHaveValue('b0');
   await user.selectOptions(model, 'mediapipe');
-  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mediapipe' }));
+  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mediapipe', variantId: 'lite0' }));
   await user.click(within(header).getByRole('button', { name: '仕様' }));
   const dialog = screen.getByRole('dialog');
-  for (const name of [/Selfie Segmenter/, /EfficientDet/, /YOLO-seg/, /SegFormer/]) {
+  for (const name of [/General/, /EfficientDet-Lite0/, /YOLOv8n-seg/, /SegFormer-B0/]) {
     const button = within(dialog).getByRole('button', { name });
     expect(button).not.toBeDisabled();
   }
   expect(within(dialog).queryByText('稼働中')).not.toBeInTheDocument();
-  await user.click(within(dialog).getByRole('button', { name: 'Selfie Segmenter' }));
+  await user.click(within(dialog).getByRole('button', { name: /General/ }));
   expect(model).toHaveValue('selfie-segmenter');
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(screen.queryByText('現在しきい値を超える物体はありません')).not.toBeInTheDocument();
@@ -123,7 +127,7 @@ it('does not let delayed A overwrite B in the real application UI', async () => 
   const ready = f.engine.getState();
   await act(async () => { a.resolve(f.segmenter); });
   expect(f.engine.getState()).toBe(ready);
-  expect(screen.getByRole('combobox')).toHaveValue('mediapipe');
+  expect(screen.getByRole('combobox', { name: 'モデル' })).toHaveValue('mediapipe');
   expect(f.segmenter.close).toHaveBeenCalledTimes(1);
   expect(f.detector.close).not.toHaveBeenCalled();
 });

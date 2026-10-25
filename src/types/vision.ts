@@ -2,6 +2,23 @@ export type ModelType = 'selfie-segmenter' | 'yolo-seg' | 'mediapipe' | 'segform
 
 export type RunnableModelType = 'selfie-segmenter' | 'mediapipe' | 'yolo-seg' | 'segformer';
 
+export type SelfieVariantId = 'general' | 'landscape';
+export type MediapipeVariantId = 'lite0' | 'lite2';
+export type YoloSegVariantId = 'yolov8n-seg' | 'yolov8s-seg';
+export type SegFormerVariantId = 'b0' | 'b1' | 'b2';
+
+export type ModelVariantId = SelfieVariantId | MediapipeVariantId | YoloSegVariantId | SegFormerVariantId;
+
+export interface ModelVariantMetadata {
+  id: string;
+  name: string;
+  description: string;
+  fileName: string;
+  upstreamUrl: string;
+  localUrl: string;
+  isDefault?: boolean;
+}
+
 // An immutable browser video frame is preferred when the platform supports it.
 export type InferenceInput = HTMLVideoElement | VideoFrame | HTMLCanvasElement;
 
@@ -59,13 +76,15 @@ export interface ModelMetadata {
   licenseNote?: string;
   upstreamUrl?: string;
   localCachePath?: string;
+  defaultVariantId: string;
+  variants: ModelVariantMetadata[];
 }
 
 export type ModelState =
-  | { status: 'idle'; model: null; requestId: number }
-  | { status: 'loading'; model: RunnableModelType; requestId: number }
-  | { status: 'ready'; model: RunnableModelType; requestId: number; delegate?: 'GPU'; backend?: OnnxBackendInfo }
-  | { status: 'error'; model: RunnableModelType; requestId: number; stage: 'wasm' | 'task'; cause: unknown };
+  | { status: 'idle'; model: null; variantId?: string; requestId: number }
+  | { status: 'loading'; model: RunnableModelType; variantId?: string; requestId: number }
+  | { status: 'ready'; model: RunnableModelType; variantId?: string; requestId: number; delegate?: 'GPU'; backend?: OnnxBackendInfo }
+  | { status: 'error'; model: RunnableModelType; variantId?: string; requestId: number; stage: 'wasm' | 'task'; cause: unknown };
 
 export interface DetectionFrame {
   model: RunnableModelType;

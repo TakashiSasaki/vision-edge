@@ -80,42 +80,164 @@ export const WASM_ASSET_CATALOG: Record<'mediapipe' | 'ort', WasmAssetCatalogEnt
   },
 };
 
-export const MODEL_ASSET_CATALOG: Record<RunnableModelType, ModelAssetCatalogEntry> = {
-  'selfie-segmenter': {
-    id: 'selfie-segmenter',
+export interface ModelVariantCatalogEntry {
+  modelId: RunnableModelType;
+  variantId: string;
+  file: string;
+  upstreamUrl: string;
+  localUrl: string;
+  license: string;
+  licenseNote: string;
+  isDefault?: boolean;
+}
+
+export const MODEL_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = {
+  'selfie-segmenter:general': {
+    modelId: 'selfie-segmenter',
+    variantId: 'general',
     file: 'selfie_segmenter.tflite',
     upstreamUrl:
       'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite',
     localUrl: '/api/model-cache/models/selfie_segmenter.tflite',
     license: 'Apache-2.0',
     licenseNote: 'Google MediaPipe / Apache License 2.0（コンテナキャッシュ・再配布可）',
+    isDefault: true,
   },
-  mediapipe: {
-    id: 'mediapipe',
+  'selfie-segmenter:landscape': {
+    modelId: 'selfie-segmenter',
+    variantId: 'landscape',
+    file: 'selfie_segmenter_landscape.tflite',
+    upstreamUrl:
+      'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite',
+    localUrl: '/api/model-cache/models/selfie_segmenter_landscape.tflite',
+    license: 'Apache-2.0',
+    licenseNote: 'Google MediaPipe / Apache License 2.0（コンテナキャッシュ・再配布可）',
+  },
+  'mediapipe:lite0': {
+    modelId: 'mediapipe',
+    variantId: 'lite0',
     file: 'efficientdet_lite0.tflite',
     upstreamUrl:
       'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite',
     localUrl: '/api/model-cache/models/efficientdet_lite0.tflite',
     license: 'Apache-2.0',
     licenseNote: 'Google MediaPipe / Apache License 2.0（コンテナキャッシュ・再配布可）',
+    isDefault: true,
   },
-  'yolo-seg': {
-    id: 'yolo-seg',
+  'mediapipe:lite2': {
+    modelId: 'mediapipe',
+    variantId: 'lite2',
+    file: 'efficientdet_lite2.tflite',
+    upstreamUrl:
+      'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/float16/1/efficientdet_lite2.tflite',
+    localUrl: '/api/model-cache/models/efficientdet_lite2.tflite',
+    license: 'Apache-2.0',
+    licenseNote: 'Google MediaPipe / Apache License 2.0（コンテナキャッシュ・再配布可）',
+  },
+  'yolo-seg:yolov8n-seg': {
+    modelId: 'yolo-seg',
+    variantId: 'yolov8n-seg',
     file: 'yolov8n-seg.onnx',
     upstreamUrl:
       'https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/yolov8n-seg.onnx',
     localUrl: '/api/model-cache/models/yolov8n-seg.onnx',
     license: 'AGPL-3.0',
     licenseNote: 'Ultralytics YOLOv8 / GNU AGPLv3（OSS・非商用デモ前提でキャッシュ配信）',
+    isDefault: true,
   },
-  segformer: {
-    id: 'segformer',
+  'yolo-seg:yolov8s-seg': {
+    modelId: 'yolo-seg',
+    variantId: 'yolov8s-seg',
+    file: 'yolov8s-seg.onnx',
+    upstreamUrl:
+      'https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/dynamic/yolov8s-seg.onnx',
+    localUrl: '/api/model-cache/models/yolov8s-seg.onnx',
+    license: 'AGPL-3.0',
+    licenseNote: 'Ultralytics YOLOv8 / GNU AGPLv3（OSS・非商用デモ前提でキャッシュ配信）',
+  },
+  'segformer:b0': {
+    modelId: 'segformer',
+    variantId: 'b0',
     file: 'segformer-b0-quantized.onnx',
     upstreamUrl:
       'https://huggingface.co/Xenova/segformer-b0-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx',
     localUrl: '/api/model-cache/models/segformer-b0-quantized.onnx',
     license: 'NVIDIA Source Code License (Non-Commercial)',
     licenseNote: 'NVIDIA SegFormer-B0 / 研究・非商用デモ限定ライセンス',
+    isDefault: true,
+  },
+  'segformer:b1': {
+    modelId: 'segformer',
+    variantId: 'b1',
+    file: 'segformer-b1-quantized.onnx',
+    upstreamUrl:
+      'https://huggingface.co/Xenova/segformer-b1-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx',
+    localUrl: '/api/model-cache/models/segformer-b1-quantized.onnx',
+    license: 'NVIDIA Source Code License (Non-Commercial)',
+    licenseNote: 'NVIDIA SegFormer-B1 / 研究・非商用デモ限定ライセンス',
+  },
+  'segformer:b2': {
+    modelId: 'segformer',
+    variantId: 'b2',
+    file: 'segformer-b2-quantized.onnx',
+    upstreamUrl:
+      'https://huggingface.co/Xenova/segformer-b2-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx',
+    localUrl: '/api/model-cache/models/segformer-b2-quantized.onnx',
+    license: 'NVIDIA Source Code License (Non-Commercial)',
+    licenseNote: 'NVIDIA SegFormer-B2 / 研究・非商用デモ限定ライセンス',
+  },
+};
+
+export function getVariantCatalogEntry(
+  model: RunnableModelType,
+  variantId?: string
+): ModelVariantCatalogEntry {
+  if (variantId) {
+    const key = `${model}:${variantId}`;
+    if (MODEL_VARIANT_CATALOG[key]) {
+      return MODEL_VARIANT_CATALOG[key];
+    }
+  }
+  // Fallback to default variant for model
+  const defaultEntry = Object.values(MODEL_VARIANT_CATALOG).find(
+    e => e.modelId === model && e.isDefault
+  );
+  if (defaultEntry) return defaultEntry;
+  return Object.values(MODEL_VARIANT_CATALOG).find(e => e.modelId === model)!;
+}
+
+export const MODEL_ASSET_CATALOG: Record<RunnableModelType, ModelAssetCatalogEntry> = {
+  'selfie-segmenter': {
+    id: 'selfie-segmenter',
+    file: MODEL_VARIANT_CATALOG['selfie-segmenter:general'].file,
+    upstreamUrl: MODEL_VARIANT_CATALOG['selfie-segmenter:general'].upstreamUrl,
+    localUrl: MODEL_VARIANT_CATALOG['selfie-segmenter:general'].localUrl,
+    license: MODEL_VARIANT_CATALOG['selfie-segmenter:general'].license,
+    licenseNote: MODEL_VARIANT_CATALOG['selfie-segmenter:general'].licenseNote,
+  },
+  mediapipe: {
+    id: 'mediapipe',
+    file: MODEL_VARIANT_CATALOG['mediapipe:lite0'].file,
+    upstreamUrl: MODEL_VARIANT_CATALOG['mediapipe:lite0'].upstreamUrl,
+    localUrl: MODEL_VARIANT_CATALOG['mediapipe:lite0'].localUrl,
+    license: MODEL_VARIANT_CATALOG['mediapipe:lite0'].license,
+    licenseNote: MODEL_VARIANT_CATALOG['mediapipe:lite0'].licenseNote,
+  },
+  'yolo-seg': {
+    id: 'yolo-seg',
+    file: MODEL_VARIANT_CATALOG['yolo-seg:yolov8n-seg'].file,
+    upstreamUrl: MODEL_VARIANT_CATALOG['yolo-seg:yolov8n-seg'].upstreamUrl,
+    localUrl: MODEL_VARIANT_CATALOG['yolo-seg:yolov8n-seg'].localUrl,
+    license: MODEL_VARIANT_CATALOG['yolo-seg:yolov8n-seg'].license,
+    licenseNote: MODEL_VARIANT_CATALOG['yolo-seg:yolov8n-seg'].licenseNote,
+  },
+  segformer: {
+    id: 'segformer',
+    file: MODEL_VARIANT_CATALOG['segformer:b0'].file,
+    upstreamUrl: MODEL_VARIANT_CATALOG['segformer:b0'].upstreamUrl,
+    localUrl: MODEL_VARIANT_CATALOG['segformer:b0'].localUrl,
+    license: MODEL_VARIANT_CATALOG['segformer:b0'].license,
+    licenseNote: MODEL_VARIANT_CATALOG['segformer:b0'].licenseNote,
   },
 };
 
@@ -161,7 +283,7 @@ export function setContainerModelCacheEnabledForTest(enabled: boolean | null): v
 }
 
 export function recordResolvedSource(
-  assetKey: RunnableModelType | 'wasm-mediapipe' | 'wasm-ort',
+  assetKey: RunnableModelType | 'wasm-mediapipe' | 'wasm-ort' | string,
   source: AssetDeliverySource
 ): void {
   resolvedSources[assetKey] = source;
@@ -169,7 +291,7 @@ export function recordResolvedSource(
 }
 
 export function getResolvedSource(
-  assetKey: RunnableModelType | 'wasm-mediapipe' | 'wasm-ort'
+  assetKey: RunnableModelType | 'wasm-mediapipe' | 'wasm-ort' | string
 ): AssetDeliverySource {
   if (resolvedSources[assetKey]) return resolvedSources[assetKey];
   return isContainerModelCacheEnabled() ? 'container-cache' : 'external';
@@ -266,9 +388,10 @@ export async function resolveOrtWasmUrls(): Promise<ResolvedAssetUrls> {
 }
 
 export async function resolveModelAssetUrls(
-  model: RunnableModelType
+  model: RunnableModelType,
+  variantId?: string
 ): Promise<ResolvedAssetUrls> {
-  const entry = MODEL_ASSET_CATALOG[model];
+  const entry = getVariantCatalogEntry(model, variantId);
   if (!isContainerModelCacheEnabled()) {
     return {
       primaryUrl: entry.upstreamUrl,
@@ -277,7 +400,9 @@ export async function resolveModelAssetUrls(
     };
   }
   const status = await fetchContainerCacheStatus();
-  const modelStatus = status?.models?.[model];
+  const variantKey = `${entry.modelId}:${entry.variantId}`;
+  const rawStatus = (status as unknown as { variants?: Record<string, ContainerModelStatusEntry> })?.variants?.[variantKey];
+  const modelStatus = rawStatus || status?.models?.[model];
   if (modelStatus && (modelStatus.status === 'cached' || modelStatus.status === 'downloading')) {
     return {
       primaryUrl: modelStatus.localUrl || entry.localUrl,

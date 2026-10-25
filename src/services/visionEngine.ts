@@ -1,7 +1,7 @@
 import { FilesetResolver, ObjectDetector, ImageSegmenter, type ImageSegmenterResult } from '@mediapipe/tasks-vision';
-import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput } from '../types/vision';
+import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput, YoloSegVariantId, SegFormerVariantId } from '../types/vision';
 import { PipelineProbe, type PipelineObserver, type AttemptOutcome } from './pipelineMetrics';
-import { requireRunnableModel } from './modelRegistry';
+import { requireRunnableModel, getVariantMetadata } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
 import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
@@ -13,8 +13,8 @@ export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
 export type SegmenterTask = Pick<ImageSegmenter, 'segmentForVideo' | 'close'>;
 export interface VisionTaskFactory {
   load: () => Promise<Fileset>;
-  detector: (fileset: Fileset, delegate: 'GPU') => Promise<DetectorTask>;
-  segmenter: (fileset: Fileset, delegate: 'GPU') => Promise<SegmenterTask>;
+  detector: (fileset: Fileset, delegate: 'GPU', variantId?: string) => Promise<DetectorTask>;
+  segmenter: (fileset: Fileset, delegate: 'GPU', variantId?: string) => Promise<SegmenterTask>;
   yoloSeg?: (options?: YoloSegTaskOptions) => Promise<YoloSegTask>;
   segformer?: (options?: SegFormerTaskOptions) => Promise<SegFormerTask>;
 }
@@ -35,14 +35,15 @@ const defaultFactory: VisionTaskFactory = {
       throw primaryError;
     }
   },
-  detector: async (fileset, delegate) => {
-    const asset = await resolveModelAssetUrls('mediapipe');
+  detector: async (fileset, delegate, variantId) => {
+    const asset = await resolveModelAssetUrls('mediapipe', variantId);
     try {
       const task = await ObjectDetector.createFromOptions(fileset, {
         baseOptions: { modelAssetPath: asset.primaryUrl, delegate },
         scoreThreshold: 0.25, runningMode: 'VIDEO',
       });
       recordResolvedSource('mediapipe', asset.source);
+      if (variantId) recordResolvedSource(`mediapipe:${variantId}`, asset.source);
       return task;
     } catch (primaryError) {
       if (asset.fallbackUrl) {
@@ -51,19 +52,21 @@ const defaultFactory: VisionTaskFactory = {
           scoreThreshold: 0.25, runningMode: 'VIDEO',
         });
         recordResolvedSource('mediapipe', 'external-fallback');
+        if (variantId) recordResolvedSource(`mediapipe:${variantId}`, 'external-fallback');
         return task;
       }
       throw primaryError;
     }
   },
-  segmenter: async (fileset, delegate) => {
-    const asset = await resolveModelAssetUrls('selfie-segmenter');
+  segmenter: async (fileset, delegate, variantId) => {
+    const asset = await resolveModelAssetUrls('selfie-segmenter', variantId);
     try {
       const task = await ImageSegmenter.createFromOptions(fileset, {
         baseOptions: { modelAssetPath: asset.primaryUrl, delegate },
         runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
       });
       recordResolvedSource('selfie-segmenter', asset.source);
+      if (variantId) recordResolvedSource(`selfie-segmenter:${variantId}`, asset.source);
       return task;
     } catch (primaryError) {
       if (asset.fallbackUrl) {
@@ -72,6 +75,7 @@ const defaultFactory: VisionTaskFactory = {
           runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
         });
         recordResolvedSource('selfie-segmenter', 'external-fallback');
+        if (variantId) recordResolvedSource(`selfie-segmenter:${variantId}`, 'external-fallback');
         return task;
       }
       throw primaryError;
@@ -81,10 +85,10 @@ const defaultFactory: VisionTaskFactory = {
   segformer: (options) => createSegFormerTask(options),
 };
 type ActiveTask =
-  | { model: 'mediapipe'; task: DetectorTask }
-  | { model: 'selfie-segmenter'; task: SegmenterTask }
-  | { model: 'yolo-seg'; task: YoloSegTask }
-  | { model: 'segformer'; task: SegFormerTask };
+  | { model: 'mediapipe'; variantId: string; task: DetectorTask }
+  | { model: 'selfie-segmenter'; variantId: string; task: SegmenterTask }
+  | { model: 'yolo-seg'; variantId: string; task: YoloSegTask }
+  | { model: 'segformer'; variantId: string; task: SegFormerTask };
 type InitializationResult = Extract<ModelState, { status: 'ready' | 'error' }> | { status: 'cancelled'; model: RunnableModelType; requestId: number };
 
 // One owner, one active task, no task cache. Pending tasks cannot be aborted by
@@ -132,9 +136,10 @@ export class VisionEngine {
     catch (cause) { console.warn('Vision task cleanup failed', { model: active.model, cause }); }
   }
 
-  initialize(model: RunnableModelType): Promise<InitializationResult> {
+  initialize(model: RunnableModelType, variantId?: string): Promise<InitializationResult> {
     requireRunnableModel(model);
-    if (this.state.model === model) {
+    const targetVariantId = variantId || getVariantMetadata(model, variantId).id;
+    if (this.state.model === model && this.state.variantId === targetVariantId) {
       if (this.state.status === 'loading' && this.pending) return this.pending;
       if (this.state.status === 'ready') return Promise.resolve(this.state);
     }
@@ -151,7 +156,7 @@ export class VisionEngine {
     let reject!: (cause: unknown) => void;
     const pending = new Promise<InitializationResult>((yes, no) => { resolve = yes; reject = no; });
     this.pending = pending;
-    this.publish({ status: 'loading', model, requestId });
+    this.publish({ status: 'loading', model, variantId: targetVariantId, requestId });
     void (async (): Promise<InitializationResult> => {
       let stage: 'wasm' | 'task' = 'wasm';
       try {
@@ -160,33 +165,33 @@ export class VisionEngine {
         if (model === 'yolo-seg') {
           stage = 'task';
           const yoloCreator = this.factory.yoloSeg ?? createYoloSegTask;
-          const task = await yoloCreator();
+          const task = await yoloCreator({ variantId: targetVariantId as YoloSegVariantId });
           if (!task) throw new Error('Model task was not created');
-          active = { model, task };
+          active = { model, variantId: targetVariantId, task };
         } else if (model === 'segformer') {
           stage = 'task';
           const segformerCreator = this.factory.segformer ?? createSegFormerTask;
-          const task = await segformerCreator();
+          const task = await segformerCreator({ variantId: targetVariantId as SegFormerVariantId });
           if (!task) throw new Error('Model task was not created');
-          active = { model, task };
+          active = { model, variantId: targetVariantId, task };
         } else {
           const fileset = await this.factory.load();
           if (!current()) return cancelled();
           stage = 'task';
           active = model === 'mediapipe'
-            ? { model, task: await this.factory.detector(fileset, DELEGATE) }
-            : { model, task: await this.factory.segmenter(fileset, DELEGATE) };
+            ? { model, variantId: targetVariantId, task: await this.factory.detector(fileset, DELEGATE, targetVariantId) }
+            : { model, variantId: targetVariantId, task: await this.factory.segmenter(fileset, DELEGATE, targetVariantId) };
           if (!active.task) throw new Error('Model task was not created');
         }
         if (!current()) { this.closeTask(active); return cancelled(); }
         this.activeTask = active;
-        const ready = { status: 'ready' as const, model, requestId, ...(active.model==='yolo-seg'||active.model==='segformer'?{backend:active.task.backend??unknownOnnxBackend()}:{delegate:DELEGATE}) };
+        const ready = { status: 'ready' as const, model, variantId: targetVariantId, requestId, ...(active.model==='yolo-seg'||active.model==='segformer'?{backend:active.task.backend??unknownOnnxBackend()}:{delegate:DELEGATE}) };
         this.publish(ready);
         return ready;
       } catch (cause) {
         if (!current()) return cancelled();
-        const error = { status: 'error' as const, model, requestId, stage, cause };
-        console.warn('Vision initialization failed', { model, stage, cause });
+        const error = { status: 'error' as const, model, variantId: targetVariantId, requestId, stage, cause };
+        console.warn('Vision initialization failed', { model, variantId: targetVariantId, stage, cause });
         this.publish(error);
         return error;
       } finally {

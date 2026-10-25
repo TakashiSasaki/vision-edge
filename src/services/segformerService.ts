@@ -1,10 +1,11 @@
 import * as ort from 'onnxruntime-web';
-import type { BoundingBox, DetectedObject, InferenceInput, OnnxBackendInfo } from '../types/vision';
+import type { BoundingBox, DetectedObject, InferenceInput, OnnxBackendInfo, SegFormerVariantId } from '../types/vision';
 import { ADE20K_CLASSES, getADE20KInfo } from './ade20kDictionary';
 import { OnnxSessionOwner, OnnxInferenceError, createOrtSession, disposeTensors, unknownOnnxBackend } from './onnxSession';
 import { resolveModelAssetUrls } from './modelAssetResolver';
 export interface SegFormerTaskOptions {
     modelUrl?: string;
+    variantId?: SegFormerVariantId;
     delegate?: 'GPU' | 'WebGPU' | 'WASM';
 }
 export interface SemanticPixel {
@@ -159,7 +160,7 @@ export async function createSegFormerTask(options: SegFormerTaskOptions = {}): P
         });
         return new SegFormerEngine(session, backend);
     }
-    const resolved = await resolveModelAssetUrls('segformer');
+    const resolved = await resolveModelAssetUrls('segformer', options.variantId);
     const { session, backend } = await createOrtSession(
         resolved.primaryUrl || DEFAULT_SEGFORMER_URL,
         options.delegate,

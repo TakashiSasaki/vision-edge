@@ -130,7 +130,7 @@ it('shares the in-progress Promise and creates only the selected task; ready rea
   expect(f.detect).not.toHaveBeenCalled();
   task.resolve(f.detector);
   expect((await first).status).toBe('ready');
-  expect(f.factory.detector).toHaveBeenCalledWith(expect.anything(), 'GPU');
+  expect(f.factory.detector).toHaveBeenCalledWith(expect.anything(), 'GPU', expect.anything());
   expect(f.factory.detector).toHaveBeenCalledTimes(1);
   expect(f.factory.segmenter).not.toHaveBeenCalled();
   const frame = f.engine.detectVideoFrame(video(), 'mediapipe', 0.3);
@@ -150,7 +150,7 @@ it('reaches the real segmenter path only after ready and closes its inference re
   expect(f.segment).not.toHaveBeenCalled();
   await f.engine.initialize('selfie-segmenter');
   expect(f.factory.detector).not.toHaveBeenCalled();
-  expect(f.factory.segmenter).toHaveBeenCalledWith(expect.anything(), 'GPU');
+  expect(f.factory.segmenter).toHaveBeenCalledWith(expect.anything(), 'GPU', expect.anything());
   expect(f.engine.detectVideoFrame(video(), 'selfie-segmenter', 0.3)).toMatchObject({ status: 'ready', objects: [] });
   expect(f.segment).toHaveBeenCalledTimes(1);
   expect(f.result.close).toHaveBeenCalledTimes(1);

@@ -6,7 +6,8 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   activeModel: RunnableModelType;
-  onSelectModel: (model: RunnableModelType) => void;
+  activeVariant: string;
+  onSelectModelAndVariant: (model: RunnableModelType, variantId: string) => void;
 }
 
 function sourceDescription(modelId: RunnableModelType): string {
@@ -16,31 +17,72 @@ function sourceDescription(modelId: RunnableModelType): string {
   return '外部配布元URL直接取得（コンテナキャッシュ有効時はローカル配信）';
 }
 
-export function ModelComparisonTable({ isOpen, onClose, activeModel, onSelectModel }: Props) {
+export function ModelComparisonTable({
+  isOpen,
+  onClose,
+  activeModel,
+  activeVariant,
+  onSelectModelAndVariant
+}: Props) {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80">
       <section role="dialog" aria-modal="true" aria-labelledby="model-specs-title" className="bg-slate-900 border border-slate-700 rounded-xl p-4 max-w-2xl max-h-[85vh] overflow-y-auto space-y-3">
-        <h2 id="model-specs-title" className="text-white font-semibold">物体認識・セグメンテーションモデル仕様</h2>
+        <h2 id="model-specs-title" className="text-white font-semibold">物体認識・セグメンテーションモデル仕様・バリアント</h2>
         {MODEL_REGISTRY.map(model => (
-          <div key={model.id} className="border border-slate-700 rounded-lg p-3 text-xs space-y-1">
-            <button type="button" disabled={!model.implemented} aria-pressed={activeModel === model.id}
-              onClick={() => { if (isRunnableModel(model.id)) { onSelectModel(model.id); onClose(); } }}
-              className="font-semibold text-white disabled:text-slate-500 disabled:cursor-not-allowed">
-              {model.name}{model.implemented ? '' : '（未実装・選択不可）'}
-            </button>
-            {activeModel === model.id && <span className="ml-2 text-blue-400">選択中</span>}
-            <p>{model.runtime} · {model.outputType}</p>
-            <p>{model.description}</p>
+          <div key={model.id} className="border border-slate-700 rounded-lg p-3 text-xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="font-semibold text-white">
+                {model.name}{model.implemented ? '' : '（未実装・選択不可）'}
+              </div>
+              {activeModel === model.id && <span className="text-blue-400 font-medium">現在使用中</span>}
+            </div>
+            <p className="text-slate-300">{model.runtime} · {model.outputType}</p>
+            <p className="text-slate-400">{model.description}</p>
+
+            {/* Variant List */}
+            <div className="space-y-1.5 pt-1">
+              <div className="text-[11px] font-semibold text-slate-300">利用可能なモデルサイズ・構造バリアント:</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {model.variants.map(variant => {
+                  const isSelected = activeModel === model.id && activeVariant === variant.id;
+                  return (
+                    <button
+                      key={variant.id}
+                      type="button"
+                      disabled={!model.implemented}
+                      onClick={() => {
+                        if (isRunnableModel(model.id)) {
+                          onSelectModelAndVariant(model.id, variant.id);
+                          onClose();
+                        }
+                      }}
+                      className={`p-2 rounded border text-left transition-all ${
+                        isSelected
+                          ? 'bg-blue-950/70 border-blue-500 text-white font-medium shadow-sm'
+                          : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-xs">{variant.name}</span>
+                        {isSelected && <span className="text-[10px] text-blue-400 font-bold">選択中</span>}
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">{variant.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {model.license && (
-              <p className="text-slate-400">
+              <p className="text-slate-400 text-[10px] pt-1">
                 ライセンス: {model.licenseNote ?? model.license} ／ 供給経路: {sourceDescription(model.id)}
               </p>
             )}
           </div>
         ))}
-        <p className="text-xs text-slate-400">MediaPipeはGPU delegateを指定します。ONNXはWebGPU優先で、利用不能時はWASMを設定します。設定とフォールバック理由はヘッダーに表示し、実際の実行バックエンド・速度は未計測です。</p>
-        <button type="button" onClick={onClose} className="px-3 py-1 bg-slate-800 rounded">閉じる</button>
+        <p className="text-xs text-slate-400">MediaPipeはGPU delegateを指定します。ONNXはWebGPU優先で、利用不能時はWASMを設定します。全モデル・バリアントはサーバー起動時にコンテナ内へ一括プリフェッチされます。</p>
+        <button type="button" onClick={onClose} className="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-200">閉じる</button>
       </section>
     </div>
   );

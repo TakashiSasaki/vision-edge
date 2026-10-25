@@ -1,11 +1,13 @@
 import React from 'react';
 import { Camera, CameraOff, Volume2, VolumeX, Sparkles, Layers, Cpu } from 'lucide-react';
 import type { ModelState, RunnableModelType } from '../types/vision';
-import { MODEL_REGISTRY, isRunnableModel, backendDescription } from '../services/modelRegistry';
+import { MODEL_REGISTRY, isRunnableModel, modelMetadata, backendDescription } from '../services/modelRegistry';
 
 interface HeaderProps {
   activeModel: RunnableModelType;
   onSelectModel: (model: RunnableModelType) => void;
+  activeVariant: string;
+  onSelectVariant: (variantId: string) => void;
   modelState: ModelState;
   isCameraActive: boolean;
   onToggleCamera: () => void;
@@ -18,6 +20,8 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   activeModel,
   onSelectModel,
+  activeVariant,
+  onSelectVariant,
   modelState,
   isCameraActive,
   onToggleCamera,
@@ -26,6 +30,8 @@ export const Header: React.FC<HeaderProps> = ({
   isSpeaking,
   onOpenComparison
 }) => {
+  const currentMeta = modelMetadata(activeModel);
+
   return (
     <header className="h-12 border-b border-slate-800 bg-[#0c111e] px-3 sm:px-5 flex items-center justify-between gap-2 shrink-0 select-none z-30">
       {/* Zone 1: Brand Wordmark */}
@@ -38,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
         </span>
       </div>
 
-      {/* Zone 2: Compact Selectors (Model & Backend) */}
+      {/* Zone 2: Compact Selectors (Model, Variant & Backend) */}
       <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Model Selector Pulldown */}
         <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs">
@@ -59,8 +65,27 @@ export const Header: React.FC<HeaderProps> = ({
           </select>
         </div>
 
+        {/* Variant Selector Pulldown */}
+        <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs">
+          <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap hidden sm:inline">
+            バリアント:
+          </span>
+          <select
+            value={activeVariant}
+            aria-label="バリアント"
+            onChange={(e) => onSelectVariant(e.target.value)}
+            className="bg-transparent text-xs font-semibold text-blue-300 focus:outline-none cursor-pointer"
+          >
+            {currentMeta.variants.map(variant => (
+              <option key={variant.id} value={variant.id} className="bg-slate-900 text-white">
+                {variant.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Acceleration Backend Selector Pulldown */}
-        <div className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs">
+        <div className="hidden lg:flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-md px-2 py-1 text-xs">
           <Cpu className="w-3 h-3 text-blue-400 shrink-0" />
           <span aria-label="バックエンド状態">{backendDescription(modelState)}</span>
         </div>

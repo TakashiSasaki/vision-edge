@@ -98,7 +98,7 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     });
 
     const snapshot = await manager.prefetchAllModels();
-    expect(mockFetch).toHaveBeenCalledTimes(4);
+    expect(mockFetch).toHaveBeenCalledTimes(9);
     for (const id of ['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer'] as const) {
       expect(snapshot[id].status).toBe('cached');
       expect(snapshot[id].size).toBe(2048);

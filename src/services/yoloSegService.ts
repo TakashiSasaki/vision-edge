@@ -1,5 +1,5 @@
 import * as ort from 'onnxruntime-web';
-import type { DetectedObject, InferenceInput, OnnxBackendInfo } from '../types/vision';
+import type { DetectedObject, InferenceInput, OnnxBackendInfo, YoloSegVariantId } from '../types/vision';
 import { OnnxSessionOwner, OnnxInferenceError, createOrtSession, disposeTensors, unknownOnnxBackend } from './onnxSession';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 import { resolveModelAssetUrls } from './modelAssetResolver';
@@ -23,6 +23,7 @@ export interface YoloSegTask {
 
 export interface YoloSegTaskOptions {
   modelUrl?: string;
+  variantId?: YoloSegVariantId;
   delegate?: 'GPU' | 'WebGPU' | 'WASM';
 }
 
@@ -338,7 +339,7 @@ export async function createYoloSegTask(options: YoloSegTaskOptions = {}): Promi
     });
     return new YoloSegEngine(session, backend);
   }
-  const resolved = await resolveModelAssetUrls('yolo-seg');
+  const resolved = await resolveModelAssetUrls('yolo-seg', options.variantId);
   const { session, backend } = await createOrtSession(
     resolved.primaryUrl || DEFAULT_YOLO_SEG_URL,
     options.delegate,
