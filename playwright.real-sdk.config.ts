@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'node:path';
-const output = process.env.REAL_SDK_RUN_DIR ?? '.cache/real-sdk-runs/manual';
+import { requestedDelegate, delegatePaths } from './scripts/real-sdk/delegate.mjs';
+const paths=delegatePaths(requestedDelegate());
+const output = process.env.REAL_SDK_RUN_DIR ?? `${paths.runs}/manual`;
 export default defineConfig({
   testDir: './e2e-real-sdk',
   outputDir: path.join(output, 'browser'),
@@ -13,14 +15,14 @@ export default defineConfig({
   reporter: [['list'], ['json', { outputFile: path.join(output, 'playwright.json') }]],
   use: {
     ...devices['Desktop Chrome'],
-    baseURL: 'http://127.0.0.1:4175',
+    baseURL: paths.origin,
     serviceWorkers: 'block',
     launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH },
     trace: 'retain-on-failure', screenshot: 'only-on-failure',
   },
   webServer: {
-    command: 'node scripts/real-sdk/build-native-probe.mjs && npm run build -- --config vite.real-sdk.config.ts && npm run preview -- --outDir .cache/vision-edge-real-sdk --host 127.0.0.1 --port 4175 --strictPort',
-    url: 'http://127.0.0.1:4175', timeout: 45_000, reuseExistingServer: false,
+    command: `node scripts/real-sdk/build-native-probe.mjs && npm run build -- --config vite.real-sdk.config.ts && npm run preview -- --outDir ${paths.build} --host 127.0.0.1 --port ${paths.port} --strictPort`,
+    url: paths.origin, timeout: 45_000, reuseExistingServer: false,
     gracefulShutdown: { signal: 'SIGTERM', timeout: 5000 },
   },
 });

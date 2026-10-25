@@ -2,6 +2,8 @@ import { expect, type BrowserContext, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { manifest, assetPath, verifyAsset } from '../scripts/real-sdk/assets.mjs';
 import type { probe } from './observer';
+import { delegatePaths, requestedDelegate } from '../scripts/real-sdk/delegate.mjs';
+const delegate=requestedDelegate();const paths=delegatePaths(delegate);
 export type InputMode = 'VideoFrame' | 'Canvas' | 'HTMLVideoElement';
 type Camera = { scene: string; revision: number; renderedScene: string; frames: number; requests: number; framesCreated: number; framesClosed: number; doubleCloses: number; liveTracks: () => number; dispose: () => void };
 declare global { interface Window { __realCamera: Camera; __realSdkProbe: typeof probe } }
@@ -9,7 +11,7 @@ export async function routeAssets(context: BrowserContext, failModel = false) {
   const requests: Array<{ url: string; status: string }> = [];
   await context.route('**/*', async route => {
     const url = route.request().url();
-    const asset = manifest.assets.find(asset => asset.url === url || url === `http://127.0.0.1:4175/fixtures/${asset.file}`);
+    const asset = manifest.assets.find(asset => asset.url === url || url === `${paths.origin}/fixtures/${asset.file}`);
     if (asset) {
       if (failModel && asset.file.endsWith('.tflite')) {
         requests.push({ url, status: 'controlled HTTP503' });
@@ -20,7 +22,7 @@ export async function routeAssets(context: BrowserContext, failModel = false) {
       requests.push({ url, status: 'verified local bytes' });
       await route.fulfill({ body: await readFile(assetPath(asset)), contentType: asset.file.endsWith('.wasm') ? 'application/wasm' : asset.file.endsWith('.js') ? 'application/javascript' : asset.file.endsWith('.png') ? 'image/png' : 'application/octet-stream', headers: { 'Access-Control-Allow-Origin': '*' } }); return;
     }
-    if (new URL(url).origin === 'http://127.0.0.1:4175') await route.continue();
+    if (new URL(url).origin === paths.origin) await route.continue();
     else { requests.push({ url, status: 'external network blocked' }); await route.abort('blockedbyclient'); }
   });
   return requests;
@@ -85,7 +87,7 @@ export async function runtimeEvidence(page: Page) {
       videoFrame: typeof VideoFrame, resolution: [512, 512], nativeQuality: document.querySelector('video')?.getVideoPlaybackQuality?.()?.totalVideoFrames };
     gl?.getExtension('WEBGL_lose_context')?.loseContext(); return runtime;
   });
-  return { ...evidence, browserVersion: page.context().browser()?.version() ?? 'unknown (disconnected browser)' };
+  return { ...evidence, requestedDelegate:delegate, sdkExecutionBackend:'unverified; SDK backend not introspected', browserVersion: page.context().browser()?.version() ?? 'unknown (disconnected browser)' };
 }
 export async function ready(page: Page) { await expect(page.getByRole('status')).toContainText('モデル準備完了', { timeout: 30_000 }); }
 export async function release(page: Page) {

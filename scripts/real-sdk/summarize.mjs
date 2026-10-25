@@ -8,6 +8,7 @@ const summary = values => {
   return { count: n, mean, median: sorted[Math.floor((n - 1) / 2)] / 2 + sorted[Math.floor(n / 2)] / 2, p95: sorted[Math.ceil(n * 0.95) - 1], max: sorted[n - 1], populationVariance: values.reduce((s, v) => s + (v - mean) ** 2, 0) / n };
 };
 export async function summarizeRun(run) {
+  let requestedDelegate=null;try{requestedDelegate=JSON.parse(await readFile(path.join(run,'environment.json'),'utf8')).requestedDelegate??null;}catch{/* Legacy/checker evidence has no declared mode; never invent one. */}
   const files = [];
   async function walk(dir) {
     for (const entry of await readdir(dir, { withFileTypes: true }).catch(() => [])) {
@@ -24,6 +25,8 @@ export async function summarizeRun(run) {
     const raw = Array.isArray(probe?.raw) ? probe.raw : [];
     const valid = raw.filter(row => Number.isSafeInteger(row.id) && row.id > 0 && ['mediapipe', 'selfie-segmenter'].includes(row.model));
     const errors = [];
+    const observedCreateDelegates=[...new Set((probe?.creates??[]).map(row=>row.delegate))];
+    if(requestedDelegate&&observedCreateDelegates.some(value=>value!==requestedDelegate))errors.push('observed SDK delegate differs from requested delegate');
     if (!probe || !Array.isArray(probe.raw)) errors.push('missing SDK observations');
     if (valid.length !== raw.length || new Set(valid.map(row => row.id)).size !== valid.length) errors.push('invalid or duplicate SDK call records');
     const count = value => Number.isSafeInteger(value) && value >= 0 ? value : null;
@@ -32,6 +35,19 @@ export async function summarizeRun(run) {
     const dropped = count(probe?.rawDropped);
     const successes = valid.filter(row => row.sdkSucceeded === true);
     const failed = valid.filter(row => row.sdkSucceeded === false);
+    // A shared lifetime counter cannot identify a model/delegate by itself.
+    // Retain generic observations, but require a matching creation for every
+    // retained call model before treating this file as declared-mode evidence.
+    const callModels=[...new Set(valid.map(row=>row.model))];
+    const modelDelegateChecks=requestedDelegate===null?[]:callModels.map(model=>({model,requestedDelegate,
+      observedDelegates:[...new Set((probe?.creates??[]).filter(row=>row.model===model).map(row=>row.delegate))],
+      matchingCreation:(probe?.creates??[]).some(row=>row.model===model&&row.delegate===requestedDelegate&&!row.error),
+    }));
+    if(requestedDelegate!==null) {
+      if(!['CPU','GPU'].includes(requestedDelegate))errors.push('invalid requested delegate');
+      if((attempts??0)>0&&!callModels.length)errors.push('missing retained model observations for requested delegate');
+      for(const check of modelDelegateChecks)if(!check.matchingCreation)errors.push(`missing matching ${requestedDelegate} creation observation for ${check.model}`);
+    }
     if (attempts !== null && dropped !== null && attempts !== valid.length + dropped) errors.push('attempt/retention counters do not match SDK records');
     if (sdkSuccesses !== null && dropped !== null && sdkSuccesses > successes.length + dropped) errors.push('success counter exceeds observed/evicted SDK records');
     if (attempts !== null && attempts < valid.length) errors.push('attempt counter smaller than retained records');
@@ -41,13 +57,14 @@ export async function summarizeRun(run) {
     const adopted = new Set(observations.adoptions.filter(row => ready.some(result => result.id === row.id)).map(row => row.id));
     const rendered = new Set(observations.draws.filter(row => adopted.has(row.id) && row.width > 0 && row.height > 0 && Number.isFinite(row.alphaPixels) && row.alphaPixels >= 0).map(row => row.id));
     const eligible = errors.length === 0;
-    execution.push({ file: path.relative(run, file), evidenceErrors: errors,
+    execution.push({ file: path.relative(run, file), requestedDelegate, observedCreateDelegates, executionBackend:'unverified; createFromOptions argument only', evidenceErrors: errors,
+      modeEvidence:{status:requestedDelegate===null?'not-declared':!eligible?'unverified':callModels.length?'verified-for-retained-models':'no-inference-call-models',modelDelegateChecks,eligibleRetainedAttempts:requestedDelegate===null?null:eligible?valid.length:0,eligibleRetainedSuccesses:requestedDelegate===null?null:eligible?successes.length:0,scope:'retained model/delegate observations only; evicted counters have no model binding; creation records do not bind request generations'},
       attempts: attempts ?? valid.length, retainedAttempts: valid.length,
       successfulSdkCalls: sdkSuccesses ?? successes.length, retainedSuccessfulSdkCalls: successes.length,
       failedSdkCallsRetained: failed.length, unknownSdkOutcomesRetained: valid.length - successes.length - failed.length,
       readyProcessedResultsRetained: ready.length, adoptedResultsRetained: adopted.size, renderedResultsRetained: rendered.size,
-      inferenceAttempted: eligible && ((attempts ?? valid.length) > 0),
-      inferenceExecuted: eligible && ((sdkSuccesses ?? successes.length) > 0),
+      inferenceAttempted: eligible && ((requestedDelegate===null ? attempts ?? valid.length : valid.length) > 0),
+      inferenceExecuted: eligible && ((requestedDelegate===null ? sdkSuccesses ?? successes.length : successes.length) > 0),
       resultAdopted: eligible && adopted.size > 0, resultRendered: eligible && rendered.size > 0,
       coverage: (probe?.rawDropped ?? 0) > 0 ? 'partial retained records; lifetime attempt/success counters where available' : 'retained observations; unknown outcomes are not successes',
       initialization: probe?.creates ?? [],
@@ -67,7 +84,7 @@ export async function summarizeRun(run) {
       });
     }
   }
-  const output = { units: 'milliseconds JavaScript wall time; observation overhead present in product metrics, original-call-only raw.ms excludes later observation',
+  const output = { requestedDelegate, units: 'milliseconds JavaScript wall time; observation overhead present in product metrics, original-call-only raw.ms excludes later observation',
     inferenceAttempted: execution.some(row => row.inferenceAttempted), inferenceExecuted: execution.some(row => row.inferenceExecuted),
     resultAdopted: execution.some(row => row.resultAdopted), resultRendered: execution.some(row => row.resultRendered), execution, populations,
     limits: 'inferenceExecuted means an observed successful SDK return, not a semantic/model acceptance verdict. Attempts, processing, adoption and rendering are separate. No physical timing/utilization guarantee; overlapping stages must not be summed.' };

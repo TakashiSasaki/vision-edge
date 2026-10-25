@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import { manifest, verifyAsset } from '../scripts/real-sdk/assets.mjs';
 import { installCamera, routeAssets, ready, release, runtimeEvidence, type InputMode } from './fixtures';
+import { requestedDelegate } from '../scripts/real-sdk/delegate.mjs';
+const delegate=requestedDelegate();
 
 for (const model of ['mediapipe', 'selfie-segmenter'] as const) {
   for (const input of ['VideoFrame', 'Canvas', 'HTMLVideoElement'] as const satisfies readonly InputMode[]) {
@@ -93,7 +95,7 @@ for (const model of ['mediapipe', 'selfie-segmenter'] as const) {
         const evidence = await page.evaluate(() => ({ probe: window.__realSdkProbe, camera: { ...window.__realCamera, liveTracks: window.__realCamera.liveTracks() } }));
         await writeFile(testInfo.outputPath('evidence.json'), JSON.stringify({ runtime: await runtimeEvidence(page), requests, evidence, errors }, null, 2));
         expect(evidence.camera.liveTracks).toBe(0); expect(evidence.camera.doubleCloses).toBe(0);
-        expect(evidence.probe.creates.every(c => c.delegate === 'GPU')).toBe(true);
+        expect(evidence.probe.creates.every(c => c.delegate === delegate)).toBe(true);
         expect(evidence.probe.closes).toBe(evidence.probe.creates.filter(c => !c.error).length);
       }
     });
@@ -113,6 +115,9 @@ for (const model of ['mediapipe', 'selfie-segmenter'] as const) {
       const modelAsset = manifest.assets.find(asset => asset.file === (model === 'mediapipe' ? 'efficientdet_lite0.tflite' : 'selfie_segmenter.tflite'))!;
       expect(await page.evaluate(model => window.__realSdkProbe.creates.find(c => c.model === model && c.error)?.error, model)).toBe(`Error: Failed to fetch model: ${modelAsset.url} (503)`);
       expect(await page.evaluate(() => window.__realSdkProbe.calls)).toBe(0);
+      const creates=await page.evaluate(() => window.__realSdkProbe.creates);
+      expect(creates.some(c=>c.model===model)).toBe(true);
+      expect(creates.every(c=>c.delegate===delegate)).toBe(true);
       expect(errors).toEqual([]);
       await expect(page.locator('video')).toHaveCount(1);
       await page.screenshot({ path: testInfo.outputPath('diagnostic.png') });

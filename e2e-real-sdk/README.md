@@ -2,6 +2,8 @@
 
 This is an optional, explicit path. Mandatory CI retains the offline SDK-double suite. Neither the ordinary `test:e2e` command nor CI discovers this directory. Product source, delegate, models, dependencies and lockfile are unchanged.
 
+An explicit test-only CPU variant is available through `npm run --silent test:e2e:real-sdk:cpu`. The default command remains GPU. See [CPU verification mode, evidence boundaries and blocked prerequisites](../scripts/testing/cpu-verification.md). CPU mode uses4176and separate build/probe/run paths; its initialization, inference semantics and lifecycle assertions are the same. Descriptions below of the unchanged product GPU request apply to the default mode; CPU uses an explicitly labelled engine-constant build variant, never an observer argument override.
+
 From repository root, with Node24/npm11:
 
 ```sh

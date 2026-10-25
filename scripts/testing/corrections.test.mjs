@@ -59,7 +59,7 @@ test('R2 actual SDK runner joins capture ownership and retains child stderr',{sk
  const dir=await mkdtemp(path.join(tmpdir(),'pr22-sdk-process-'));const work=path.join(dir,'work');let pid;let added=false;
  try{
   execFileSync('git',['worktree','add','--detach',work,'HEAD'],{cwd:base,stdio:'pipe'});added=true;
-  for(const f of ['scripts/real-sdk/run.mjs','scripts/testing/capture.mjs','scripts/testing/process-tree.mjs'])await copyFile(path.join(base,f),path.join(work,f));
+  for(const f of ['scripts/real-sdk/run.mjs','scripts/real-sdk/delegate.mjs','scripts/testing/capture.mjs','scripts/testing/process-tree.mjs'])await copyFile(path.join(base,f),path.join(work,f));
   await mkdir(path.join(work,'node_modules/@playwright/test'),{recursive:true});
   const pidFile=path.join(dir,'pid');await writeFile(path.join(work,'node_modules/@playwright/test/cli.js'),`require('fs').writeFileSync(${JSON.stringify(pidFile)},String(process.pid));console.error('SDK_CHILD_STDERR');process.on('SIGTERM',()=>{});setInterval(()=>{},100);`);
   const r=await execute({name:'sdk',command:process.execPath,args:['scripts/real-sdk/run.mjs']},{root:work,runDir:dir,timeoutMs:1500,graceMs:100,emit:()=>{}});pid=Number(await readFile(pidFile,'utf8'));assert.equal(r.state,'FAIL');assert.match(r.problem,/timeout/);await new Promise(r=>setTimeout(r,100));assert.equal(live(pid),false);
