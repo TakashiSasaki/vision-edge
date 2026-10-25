@@ -25,6 +25,8 @@ export interface DetectedObject {
   maskPolygon?: Array<{ x: number; y: number }>;
   maskCanvas?: HTMLCanvasElement;
   semanticClassId?: number;
+  areaFraction?: number;
+  confidenceKind?: 'semantic-softmax-mean' | 'semantic-softmax-pixel';
 }
 
 export interface TTSConfig {
@@ -58,13 +60,22 @@ export interface ModelMetadata {
 export type ModelState =
   | { status: 'idle'; model: null; requestId: number }
   | { status: 'loading'; model: RunnableModelType; requestId: number }
-  | { status: 'ready'; model: RunnableModelType; requestId: number; delegate: 'GPU' }
+  | { status: 'ready'; model: RunnableModelType; requestId: number; delegate?: 'GPU'; backend?: OnnxBackendInfo }
   | { status: 'error'; model: RunnableModelType; requestId: number; stage: 'wasm' | 'task'; cause: unknown };
 
 export interface DetectionFrame {
   model: RunnableModelType;
   requestId: number;
   objects: DetectedObject[];
+  semanticMask?: HTMLCanvasElement;
+}
+
+export interface OnnxBackendInfo {
+  runtime:'onnxruntime-web';
+  requestedProvider:'auto'|'webgpu'|'wasm'|'unreported';
+  configuredProviders:readonly string[];
+  fallbackReason:string|null;
+  actualBackend:'unmeasured';
 }
 
 export type FrameResult =

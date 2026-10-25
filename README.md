@@ -2,7 +2,7 @@
 
 VisionStudio AI is a React/TypeScript browser demo for webcam object detection,
 person segmentation, Japanese labels, and optional speech synthesis. It uses Vite,
-Tailwind CSS, and MediaPipe Tasks Vision. Published app: https://vision-edge.ai.studio.
+Tailwind CSS, MediaPipe Tasks Vision, and ONNX Runtime Web. Published app: https://vision-edge.ai.studio.
 
 The runnable models are **Selfie Segmenter** (MediaPipe ImageSegmenter: person
 region mask and enclosing box, not per-person instance segmentation),
@@ -20,17 +20,27 @@ request. Superseded/unmounted completions cannot become current and their tasks
 are closed. Model changes clear old detections and overlays. Ready means model
 initialization succeeded, not that the camera or inference has succeeded.
 
-The read-only backend label reports the **GPU delegate setting passed to the task
-factory** after successful initialization; actual GPU use has not been measured.
-There is no WebGPU/WASM-SIMD/CPU selector or automatic CPU fallback. FPS/latency
-numbers are hidden as **計測未整備**; correct scheduler/measurement work remains
-PR-04. No fixed speed, accuracy or zero-latency guarantee is made.
+The read-only backend label distinguishes requested and configured paths from
+unmeasured execution. MediaPipe keeps its GPU delegate request. ONNX defaults to
+WebGPU preference when the API is available, otherwise WASM; an observed session
+creation failure can trigger an explicit WASM retry. The selected provider list
+and fallback reason are reported, while the actual internal backend/hardware is
+unmeasured. There is no new user-facing backend selector.
+
+SegFormer confidence is an **uncalibrated softmax score**, separate from class
+area coverage. Prominent-class entries require the mean winning-pixel score to
+meet the threshold, including the largest class. The full argmax semantic mask
+remains visible even if no class meets the list threshold; it does not imply
+high confidence. Pixel inspection uses the winning score at that exact pixel,
+including small classes absent from the list, and only from the currently
+accepted frame/generation. The labels/readout distinguish scores from detector
+confidence. Scores are not a guarantee of accuracy.
 
 ## Requirements and setup
 
 - Node.js 24 LTS, at least 24.15.0 and below 25; `.nvmrc` and CI use 24.19.0.
 - npm 11; the lockfile was generated with npm 11.9.0.
-- Note on Bun: Node.js and `npm` are the standard, active runtime and package manager for this application in Google AI Studio. The `bun.lock` file in the root directory is a legacy environment bootstrap/import artifact and is not used. Do not run `bun` commands.
+- Node.js and npm are the only supported runtime/package manager. `package-lock.json` is the sole lockfile; the unused Bun bootstrap lock has been removed.
 - A modern browser with WebAssembly and WebGL for real inference.
 
 ```sh
@@ -86,7 +96,11 @@ and Selfie Segmenter models from `storage.googleapis.com/mediapipe-models` (see
 `src/services/visionEngine.ts` for exact URLs). The npm SDK is pinned to 0.10.14 to
 match those WASM assets. The Selfie model URL contains `latest`, so model downloads
 are not immutable. Google Fonts also loads external styles/fonts at runtime.
-Camera access, network access, and GPU support are required for real inference;
+ONNX models use the existing Hugging Face resolve/main URLs in their service files
+and version-matched ONNX Runtime1.30.0 assets from jsDelivr. Model references are
+mutable; this correction does not acquire model bytes or resolve their weight
+license/provenance questions. Camera/network access and a supported configured
+backend are required for real inference;
 builds and automated static/unit/smoke checks do not require these model services.
 
 ## Tests and CI

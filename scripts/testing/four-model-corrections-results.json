@@ -1,0 +1,161 @@
+{
+  "baseline": "a8c8cd9f8caeb76bb051e0a004942ca04600d7f5",
+  "sourceState": "working correction tree before evidence-only additions; final commit binding in PR",
+  "runtime": {
+    "node": "v24.19.0",
+    "npm": "11.9.0",
+    "browser": "system Chromium 154.0.8037.57",
+    "platform": "Linux"
+  },
+  "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+  "exit": 0,
+  "run": "2026-10-25T10-26-22.438Z-89d041be",
+  "phases": {
+    "typecheck": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lint": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "unit": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 361,
+        "passed": 361,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "d9697688a3d50bff6a7216a753c9152bd8fdc294aa70f4d9af44de48639734ec"
+    },
+    "foundation": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "5d7379f00b35e4779a70b99f324e086aaf3bb68167001f2c1f217d563bbfbb47"
+    },
+    "delegate": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 40,
+        "passed": 40,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "7ff9fe11dc6b5e0a6692996423bff4feed8e7d0fdff23cea5845c316a168907d"
+    },
+    "output": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 37,
+        "passed": 37,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "676895001e9f4a90bcd28239ff872c5e1ff9cda52399bb2c8f40b1898cd4ed9e"
+    },
+    "build": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logSha256": "992382f791dbfa3c10ff8a82f4db20556f427bf9986e32e8969690aa76b3c841"
+    },
+    "browser": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "992bc2e03ee8ccd5b92ecda818f57f51ff086eb218f2cb751d722e8894f94052"
+    },
+    "controls": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 7,
+        "healthy": 2,
+        "expectedFaults": 5
+      },
+      "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+    }
+  },
+  "historicalEvidence": {
+    "source": "63bd34294f37db2da3aa45687ce5c07c31af4e6c",
+    "total": 702,
+    "mismatches": [],
+    "restoredLogs": 48
+  },
+  "productionCss": {
+    "baselineAndCurrentBytes": 27898,
+    "baselineAndCurrentSha256": "3c60bb7d9314d6bc99c7d29821748ea2b56c49eeaa3ba29f5ea6c8b3cefba5a4",
+    "dependencies": "same newly restored lock dependency installation; JS intentionally changes product corrections"
+  },
+  "failureHistory": [
+    {
+      "kind": "baseline CI",
+      "run": 40180757546,
+      "job": 121131130790,
+      "result": "setup-node failed: missing lockfile; checks skipped"
+    },
+    {
+      "kind": "new initial 23-case regressions against unchanged product baseline",
+      "exit": 1,
+      "passed": 3,
+      "failed": 20,
+      "logRun": "2026-10-25T10-03-22.772Z-0bd226f4"
+    },
+    {
+      "kind": "baseline async-release child",
+      "exit": 1,
+      "unhandledRejections": 2,
+      "models": "both ONNX services"
+    },
+    {
+      "kind": "first lint of added regression code",
+      "exit": 1,
+      "reason": "no-this-alias in mock Canvas; corrected helper ownership"
+    }
+  ]
+}

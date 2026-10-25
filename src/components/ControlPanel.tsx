@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { DetectedObject, ModelType, RenderOptions, TTSConfig } from '../types/vision';
 import { speechService } from '../services/speechService';
+import { confidenceDescription } from '../services/confidenceDescription';
 
 interface ControlPanelProps {
   activeModel: ModelType;
@@ -21,6 +22,7 @@ interface ControlPanelProps {
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
+  activeModel,
   renderOptions,
   onChangeRenderOptions,
   ttsConfig,
@@ -40,7 +42,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   const handleManualSpeak = (obj: DetectedObject) => {
     onSelectObject(obj);
     speechService.speak(
-      `${obj.labelJa}。信頼度は${Math.round(obj.confidence * 100)}%です。`,
+      `${obj.labelJa}。${confidenceDescription(obj)}は${Math.round(obj.confidence * 100)}%です。`,
       obj.labelJa,
       { ...ttsConfig, enabled: true },
       'manual'
@@ -90,6 +92,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
       {/* Tab Body (Internal scroll only) */}
       <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 text-xs">
+        {activeModel==='segformer'&&<p className="text-slate-400">全画素マスクは最大スコアの分類です。softmaxスコアは正答率の保証ではありません。しきい値は一覧・ラベルに適用し、タップでは小さい領域や低スコアの画素も確認できます。面積は別表示です。</p>}
         {/* Tab 1: Detection List */}
         {activeTab === 'detection' && (
           <div className="space-y-2">
@@ -102,7 +105,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <div className="p-6 text-center border border-dashed border-slate-800 rounded-lg bg-slate-900/30">
                 <Layers className="w-6 h-6 mx-auto text-slate-600 mb-1.5" />
                 <p className="text-slate-400">{hasCurrentFrame ? '現在しきい値を超える物体はありません' : 'モデルとカメラの準備後、推論結果を表示します'}</p>
-                <p className="text-[10px] text-slate-500 mt-1">{hasCurrentFrame ? 'カメラを物体に向けてください' : '未取得は正常な空検出を意味しません'}</p>
+                <p className="text-[10px] text-slate-500 mt-1">{hasCurrentFrame ? activeModel==='segformer'?'全画素の分類はマスクで確認できます':'カメラを物体に向けてください' : '未取得は正常な空検出を意味しません'}</p>
               </div>
             ) : (
               <div className="space-y-1.5">
@@ -132,8 +135,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                             <span>{obj.category}</span>
                             <span>·</span>
                             <span className="font-mono text-emerald-400 tabular-nums">
+                              {obj.confidenceKind?`${confidenceDescription(obj)} `:''}
                               {Math.round(obj.confidence * 100)}%
                             </span>
+                            {obj.areaFraction!==undefined&&<span>面積 {Math.round(obj.areaFraction*100)}%</span>}
                             {obj.maskPolygon && (
                               <>
                                 <span>·</span>
@@ -216,7 +221,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             {/* Confidence Threshold */}
             <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-1.5">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-medium text-slate-200">認識しきい値 (Confidence)</span>
+                <span className="font-medium text-slate-200">{activeModel==='segformer'?'平均softmaxスコアしきい値':'認識しきい値 (Confidence)'}</span>
                 <span className="font-mono text-blue-400 tabular-nums font-semibold">
                   {Math.round(renderOptions.confidenceThreshold * 100)}%
                 </span>

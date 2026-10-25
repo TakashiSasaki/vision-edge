@@ -20,6 +20,7 @@ import { useCameraStream } from '../hooks/useCameraStream';
 import { drawCanvasFrame } from '../services/canvasRenderer';
 import { PipelineDetails } from './PipelineDetails';
 import { clientPointToVideo } from '../services/videoCoordinates';
+import { confidenceDescription } from '../services/confidenceDescription';
 
 interface VisionCanvasProps {
   activeModel: RunnableModelType;
@@ -78,7 +79,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   useLayoutEffect(() => {
     latest.current = { onFrame, renderOptions, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel };
   });
-  const drawRef = useRef<(ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[]) => void>(() => {});
+  const drawRef = useRef<(ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[], semanticMask?: HTMLCanvasElement) => void>(() => {});
 
   useLayoutEffect(() => {
     const generationOwner = schedulerGeneration;
@@ -258,10 +259,12 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     ctx: CanvasRenderingContext2D,
     width: number,
     height: number,
-    objects: DetectedObject[]
+    objects: DetectedObject[],
+    semanticMask?: HTMLCanvasElement
   ) => {
     // 1. Draw Masks
     if (renderOptions.showMasks) {
+      if(semanticMask){ctx.save();ctx.globalAlpha=renderOptions.maskOpacity;ctx.drawImage(semanticMask,0,0,width,height);ctx.restore();}
       objects.forEach((obj) => {
         const isSelected = obj.id === selectedObjectId;
         const opacity = isSelected ? Math.min(1, renderOptions.maskOpacity + 0.3) : renderOptions.maskOpacity;
@@ -322,7 +325,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
         if (renderOptions.showLabels) {
           const confText = renderOptions.showConfidence
-            ? ` ${Math.round(obj.confidence * 100)}%`
+            ? ` ${obj.confidenceKind?`${confidenceDescription(obj)} `:''}${Math.round(obj.confidence * 100)}%`
             : '';
           const fullLabel = `${obj.labelJa}${confText}`;
 
@@ -389,7 +392,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
       // Force speak on direct user tap
       try { speechService.speak(
-        `「${hit.labelJa}」、信頼度${Math.round(hit.confidence * 100)}%`,
+        `「${hit.labelJa}」、${confidenceDescription(hit)}${Math.round(hit.confidence * 100)}%`,
         hit.labelJa,
         { ...ttsConfig, enabled: true },
         'tap'
