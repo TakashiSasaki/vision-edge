@@ -1,0 +1,773 @@
+{
+  "head": "5ee8d9f659bd08fac462671a829cb0dcbf537c49",
+  "tree": "f396f5d24a304ff08c5ecd17986da0d717175fdb",
+  "oldFailReview": 5642015377,
+  "originalReproducerOnlyShaChanged": true,
+  "originalReproducerSha256": "974ade3cf5a96a11880b74613b2af2e6f3df6bcf98b69b8cc586afd4bb941b60",
+  "originalRepro": [
+    {
+      "kind": "cpu-observed",
+      "requested": "CPU",
+      "observed": [
+        "CPU"
+      ],
+      "errors": [],
+      "inferenceExecuted": true,
+      "populations": 1
+    },
+    {
+      "kind": "gpu-observed",
+      "requested": "CPU",
+      "observed": [
+        "GPU"
+      ],
+      "errors": [
+        "observed SDK delegate differs from requested delegate",
+        "missing matching CPU creation observation for mediapipe"
+      ],
+      "inferenceExecuted": false,
+      "populations": 0
+    },
+    {
+      "kind": "missing-create",
+      "requested": "CPU",
+      "observed": [],
+      "errors": [
+        "missing matching CPU creation observation for mediapipe"
+      ],
+      "inferenceExecuted": false,
+      "populations": 0
+    },
+    {
+      "kind": "missing-delegate",
+      "requested": "CPU",
+      "observed": [
+        null
+      ],
+      "errors": [
+        "observed SDK delegate differs from requested delegate",
+        "missing matching CPU creation observation for mediapipe"
+      ],
+      "inferenceExecuted": false,
+      "populations": 0
+    },
+    {
+      "kind": "wrong-model-only",
+      "requested": "CPU",
+      "observed": [
+        "CPU"
+      ],
+      "errors": [
+        "missing matching CPU creation observation for mediapipe"
+      ],
+      "inferenceExecuted": false,
+      "populations": 0
+    }
+  ],
+  "independentCases": [
+    {
+      "case": "CPU-positive",
+      "expected": "qualified",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": true,
+        "inferenceExecuted": true,
+        "resultAdopted": true,
+        "resultRendered": true
+      },
+      "populations": 1,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": false
+    },
+    {
+      "case": "CPU-missing",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "CPU-empty",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "CPU-wrong-model",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "CPU-wrong-delegate",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "CPU-failed-create",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "CPU-missing-delegate",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "CPU-evicted-only",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 0
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "CPU-evicted-success",
+      "expected": "evicted-success",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": true,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 2,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": false
+    },
+    {
+      "case": "GPU-positive",
+      "expected": "qualified",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": true,
+        "inferenceExecuted": true,
+        "resultAdopted": true,
+        "resultRendered": true
+      },
+      "populations": 1,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": false
+    },
+    {
+      "case": "GPU-missing",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "GPU-empty",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "GPU-wrong-model",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "GPU-wrong-delegate",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "GPU-failed-create",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "GPU-missing-delegate",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "GPU-evicted-only",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 0
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "GPU-evicted-success",
+      "expected": "evicted-success",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": true,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 2,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": false
+    },
+    {
+      "case": "invalid-mode",
+      "expected": "suppressed",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": false,
+        "inferenceExecuted": false,
+        "resultAdopted": false,
+        "resultRendered": false
+      },
+      "populations": 0,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": true
+    },
+    {
+      "case": "legacy",
+      "expected": "legacy",
+      "rawUnchanged": true,
+      "flags": {
+        "inferenceAttempted": true,
+        "inferenceExecuted": true,
+        "resultAdopted": true,
+        "resultRendered": true
+      },
+      "populations": 1,
+      "genericCounters": {
+        "attempts": 1,
+        "sdkSuccesses": 1,
+        "retained": 1
+      },
+      "hasEvidenceError": false
+    }
+  ],
+  "dependencyFree25": {
+    "exit": 0,
+    "pass": 25,
+    "fail": 0,
+    "skip": 0
+  },
+  "receipts": [
+    {
+      "task": "install",
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logBytes": 26,
+      "hashMatches": true,
+      "dirty": false,
+      "exactSourceMatches": true
+    },
+    {
+      "task": "delegate",
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 40,
+        "passed": 40,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logBytes": 8347,
+      "hashMatches": true,
+      "dirty": false,
+      "exactSourceMatches": true
+    },
+    {
+      "task": "build",
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logBytes": 353,
+      "hashMatches": true,
+      "dirty": false,
+      "exactSourceMatches": true
+    },
+    {
+      "task": "real-sdk-cpu",
+      "state": "BLOCKED",
+      "exit": 2,
+      "childExit": 2,
+      "signal": null,
+      "counts": null,
+      "logBytes": 617,
+      "hashMatches": true,
+      "dirty": false,
+      "exactSourceMatches": true
+    },
+    {
+      "task": "real-sdk",
+      "state": "BLOCKED",
+      "exit": 2,
+      "childExit": 2,
+      "signal": null,
+      "counts": null,
+      "logBytes": 609,
+      "hashMatches": true,
+      "dirty": false,
+      "exactSourceMatches": true
+    },
+    {
+      "task": "foundation",
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logBytes": 12685,
+      "hashMatches": true,
+      "dirty": false,
+      "exactSourceMatches": true
+    }
+  ],
+  "genuineDiagnostics": [
+    {
+      "mode": "CPU",
+      "requestedDelegate": "CPU",
+      "productionDelegate": "GPU",
+      "exit": 2,
+      "childExit": 0,
+      "signal": null,
+      "matrixStatusCounts": {
+        "pass": 2,
+        "fail": 0,
+        "blocked": 6,
+        "not-run": 4
+      },
+      "inferenceAttempted": false,
+      "inferenceExecuted": false,
+      "resultAdopted": false,
+      "resultRendered": false,
+      "populations": 0,
+      "modeEvidence": [
+        {
+          "status": "no-inference-call-models",
+          "eligibleRetainedAttempts": 0,
+          "eligibleRetainedSuccesses": 0
+        },
+        {
+          "status": "no-inference-call-models",
+          "eligibleRetainedAttempts": 0,
+          "eligibleRetainedSuccesses": 0
+        }
+      ],
+      "diagnostics": [
+        {
+          "model": "mediapipe",
+          "requested": "CPU",
+          "creates": [
+            {
+              "model": "selfie-segmenter",
+              "delegate": "CPU",
+              "controlledModelFetchFailure503": true
+            },
+            {
+              "model": "mediapipe",
+              "delegate": "CPU",
+              "controlledModelFetchFailure503": true
+            }
+          ],
+          "calls": 0,
+          "sdkSuccesses": 0,
+          "rendererKind": "SwiftShader"
+        },
+        {
+          "model": "selfie-segmenter",
+          "requested": "CPU",
+          "creates": [
+            {
+              "model": "selfie-segmenter",
+              "delegate": "CPU",
+              "controlledModelFetchFailure503": true
+            }
+          ],
+          "calls": 0,
+          "sdkSuccesses": 0,
+          "rendererKind": "SwiftShader"
+        }
+      ]
+    },
+    {
+      "mode": "GPU",
+      "requestedDelegate": "GPU",
+      "productionDelegate": "GPU",
+      "exit": 2,
+      "childExit": 0,
+      "signal": null,
+      "matrixStatusCounts": {
+        "pass": 2,
+        "fail": 0,
+        "blocked": 6,
+        "not-run": 4
+      },
+      "inferenceAttempted": false,
+      "inferenceExecuted": false,
+      "resultAdopted": false,
+      "resultRendered": false,
+      "populations": 0,
+      "modeEvidence": [
+        {
+          "status": "no-inference-call-models",
+          "eligibleRetainedAttempts": 0,
+          "eligibleRetainedSuccesses": 0
+        },
+        {
+          "status": "no-inference-call-models",
+          "eligibleRetainedAttempts": 0,
+          "eligibleRetainedSuccesses": 0
+        }
+      ],
+      "diagnostics": [
+        {
+          "model": "mediapipe",
+          "requested": "GPU",
+          "creates": [
+            {
+              "model": "selfie-segmenter",
+              "delegate": "GPU",
+              "controlledModelFetchFailure503": true
+            },
+            {
+              "model": "mediapipe",
+              "delegate": "GPU",
+              "controlledModelFetchFailure503": true
+            }
+          ],
+          "calls": 0,
+          "sdkSuccesses": 0,
+          "rendererKind": "SwiftShader"
+        },
+        {
+          "model": "selfie-segmenter",
+          "requested": "GPU",
+          "creates": [
+            {
+              "model": "selfie-segmenter",
+              "delegate": "GPU",
+              "controlledModelFetchFailure503": true
+            }
+          ],
+          "calls": 0,
+          "sdkSuccesses": 0,
+          "rendererKind": "SwiftShader"
+        }
+      ]
+    }
+  ],
+  "nativeProvenance": {
+    "kind": "MODEL-FREE native input controls; not SDK inference",
+    "sourceHead": "5ee8d9f659bd08fac462671a829cb0dcbf537c49",
+    "sourceTree": "f396f5d24a304ff08c5ecd17986da0d717175fdb",
+    "exit": 0,
+    "stats": {
+      "startTime": "2026-10-25T07:35:36.956Z",
+      "duration": 4343.406999999999,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "errors": []
+  },
+  "productionAndHistory": {
+    "main": "695e87d4a946b13f3c7ef4fbbc074fc98fea6ff7",
+    "head": "5ee8d9f659bd08fac462671a829cb0dcbf537c49",
+    "tree": "f396f5d24a304ff08c5ecd17986da0d717175fdb",
+    "productionExactParity": true,
+    "files": {
+      "index.html": {
+        "bytes": 1593,
+        "sha256": "d41e262012b17b2d810d49ea7edf8581ee4116d6833c8518142c3d326c218abe"
+      },
+      "assets/index-D6IuPB0e.css": {
+        "bytes": 27898,
+        "sha256": "3c60bb7d9314d6bc99c7d29821748ea2b56c49eeaa3ba29f5ea6c8b3cefba5a4"
+      },
+      "assets/index-DnOec5Bl.js": {
+        "bytes": 423041,
+        "sha256": "1d1d27901e2d1f589ac4b3555a36f5ba69e8760f7b4396582fd3006de2a489ba"
+      },
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": {
+        "bytes": 137914,
+        "sha256": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+      },
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": {
+        "bytes": 772699,
+        "sha256": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323"
+      },
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": {
+        "bytes": 797410,
+        "sha256": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b"
+      }
+    },
+    "historical": {
+      "count": 702,
+      "mismatches": []
+    }
+  },
+  "nonModelPreparation": [
+    {
+      "id": "vision_wasm_internal.js",
+      "source": "restored locked SDK package",
+      "hashVerified": true
+    },
+    {
+      "id": "vision_wasm_internal.wasm",
+      "source": "restored locked SDK package",
+      "hashVerified": true
+    },
+    {
+      "id": "vision_wasm_nosimd_internal.js",
+      "source": "restored locked SDK package",
+      "hashVerified": true
+    },
+    {
+      "id": "vision_wasm_nosimd_internal.wasm",
+      "source": "restored locked SDK package",
+      "hashVerified": true
+    },
+    {
+      "id": "astronaut.png",
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.24.0/skimage/data/astronaut.png",
+      "hashVerified": true
+    },
+    {
+      "id": "coffee.png",
+      "source": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.24.0/skimage/data/coffee.png",
+      "hashVerified": true
+    }
+  ],
+  "hosted": {
+    "run": 40172484506,
+    "job": 121106077929,
+    "rawCheckoutVerified": true,
+    "counts": {
+      "unit": 317,
+      "foundation": 73,
+      "protocol": 37,
+      "delegate": 40,
+      "browser": 19,
+      "controls": 7
+    },
+    "artifact": 12590448770,
+    "zipContents": "UNVERIFIED; acquisition not attempted"
+  },
+  "auxiliaryAttempt": {
+    "operation": "receipt snapshot during foundation execution",
+    "firstOutcome": "KeyError exit: receipt was RUNNING; no mutation",
+    "resolution": "re-read after confirmed completion; every final receipt/hash verified"
+  },
+  "remainingLimits": [
+    "six real CPU/GPU model inference scenarios BLOCKED",
+    "SDK internal backend/kernel and actual model initialization unverified",
+    "request-generation binding not established by create records",
+    "Windows/macOS cleanup and hard host kill untested",
+    "physical hardware/public deployment equality unverified",
+    "hosted ZIP contents and failure-time upload unverified"
+  ],
+  "productionAudit": {
+    "productionSdkAlias": false,
+    "forbiddenMarkers": 0,
+    "sdkVersion": "0.10.14"
+  }
+}
