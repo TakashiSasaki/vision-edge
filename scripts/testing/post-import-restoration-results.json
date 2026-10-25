@@ -1,0 +1,181 @@
+{
+  "base": "7b1ea4394fc23ae1fe6a7f5c017f9dc8e4fc9505",
+  "baseTree": "a35aa70f0a91a4f0f63bbc10bffea452c90d552e",
+  "restoreFrom": "b2b7874f0a40608415e76d17fcdaf13824ba179d",
+  "sourceBinding": "frozen HEAD/tree and exact hosted CI in Draft PR; final product source unchanged from base",
+  "changes": {
+    "restoredLogs": 48,
+    "restoredNpmLockExact": true,
+    "removedCompetingBunLock": true,
+    "dependenciesAdded": 0,
+    "productSourceChanges": 0,
+    "workflowChanges": 0
+  },
+  "runtime": {
+    "node": "v24.19.0",
+    "npm": "11.9.0",
+    "browser": "system Chromium154.0.8037.57",
+    "platform": "Linux"
+  },
+  "cleanInstall": {
+    "command": "npm_config_registry=https://registry.npmjs.org npm_config_cache=/workspace/npm-four-model-cache npm run --silent ci:install",
+    "exit": 0,
+    "run": "2026-10-25T11-42-06.995Z-9845e5e1"
+  },
+  "offline": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+    "run": "2026-10-25T11-42-49.003Z-f56e7851",
+    "exit": 0,
+    "phases": {
+      "typecheck": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lint": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 369,
+          "passed": 369,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "2cd046dc31b631ef604896c35257f42b5f92b0296006931f57567c17b4c62394"
+      },
+      "foundation": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "cddaa6415ad0e662081261a2381f9cf1cf59071e815952186e56aec6c7e7fd8e"
+      },
+      "delegate": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "bc16e2a230c50fe9cace41c10ecdacfb9dd511892865fcd1e3545a40ea6f749c"
+      },
+      "output": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "e7957fa9e1b7eaf7a843373326fd858b4e9a8198f207d4610066378753058dd1"
+      },
+      "build": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "afae409cba96d201a8bf8086d1eecd61fda4c86abd067668798eb29fde90eeca"
+      },
+      "browser": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 19,
+          "passed": 19,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logSha256": "36223d2a4fc3c93a397bbeaa54c93d621d52073535581304cbec9e1202584c46"
+      },
+      "controls": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      }
+    }
+  },
+  "historical": {
+    "total": 702,
+    "mismatches": []
+  },
+  "productionBuild": {
+    "baseline": "7b1ea4394fc23ae1fe6a7f5c017f9dc8e4fc9505",
+    "equal": true,
+    "baselineFiles": {
+      "index.html": "e43645f796ece5a8983bb03f5d35d91d94aa7d5b94e487a8219118a40534482e",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-D6IuPB0e.css": "3c60bb7d9314d6bc99c7d29821748ea2b56c49eeaa3ba29f5ea6c8b3cefba5a4",
+      "assets/index-DNnna4kN.js": "66b487991f731be10c4637f631be46daed67a83437529f1e6cb6df25350f9ee4",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+    },
+    "restoredFiles": {
+      "index.html": "e43645f796ece5a8983bb03f5d35d91d94aa7d5b94e487a8219118a40534482e",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-D6IuPB0e.css": "3c60bb7d9314d6bc99c7d29821748ea2b56c49eeaa3ba29f5ea6c8b3cefba5a4",
+      "assets/index-DNnna4kN.js": "66b487991f731be10c4637f631be46daed67a83437529f1e6cb6df25350f9ee4",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b"
+    }
+  },
+  "failureHistory": [
+    {
+      "kind": "regression main CI",
+      "run": 40188288159,
+      "job": 121153646032,
+      "source": "11381a6572c84426ecb3f65b04efacc185124289",
+      "result": "setup-node failed missing lock; actual checks skipped"
+    },
+    {
+      "kind": "initial local baseline-worktree command",
+      "exit": 128,
+      "reason": "wrong cwd /tmp; no worktree/build created; corrected repository cwd succeeded"
+    }
+  ]
+}

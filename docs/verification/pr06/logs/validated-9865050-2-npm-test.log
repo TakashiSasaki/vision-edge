@@ -1,0 +1,22 @@
+
+> vision-studio@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /workspace/vision-edge
+
+
+ Test Files  12 passed (12)
+      Tests  250 passed (250)
+   Start at  15:13:33
+   Duration  5.36s (environment 51%, tests 37%, setup 7%, import 3%, transform 1%)
+
+Environment  jsdom was created 12 times · 7.34s total, 51% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
