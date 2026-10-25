@@ -27,7 +27,7 @@ export async function newRun(root, base = process.env.TEST_OUTPUT_BASE ?? path.j
 export async function execute(task, { root, runDir, emit = line => console.log(line), verbose = process.env.TEST_OUTPUT === 'verbose', timeoutMs = 900_000, graceMs = 5000, maxLogBytes = 64 * 1024 * 1024 } = {}) {
   if (!/^[a-z][a-z0-9-]*$/.test(task.name)) throw new Error('Invalid task name');
   const dir = path.join(runDir, task.name); await mkdir(dir); // Never reuse a previous task's report.
-  const log = path.join(dir, 'output.log'); const receipt = { task: task.name, argv: [task.command, ...task.args], cwd: root, start: new Date().toISOString(), state: 'RUNNING', node: process.version };
+  const log = path.join(dir, 'output.log'); const receipt = { task: task.name, argv: [task.command, ...task.args], cwd: root, start: new Date().toISOString(), state: 'RUNNING', selection: task.selection ?? 'default', node: process.version };
   const save = () => writeFile(path.join(dir, 'result.json'), JSON.stringify(receipt, null, 2) + '\n');
   await save();
   const fd = openSync(log, 'wx'); const digest = createHash('sha256'); let bytes = 0; let stdoutTail = Buffer.alloc(0); let child; let timer; let killTimer; let problem; let interrupted; let closed = false;
@@ -60,11 +60,11 @@ export async function execute(task, { root, runDir, emit = line => console.log(l
   }
   Object.assign(receipt, { end: new Date().toISOString(), childExit: outcome.code, signal: outcome.signal, interrupted: interrupted ?? null, problem: problem ?? null, exit, state: exit === 0 ? 'PASS' : task.blockedCodes?.includes(exit) && !problem && !interrupted ? 'BLOCKED' : 'FAIL', counts: counts ?? null, logBytes: bytes, logSha256: digest.digest('hex') });
   await save();
-  emit(`${task.name}: ${receipt.state} exit=${exit}${counts ? ' ' + Object.entries(counts).map(([k,v]) => `${k}=${v}`).join(' ') : ''}`);
+  emit(`${task.name}: ${receipt.state} exit=${exit}${receipt.selection !== 'default' ? ' selection=custom' : ''}${counts ? ' ' + Object.entries(counts).map(([k,v]) => `${k}=${v}`).join(' ') : ''}`);
   emit(`artifacts: ${dir}`);
   if (receipt.state !== 'PASS' && !verbose) {
     let details; try { details = await task.diagnose?.(dir); } catch { /* raw files still identify report failure */ }
-    emit(excerpt([problem, receipt.reportError, details, await readTail(log, 4000)].filter(Boolean).join('\n')));
+    emit(excerpt([problem, receipt.reportError, details, details ? null : await readTail(log, 4000)].filter(Boolean).join('\n')));
   }
   return receipt;
 }

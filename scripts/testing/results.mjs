@@ -12,8 +12,9 @@ export function tapCounts({ stdout }) {
   if (values.some(v => v === undefined)) throw new Error('Node TAP totals missing');
   return checked(Object.fromEntries(['total','passed','failed','cancelled','skipped','todo'].map((key,i)=>[key,Number(values[i])])));
 }
-export async function unitCounts({ dir }) {
+export async function unitCounts({ dir, childExit }) {
   const r = JSON.parse(await readFile(path.join(dir, 'unit.json'), 'utf8'));
+  if (childExit === 0 && r.success !== true) throw new Error('Unit report does not confirm a successful run');
   return checked({ total:r.numTotalTests, passed:r.numPassedTests, failed:r.numFailedTests, skipped:r.numPendingTests, todo:r.numTodoTests });
 }
 export async function browserCounts({ dir }) {
@@ -35,4 +36,9 @@ export async function browserFailures(dir) {
   const r = JSON.parse(await readFile(path.join(dir, 'browser.json'), 'utf8')); const errors = [...r.errors ?? []];
   function walk(suites) { for (const s of suites ?? []) { for (const spec of s.specs ?? []) for (const t of spec.tests) for (const result of t.results) errors.push(...result.errors ?? []); walk(s.suites); } }
   walk(r.suites); return errors.slice(0,3).map(e => e.message ?? e.value ?? JSON.stringify(e)).join('\n');
+}
+export async function tapFailures(dir) {
+  const { readTail } = await import('./capture.mjs');
+  const text = await readTail(path.join(dir, 'output.log'), 32_768);
+  return [...text.matchAll(/^not ok [\s\S]*?(?=^# Subtest:|^ok \d|^not ok |^1\.\.|^# tests |$(?![\s\S]))/gm)].slice(0,3).map(m=>m[0]).join('\n');
 }

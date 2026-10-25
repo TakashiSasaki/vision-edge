@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -71,4 +71,13 @@ test('separate invocations never overwrite an existing task report',async()=>{
 test('log reader selects bounded diagnostics and discloses the complete file path',async()=>{
  const root=await mkdtemp(path.join(tmpdir(),'compact-reader-'));
  try{await execute({name:'probe',command:process.execPath,args:['-e',"console.log('needle: important');console.log('x'.repeat(30000))"]},{root,runDir:root,emit:()=>{}});const r=spawnSync(process.execPath,[path.join(base,'scripts/testing/read-log.mjs'),root,'probe','needle'],{encoding:'utf8'});assert.equal(r.status,0);assert.match(r.stdout,/needle: important/);assert.match(r.stdout,/full log:/);assert(r.stdout.length<1000);}finally{await rm(root,{recursive:true,force:true});}
+});
+
+test('CLI test filters select a subset without inventing skipped counts',async()=>{
+ const dir=await mkdtemp(path.join(tmpdir(),'compact-cli-filter-'));
+ try{const env={...process.env,TEST_OUTPUT_BASE:dir};delete env.NODE_TEST_CONTEXT;const r=spawnSync(process.execPath,[path.join(base,'scripts/testing/run.mjs'),'foundation','--test-name-pattern=asset pin verified'],{cwd:base,env,encoding:'utf8',timeout:15000});assert.equal(r.status,0,r.stdout+r.stderr);const [id]=await readdir(dir);const result=JSON.parse(await readFile(path.join(dir,id,'foundation/result.json'),'utf8'));assert(result.counts.total<73);assert.equal(result.counts.failed,0);assert.equal(result.selection,'custom');const tap=await readFile(path.join(dir,id,'foundation/output.log'),'utf8');assert.match(tap,/# Subtest: asset pin verified/);assert(!tap.includes('# Subtest: asset pin tampered'));assert.match(r.stdout,/selection=custom/);}finally{await rm(dir,{recursive:true,force:true});}
+});
+test('a false global unit report flag is not ignored even when individual counts pass',async()=>{
+ const report={success:false,numTotalTests:1,numPassedTests:1,numFailedTests:0,numPendingTests:0,numTodoTests:0};
+ const {result}=await fixture(`require('node:fs').writeFileSync('probe/unit.json',${JSON.stringify(JSON.stringify(report))})`,{task:{summarize:unitCounts}});assert.equal(result.exit,1);assert.match(result.reportError,/does not confirm/);
 });

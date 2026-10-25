@@ -45,7 +45,7 @@ jobs:
       - name: Stylesheet smoke controls
         run: npm run --silent test:e2e:controls
       - name: Upload browser evidence
-        if: ${{ !cancelled() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report
@@ -53,4 +53,5 @@ jobs:
             playwright-report/
             test-results/
             .cache/test-runs/
+          include-hidden-files: true
           retention-days: 14

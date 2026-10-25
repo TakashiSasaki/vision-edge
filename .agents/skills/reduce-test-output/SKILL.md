@@ -16,4 +16,4 @@ description: テスト・オフライン CI・検証ログが長く、コーデ�
 9. 完全ログは CI artifact に含める。通常の試験は `testInfo.outputPath` へ保存し、歴史的 screenshot/証拠を上書きしない。大量 raw データの新規コミットも避ける。
 10. ログラッパー変更は最低限、成功・非ゼロ・欠損/不正 report・大量出力・signal/timeout・保存先衝突を試す。件数・終了状態・診断到達性を旧動作と比較し、測定条件と未実行を明記する。
 
-個別 reporter や完全なストリームを調べるときは既存の直接 CLI、`npm run test:raw`、または `TEST_OUTPUT=verbose` を明示的に使う。既定の入力へ巨大な JSON を戻さない。
+個別 reporter や完全なストリームを調べるときは既存の直接 CLI、`npm run test:raw`、または `TEST_OUTPUT=verbose` を明示的に使う。既定の入力へ巨大な JSON を戻さない。絞り込み実行は全件検証と区別する。Node は filter で除外したケースを skip として数えない場合があるため、存在しない skip 件数を補わない。
