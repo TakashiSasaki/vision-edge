@@ -35,6 +35,19 @@ export async function summarizeRun(run) {
     const dropped = count(probe?.rawDropped);
     const successes = valid.filter(row => row.sdkSucceeded === true);
     const failed = valid.filter(row => row.sdkSucceeded === false);
+    // A shared lifetime counter cannot identify a model/delegate by itself.
+    // Retain generic observations, but require a matching creation for every
+    // retained call model before treating this file as declared-mode evidence.
+    const callModels=[...new Set(valid.map(row=>row.model))];
+    const modelDelegateChecks=requestedDelegate===null?[]:callModels.map(model=>({model,requestedDelegate,
+      observedDelegates:[...new Set((probe?.creates??[]).filter(row=>row.model===model).map(row=>row.delegate))],
+      matchingCreation:(probe?.creates??[]).some(row=>row.model===model&&row.delegate===requestedDelegate&&!row.error),
+    }));
+    if(requestedDelegate!==null) {
+      if(!['CPU','GPU'].includes(requestedDelegate))errors.push('invalid requested delegate');
+      if((attempts??0)>0&&!callModels.length)errors.push('missing retained model observations for requested delegate');
+      for(const check of modelDelegateChecks)if(!check.matchingCreation)errors.push(`missing matching ${requestedDelegate} creation observation for ${check.model}`);
+    }
     if (attempts !== null && dropped !== null && attempts !== valid.length + dropped) errors.push('attempt/retention counters do not match SDK records');
     if (sdkSuccesses !== null && dropped !== null && sdkSuccesses > successes.length + dropped) errors.push('success counter exceeds observed/evicted SDK records');
     if (attempts !== null && attempts < valid.length) errors.push('attempt counter smaller than retained records');
@@ -45,6 +58,7 @@ export async function summarizeRun(run) {
     const rendered = new Set(observations.draws.filter(row => adopted.has(row.id) && row.width > 0 && row.height > 0 && Number.isFinite(row.alphaPixels) && row.alphaPixels >= 0).map(row => row.id));
     const eligible = errors.length === 0;
     execution.push({ file: path.relative(run, file), requestedDelegate, observedCreateDelegates, executionBackend:'unverified; createFromOptions argument only', evidenceErrors: errors,
+      modeEvidence:{status:requestedDelegate===null?'not-declared':!eligible?'unverified':callModels.length?'verified-for-retained-models':'no-inference-call-models',modelDelegateChecks,scope:'model/delegate observation only; creation records do not bind request generations'},
       attempts: attempts ?? valid.length, retainedAttempts: valid.length,
       successfulSdkCalls: sdkSuccesses ?? successes.length, retainedSuccessfulSdkCalls: successes.length,
       failedSdkCallsRetained: failed.length, unknownSdkOutcomesRetained: valid.length - successes.length - failed.length,

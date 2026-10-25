@@ -20,7 +20,7 @@ else {
       lint:()=>node(['node_modules/eslint/bin/eslint.js','.','--max-warnings=0']),
       unit:()=>node(['node_modules/vitest/vitest.mjs','run','--reporter=json',`--outputFile=${path.join(dir,'unit.json')}`,...extra],{summarize:unitCounts,diagnose:unitFailures}),
       foundation:()=>node(['--test','--test-reporter=tap',...extra,...testFiles],{summarize:tapCounts,diagnose:tapFailures}),
-      delegate:()=>node(['--test','--test-reporter=tap',...extra,'scripts/real-sdk/delegate.test.mjs'],{env:{TEST_LOG_DIR:dir},summarize:tapCounts,diagnose:tapFailures}),
+      delegate:()=>node(['--test','--test-reporter=tap',...extra,'scripts/real-sdk/delegate.test.mjs','scripts/real-sdk/delegate-eligibility.test.mjs'],{env:{TEST_LOG_DIR:dir},summarize:tapCounts,diagnose:tapFailures}),
       output:()=>node(['--test','--test-reporter=tap',...extra,...testFiles],{summarize:tapCounts,diagnose:tapFailures}),
       build:()=>node(['node_modules/vite/bin/vite.js','build']),
       browser:()=>node(['node_modules/@playwright/test/cli.js','test',...extra],{env:{TEST_LOG_DIR:dir},summarize:browserCounts,diagnose:browserFailures}),
