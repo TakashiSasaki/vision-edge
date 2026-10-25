@@ -58,13 +58,13 @@ export async function summarizeRun(run) {
     const rendered = new Set(observations.draws.filter(row => adopted.has(row.id) && row.width > 0 && row.height > 0 && Number.isFinite(row.alphaPixels) && row.alphaPixels >= 0).map(row => row.id));
     const eligible = errors.length === 0;
     execution.push({ file: path.relative(run, file), requestedDelegate, observedCreateDelegates, executionBackend:'unverified; createFromOptions argument only', evidenceErrors: errors,
-      modeEvidence:{status:requestedDelegate===null?'not-declared':!eligible?'unverified':callModels.length?'verified-for-retained-models':'no-inference-call-models',modelDelegateChecks,scope:'model/delegate observation only; creation records do not bind request generations'},
+      modeEvidence:{status:requestedDelegate===null?'not-declared':!eligible?'unverified':callModels.length?'verified-for-retained-models':'no-inference-call-models',modelDelegateChecks,eligibleRetainedAttempts:requestedDelegate===null?null:eligible?valid.length:0,eligibleRetainedSuccesses:requestedDelegate===null?null:eligible?successes.length:0,scope:'retained model/delegate observations only; evicted counters have no model binding; creation records do not bind request generations'},
       attempts: attempts ?? valid.length, retainedAttempts: valid.length,
       successfulSdkCalls: sdkSuccesses ?? successes.length, retainedSuccessfulSdkCalls: successes.length,
       failedSdkCallsRetained: failed.length, unknownSdkOutcomesRetained: valid.length - successes.length - failed.length,
       readyProcessedResultsRetained: ready.length, adoptedResultsRetained: adopted.size, renderedResultsRetained: rendered.size,
-      inferenceAttempted: eligible && ((attempts ?? valid.length) > 0),
-      inferenceExecuted: eligible && ((sdkSuccesses ?? successes.length) > 0),
+      inferenceAttempted: eligible && ((requestedDelegate===null ? attempts ?? valid.length : valid.length) > 0),
+      inferenceExecuted: eligible && ((requestedDelegate===null ? sdkSuccesses ?? successes.length : successes.length) > 0),
       resultAdopted: eligible && adopted.size > 0, resultRendered: eligible && rendered.size > 0,
       coverage: (probe?.rawDropped ?? 0) > 0 ? 'partial retained records; lifetime attempt/success counters where available' : 'retained observations; unknown outcomes are not successes',
       initialization: probe?.creates ?? [],
