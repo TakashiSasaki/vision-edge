@@ -18,11 +18,11 @@ let engines: ImageClassificationEngine[];
 function engine(factory?: ImageClassificationFactory) { const e = new ImageClassificationEngine(factory); engines.push(e); return e; }
 beforeEach(() => { engines = []; setContainerModelCacheEnabledForTest(false); vi.spyOn(console, 'warn').mockImplementation(() => {}); vi.spyOn(globalThis, 'fetch').mockRejectedValue(Error('UNEXPECTED_NETWORK')); });
 afterEach(() => { engines.forEach(e => e.dispose()); setContainerModelCacheEnabledForTest(null); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
-function assetBoundary(variant: ImageClassifierVariantId) { const entry = assets.classifierAsset(variant); return vi.spyOn(assets, 'resolveClassifierAsset').mockResolvedValue({ modelId: 'image-classifier', variantId: variant, modelAssetPath: entry.upstreamUrl, source: 'external' }); }
+function assetBoundary(variant: ImageClassifierVariantId) { const entry = assets.classifierAsset(variant); return vi.spyOn(assets, 'resolveClassifierAsset').mockResolvedValue({ modelId: 'image-classifier', variantId: variant, modelAssetPath: entry.localUrl, source: 'container-cache' }); }
 function sdkBoundary() { const t = task(); const load = vi.spyOn(FilesetResolver, 'forVisionTasks').mockResolvedValue({ wasmLoaderPath: 'controlled-loader', wasmBinaryPath: 'controlled-wasm' }); const create = vi.spyOn(ImageClassifier, 'createFromOptions').mockResolvedValue(t as unknown as ImageClassifier); return { t, load, create }; }
 it('registers a fifth classification UI family while keeping it outside the detection engine', () => {
   expect(ALL_MODEL_REGISTRY).toHaveLength(5); expect(MODEL_REGISTRY).toHaveLength(4);
-  expect(IMAGE_CLASSIFIER_MODEL).toMatchObject({ id: 'image-classifier', availableInUI: true, outputType: 'whole-image-classification', assetVerification: 'blocked' });
+  expect(IMAGE_CLASSIFIER_MODEL).toMatchObject({ id: 'image-classifier', availableInUI: true, outputType: 'whole-image-classification', assetVerification: 'pinned-container-cache-required' });
   expect(IMAGE_CLASSIFIER_MODEL.variants.map(v => v.id)).toEqual(['lite0', 'lite2']);
   expect(isRunnableModel('image-classifier')).toBe(false);
   expect(() => new VisionEngine().initialize('image-classifier' as RunnableModelType)).toThrow('Unsupported');
@@ -32,24 +32,24 @@ it.each(['lite0', 'lite2'] as const)('default %s assets block before WASM, SDK o
   expect(state).toMatchObject({ status: 'error', stage: 'asset', variantId: variant });
   expect(state.status === 'error' && state.cause).toBeInstanceOf(ClassificationInitializationError);
   expect(sdk.load).not.toHaveBeenCalled(); expect(sdk.create).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
-  expect(assets.classifierAssetStatuses()[variant]).toMatchObject({ status: 'blocked', sha256: null, license: null, acquisitionEnabled: false, localUrl: null });
+  expect(assets.classifierAssetStatuses()[variant]).toMatchObject({ status: 'unavailable', sha256: null, license: 'Apache-2.0', acquisitionEnabled: true, localUrl: assets.classifierAsset(variant).localUrl });
 });
 for (const variant of ['lite0', 'lite2'] as const) it.each(['GPU', 'CPU'] as const)('%s delegate is explicitly passed to pinned0.10.14 VIDEO API for '+variant, async delegate => {
   assetBoundary(variant); const sdk = sdkBoundary(), e = engine();
   expect(await e.initialize(variant, delegate)).toMatchObject({ status: 'ready', variantId: variant, requestedDelegate: delegate, sdkDelegate: delegate, actualBackend: 'unmeasured' });
-  expect(sdk.create).toHaveBeenCalledWith(expect.anything(), { baseOptions: { modelAssetPath: assets.classifierAsset(variant).upstreamUrl, delegate }, runningMode: 'VIDEO', maxResults: -1 });
+  expect(sdk.create).toHaveBeenCalledWith(expect.anything(), { baseOptions: { modelAssetPath: assets.classifierAsset(variant).localUrl, delegate }, runningMode: 'VIDEO', maxResults: -1 });
   const source = canvas(), frame = e.classifyVideoFrame(source);
   expect(frame).toMatchObject({ status: 'ready', kind: 'whole-image-classification', variantId: variant });
   expect(sdk.t.classifyForVideo).toHaveBeenCalledWith(source, expect.any(Number));
   expect(sdk.t.classifyForVideo.mock.calls[0]).toHaveLength(2); // no ROI/crop/resizing options
-  expect(getResolvedSource('image-classifier:'+variant)).toBe('external');
+  expect(getResolvedSource('image-classifier:'+variant)).toBe('container-cache');
 });
 it.each(['unknown', '', null, 0, ['lite0'], {}])('rejects unsupported/non-string variant %j before replacing current ownership', async variant => {
   const t = task(), e = engine(async () => t); await e.initialize('lite0'); const state = e.getState();
   expect(() => e.initialize(variant as ImageClassifierVariantId)).toThrow(); expect(e.getState()).toBe(state); expect(t.close).not.toHaveBeenCalled();
 });
 it('rejects wrong model/variant/URL resolution before SDK creation', async () => {
-  const asset = assetBoundary('lite0'), sdk = sdkBoundary(); asset.mockResolvedValue({ modelId: 'image-classifier', variantId: 'lite2', modelAssetPath: assets.classifierAsset('lite2').upstreamUrl, source: 'external' });
+  const asset = assetBoundary('lite0'), sdk = sdkBoundary(); asset.mockResolvedValue({ modelId: 'image-classifier', variantId: 'lite2', modelAssetPath: assets.classifierAsset('lite2').localUrl, source: 'container-cache' });
   expect(await engine().initialize('lite0')).toMatchObject({ status: 'error', stage: 'asset' }); expect(sdk.create).not.toHaveBeenCalled();
 });
 it('GPU failure is an error; explicit CPU retry is separate with no implicit delegate fallback', async () => {
@@ -152,7 +152,7 @@ it('handles sync and async close failures without unhandled rejection, duplicate
 it('default factory cancels an old WASM completion before SDK/model creation and cannot overwrite the accepted source', async () => {
   setContainerModelCacheEnabledForTest(true);
   vi.mocked(fetch).mockImplementation(async () => new Response(JSON.stringify({ enabled: true, models: {}, wasm: { mediapipe: { available: true, localUrl: '/api/model-cache/wasm/mediapipe', upstreamUrl: 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm' } } }), { headers: { 'Content-Type': 'application/json' } }));
-  vi.spyOn(assets, 'resolveClassifierAsset').mockImplementation(async variant => ({ modelId: 'image-classifier', variantId: variant, modelAssetPath: assets.classifierAsset(variant).upstreamUrl, source: 'external' }));
+  vi.spyOn(assets, 'resolveClassifierAsset').mockImplementation(async variant => ({ modelId: 'image-classifier', variantId: variant, modelAssetPath: assets.classifierAsset(variant).localUrl, source: 'container-cache' }));
   const sdk = sdkBoundary(), gate = deferred<{ wasmLoaderPath: string; wasmBinaryPath: string }>(), entered = deferred<void>();
   sdk.load.mockImplementationOnce(() => { entered.resolve(); return gate.promise; }).mockRejectedValueOnce(Error('NEW_LOCAL_WASM_FAILURE'));
   const e = engine(), obsolete = e.initialize('lite0'); await entered.promise;
@@ -175,4 +175,14 @@ it('dispose close reentry preserves a newly initialized request instead of publi
   const old = task(), e = engine(vi.fn<ImageClassificationFactory>().mockResolvedValueOnce(old).mockResolvedValue(task())); await e.initialize();
   let nested: ReturnType<typeof e.initialize> | undefined; old.close.mockImplementationOnce(() => { nested = e.initialize('lite2'); });
   e.dispose(); expect(e.getState()).toMatchObject({status:'loading',variantId:'lite2'}); expect(e.initialize('lite2')).toBe(nested); expect((await nested)?.status).toBe('ready');
+});
+
+it.each(['lite0','lite2'] as const)('actual resolver initializes %s from a pinned status row without an external model path', async variant => {
+  setContainerModelCacheEnabledForTest(true); const entry=assets.classifierAsset(variant), sdk=sdkBoundary();
+  vi.mocked(fetch).mockImplementation(async url=>{
+    expect(url).toBe('/api/model-cache/status');
+    return new Response(JSON.stringify({enabled:true,models:{},wasm:{mediapipe:{available:true,localUrl:'/api/model-cache/wasm/mediapipe',upstreamUrl:'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'}},variants:{['image-classifier:'+variant]:{...entry,id:entry.modelId,status:'cached',filePresent:true,size:entry.expectedSize,sha256:entry.expectedSha256,integrity:'pinned',error:null}}}),{headers:{'Content-Type':'application/json'}});
+  });
+  const e=engine();expect(await e.initialize(variant,'CPU')).toMatchObject({status:'ready',variantId:variant,requestedDelegate:'CPU',sdkDelegate:'CPU',actualBackend:'unmeasured',assetSource:'container-cache'});
+  expect(sdk.create).toHaveBeenCalledWith(expect.anything(),expect.objectContaining({baseOptions:{modelAssetPath:entry.localUrl,delegate:'CPU'}}));
 });

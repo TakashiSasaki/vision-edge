@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "base": "2de974cb994042a0816ee5940017a0467c48ed77",
+  "baseTree": "d97f215c878c0d0b2b29db5c3123ee648e5e1895",
+  "mainObserved": "bebc22a7d11e2bcbd0a63fa1cd141c0a8359dceb",
+  "finalBinding": "New Draft PR metadata and exact-head hosted CI; not a self-referential document hash",
+  "runtime": {
+    "node": "24.19.0",
+    "npm": "11.9.0",
+    "browser": "installed system Chromium154",
+    "platform": "Linux",
+    "dependencies": "existing canonical installation; declarations unchanged; hosted clean install separate"
+  },
+  "receipts": {
+    "preflight": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": {
+        "protected": 702,
+        "violations": 0
+      },
+      "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f",
+      "logBytes": 83,
+      "start": "2026-10-26T05:39:35.670Z",
+      "end": "2026-10-26T05:39:35.939Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/preflight/result.json"
+    },
+    "preflight-tests": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": {
+        "total": 57,
+        "passed": 57,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "c4bc20b122a44aaac210276fe3a661de3200f3b4877075164834e57a22f5d343",
+      "logBytes": 9835,
+      "start": "2026-10-26T05:39:35.941Z",
+      "end": "2026-10-26T05:39:37.565Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/preflight-tests/result.json"
+    },
+    "typecheck": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logBytes": 0,
+      "start": "2026-10-26T05:39:37.566Z",
+      "end": "2026-10-26T05:39:41.114Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/typecheck/result.json"
+    },
+    "lint": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logBytes": 0,
+      "start": "2026-10-26T05:39:41.115Z",
+      "end": "2026-10-26T05:39:43.235Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/lint/result.json"
+    },
+    "unit": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": {
+        "total": 776,
+        "passed": 776,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "529ce00ec3bc82dd528a0eb481cbf74cc73ba04cf354ff4d4fdeefe10199047f",
+      "logBytes": 129,
+      "start": "2026-10-26T05:43:19.825Z",
+      "end": "2026-10-26T05:43:27.774Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-43-19.805Z-db53e89d/unit/result.json"
+    },
+    "foundation": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "ba35dee207537300bb56b3b8403e9110f08064f30671d443c8f0c18d6f4e1b76",
+      "logBytes": 12685,
+      "start": "2026-10-26T05:39:51.852Z",
+      "end": "2026-10-26T05:39:52.972Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/foundation/result.json"
+    },
+    "delegate": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": {
+        "total": 40,
+        "passed": 40,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "ad7d43b151fc429ce93f4a1ad182a742b5c29aef8e762ce3f8d9af909f9cf9b1",
+      "logBytes": 8344,
+      "start": "2026-10-26T05:39:52.973Z",
+      "end": "2026-10-26T05:39:54.062Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/delegate/result.json"
+    },
+    "output": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": {
+        "total": 37,
+        "passed": 37,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "f340783178f0756011e052e4676327daa71b0df52f194988acbf09d2c974c412",
+      "logBytes": 7430,
+      "start": "2026-10-26T05:39:54.063Z",
+      "end": "2026-10-26T05:39:58.745Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/output/result.json"
+    },
+    "build": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": null,
+      "logSha256": "ff08bdb88381bb09a522a88bc6831f8a8fcadf8ce1997c39b79223508f541f1b",
+      "logBytes": 887,
+      "start": "2026-10-26T05:39:58.746Z",
+      "end": "2026-10-26T05:39:59.565Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/build/result.json"
+    },
+    "browser": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": {
+        "total": 30,
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "7016f03b172967503bec9451140757f064a675b594335123c93b419ee86e14b5",
+      "logBytes": 5607,
+      "start": "2026-10-26T05:39:59.565Z",
+      "end": "2026-10-26T05:41:20.546Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/browser/result.json"
+    },
+    "controls": {
+      "state": "PASS",
+      "exit": 0,
+      "selection": "default",
+      "counts": {
+        "total": 7,
+        "healthy": 2,
+        "expectedFaults": 5
+      },
+      "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40",
+      "logBytes": 624,
+      "start": "2026-10-26T05:41:20.547Z",
+      "end": "2026-10-26T05:41:55.359Z",
+      "localReceipt": ".cache/test-runs/2026-10-26T05-39-35.649Z-6a863444/controls/result.json"
+    }
+  },
+  "failedAttempts": [
+    {
+      "run": "2026-10-26T05-33-48.057Z-0ccbf2d7",
+      "task": "unit custom",
+      "pass": 335,
+      "fail": 2,
+      "cause": "new shape expectation accidentally omitted second spatial dimension; corrected assertion to supplied 4D tensor shape"
+    },
+    {
+      "run": "2026-10-26T05-34-26.984Z-46a9c5bf",
+      "task": "unit custom",
+      "pass": 3,
+      "fail": 1,
+      "cause": "substring lite2 matched filename suffix tflite followed by 2048 bytes in concatenated DOM text; replaced with exact variant-cell population assertion"
+    },
+    {
+      "run": "2026-10-26T05-36-35.594Z-a74b0faf",
+      "task": "browser custom",
+      "state": "startup failure",
+      "cause": "new worktree had no production dist before preview; built required output, kept original timeout/retries"
+    },
+    {
+      "file": ".cache/classifier-cache/typecheck-initial.log",
+      "cause": "3 old test-boundary external-source types needed to match the new container-only contract; not product inference failures"
+    }
+  ],
+  "focused": {
+    "resolverEngineIntegrityInventory": {
+      "run": "2026-10-26T05-35-34.343Z-ac7d3279",
+      "pass": 116
+    },
+    "finalIntegrity": {
+      "run": "2026-10-26T05-43-02.066Z-00e49732",
+      "pass": 21
+    },
+    "classifierAndInventoryBrowser": {
+      "run": "2026-10-26T05-37-49.771Z-6c34a001",
+      "pass": 11
+    },
+    "overlap": "focused populations overlap full tests; do not sum them"
+  },
+  "historical": {
+    "protected": 702,
+    "mismatches": 0,
+    "historicalEvidenceModified": false
+  },
+  "staticBuild": {
+    "model-cache.html": {
+      "bytes": 1813,
+      "sourceEqual": true,
+      "sha256": "aa4d8c01aba09f7b8a85cc5f8b897a9404b0a33570bf6b0b95662984825eed03"
+    },
+    "model-cache.mjs": {
+      "bytes": 5928,
+      "sourceEqual": true,
+      "sha256": "9ba38b0d70d7b0950ba6909d5230f4921c52bfb1167c5ec3c6c009be71653170"
+    },
+    "model-cache.css": {
+      "bytes": 871,
+      "sourceEqual": true,
+      "sha256": "109efd3e7c48512ba5f8132de3449927f0ea898f6d6d2e1f2f811dd12dce75bc"
+    },
+    "licenses/Apache-2.0.txt": {
+      "bytes": 9142,
+      "sourceEqual": true,
+      "sha256": "a5e9f9b1575301c7a7a03508fdaa2e05a918cc17fd21c6e898096a96d6a34f61"
+    },
+    "licenses/classifier-models.txt": {
+      "bytes": 1450,
+      "sourceEqual": true,
+      "sha256": "766b76c72dc4b58994567db0abfc65b6ec4e8aa291cbd2d5b439751ffb721708"
+    }
+  },
+  "buildCSS": {
+    "baselineBytes": 29677,
+    "currentBytes": 29713,
+    "addedRule": ".px-1{padding-inline:var(--spacing)}",
+    "reason": "new application inventory link; no removed rules",
+    "fullJSEquivalenceClaimed": false
+  },
+  "acceptance": {
+    "syntheticCacheIntegrity": "PASS",
+    "staticInventory": "PASS",
+    "actualCloudModelAcquisition": "NOT RUN",
+    "genuineClassifierInitialization": "NOT RUN",
+    "genuineClassifierInference": "NOT RUN",
+    "olderSixMediaPipeCPUScenarios": "BLOCKED",
+    "physicalGPU": "NOT RUN",
+    "remoteGCSHashComparison": "NOT RUN",
+    "hostedZIPContents": "NOT ACQUIRED/UNVERIFIED",
+    "externalDeployedStartup": "UNVERIFIED",
+    "independentReview": "PENDING"
+  }
+}

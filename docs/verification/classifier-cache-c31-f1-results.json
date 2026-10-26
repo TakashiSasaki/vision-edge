@@ -1,0 +1,201 @@
+{
+  "finding": "C31-F1/P2",
+  "authorStatus": "CORRECTED; independent re-review PENDING",
+  "reviewedSource": "9467d4071f9382946b8e585215addacc3d4f273d",
+  "reviewedTree": "76edacdf339ee7c4f096c6ff65e19ab31cca92c0",
+  "stackedBase": "2de974cb994042a0816ee5940017a0467c48ed77",
+  "sourceBinding": "Final corrected HEAD/tree and hosted CI are recorded in the PR metadata; no self-referential commit hash",
+  "version": "same coherent PR retains1.0.8; package/lock/declarations unchanged",
+  "red": {
+    "unit": {
+      "command": "npm run --silent test -- src/services/cacheInventory.test.ts",
+      "run": "2026-10-26T06-12-34.096Z-dfbf98e7",
+      "total": 6,
+      "passed": 4,
+      "failed": 2,
+      "exit": 1,
+      "intendedFailure": "both unavailable+absent+successful-integrity rows return invalid0 instead of1"
+    },
+    "browser": {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent test:e2e -- e2e/model-cache.spec.ts --grep C31-F1",
+      "run": "2026-10-26T06-12-58.800Z-cb9a64d1",
+      "total": 2,
+      "passed": 0,
+      "failed": 2,
+      "exit": 1,
+      "intendedFailure": "actual static page has no invalid warning and reports a successful empty observation"
+    }
+  },
+  "greenFocused": {
+    "command": "npm run --silent test -- src/services/cacheInventory.test.ts src/services/classifierCacheIntegrity.test.ts",
+    "run": "2026-10-26T06-14-48.000Z-b1298d10",
+    "total": 48,
+    "passed": 48,
+    "failed": 0,
+    "exit": 0,
+    "overlapsFull": true
+  },
+  "greenFull": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+    "run": "2026-10-26T06-16-08.133Z-e0439421",
+    "exit": 0,
+    "receipts": {
+      "preflight": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "protected": 702,
+          "violations": 0
+        },
+        "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+      },
+      "preflight-tests": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 57,
+          "passed": 57,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "a01258db8ae7d3cfa95b4398c2163ac59ac2b7e84cfc3783ea324a7cb099e99e"
+      },
+      "typecheck": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lint": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 799,
+          "passed": 799,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "445bec626141273604371f3e2aa9a88024a283ff2adf66a6df15a973df012322"
+      },
+      "foundation": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "db44e5b3101e117a28c17a48cfaf6a895c8534d71c3bc37366e00d7f5e6a6c45"
+      },
+      "delegate": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "c751295955ea22088d581d22a8ea3705f147b182329b5f606c021f2b6fc1839a"
+      },
+      "output": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "08d8915dd65f97d73381563ad7623d72c0151a8a59c8d48de4c548f4ed5e5d5b"
+      },
+      "build": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": null,
+        "logSha256": "05286e5d7fb40c00df18de51f8c23acbf0407fb4d6a4e278919b742ef498ee92"
+      },
+      "browser": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 32,
+          "passed": 32,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logSha256": "654d6d857a768daf26ec3a8fd90062d6eed8669fe01ce0362117ce3dd0333013"
+      },
+      "controls": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      }
+    }
+  },
+  "applicationBuild": {
+    "before": {
+      "assets/index-CQekvZPT.js": {
+        "bytes": 907471,
+        "sha256": "d4c12989146de75069863b29d6d4f9d2b22402d3e6429747da5c0d838ba1d379"
+      },
+      "assets/index-BMMYopJt.css": {
+        "bytes": 29713,
+        "sha256": "d0e5b75b2d4e886e687d6fc6da60adbb3c93f6d20cebd70faf0438a6dc56f36b"
+      }
+    },
+    "after": {
+      "assets/index-CQekvZPT.js": {
+        "bytes": 907471,
+        "sha256": "d4c12989146de75069863b29d6d4f9d2b22402d3e6429747da5c0d838ba1d379"
+      },
+      "assets/index-BMMYopJt.css": {
+        "bytes": 29713,
+        "sha256": "d0e5b75b2d4e886e687d6fc6da60adbb3c93f6d20cebd70faf0438a6dc56f36b"
+      }
+    },
+    "byteIdentical": true,
+    "staticModuleChangedIntentionally": true,
+    "staticModuleBuildEqualsSource": true
+  },
+  "preservation": {
+    "historicalProtected": 702,
+    "mismatches": 0,
+    "previousEvidenceRewritten": false,
+    "dependenciesChanged": false,
+    "mainOrParentPRsChanged": false,
+    "timeoutsRetriesAssertionsWeakened": false
+  },
+  "limits": {
+    "modelTests": "synthetic/model-free controls only",
+    "actualModelAcquisition": "NOT RUN",
+    "actualModelInference": "NOT RUN",
+    "olderSixCPUScenarios": "BLOCKED",
+    "externalDeployedAPI": "UNVERIFIED",
+    "physicalGPU": "UNVERIFIED",
+    "hostedZIPContents": "UNVERIFIED",
+    "mergeDeployment": "NOT PERFORMED"
+  }
+}

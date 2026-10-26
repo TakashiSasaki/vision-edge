@@ -85,11 +85,11 @@ export function ModelComparisonTable({
         <section className="border border-slate-700 rounded-lg p-3 text-xs space-y-2" aria-label="画像全体分類仕様">
           <h3>{IMAGE_CLASSIFIER_MODEL.name}：画像全体の分類</h3>
           <p>Top5は画像全体の候補です。矩形・マスク・位置や物体数は生成しません。スコアは正答率ではありません。</p>
-          <p>BLOCKED：正確な重みのライセンス・SHA256・モデル検証は未完了。分類資産の取得・配信・prefetchは無効です。入力サイズ・ラベル対応・実推論も未確認です。</p>
+          <p>分類モデルはApache-2.0・固定SHA256/サイズを確認済み。Lite0入力224、Lite2入力260。対応コンテナで検証後に配信します。静的配信・previewはAPI不在でBLOCKED。実推論は未検証です。 <a href="/licenses/classifier-models.txt" className="underline text-blue-300">出典・ライセンス</a></p>
           <p>GPU/CPU要求は明示し、実バックエンドは未計測です。翻訳は完全一致ラベルのみ。手動音声のみ使用します。</p>
           {IMAGE_CLASSIFIER_MODEL.variants.map(variant => <button type="button" key={variant.id} className="rounded border border-slate-600 p-2 mr-2" onClick={() => { onSelectModelAndVariant('image-classifier', variant.id); onClose(); }}>{variant.name}（画像全体分類）</button>)}
         </section>
-        <p className="text-xs text-slate-400">MediaPipeはGPU delegateを指定します。ONNXはWebGPU優先で、利用不能時はWASMを設定します。既存4モデル9種はサーバー起動時にプリフェッチされます。画像分類2種は未検証のため取得しません。</p>
+        <p className="text-xs text-slate-400">MediaPipeはGPU delegateを指定します。ONNXはWebGPU優先で、利用不能時はWASMを設定します。対応する開発サーバーでは既存4モデル9種と分類2種を起動時にプリフェッチします。分類2種は固定ハッシュ・サイズ一致が必須です。</p>
         <button type="button" onClick={onClose} className="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-200">閉じる</button>
       </section>
     </div>

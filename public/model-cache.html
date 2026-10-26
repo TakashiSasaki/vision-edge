@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>コンテナのモデルキャッシュ</title>
+  <link rel="stylesheet" href="/model-cache.css">
+</head>
+<body><main>
+  <a href="/">アプリに戻る</a>
+  <h1>コンテナのモデルキャッシュ</h1>
+  <p>現在のコンテナで登録されたモデルの読み取り専用一覧です。一覧を開いてもモデルの取得・削除は行いません。コンテナの破棄後はキャッシュも失われます。</p>
+  <p>「固定ハッシュ一致」は既知の重みと一致、「取得時ハッシュ一致」は取得時の記録との一致です。モデルの初期化・実推論・物理GPUでの動作を保証する表示ではありません。</p>
+  <button id="refresh" type="button">状態を更新</button>
+  <p id="notice" role="status" aria-live="polite">状態はまだ不明です。</p>
+  <p id="observed"></p>
+  <section aria-labelledby="cached-title"><h2 id="cached-title">保存・検証済みファイル</h2><div id="cached"></div></section>
+  <section aria-labelledby="configured-title"><h2 id="configured-title">設定済み・未準備／未検証</h2><div id="configured"></div></section>
+  <p>APIがない静的配信・previewでは取得不能と表示します。対象は登録済みモデルのみで、未登録ファイルや一時ファイルは含みません。状態は観測時点のもので、その後の変更は明示的に更新してください。</p>
+  <a href="/licenses/classifier-models.txt">分類モデルの出典・ライセンス</a>
+</main><script type="module">
+import { mountInventory } from '/model-cache.mjs';
+mountInventory(document, window.fetch.bind(window));
+</script></body>
+</html>

@@ -31,7 +31,7 @@ it('server exposes all9 variant identities and default aliases from one snapshot
     await m.prefetchAllModels();
     const s = await m.getStatusResponse();
     expect(s).toHaveProperty('variants');
-    expect(Object.keys(s.variants!)).toHaveLength(9);
+    expect(Object.keys(s.variants!)).toHaveLength(11);
     for (const [key, e] of entries) {
         expect(s).toHaveProperty(['variants', key], expect.objectContaining({ ...row(e), cachedAt: expect.any(String) }));
         if (e.isDefault)
@@ -135,7 +135,7 @@ it('restart reuses verified9 payloads; HTTP filenames, status and returned bytes
     const fetch = vi.fn(async () => { throw new Error('UNEXPECTED_FETCH'); });
     const restarted = new ContainerModelCacheManager({ cacheDir: directory, fetchImpl: fetch });
     const status = JSON.parse((await request(restarted, '/api/model-cache/status')).body.toString());
-    expect(Object.keys(status.variants)).toHaveLength(9);
+    expect(Object.keys(status.variants)).toHaveLength(11);
     for (const [index, [key, e]] of entries.entries()) {
         expect(status.variants[key]).toMatchObject({ id: e.modelId, variantId: e.variantId, file: e.file, localUrl: e.localUrl, status: 'cached' });
         const r = await request(restarted, e.localUrl);
@@ -165,7 +165,7 @@ else
     boundary.create.mockRejectedValue(error); const engine = new VisionEngine(); expect(await engine.initialize(e.modelId, e.variantId)).toMatchObject({ status: 'error', model: e.modelId, variantId: e.variantId }); expect(engine.getState().status).not.toBe('ready'); engine.dispose(); });
 it('invalid request leaves an already-ready valid variant accurately labelled', async () => { statusFetch(statusPayload()); const sdk = await sdkBoundary(); const engine = new VisionEngine(); const ready = await engine.initialize('mediapipe', 'lite2'); expect(() => engine.initialize('mediapipe', 'not-a-variant')).toThrow(RangeError); expect(engine.getState()).toBe(ready); expect(sdk.detector).toHaveBeenCalledTimes(1); engine.dispose(); });
 it('late initialization cannot replace a newer variant or retain its task', async () => { statusFetch(statusPayload()); const sdk = await sdkBoundary(); let resolve!: (value: ObjectDetector) => void; const pending = new Promise<ObjectDetector>(yes => { resolve = yes; }); sdk.detector.mockImplementationOnce(() => pending); const engine = new VisionEngine(); const older = engine.initialize('mediapipe', 'lite2'); await vi.waitFor(() => expect(sdk.detector).toHaveBeenCalledTimes(1)); expect(await engine.initialize('mediapipe', 'lite0')).toMatchObject({ status: 'ready', variantId: 'lite0' }); const close = vi.fn(); resolve({ close, detectForVideo: vi.fn() } as unknown as ObjectDetector); expect(await older).toMatchObject({ status: 'cancelled' }); expect(engine.getState()).toMatchObject({ status: 'ready', variantId: 'lite0' }); expect(close).toHaveBeenCalledTimes(1); engine.dispose(); });
-it('all9 actual downloading status entries remain distinct until completion', async () => { let release!: () => void; const gate = new Promise<void>(r => { release = r; }); const fetch = vi.fn(async () => { await gate; return new Response(Buffer.alloc(2048, 7)); }); const m = new ContainerModelCacheManager({ cacheDir: directory, fetchImpl: fetch }); const pending = m.prefetchAllModels(); await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(9)); const status = await m.getStatusResponse(); for (const [key, e] of entries)
+it('all9 actual downloading status entries remain distinct until completion', async () => { let release!: () => void; const gate = new Promise<void>(r => { release = r; }); const fetch = vi.fn(async () => { await gate; return new Response(Buffer.alloc(2048, 7)); }); const m = new ContainerModelCacheManager({ cacheDir: directory, fetchImpl: fetch }); const pending = m.prefetchAllModels(); await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(11)); const status = await m.getStatusResponse(); for (const [key, e] of entries)
     expect(status.variants![key]).toMatchObject({ status: 'downloading', id: e.modelId, variantId: e.variantId, file: e.file, size: null, cachedAt: null }); release(); await pending; });
 for (const kind of ['fetch', 'body'])
     it(`bounded ${kind} timeout returns an unavailable status even for an ignoring mock`, async () => { vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] }); const fetch = vi.fn(async () => kind === 'fetch' ? new Promise<Response>(() => { }) : new Response(new ReadableStream({ start() { } }))); const m = new ContainerModelCacheManager({ cacheDir: directory, fetchImpl: fetch }); const pending = m.prefetchVariant('mediapipe:lite2'); await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1)); await vi.advanceTimersByTimeAsync(45000); expect(await pending).toMatchObject({ status: 'unavailable', error: expect.stringContaining('timeout') }); expect((await readdir(directory)).some(p => p.includes('.part-'))).toBe(false); });

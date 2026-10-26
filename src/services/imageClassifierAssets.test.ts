@@ -1,34 +1,41 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
-import type { IncomingMessage, ServerResponse } from 'node:http';
-import { ContainerModelCacheManager } from './containerModelCacheServer';
 import { IMAGE_CLASSIFIER_ASSETS, classifierAssetStatuses, resolveClassifierAsset, ClassificationAssetsBlockedError } from './imageClassifierAssets';
-const directories: string[] = [];
-afterEach(async () => { await Promise.all(directories.splice(0).map(d => rm(d, { recursive: true, force: true }))); vi.restoreAllMocks(); });
-async function manager() { const dir = await mkdtemp(path.join(tmpdir(), 'classifier-assets-')); directories.push(dir); const fetch = vi.fn<typeof globalThis.fetch>(async () => new Response(Buffer.alloc(2048, 5))); return { m: new ContainerModelCacheManager({ cacheDir: dir, fetchImpl: fetch }), fetch, dir }; }
-async function request(m: ContainerModelCacheManager, url: string) { let body = '', statusCode = 200; const response = { get statusCode() { return statusCode; }, set statusCode(s: number) { statusCode = s; }, setHeader: vi.fn(), end: (chunk: string) => { body = chunk; } }; await m.createMiddleware()({ url, method: 'GET' } as IncomingMessage, response as unknown as ServerResponse, error => { if (error) throw error; }); return { statusCode, body }; }
-it.each(['lite0', 'lite2'] as const)('%s official pinned reference has no invented bytes/license/hash or I/O permission', async variant => {
-  const fetch = vi.spyOn(globalThis, 'fetch'); const entry = IMAGE_CLASSIFIER_ASSETS[variant];
-  expect(entry.upstreamUrl).toBe(`https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_${variant}/float32/1/efficientnet_${variant}.tflite`);
-  expect(classifierAssetStatuses()[variant]).toMatchObject({ status: 'blocked', sha256: null, size: null, license: null, localUrl: null, acquisitionEnabled: false });
-  await expect(resolveClassifierAsset(variant)).rejects.toBeInstanceOf(ClassificationAssetsBlockedError); expect(fetch).not.toHaveBeenCalled();
+import { setContainerModelCacheEnabledForTest } from './modelAssetResolver';
+const variants = ['lite0', 'lite2'] as const;
+function row(variant: typeof variants[number], overrides = {}) {
+  const e = IMAGE_CLASSIFIER_ASSETS[variant];
+  return { ...e, id: e.modelId, status: 'cached', size: e.expectedSize, sha256: e.expectedSha256, filePresent: true, integrity: 'pinned', error: null, ...overrides };
+}
+function status(variant: typeof variants[number], value: unknown) {
+  setContainerModelCacheEnabledForTest(true);
+  return vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ enabled: true, models: {}, wasm: {}, variants: { ['image-classifier:'+variant]: value } }), { headers: { 'Content-Type': 'application/json' } }));
+}
+afterEach(() => { setContainerModelCacheEnabledForTest(null); vi.restoreAllMocks(); });
+it.each(variants)('%s has exact inspected metadata, not an invented acquisition result', variant => {
+  const e = IMAGE_CLASSIFIER_ASSETS[variant];
+  expect(e.upstreamUrl).toBe(`https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_${variant}/float32/1/efficientnet_${variant}.tflite`);
+  expect(e.expectedSize).toBe(variant === 'lite0' ? 18582189 : 24325765);
+  expect(e.expectedSha256).toBe(variant === 'lite0' ? '6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0' : '94b6c84a5d6de20f932558de213b50e0338dcc06ab83d8d64b12128a476b4b83');
+  expect(e.inputShape).toEqual([1, variant === 'lite0' ? 224 : 260, variant === 'lite0' ? 224 : 260, 3]); expect(e.outputShape).toEqual([1,1000]);
+  expect(classifierAssetStatuses()[variant]).toMatchObject({ status: 'unavailable', size: null, sha256: null, filePresent: null, license: 'Apache-2.0', acquisitionEnabled: true });
 });
-it('server status publishes the two blocked candidates without changing nine existing variant identities', async () => {
-  const { m, fetch } = await manager(), status = await m.getStatusResponse();
-  expect(Object.keys(status.variants!)).toHaveLength(9); expect(Object.keys(status.models)).toHaveLength(4);
-  expect(status.classification).toEqual(classifierAssetStatuses()); expect(fetch).not.toHaveBeenCalled();
-  const http = await request(m, '/api/model-cache/status'); expect(http.statusCode).toBe(200); expect(JSON.parse(http.body).classification).toEqual(status.classification);
+it.each(variants)('%s resolves only to the matching pinned container path', async variant => {
+  const fetch = status(variant, row(variant));
+  expect(await resolveClassifierAsset(variant)).toEqual({ modelId: 'image-classifier', variantId: variant, source: 'container-cache', modelAssetPath: IMAGE_CLASSIFIER_ASSETS[variant].localUrl });
+  expect(fetch).toHaveBeenCalledTimes(1); expect(fetch.mock.calls[0][0]).toBe('/api/model-cache/status');
 });
-it('startup prefetch still acquires only the old nine generated fixture assets, never a classifier', async () => {
-  const { m, fetch } = await manager(); await m.prefetchAllModels(); expect(fetch).toHaveBeenCalledTimes(9);
-  for (const args of fetch.mock.calls) expect(String(args[0])).not.toContain('image_classifier');
-  expect((await m.getStatusResponse()).classification).toEqual(classifierAssetStatuses());
+for (const variant of variants) it.each([
+  { id: 'mediapipe' }, { variantId: variant === 'lite0' ? 'lite2' : 'lite0' }, { file: 'wrong.tflite' }, { localUrl: IMAGE_CLASSIFIER_ASSETS[variant].upstreamUrl }, { upstreamUrl: 'https://wrong.invalid/model' }, { license: 'unknown' }, { expectedSize: 1 }, { expectedSha256: '0'.repeat(64) }, { sha256: '0'.repeat(64) }, { size: 1 }, { filePresent: false }, { integrity: 'self-recorded' }, { error: 'bad cache' }, { status: 'unknown' },
+])('%s rejects mismatched/unverified cached state %j', async overrides => {
+  status(variant, row(variant, overrides)); await expect(resolveClassifierAsset(variant)).rejects.toBeInstanceOf(ClassificationAssetsBlockedError);
 });
-it.each(['lite0', 'lite2'] as const)('disk bytes cannot enable %s status, direct model serving or prefetch', async variant => {
-  const { m, dir, fetch } = await manager(); await writeFile(path.join(dir, IMAGE_CLASSIFIER_ASSETS[variant].file), Buffer.alloc(2048, 99));
-  const http = await request(m, '/api/model-cache/models/'+IMAGE_CLASSIFIER_ASSETS[variant].file); expect(http.statusCode).toBe(404);
-  await expect(m.prefetchVariant('image-classifier:'+variant)).rejects.toThrow('Unknown model variant');
-  expect((await m.getStatusResponse()).classification![variant].status).toBe('blocked'); expect(fetch).not.toHaveBeenCalled();
+it.each(variants)('%s allows only verified server acquisition states; no binary fetch by resolver', async variant => {
+  const fetch = status(variant, row(variant, { status: 'unavailable', size: null, sha256: null, filePresent: false, integrity: 'not-present' }));
+  expect((await resolveClassifierAsset(variant)).modelAssetPath).toBe(IMAGE_CLASSIFIER_ASSETS[variant].localUrl); expect(fetch).toHaveBeenCalledTimes(1);
+});
+it('static/preview mode blocks without network; missing API never enables upstream fallback', async () => {
+  setContainerModelCacheEnabledForTest(false); const fetch = vi.spyOn(globalThis, 'fetch');
+  await expect(resolveClassifierAsset('lite0')).rejects.toThrow('API unavailable'); expect(fetch).not.toHaveBeenCalled();
+  setContainerModelCacheEnabledForTest(true); fetch.mockResolvedValue(new Response('<html>SPA</html>'));
+  await expect(resolveClassifierAsset('lite0')).rejects.toThrow('identity/pins'); expect(fetch).toHaveBeenCalledTimes(1);
 });
