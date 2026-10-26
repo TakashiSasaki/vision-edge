@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FilesetResolver, ImageSegmenter, ObjectDetector } from '@mediapipe/tasks-vision';
-import { ContainerModelCacheManager } from './containerModelCacheServer';
+import { ContainerModelCacheManager, containerModelCachePlugin } from './containerModelCacheServer';
+import { prefetchModels } from '../../scripts/prefetch-models';
 import {
   getResolvedSource,
   LOCAL_MEDIAPIPE_WASM_URL,
@@ -263,5 +264,56 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     expect(getResolvedSource('wasm-mediapipe')).toBe('external-fallback');
     expect(getResolvedSource('selfie-segmenter')).toBe('external-fallback');
     engine.dispose();
+  });
+
+  it('triggers startup model prefetching in dev and preview servers via containerModelCachePlugin', async () => {
+    const fakePayload = Buffer.alloc(2048, 0x42);
+    const mockFetch = vi.fn(async () => new Response(fakePayload, { status: 200 }));
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const plugin = containerModelCachePlugin({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+      enableInPreview: true,
+    });
+
+    type MockServer = { middlewares: { use: (fn: unknown) => void } };
+    const mockDevServer: MockServer = { middlewares: { use: vi.fn() } };
+    if (typeof plugin.configureServer === 'function') {
+      (plugin.configureServer as (server: unknown) => void)(mockDevServer);
+    }
+    expect(mockDevServer.middlewares.use).toHaveBeenCalledTimes(1);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[container-model-cache] Container dev server started'));
+
+    const mockPreviewServer: MockServer = { middlewares: { use: vi.fn() } };
+    const savedTestLogDir = process.env.TEST_LOG_DIR;
+    const savedCi = process.env.CI;
+    try {
+      delete process.env.TEST_LOG_DIR;
+      delete process.env.CI;
+      if (typeof plugin.configurePreviewServer === 'function') {
+        (plugin.configurePreviewServer as (server: unknown) => void)(mockPreviewServer);
+      }
+      expect(mockPreviewServer.middlewares.use).toHaveBeenCalledTimes(1);
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[container-model-cache] Container preview server started'));
+    } finally {
+      if (savedTestLogDir !== undefined) process.env.TEST_LOG_DIR = savedTestLogDir;
+      if (savedCi !== undefined) process.env.CI = savedCi;
+    }
+  });
+
+  it('runs prefetchModels script function and returns cache counts for all 11 variants', async () => {
+    const fakePayload = Buffer.alloc(2048, 0x42);
+    const mockFetch = vi.fn(async () => new Response(fakePayload, { status: 200 }));
+    const manager = new ContainerModelCacheManager({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+    });
+
+    const result = await prefetchModels(manager);
+    expect(result.totalCount).toBe(11);
+    // 9 legacy variants accept synthetic bytes; 2 pinned image classifiers strictly require their pinned SHA256/size
+    expect(result.cachedCount).toBe(9);
+    expect(result.unavailableCount).toBe(2);
   });
 });

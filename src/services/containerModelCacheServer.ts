@@ -47,6 +47,7 @@ export interface ContainerModelCacheOptions {
   cacheDir?: string;
   fetchImpl?: typeof fetch;
   autoPrefetchOnStart?: boolean;
+  enableInPreview?: boolean;
 }
 
 function contentTypeForFile(filename: string): string {
@@ -473,14 +474,34 @@ export function containerModelCachePlugin(
   options: ContainerModelCacheOptions = {}
 ): Plugin {
   const manager = new ContainerModelCacheManager(options);
+  const triggerStartupPrefetch = (serverType: string) => {
+    if (options.autoPrefetchOnStart !== false) {
+      console.log(`[container-model-cache] Container ${serverType} server started: initiating startup download for all model files...`);
+      void manager.prefetchAllModels().then(() => {
+        const variants = manager.getVariantsSnapshot();
+        const cachedCount = Object.values(variants).filter(v => v.status === 'cached').length;
+        const totalCount = Object.keys(variants).length;
+        console.log(`[container-model-cache] Startup download completed: ${cachedCount}/${totalCount} variants cached.`);
+      }).catch(err => {
+        console.warn('[container-model-cache] Startup download encountered an error:', err instanceof Error ? err.message : String(err));
+      });
+    }
+  };
+
   return {
     name: 'container-model-cache-server',
     apply: 'serve',
     configureServer(server) {
-      if (options.autoPrefetchOnStart !== false) {
-        void manager.prefetchAllModels();
-      }
+      triggerStartupPrefetch('dev');
       server.middlewares.use(manager.createMiddleware());
+    },
+    configurePreviewServer(server) {
+      const isTest = process.env.TEST_LOG_DIR !== undefined || process.env.CI !== undefined;
+      const enabled = process.env.CONTAINER_MODEL_CACHE === 'true' || (!isTest && options.enableInPreview !== false);
+      if (enabled) {
+        triggerStartupPrefetch('preview');
+        server.middlewares.use(manager.createMiddleware());
+      }
     },
     transformIndexHtml(html) {
       const injection =
