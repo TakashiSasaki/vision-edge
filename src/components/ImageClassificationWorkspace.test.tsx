@@ -72,3 +72,9 @@ it('provenance is request-owned rather than inferred from the cache default or a
   expect(screen.getByLabelText('分類経路記録')).toHaveTextContent('モデル external ／ WASM external-fallback');
   fireEvent.change(within(screen.getByRole('banner')).getByLabelText('バリアント'),{target:{value:'lite2'}}); await act(async()=>{}); expect(e.getState()).toMatchObject({status:'ready',assetSource:'unreported',wasmSource:'unreported'}); expect(screen.getByLabelText('分類経路記録')).toHaveTextContent('モデル unreported ／ WASM unreported');
 });
+
+it('accepted frame publication is visible and actionable before the next browser event, without a stale-frame exception', async()=>{
+  const t=task(); await mount(async()=>t); t.classifyForVideo.mockReturnValueOnce({classifications:[{headIndex:0,headName:'',categories:[{index:42,categoryName:'NEW ACCEPTED FRAME',displayName:'',score:.8}]}]});
+  act(()=>{const video=screen.getByLabelText('画像分類カメラ') as HTMLVideoElement;video.currentTime=1;const pending=[...callbacks];callbacks.clear();pending.forEach(([,cb])=>cb(0));vi.runOnlyPendingTimers();expect(screen.getByText('NEW ACCEPTED FRAME')).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:/順位1 NEW ACCEPTED FRAMEを読み上げ/}));});
+  expect(synth.speak).toHaveBeenCalledTimes(1);expect(utterances[0].text).toContain('NEW ACCEPTED FRAME');
+});

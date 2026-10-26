@@ -1,3 +1,4 @@
+import { flushSync } from 'react-dom';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { CameraFacingMode, RunnableModelType, TTSConfig } from '../types/vision';
 import type { ClassificationDelegate, ClassificationState, ImageCategory, ImageClassifierVariantId, ModelFamilyType, WholeImageClassificationFrame } from '../types/classification';
@@ -57,7 +58,9 @@ export function ImageClassificationWorkspace(props: Props) {
     return startImageClassificationScheduler({ engine, video: videoRef.current!, lock: lock.current,
       options: { scoreThreshold: threshold, maxResults: 5 },
       current: () => live.current && !paused.current && !faultRef.current && activeProps.current.variant === variant && engine.getState().requestId === requestId,
-      adopt: accepted => { if (engine.isCurrentFrame(accepted)) setFrame(accepted); }, input: () => {},
+      // The SDK owner changes synchronously. Commit the corresponding visible
+      // candidate before another input event can observe an obsolete render.
+      adopt: accepted => { if (engine.isCurrentFrame(accepted)) flushSync(() => setFrame(accepted)); }, input: () => {},
       error: () => { faultRef.current = true; invalidate(); setFault('分類推論に失敗しました。'); },
       captureError: () => { faultRef.current = true; invalidate(); setFault('分類映像フレームの取得に失敗しました。'); },
     });
@@ -85,7 +88,7 @@ export function ImageClassificationWorkspace(props: Props) {
       <p aria-label="分類経路記録">受理した初期化の経路記録: モデル {state.status === 'ready' ? state.assetSource : '未取得'} ／ WASM {state.status === 'ready' ? state.wasmSource : '未取得'}（実バイト未確認）</p>
       <p aria-label="分類バックエンド状態">要求: {delegate} ／ SDK設定: {state.status === 'ready' ? state.sdkDelegate : '未準備'} ／ 実バックエンド: 未計測</p>
     </div>
-    <main className="flex-1 min-h-0 overflow-y-auto p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+    <main className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3 md:space-y-0 md:grid md:grid-cols-2 gap-3">
       <section aria-label="画像分類プレビュー" className="min-w-0 space-y-2">
         <video ref={videoRef} autoPlay muted playsInline aria-label="画像分類カメラ" className="w-full rounded-xl bg-black aspect-video object-contain" />
         <p className="text-xs">画像全体の分類です。位置タップ・検出矩形・領域マスクは使用しません。</p>

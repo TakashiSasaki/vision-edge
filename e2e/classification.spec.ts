@@ -66,3 +66,52 @@ test('CI double only: rapid ABA and cross-family selection close obsolete initia
   await model(page).selectOption('mediapipe'); await expect(page.getByText('画像全体の分類 Top5',{exact:true})).toHaveCount(0); await model(page).selectOption('image-classifier'); await expect(panel(page).getByRole('listitem')).toHaveCount(5);
   expect(await page.evaluate(()=>window.classifierSpeechCi.texts)).toEqual([]);
 });
+
+test.describe('B-F1 usable classification results geometry', () => {
+  test.use({ hasTouch: true });
+  for (const viewport of [{ width:320, height:640 }, { width:375, height:667 }]) test(`B-F1 mobile ${viewport.width}x${viewport.height} full results, touch and keyboard reachability`, async ({page},info) => {
+    await setup(page); await page.setViewportSize(viewport); await page.goto('http://127.0.0.1:4174'); await model(page).selectOption('image-classifier');
+    await expect(panel(page).getByRole('listitem')).toHaveCount(5);
+    const dimensions = await panel(page).evaluate(element => {
+      const main=element.closest('main')!, video=main.querySelector('video')!;
+      const read=(e:Element)=>({ height:e.getBoundingClientRect().height, width:e.getBoundingClientRect().width, clientHeight:e.clientHeight, scrollHeight:e.scrollHeight, overflowY:getComputedStyle(e).overflowY });
+      return { panel:read(element), main:read(main), video:read(video), viewport:{width:innerWidth,height:innerHeight} };
+    });
+    await info.attach('B-F1-dimensions.json',{body:JSON.stringify(dimensions,null,2),contentType:'application/json'});
+    await page.screenshot({path:info.outputPath('B-F1-before-scroll.png')});
+    // Mobile results must take their natural full content height; the outer main
+    // scroll owner must provide enough room to read a candidate and its action.
+    expect(dimensions.panel.height).toBeGreaterThan(600);
+    expect(dimensions.panel.scrollHeight).toBeLessThanOrEqual(dimensions.panel.clientHeight+2);
+    expect(dimensions.main.clientHeight).toBeGreaterThanOrEqual(200);
+    expect(dimensions.video.width).toBeLessThanOrEqual(viewport.width);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
+    const reachable = async (selector: ReturnType<typeof page.locator>) => selector.evaluate(element => {
+      const r=element.getBoundingClientRect(), m=element.closest('main')!.getBoundingClientRect();
+      const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+      return { fullyVisible:r.top>=m.top-1&&r.bottom<=m.bottom+1&&r.left>=0&&r.right<=innerWidth, height:r.height,width:r.width, hit:hit===element||element.contains(hit) };
+    });
+    for (let i=0;i<5;i++) {
+      const candidate=panel(page).getByRole('listitem').nth(i), speak=candidate.getByRole('button',{name:/読み上げ/});
+      await candidate.scrollIntoViewIfNeeded();
+      expect((await reachable(candidate.locator('output'))).fullyVisible).toBe(true);
+      const action=await reachable(speak); expect(action.fullyVisible).toBe(true); expect(action.hit).toBe(true); expect(action.height).toBeGreaterThanOrEqual(32); expect(action.width).toBeGreaterThanOrEqual(44);
+      const before=await page.evaluate(()=>window.classifierSpeechCi.texts.length); await speak.tap(); await expect.poll(()=>page.evaluate(()=>window.classifierSpeechCi.texts.length)).toBe(before+1); await page.evaluate(()=>window.classifierSpeechCi.finish());
+    }
+    // Focus must move the fifth candidate into the usable outer viewport even
+    // after returning to the preview; Enter must operate the same manual action.
+    await page.locator('main').evaluate(main=>{main.scrollTop=0;});
+    const last=panel(page).getByRole('listitem').last().getByRole('button',{name:/読み上げ/}); await page.getByLabel('分類スコアしきい値').focus(); for(let i=0;i<5;i++) await page.keyboard.press('Tab'); expect((await reachable(last)).fullyVisible).toBe(true); await expect(last).toBeFocused();
+    const before=await page.evaluate(()=>window.classifierSpeechCi.texts.length); await page.keyboard.press('Enter'); await expect.poll(()=>page.evaluate(()=>window.classifierSpeechCi.texts.length)).toBe(before+1); await page.evaluate(()=>window.classifierSpeechCi.finish());
+    await page.screenshot({path:info.outputPath('B-F1-fifth-candidate.png')});
+    const final=await panel(page).evaluate(e=>({panelScrollTop:e.scrollTop,outerScrollTop:e.closest('main')!.scrollTop})); expect(final.panelScrollTop).toBe(0); expect(final.outerScrollTop).toBeGreaterThan(0);
+    await info.attach('B-F1-final-scroll.json',{body:JSON.stringify(final),contentType:'application/json'});
+  });
+  test('B-F1 desktop keeps split columns and its independently scrollable results', async ({page},info) => {
+    await setup(page); await page.setViewportSize({width:1280,height:800}); await page.goto('http://127.0.0.1:4174'); await model(page).selectOption('image-classifier'); await expect(panel(page).getByRole('listitem')).toHaveCount(5);
+    const geometry=await panel(page).evaluate(e=>{const m=e.closest('main')!,p=m.firstElementChild!.getBoundingClientRect(),r=e.getBoundingClientRect();return{display:getComputedStyle(m).display,previewTop:p.top,panelTop:r.top,previewRight:p.right,panelLeft:r.left,client:e.clientHeight,scroll:e.scrollHeight,overflow:getComputedStyle(e).overflowY};});
+    expect(geometry.display).toBe('grid'); expect(Math.abs(geometry.previewTop-geometry.panelTop)).toBeLessThan(2); expect(geometry.panelLeft).toBeGreaterThan(geometry.previewRight); expect(geometry.scroll).toBeGreaterThan(geometry.client); expect(geometry.overflow).toBe('auto');
+    const last=panel(page).getByRole('listitem').last().getByRole('button',{name:/読み上げ/}); await last.focus(); await expect(last).toBeInViewport(); await page.keyboard.press('Enter'); await expect.poll(()=>page.evaluate(()=>window.classifierSpeechCi.texts.length)).toBe(1);
+    await page.screenshot({path:info.outputPath('B-F1-desktop.png')}); await info.attach('B-F1-desktop-geometry.json',{body:JSON.stringify(geometry),contentType:'application/json'});
+  });
+});

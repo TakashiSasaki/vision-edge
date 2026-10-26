@@ -1,0 +1,451 @@
+{
+  "finding": "B-F1/P2",
+  "independentClosure": "PENDING",
+  "rejectedHead": "3362f70f1ff59175ef6bdb8f8cb1ba3a4b5aae93",
+  "rejectedTree": "499b120477564398f63c3820933ef5687ba9f6d1",
+  "stackedBase": "8b238424c2ca31b6d7fff7f33ff2da06377a9093",
+  "mainAtInspection": "bebc22a7d11e2bcbd0a63fa1cd141c0a8359dceb",
+  "version": "1.0.7",
+  "versionPolicy": "same coherent PR retains generated PATCH above A1.0.6/main1.0.5; package and lock unchanged",
+  "failedAttempts": [
+    {
+      "run": "2026-10-26T03-19-30.996Z-053007ae",
+      "task": "browser",
+      "reason": "original B-F1 dimension repro:2 mobile fail, desktop pass",
+      "exit": 1,
+      "counts": {
+        "total": 3,
+        "passed": 1,
+        "failed": 2,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "476bd026afdb3d765bacdc94b1e6233ec9a341f3c93516045e233b9be71f228a"
+    },
+    {
+      "run": "2026-10-26T03-20-29.243Z-c976692a",
+      "task": "browser",
+      "reason": "layout dimensions fixed; tap publication race and already-focused keyboard fixture exposed",
+      "exit": 1,
+      "counts": {
+        "total": 3,
+        "passed": 1,
+        "failed": 2,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "dd6280c41819a314c422f78daceb4470f08849ae715e98df4e4e422872d1ee78"
+    },
+    {
+      "run": "2026-10-26T03-23-50.179Z-907a5212",
+      "task": "unit",
+      "reason": "desired synchronous publication red control",
+      "exit": 1,
+      "counts": {
+        "total": 12,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 11,
+        "todo": 0
+      },
+      "logSha256": "48bc50516b1bd744063d3d50f7d0a20b48c56c438b80c865785eb4538f40ae8a"
+    }
+  ],
+  "measurements": {
+    "red": {
+      "run": "2026-10-26T03-19-30.996Z-053007ae",
+      "measurements": [
+        {
+          "test": "B-F1 mobile 320x640 full results, touch and keyboard reachability",
+          "name": "B-F1-dimensions.json",
+          "measurement": {
+            "panel": {
+              "height": 34,
+              "width": 296,
+              "clientHeight": 32,
+              "scrollHeight": 1252,
+              "overflowY": "auto"
+            },
+            "main": {
+              "height": 308,
+              "width": 320,
+              "clientHeight": 308,
+              "scrollHeight": 327,
+              "overflowY": "auto"
+            },
+            "video": {
+              "height": 166.5,
+              "width": 296,
+              "clientHeight": 167,
+              "scrollHeight": 167,
+              "overflowY": "clip"
+            },
+            "viewport": {
+              "width": 320,
+              "height": 640
+            }
+          }
+        },
+        {
+          "test": "B-F1 mobile 375x667 full results, touch and keyboard reachability",
+          "name": "B-F1-dimensions.json",
+          "measurement": {
+            "panel": {
+              "height": 110.5625,
+              "width": 351,
+              "clientHeight": 109,
+              "scrollHeight": 1212,
+              "overflowY": "auto"
+            },
+            "main": {
+              "height": 434,
+              "width": 375,
+              "clientHeight": 434,
+              "scrollHeight": 434,
+              "overflowY": "auto"
+            },
+            "video": {
+              "height": 197.4375,
+              "width": 351,
+              "clientHeight": 197,
+              "scrollHeight": 197,
+              "overflowY": "clip"
+            },
+            "viewport": {
+              "width": 375,
+              "height": 667
+            }
+          }
+        },
+        {
+          "test": "B-F1 desktop keeps split columns and its independently scrollable results",
+          "name": "B-F1-desktop-geometry.json",
+          "measurement": {
+            "display": "grid",
+            "previewTop": 179,
+            "panelTop": 179,
+            "previewRight": 634,
+            "panelLeft": 646,
+            "client": 607,
+            "scroll": 1160,
+            "overflow": "auto"
+          }
+        }
+      ]
+    },
+    "green": {
+      "run": "2026-10-26T03-24-08.624Z-d8c33832",
+      "measurements": [
+        {
+          "test": "B-F1 mobile 320x640 full results, touch and keyboard reachability",
+          "name": "B-F1-dimensions.json",
+          "measurement": {
+            "panel": {
+              "height": 1254,
+              "width": 296,
+              "clientHeight": 1252,
+              "scrollHeight": 1252,
+              "overflowY": "visible"
+            },
+            "main": {
+              "height": 308,
+              "width": 320,
+              "clientHeight": 308,
+              "scrollHeight": 1547,
+              "overflowY": "auto"
+            },
+            "video": {
+              "height": 166.5,
+              "width": 296,
+              "clientHeight": 167,
+              "scrollHeight": 167,
+              "overflowY": "clip"
+            },
+            "viewport": {
+              "width": 320,
+              "height": 640
+            }
+          }
+        },
+        {
+          "test": "B-F1 mobile 320x640 full results, touch and keyboard reachability",
+          "name": "B-F1-final-scroll.json",
+          "measurement": {
+            "panelScrollTop": 0,
+            "outerScrollTop": 1239
+          }
+        },
+        {
+          "test": "B-F1 mobile 375x667 full results, touch and keyboard reachability",
+          "name": "B-F1-dimensions.json",
+          "measurement": {
+            "panel": {
+              "height": 1214,
+              "width": 351,
+              "clientHeight": 1212,
+              "scrollHeight": 1212,
+              "overflowY": "visible"
+            },
+            "main": {
+              "height": 434,
+              "width": 375,
+              "clientHeight": 434,
+              "scrollHeight": 1537,
+              "overflowY": "auto"
+            },
+            "video": {
+              "height": 197.4375,
+              "width": 351,
+              "clientHeight": 197,
+              "scrollHeight": 197,
+              "overflowY": "clip"
+            },
+            "viewport": {
+              "width": 375,
+              "height": 667
+            }
+          }
+        },
+        {
+          "test": "B-F1 mobile 375x667 full results, touch and keyboard reachability",
+          "name": "B-F1-final-scroll.json",
+          "measurement": {
+            "panelScrollTop": 0,
+            "outerScrollTop": 1103
+          }
+        },
+        {
+          "test": "B-F1 desktop keeps split columns and its independently scrollable results",
+          "name": "B-F1-desktop-geometry.json",
+          "measurement": {
+            "display": "grid",
+            "previewTop": 179,
+            "panelTop": 179,
+            "previewRight": 634,
+            "panelLeft": 646,
+            "client": 607,
+            "scroll": 1160,
+            "overflow": "auto"
+          }
+        }
+      ]
+    }
+  },
+  "visuallyInspectedScreenshots": [
+    {
+      "run": "2026-10-26T03-19-30.996Z-053007ae",
+      "name": "B-F1-before-scroll.png",
+      "width": 375,
+      "height": 667,
+      "sha256": "113468771569435a4dfaec12733afa0f8ad4fec7250951c92a62c7daa577793f"
+    },
+    {
+      "run": "2026-10-26T03-19-30.996Z-053007ae",
+      "name": "B-F1-desktop.png",
+      "width": 1280,
+      "height": 800,
+      "sha256": "9cc3b4e7344be93c1ecc9f7e77bdde6d98afda3ec05117ee83ebaf1a1dba35ec"
+    },
+    {
+      "run": "2026-10-26T03-19-30.996Z-053007ae",
+      "name": "B-F1-before-scroll.png",
+      "width": 320,
+      "height": 640,
+      "sha256": "e8057e33b05f7eebc18b95ac42cd406bfe0fb26360981015cd9dbfcd641d7bd6"
+    },
+    {
+      "run": "2026-10-26T03-24-08.624Z-d8c33832",
+      "name": "B-F1-before-scroll.png",
+      "width": 375,
+      "height": 667,
+      "sha256": "3d2bfd2987ab98f8b39d55c82da9ff38912b75029fd998661c105f46d60c4eb4"
+    },
+    {
+      "run": "2026-10-26T03-24-08.624Z-d8c33832",
+      "name": "B-F1-fifth-candidate.png",
+      "width": 375,
+      "height": 667,
+      "sha256": "1e4b4a725ce96f685666d869cf2fda2f61aacddb660013c99eb9fb05b6111e19"
+    },
+    {
+      "run": "2026-10-26T03-24-08.624Z-d8c33832",
+      "name": "B-F1-desktop.png",
+      "width": 1280,
+      "height": 800,
+      "sha256": "fa16208f4552744403980154acd553f401a033ecde3225029fc4517d331648d3"
+    },
+    {
+      "run": "2026-10-26T03-24-08.624Z-d8c33832",
+      "name": "B-F1-before-scroll.png",
+      "width": 320,
+      "height": 640,
+      "sha256": "86faf6a8ebc4bdd6d614019bb56557d74e24741720a147cc49b28acc510e3b4c"
+    },
+    {
+      "run": "2026-10-26T03-24-08.624Z-d8c33832",
+      "name": "B-F1-fifth-candidate.png",
+      "width": 320,
+      "height": 640,
+      "sha256": "de05572a582f82727ab82f99aa0291da5d4a7abc112ffb604b4f7790e24fe94c"
+    }
+  ],
+  "focused": {
+    "browserRun": "2026-10-26T03-24-08.624Z-d8c33832",
+    "browserPassed": 3,
+    "componentRun": "2026-10-26T03-24-00.903Z-ffd12e11",
+    "componentPassed": 12,
+    "exit": 0
+  },
+  "fullLocal": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+    "run": "2026-10-26T03-25-18.456Z-bfd856df",
+    "exit": 0,
+    "node": "v24.19.0",
+    "npm": "11.9.0",
+    "browser": "installed system Chromium154",
+    "phases": {
+      "browser": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 27,
+          "passed": 27,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logSha256": "ef1567c7d7c788207729af9d7f4cd08ea6e836ad522c0dbedbf4031bf65d2f6e"
+      },
+      "build": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "651b530f1f3d2681ab1a91ff333d48a4abe4116364d6d0bb511e0a911310e75f"
+      },
+      "controls": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      },
+      "delegate": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "87f9fc961faf1d9e2b0fbfefe64723e6c36d4f5e120a930e3440562ae8c07c5d"
+      },
+      "foundation": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "d4c43799ea2031e206b328bb51eeca47f24caab1eadf531362f429e53ba50f4e"
+      },
+      "lint": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "output": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "7bb244f4a9a563fbc6aecd6dbe5a0717883429fbc91974b51c3360170a623f98"
+      },
+      "preflight": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "protected": 702,
+          "violations": 0
+        },
+        "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+      },
+      "preflight-tests": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 57,
+          "passed": 57,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "0ef590a77651e2835d34bc083ea47734063f200b082760caca1de0456945f81e"
+      },
+      "typecheck": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 720,
+          "passed": 720,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "50fe98b42cf22eddf3be6c16323edb100730ec8467b1c1cd331d64da77151475"
+      }
+    }
+  },
+  "historical": {
+    "protected": 702,
+    "mismatches": []
+  },
+  "modelsAcquired": 0,
+  "realInference": "BLOCKED/not run; controlled browser/SDK/speech only",
+  "scope": "mobile flow + desktop overflow + synchronous accepted-frame commit; no stale acceptance relaxation, scheduler pacing, acquisition or provider change; final source/hosted CI binding in PR30 body"
+}

@@ -8,7 +8,7 @@ interface Props {
   holding: boolean;
 }
 export function ImageClassificationPanel({ frame, threshold, onThreshold, onSpeak, holding }: Props) {
-  return <section aria-label="画像全体の分類結果" className="min-h-0 overflow-y-auto rounded-xl border border-slate-700 bg-slate-900 p-4 space-y-4">
+  return <section aria-label="画像全体の分類結果" className="min-h-0 md:overflow-y-auto rounded-xl border border-slate-700 bg-slate-900 p-4 space-y-4">
     <h2 className="font-semibold">画像全体の分類 Top5</h2>
     <p className="text-xs text-slate-300">順位は出力スコア順です。スコアは正答率を保証しません。SDK indexは順位とは別のモデル出力IDです。</p>
     <label className="block text-sm">分類スコアしきい値: {threshold.toFixed(2)}<input aria-label="分類スコアしきい値" className="block w-full" type="range" min="0" max="1" step="0.01" value={threshold} onChange={e => onThreshold(Number(e.target.value))} /></label>
