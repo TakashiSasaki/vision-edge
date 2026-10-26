@@ -28,7 +28,7 @@ export const createImageClassificationTask: ImageClassificationFactory = async (
   let asset;
   try {
     asset = await resolveClassifierAsset(variantId);
-    if (asset.modelId !== entry.modelId || asset.variantId !== variantId || asset.modelAssetPath !== entry.upstreamUrl || asset.source !== 'external') throw new Error('Classifier asset identity mismatch');
+    if (asset.modelId !== entry.modelId || asset.variantId !== variantId || asset.modelAssetPath !== entry.localUrl || asset.source !== 'container-cache') throw new Error('Classifier asset identity mismatch');
   } catch (cause) { throw new ClassificationInitializationError('asset', cause); }
   if (!current()) throw new Error('Classifier initialization cancelled before WASM');
   let fileset;

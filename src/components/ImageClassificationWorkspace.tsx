@@ -80,10 +80,10 @@ export function ImageClassificationWorkspace(props: Props) {
   return <div className="h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col">
     <Header activeModel="image-classifier" onSelectModel={model => select(model)} activeVariant={props.variant} onSelectVariant={variant => select('image-classifier', variant)} modelState={state} isCameraActive={props.cameraActive} onToggleCamera={() => { if (props.cameraActive) cameraStop(); else { clearError(); props.onStart(); } }} ttsEnabled={false} onToggleTTS={() => {}} isSpeaking={holding} onOpenComparison={() => setComparison(true)} />
     <div className="px-4 py-2 text-xs space-y-1">
-      {blocked ? <p role="status">BLOCKED：正確な重みのライセンス・SHA256・モデル検証が未完了のため、取得・配信・実推論は無効です。</p>
+      {blocked ? <p role="status">BLOCKED：検証済みコンテナキャッシュを利用できません。静的配信・previewではキャッシュAPIが必要です。取得・整合性エラー時に未検証の外部モデルへ切り替えません。</p>
         : state.status === 'error' ? <p role="alert">分類モデルの初期化に失敗しました。<button type="button" className="ml-2 underline" onClick={() => { invalidate(); void engine.initialize(props.variant, delegate); }}>分類モデルを再試行</button></p>
         : <p role="status">{state.status === 'ready' ? '分類タスク準備完了（実モデル推論の受入確認とは別です）' : '分類モデル準備中'}</p>}
-      <p>実モデルの入力テンソル・ラベル対応・推論結果は未検証です。</p>
+      <p>モデルのライセンス・固定SHA256・入力形状（Lite0:224、Lite2:260）は確認済みです。実モデル推論・動作環境の受け入れは未検証です。</p>
       <label>分類delegate要求 <select className="bg-slate-800 rounded px-2 py-1" aria-label="分類delegate要求" value={delegate} onChange={e => { const value = e.target.value; if (value === 'CPU' || value === 'GPU') { invalidate(); engine.dispose(); setDelegate(value); } }}><option value="GPU">GPU</option><option value="CPU">CPU</option></select></label>
       <p aria-label="分類経路記録">受理した初期化の経路記録: モデル {state.status === 'ready' ? state.assetSource : '未取得'} ／ WASM {state.status === 'ready' ? state.wasmSource : '未取得'}（実バイト未確認）</p>
       <p aria-label="分類バックエンド状態">要求: {delegate} ／ SDK設定: {state.status === 'ready' ? state.sdkDelegate : '未準備'} ／ 実バックエンド: 未計測</p>

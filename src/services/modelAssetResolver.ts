@@ -1,8 +1,11 @@
-import type { ClassifierAssetStatuses } from './imageClassifierAssets';
+import type { ClassifierAssetStatuses } from './imageClassifierAssets.ts';
 import type { RunnableModelType } from '../types/vision.ts';
 
 export type AssetDeliverySource = 'container-cache' | 'external-fallback' | 'external';
 export type AssetSourceRecorder = (assetKey: string, source: AssetDeliverySource) => void;
+
+export type CacheAssetModelId = RunnableModelType | 'image-classifier';
+export type CacheIntegrity = 'pinned' | 'self-recorded' | 'invalid' | 'not-present' | 'pending' | 'unknown';
 
 export type AssetCacheState = 'cached' | 'downloading' | 'unavailable';
 
@@ -23,7 +26,12 @@ export interface WasmAssetCatalogEntry {
 }
 
 export interface ContainerModelStatusEntry {
-  id: RunnableModelType;
+  id: CacheAssetModelId;
+  filePresent?: boolean | null;
+  integrity?: CacheIntegrity;
+  sha256?: string | null;
+  expectedSize?: number | null;
+  expectedSha256?: string | null;
   variantId?: string;
   file: string;
   status: AssetCacheState;
@@ -36,6 +44,9 @@ export interface ContainerModelStatusEntry {
 }
 
 export interface ContainerCacheStatusResponse {
+  schemaVersion?: 2;
+  observedAt?: string;
+  catalogCount?: number;
   classification?: ClassifierAssetStatuses;
   enabled: boolean;
   wasm: {

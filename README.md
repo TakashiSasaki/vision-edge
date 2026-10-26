@@ -36,6 +36,24 @@ including small classes absent from the list, and only from the currently
 accepted frame/generation. The labels/readout distinguish scores from detector
 confidence. Scores are not a guarantee of accuracy.
 
+## Classifier cache and inventory
+
+EfficientNet-Lite0/Lite2 add whole-image Top5 classification through the pinned
+MediaPipe API, with manual candidate speech and no detection boxes. Their exact
+Apache-2.0 metadata, sizes and hashes are recorded in the
+[classifier cache contract](docs/verification/classifier-cache.md). Real model
+inference has not been validated by the model-free CI controls.
+
+`npm run dev` supplies the container cache API and startup prefetch for all eleven
+registered variants. Classifier bytes must match their fixed size and SHA-256
+on acquisition, reuse and serving; there is no unverified upstream fallback.
+An ephemeral container's cache is lost when it is destroyed. The application
+links to the static [/model-cache.html](public/model-cache.html) inventory,
+which observes status read-only without starting a download. It separates actual
+validated files from configured models. Build/preview/static hosting alone do
+not provide the API: the page reports unknown/unavailable and classification
+stays blocked. External deployment startup/support has not been established.
+
 ## Requirements and setup
 
 - Node.js 24 LTS, at least 24.15.0 and below 25; `.nvmrc` and CI use 24.19.0.

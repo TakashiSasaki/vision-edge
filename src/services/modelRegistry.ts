@@ -164,7 +164,7 @@ export function backendDescription(state: ModelState): string {
 export const IMAGE_CLASSIFIER_MODEL = {
   id: 'image-classifier', name: 'EfficientNet-Lite', implemented: true, availableInUI: true,
   runtime: 'MediaPipe ImageClassifier0.10.14', outputType: 'whole-image-classification',
-  defaultVariantId: 'lite0', assetVerification: 'blocked',
+  defaultVariantId: 'lite0', assetVerification: 'pinned-container-cache-required',
   variants: Object.values(IMAGE_CLASSIFIER_ASSETS).map(entry => ({
     id: entry.variantId, name: entry.variantId === 'lite0' ? 'EfficientNet-Lite0' : 'EfficientNet-Lite2', fileName: entry.file,
     upstreamUrl: entry.upstreamUrl, isDefault: entry.variantId === 'lite0',

@@ -1,4 +1,5 @@
-import { classifierAssetStatuses } from './imageClassifierAssets';
+import { IMAGE_CLASSIFIER_ASSETS } from './classifierAssetManifest.ts';
+import { classifierAssetStatuses } from './imageClassifierAssets.ts';
 import { Buffer } from 'node:buffer';
 import { existsSync, createReadStream } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
@@ -16,9 +17,26 @@ import {
   UPSTREAM_MEDIAPIPE_WASM_URL,
   UPSTREAM_ORT_WASM_URL,
   type ContainerCacheStatusResponse,
+  type CacheAssetModelId,
+  type ModelVariantCatalogEntry,
   type ContainerModelStatusEntry,
   getVariantCatalogEntry,
 } from './modelAssetResolver.ts';
+
+type CacheCatalogEntry = Omit<ModelVariantCatalogEntry, 'modelId'> & {
+  modelId: CacheAssetModelId; expectedSize?: number; expectedSha256?: string;
+};
+const CACHE_CATALOG: Record<string, CacheCatalogEntry> = {
+  ...MODEL_VARIANT_CATALOG,
+  ...Object.fromEntries(Object.values(IMAGE_CLASSIFIER_ASSETS).map(e => [`${e.modelId}:${e.variantId}`, e])),
+};
+// Public API errors are bounded diagnostics, never raw filesystem paths or
+// arbitrary upstream messages (which may contain credentials).
+function publicCacheError(cause: unknown): string {
+  const message = cause instanceof Error ? cause.message : '';
+  if (/^(HTTP \d{3}|Model cache acquisition timeout|Model exceeds cache size limit|Empty model response body|Downloaded payload too small \(\d+ bytes\)|Pinned model (size|SHA256) mismatch|invalid cache (file\/size|metadata file)|cache (identity metadata mismatch|byte hash mismatch|file exceeds size limit))$/.test(message)) return message;
+  return 'Cache acquisition or validation failed';
+}
 
 const MIN_VALID_MODEL_BYTES = 1024;
 const PREFETCH_TIMEOUT_MS = 45_000;
@@ -63,8 +81,8 @@ export class ContainerModelCacheManager {
       options.cacheDir ?? path.join(this.rootDir, '.cache', 'container-models');
     this.fetchImpl = options.fetchImpl ?? globalThis.fetch;
 
-    for (const key of Object.keys(MODEL_VARIANT_CATALOG)) {
-      const entry = MODEL_VARIANT_CATALOG[key];
+    for (const key of Object.keys(CACHE_CATALOG)) {
+      const entry = CACHE_CATALOG[key];
       const statusEntry: ContainerModelStatusEntry = {
         id: entry.modelId,
         variantId: entry.variantId,
@@ -76,6 +94,8 @@ export class ContainerModelCacheManager {
         localUrl: entry.localUrl,
         upstreamUrl: entry.upstreamUrl,
         license: entry.license,
+        filePresent: null, integrity: 'unknown', sha256: null,
+        expectedSize: entry.expectedSize ?? null, expectedSha256: entry.expectedSha256 ?? null,
       };
       this.variantStates.set(key, statusEntry);
     }
@@ -91,11 +111,11 @@ export class ContainerModelCacheManager {
     return path.join(this.cacheDir, entry.file);
   }
 
-  public findModelByFilename(filename: string): RunnableModelType | null {
+  public findModelByFilename(filename: string): CacheAssetModelId | null {
     if (!isSafeFilename(filename)) return null;
-    for (const key of Object.keys(MODEL_VARIANT_CATALOG)) {
-      if (MODEL_VARIANT_CATALOG[key].file === filename) {
-        return MODEL_VARIANT_CATALOG[key].modelId;
+    for (const key of Object.keys(CACHE_CATALOG)) {
+      if (CACHE_CATALOG[key].file === filename) {
+        return CACHE_CATALOG[key].modelId;
       }
     }
     for (const modelId of Object.keys(MODEL_ASSET_CATALOG) as RunnableModelType[]) {
@@ -108,8 +128,8 @@ export class ContainerModelCacheManager {
 
   public findVariantKeyByFilename(filename: string): string | null {
     if (!isSafeFilename(filename)) return null;
-    for (const key of Object.keys(MODEL_VARIANT_CATALOG)) {
-      if (MODEL_VARIANT_CATALOG[key].file === filename) {
+    for (const key of Object.keys(CACHE_CATALOG)) {
+      if (CACHE_CATALOG[key].file === filename) {
         return key;
       }
     }
@@ -132,8 +152,8 @@ export class ContainerModelCacheManager {
   }
 
   private requireVariant(key: string) {
-    if (!Object.hasOwn(MODEL_VARIANT_CATALOG, key)) throw new RangeError(`Unknown model variant: ${key}`);
-    return MODEL_VARIANT_CATALOG[key];
+    if (!Object.hasOwn(CACHE_CATALOG, key)) throw new RangeError(`Unknown model variant: ${key}`);
+    return CACHE_CATALOG[key];
   }
 
   public async syncDiskState(modelId: RunnableModelType): Promise<ContainerModelStatusEntry> {
@@ -151,16 +171,20 @@ export class ContainerModelCacheManager {
   }
 
   private async readVerifiedCache(key: string, collect = false) {
+    const entry = this.requireVariant(key);
     const filename = this.getVariantFilePath(key), info = await lstat(filename);
     if (!info.isFile() || info.isSymbolicLink() || info.size < MIN_VALID_MODEL_BYTES || info.size > MAX_MODEL_BYTES) throw new Error('invalid cache file/size');
+    if (entry.expectedSize !== undefined && info.size !== entry.expectedSize) throw new Error('Pinned model size mismatch');
     const record = await this.readIdentity(key, info.size);
     const hash = createHash('sha256'), chunks: Buffer[] = []; let size = 0;
     for await (const chunk of createReadStream(filename)) {
-      size += chunk.length; if (size > MAX_MODEL_BYTES) throw new Error('cache file exceeds size limit');
+      size += chunk.length; if (size > (entry.expectedSize ?? MAX_MODEL_BYTES)) throw new Error('cache file exceeds size limit');
       hash.update(chunk); if (collect) chunks.push(chunk);
     }
-    if (size !== info.size || hash.digest('hex') !== record.sha256) throw new Error('cache byte hash mismatch');
-    return { size, cachedAt: info.mtime.toISOString(), bytes: collect ? Buffer.concat(chunks) : null };
+    const sha256 = hash.digest('hex');
+    if (size !== info.size || sha256 !== record.sha256) throw new Error('cache byte hash mismatch');
+    if (entry.expectedSha256 !== undefined && sha256 !== entry.expectedSha256) throw new Error('Pinned model SHA256 mismatch');
+    return { size, sha256, cachedAt: info.mtime.toISOString(), bytes: collect ? Buffer.concat(chunks) : null };
   }
 
   public async syncVariantDiskState(key: string): Promise<ContainerModelStatusEntry> {
@@ -171,10 +195,10 @@ export class ContainerModelCacheManager {
     let updated: ContainerModelStatusEntry;
     try {
       const data = await this.readVerifiedCache(key);
-      updated = { ...current, status: 'cached', size: data.size, cachedAt: data.cachedAt, error: null };
+      updated = { ...current, status: 'cached', size: data.size, sha256: data.sha256, filePresent: true, integrity: current.expectedSha256 ? 'pinned' : 'self-recorded', cachedAt: data.cachedAt, error: null };
     } catch (cause) {
       const empty = !existsSync(file) && !existsSync(`${file}.identity.json`);
-      updated = { ...current, status: 'unavailable', size: null, cachedAt: null, error: empty ? current.error ?? (current.status === 'cached' ? 'Cached files disappeared' : null) : `Unverified cache: ${cause instanceof Error ? cause.message : String(cause)}` };
+      updated = { ...current, status: 'unavailable', size: null, sha256: null, filePresent: existsSync(file), integrity: empty ? 'not-present' : 'invalid', cachedAt: null, error: empty ? current.error ?? (current.status === 'cached' ? 'Cached files disappeared' : null) : `Unverified cache: ${publicCacheError(cause)}` };
     }
     // A validation started before a download must not overwrite newer state.
     if (this.variantStates.get(key) !== current) return this.variantStates.get(key)!;
@@ -198,7 +222,7 @@ export class ContainerModelCacheManager {
     const downloadingState: ContainerModelStatusEntry = {
       ...current,
       status: 'downloading',
-      size: null, cachedAt: null, error: null,
+      size: null, cachedAt: null, error: null, sha256: null, filePresent: null, integrity: 'pending',
     };
     this.variantStates.set(key, downloadingState);
 
@@ -215,10 +239,11 @@ export class ContainerModelCacheManager {
           method: 'GET', redirect: 'follow', signal: controller.signal,
         }), deadline]);
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status} from ${entry.upstreamUrl}`);
+          throw new Error(`HTTP ${response.status}`);
         }
         const advertised = Number(response.headers.get('Content-Length'));
         if (Number.isFinite(advertised) && advertised > MAX_MODEL_BYTES) throw new Error('Model exceeds cache size limit');
+        if (response.headers.has('Content-Length') && entry.expectedSize !== undefined && advertised !== entry.expectedSize) throw new Error('Pinned model size mismatch');
         const reader = response.body?.getReader();
         if (!reader) throw new Error('Empty model response body');
         const chunks: Uint8Array[] = []; let size = 0;
@@ -226,7 +251,7 @@ export class ContainerModelCacheManager {
           while (true) {
             const { done, value } = await Promise.race([reader.read(), deadline]); if (done) break;
             size += value.byteLength;
-            if (size > MAX_MODEL_BYTES) { controller.abort(); void reader.cancel().catch(() => {}); throw new Error('Model exceeds cache size limit'); }
+            if (size > (entry.expectedSize ?? MAX_MODEL_BYTES)) { controller.abort(); void reader.cancel().catch(() => {}); throw new Error('Model exceeds cache size limit'); }
             chunks.push(value);
           }
         } finally { void reader.cancel().catch(() => {}); reader.releaseLock(); }
@@ -234,27 +259,31 @@ export class ContainerModelCacheManager {
         if (bytes.byteLength < MIN_VALID_MODEL_BYTES) {
           throw new Error(`Downloaded payload too small (${bytes.byteLength} bytes)`);
         }
+        if (entry.expectedSize !== undefined && bytes.byteLength !== entry.expectedSize) throw new Error('Pinned model size mismatch');
+        const sha256 = createHash('sha256').update(bytes).digest('hex');
+        if (entry.expectedSha256 !== undefined && sha256 !== entry.expectedSha256) throw new Error('Pinned model SHA256 mismatch');
         await writeFile(tempPath, bytes);
-        await writeFile(metadataTemp, JSON.stringify({ schemaVersion: 1, modelId: entry.modelId, variantId: entry.variantId, file: entry.file, localUrl: entry.localUrl, upstreamUrl: entry.upstreamUrl, size: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }));
+        await writeFile(metadataTemp, JSON.stringify({ schemaVersion: 1, modelId: entry.modelId, variantId: entry.variantId, file: entry.file, localUrl: entry.localUrl, upstreamUrl: entry.upstreamUrl, size: bytes.byteLength, sha256 }));
         await rename(tempPath, targetPath);
         await rename(metadataTemp, metadataPath);
 
         const cachedState: ContainerModelStatusEntry = {
           ...current,
           status: 'cached',
-          size: bytes.byteLength,
+          size: bytes.byteLength, sha256, filePresent: true, integrity: entry.expectedSha256 ? 'pinned' : 'self-recorded',
           cachedAt: new Date().toISOString(),
           error: null,
         };
         this.variantStates.set(key, cachedState);
         return cachedState;
       } catch (cause) {
+        controller.abort();
         await Promise.allSettled([rm(tempPath, { force: true }), rm(metadataTemp, { force: true })]);
         const unavailableState: ContainerModelStatusEntry = {
           ...current,
           status: 'unavailable',
-          size: null, cachedAt: null,
-          error: cause instanceof Error ? cause.message : String(cause),
+          size: null, cachedAt: null, sha256: null, filePresent: existsSync(targetPath), integrity: existsSync(targetPath) ? 'invalid' : 'not-present',
+          error: publicCacheError(cause),
         };
         this.variantStates.set(key, unavailableState);
         return unavailableState;
@@ -274,7 +303,7 @@ export class ContainerModelCacheManager {
   }
 
   public async prefetchAllModels(): Promise<Record<RunnableModelType, ContainerModelStatusEntry>> {
-    await Promise.allSettled(Object.keys(MODEL_VARIANT_CATALOG).map(key => this.prefetchVariant(key)));
+    await Promise.allSettled(Object.keys(CACHE_CATALOG).map(key => this.prefetchVariant(key)));
     return this.getModelsSnapshot();
   }
 
@@ -290,15 +319,15 @@ export class ContainerModelCacheManager {
   }
 
   public async getStatusResponse(): Promise<ContainerCacheStatusResponse> {
-    await Promise.all(Object.keys(MODEL_VARIANT_CATALOG).map(key => this.syncVariantDiskState(key)));
+    await Promise.all(Object.keys(CACHE_CATALOG).map(key => this.syncVariantDiskState(key)));
     return {
-      enabled: true,
+      enabled: true, schemaVersion: 2, observedAt: new Date().toISOString(), catalogCount: Object.keys(CACHE_CATALOG).length,
       wasm: {
         mediapipe: { available: this.isWasmAvailable('mediapipe'), localUrl: LOCAL_MEDIAPIPE_WASM_URL, upstreamUrl: UPSTREAM_MEDIAPIPE_WASM_URL, license: 'Apache-2.0' },
         ort: { available: this.isWasmAvailable('ort'), localUrl: LOCAL_ORT_WASM_URL, upstreamUrl: UPSTREAM_ORT_WASM_URL, license: 'MIT' },
       },
       models: this.getModelsSnapshot(), variants: this.getVariantsSnapshot(),
-      classification: classifierAssetStatuses(),
+      classification: classifierAssetStatuses(this.getVariantsSnapshot()),
     };
   }
 
@@ -345,6 +374,10 @@ export class ContainerModelCacheManager {
           }
           const entry = this.requireVariant(variantKey);
           const modelId = entry.modelId;
+          if (entry.expectedSha256 && new URL(rawUrl, 'http://localhost').search !== `?sha256=${entry.expectedSha256}`) {
+            res.statusCode = 400; res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ error: 'Pinned asset URL required' })); return;
+          }
           let state = await this.syncVariantDiskState(variantKey);
           if (this.variantInflight.has(variantKey)) state = await this.variantInflight.get(variantKey)!;
           else if (state.status !== 'cached' && state.error === null) state = await this.prefetchVariant(variantKey);
@@ -354,7 +387,7 @@ export class ContainerModelCacheManager {
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.end(
               JSON.stringify({
-                error: 'Model not available in container cache; use external fallback',
+                error: entry.expectedSha256 ? 'Pinned model unavailable; no upstream fallback permitted' : 'Model not available in container cache; use external fallback',
                 model: modelId,
                 variantId: entry.variantId,
                 upstreamUrl: state.upstreamUrl,
@@ -367,18 +400,20 @@ export class ContainerModelCacheManager {
           let bytes: Buffer;
           try { bytes = (await this.readVerifiedCache(variantKey, true)).bytes!; }
           catch (cause) {
-            this.variantStates.set(variantKey, { ...state, status: 'unavailable', size: null, cachedAt: null, error: `Unverified cache: ${String(cause)}` });
+            this.variantStates.set(variantKey, { ...state, status: 'unavailable', size: null, sha256: null, filePresent: existsSync(this.getVariantFilePath(variantKey)), integrity: 'invalid', cachedAt: null, error: `Unverified cache: ${publicCacheError(cause)}` });
             res.statusCode = 503; res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.end(JSON.stringify({ error: 'Cached model identity changed; use requested upstream', model: entry.modelId, variantId: entry.variantId, upstreamUrl: entry.upstreamUrl })); return;
+            res.end(JSON.stringify({ error: entry.expectedSha256 ? 'Pinned cached model invalid; no upstream fallback permitted' : 'Cached model identity changed; use requested upstream', model: entry.modelId, variantId: entry.variantId, upstreamUrl: entry.upstreamUrl })); return;
           }
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/octet-stream');
           res.setHeader('Content-Length', String(bytes.byteLength));
-          res.setHeader('Cache-Control', 'public, max-age=3600');
+          res.setHeader('Cache-Control', entry.expectedSha256 ? 'no-store' : 'public, max-age=3600');
+          if (entry.expectedSha256) res.setHeader('X-Model-SHA256', entry.expectedSha256);
           res.setHeader('X-Model-Source', 'container-cache');
           res.setHeader('X-Model-Id', entry.modelId);
           res.setHeader('X-Model-Variant', entry.variantId);
           res.setHeader('X-Model-License', state.license);
+          if (entry.expectedSha256) res.setHeader('Link', '</licenses/Apache-2.0.txt>; rel="license", </licenses/classifier-models.txt>; rel="describedby"');
           res.end(req.method === 'HEAD' ? undefined : bytes);
           return;
         }

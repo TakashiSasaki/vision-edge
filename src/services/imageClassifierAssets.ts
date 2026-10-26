@@ -1,24 +1,14 @@
-import type { ImageClassifierVariantId } from '../types/classification';
-
-// Official sample references only. No bytes, hashes or exact-weight license have
-// been verified. Keep these outside the acquisition/redistribution catalog.
-export const IMAGE_CLASSIFIER_ASSETS = {
-  lite0: {
-    modelId: 'image-classifier', variantId: 'lite0', file: 'efficientnet_lite0.tflite',
-    upstreamUrl: 'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite',
-  },
-  lite2: {
-    modelId: 'image-classifier', variantId: 'lite2', file: 'efficientnet_lite2.tflite',
-    upstreamUrl: 'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite',
-  },
-} as const;
+import type { ImageClassifierVariantId } from '../types/classification.ts';
+import { IMAGE_CLASSIFIER_ASSETS } from './classifierAssetManifest.ts';
+import { fetchContainerCacheStatus, isContainerModelCacheEnabled, type ContainerModelStatusEntry } from './modelAssetResolver.ts';
+export { IMAGE_CLASSIFIER_ASSETS } from './classifierAssetManifest.ts';
 export function classifierAsset(variantId: string = 'lite0') {
   if (typeof variantId !== 'string' || !Object.hasOwn(IMAGE_CLASSIFIER_ASSETS, variantId)) throw new RangeError(`Unsupported classifier variant: ${String(variantId)}`);
   return IMAGE_CLASSIFIER_ASSETS[variantId as ImageClassifierVariantId];
 }
 export class ClassificationAssetsBlockedError extends Error {
-  constructor(public readonly variantId: ImageClassifierVariantId) {
-    super(`image-classifier:${variantId} BLOCKED: exact-weight license, bytes/SHA256 and model metadata require review before acquisition or redistribution`);
+  constructor(public readonly variantId: ImageClassifierVariantId, reason = 'verified container cache API unavailable; static/preview serving cannot initialize this asset') {
+    super(`image-classifier:${variantId} BLOCKED: ${reason}`);
     this.name = 'ClassificationAssetsBlockedError';
   }
 }
@@ -26,19 +16,30 @@ export interface ClassifierAssetResolution {
   modelId: 'image-classifier';
   variantId: ImageClassifierVariantId;
   modelAssetPath: string;
-  source: 'external';
+  source: 'container-cache';
 }
-// A future reviewed asset policy must replace this gate. No I/O, fallback,
-// prefetch or fabricated pins occur here; even the SDK is not started by default.
+// Only a matching server catalog can authorize the pinned local URL. No direct
+// upstream fallback: the server verifies the exact bytes before serving them.
 export async function resolveClassifierAsset(variantId: ImageClassifierVariantId): Promise<ClassifierAssetResolution> {
-  classifierAsset(variantId);
-  throw new ClassificationAssetsBlockedError(variantId);
+  const entry = classifierAsset(variantId);
+  if (!isContainerModelCacheEnabled()) throw new ClassificationAssetsBlockedError(variantId);
+  const status = await fetchContainerCacheStatus(true);
+  const row = status?.enabled && status.variants?.[`image-classifier:${variantId}`];
+  if (!row || row.id !== entry.modelId || row.variantId !== entry.variantId || row.file !== entry.file || row.localUrl !== entry.localUrl || row.upstreamUrl !== entry.upstreamUrl || row.license !== entry.license || row.expectedSize !== entry.expectedSize || row.expectedSha256 !== entry.expectedSha256) throw new ClassificationAssetsBlockedError(variantId, 'container asset identity/pins missing or mismatched');
+  if (row.status === 'cached') {
+    if (row.filePresent !== true || row.integrity !== 'pinned' || row.size !== entry.expectedSize || row.sha256 !== entry.expectedSha256 || row.error !== null) throw new ClassificationAssetsBlockedError(variantId, 'cached asset failed pinned integrity verification');
+  } else if (row.error !== null || row.size !== null || row.sha256 !== null || (row.status === 'unavailable' ? row.filePresent !== false || row.integrity !== 'not-present' : row.status !== 'downloading' || row.integrity !== 'pending')) {
+    throw new ClassificationAssetsBlockedError(variantId, 'container acquisition failed or cache is unverified');
+  }
+  return { modelId: entry.modelId, variantId, modelAssetPath: entry.localUrl, source: 'container-cache' };
 }
-export function classifierAssetStatuses() {
-  return Object.fromEntries(Object.entries(IMAGE_CLASSIFIER_ASSETS).map(([key, entry]) => [key, {
-    ...entry, status: 'blocked' as const, reason: 'exact-weight verification and acquisition approval pending',
-    sha256: null, size: null, license: null, localUrl: null, acquisitionEnabled: false as const,
-  }]));
+export function classifierAssetStatuses(states: Record<string, ContainerModelStatusEntry> = {}) {
+  return Object.fromEntries(Object.entries(IMAGE_CLASSIFIER_ASSETS).map(([key, entry]) => {
+    const state = states[`image-classifier:${key}`];
+    return [key, { ...entry, status: state?.status ?? 'unavailable',
+      sha256: state?.sha256 ?? null, size: state?.size ?? null,
+      filePresent: state?.filePresent ?? null, integrity: state?.integrity ?? 'unknown',
+      error: state?.error ?? null, acquisitionEnabled: true as const }];
+  }));
 }
-
 export type ClassifierAssetStatuses = ReturnType<typeof classifierAssetStatuses>;

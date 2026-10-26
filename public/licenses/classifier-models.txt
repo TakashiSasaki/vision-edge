@@ -1,0 +1,20 @@
+EfficientNet-Lite0 / EfficientNet-Lite2 model attribution
+Author field in the exact inspected files: MediaPipe
+License field: Apache License. Version 2.0 http://www.apache.org/licenses/LICENSE-2.0
+License terms supplied at /licenses/Apache-2.0.txt. No separate LICENSE or NOTICE
+was embedded in either inspected file. No new copyright owner is inferred here.
+
+Unmodified model bytes; no model binaries are committed to this repository.
+Source download URLs (owner-attested), exact inspected size and SHA-256:
+Lite0: https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite
+18582189 bytes; 6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0
+Lite2: https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite
+24325765 bytes; 94b6c84a5d6de20f932558de213b50e0338dcc06ab83d8d64b12128a476b4b83
+
+Evidence: authorized independent local metadata/byte inspection task
+01a1768e-ce9f-76b0-90c6-165844c670df, with the owner's source attestation.
+This is not an independently downloaded GCS hash comparison. No model execution
+or cloud upload occurred in that inspection. Fixed pins enforce byte equality;
+cache availability is not evidence of successful SDK initialization/inference.
+Both embed labels_without_background.txt with 1000 labels and FLOAT32 outputs
+[1,1000]. Lite0 input [1,224,224,3]; Lite2 input [1,260,260,3].
