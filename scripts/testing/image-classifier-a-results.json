@@ -1,0 +1,232 @@
+{
+  "base": "bebc22a7d11e2bcbd0a63fa1cd141c0a8359dceb",
+  "baseTree": "7d49c16d0a50b1ba3a6b6a0b43c6cf00fd40aa6c",
+  "packageVersion": "1.0.6",
+  "versionCommand": "npm version patch --no-git-tag-version",
+  "nonrootDependencyChanges": [],
+  "runtime": {
+    "node": "v24.19.0",
+    "npm": "11.9.0",
+    "browser": "installed system Chromium154"
+  },
+  "sdk": {
+    "version": "0.10.14",
+    "sha256": {
+      "package.json": "20120384b2b0c1300d27ba769fff3cacfdbc964d5eb4cc12dda37a68d6c3885b",
+      "vision.d.ts": "fc8a3cf4a55f7d1ae3f2efdda84bbeaeea605a92e535ac52b99deed6366917d5",
+      "vision_bundle.mjs": "e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669"
+    }
+  },
+  "focused": {
+    "run": "2026-10-26T02-12-53.616Z-4948c2a2",
+    "total": 70,
+    "passed": 70,
+    "exit": 0
+  },
+  "failedAttempts": [
+    {
+      "command": "npm run --silent typecheck",
+      "exit": 2,
+      "reason": "widened unreported literal; transcript only, corrected literal type"
+    },
+    {
+      "run": "2026-10-26T02-06-16.606Z-4f4f1b57",
+      "task": "typecheck",
+      "exit": 2,
+      "reason": "new mock signatures and nullable metric snapshot; corrected types and explicit snapshot assertion"
+    },
+    {
+      "run": "2026-10-26T02-12-02.499Z-c664b2c1",
+      "task": "unit filtered development adversarial red",
+      "exit": 1,
+      "counts": {
+        "total": 56,
+        "passed": 0,
+        "failed": 3,
+        "skipped": 53,
+        "todo": 0
+      },
+      "logSha256": "bfc6d30ac2228e107032f6344acaf918e90954c9e421aeb5a5bf9539c76c8fc7"
+    }
+  ],
+  "intermediateOffline": {
+    "run": "2026-10-26T02-08-26.963Z-7266a37b",
+    "exit": 0,
+    "unitPassed": 688,
+    "scope": "before three added adversarial controls and their correction; not final source evidence"
+  },
+  "finalOffline": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+    "run": "2026-10-26T02-13-02.850Z-8cb658ea",
+    "exit": 0,
+    "phases": {
+      "browser": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 19,
+          "passed": 19,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logSha256": "c391265963ccef29766fac4d2dfe0691e86c32c03f642e05a9c5962baeaf9dd2"
+      },
+      "build": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "c67f1a2af65c0d823c5523d192f29a875ca999c37fc2519c4fd7fc5ccf1f4637"
+      },
+      "controls": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      },
+      "delegate": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "0c6e083d007d6134b28197b23111085fd7388fa7f90f0380d60e0720f0a08bf6"
+      },
+      "foundation": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "7b89de653def5eeb66f7d32e603c80896b278e09a7584fd22ea6f5b7a7653387"
+      },
+      "lint": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "output": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "5313df2355dd6befa35cef2f5dea02fa3c415e0fe70649fcacd6949615e33acf"
+      },
+      "preflight": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "protected": 702,
+          "violations": 0
+        },
+        "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+      },
+      "preflight-tests": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 57,
+          "passed": 57,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "6a8e302374c85ecae827c354597edb7d84256547907e3ea9fa3298612a0f0b97"
+      },
+      "typecheck": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 691,
+          "passed": 691,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "f42aaad5cb987334d067d031dca700a7187b8a36beb34e7ecfa8def9d7e50d34"
+      }
+    }
+  },
+  "historical": {
+    "protected": 702,
+    "mismatches": []
+  },
+  "productionBuilds": {
+    "base": {
+      "index.html": "934d1c6c0e06ef68a0f873c92d15fe7ccb542748e54a02c410657fd995ca1a7b",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-Be0ZaC1p.css": "a2b30e2f641bdcd6d620b2681f4c959dd2c7cd1b8fd08c57d0873b8d3b515294",
+      "assets/index-BPLxiWbk.js": "9b23c2916ba1f6d7334c916a32672c790e3d6da05e2d64217b9c9255050811e9",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+    },
+    "current": {
+      "index.html": "3abe24edafa0fa7bfeb1c670d8e3659303b3f132b7ced42153a5da49dc84008a",
+      "assets/index-Be0ZaC1p.css": "a2b30e2f641bdcd6d620b2681f4c959dd2c7cd1b8fd08c57d0873b8d3b515294",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-Dru9eExd.js": "7397498aed6259a75613c01a7a96c42a6853c1df04d9c5896dd38a5da0993e49",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b"
+    }
+  },
+  "realModels": {
+    "assetsAcquired": 0,
+    "weightsLicenseVerified": false,
+    "weightHashes": null,
+    "exactTensorMetadataVerified": false,
+    "realInference": "all new classifier and six older MediaPipe CPU scenarios BLOCKED, not executed"
+  },
+  "limits": "API surface/controlled boundaries only; no real WASM/model/GPU/CPU inference proof; source HEAD/tree and exact hosted CI binding in Draft PR; independent review pending"
+}

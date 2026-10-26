@@ -1,3 +1,5 @@
+import { IMAGE_CLASSIFIER_ASSETS } from './imageClassifierAssets';
+import type { ModelFamilyType } from '../types/classification';
 import type { ModelMetadata, ModelVariantMetadata, ModelState, RunnableModelType } from '../types/vision';
 import { MODEL_ASSET_CATALOG, MODEL_VARIANT_CATALOG } from './modelAssetResolver';
 
@@ -155,4 +157,22 @@ export function backendDescription(state: ModelState): string {
   const requested=backend?.requestedProvider==='auto'?'自動(WebGPU優先)':backend?.requestedProvider==='webgpu'?'WebGPU優先':backend?.requestedProvider==='wasm'?'WASM':'未報告';
   const configured=backend?.configuredProviders.length?backend.configuredProviders.map(p=>p==='wasm'?'WASM':'WebGPU').join(' → '):'未報告';
   return `ONNX 要求: ${requested}／設定: ${configured}${backend?.fallbackReason?`／理由: ${backend.fallbackReason.slice(0,180)}`:''}（実行バックエンドは未計測）`;
+}
+
+// Phase A exposes a discoverable backend family without putting classification
+// into the current object/mask UI or its detection-only RunnableModelType.
+export const IMAGE_CLASSIFIER_MODEL = {
+  id: 'image-classifier', name: 'EfficientNet-Lite', implemented: true, availableInUI: false,
+  runtime: 'MediaPipe ImageClassifier0.10.14', outputType: 'whole-image-classification',
+  defaultVariantId: 'lite0', assetVerification: 'blocked',
+  variants: Object.values(IMAGE_CLASSIFIER_ASSETS).map(entry => ({
+    id: entry.variantId, name: `EfficientNet-${entry.variantId}`, fileName: entry.file,
+    upstreamUrl: entry.upstreamUrl, isDefault: entry.variantId === 'lite0',
+  })),
+} as const;
+export const ALL_MODEL_REGISTRY = [...MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL] as const;
+export function modelFamilyMetadata(id: ModelFamilyType) {
+  const found = ALL_MODEL_REGISTRY.find(entry => entry.id === id);
+  if (!found) throw new RangeError(`Unsupported model family: ${String(id)}`);
+  return found;
 }
