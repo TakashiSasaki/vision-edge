@@ -1,3 +1,4 @@
+import { classifierAssetStatuses } from './imageClassifierAssets';
 import { Buffer } from 'node:buffer';
 import { existsSync, createReadStream } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
@@ -297,6 +298,7 @@ export class ContainerModelCacheManager {
         ort: { available: this.isWasmAvailable('ort'), localUrl: LOCAL_ORT_WASM_URL, upstreamUrl: UPSTREAM_ORT_WASM_URL, license: 'MIT' },
       },
       models: this.getModelsSnapshot(), variants: this.getVariantsSnapshot(),
+      classification: classifierAssetStatuses(),
     };
   }
 

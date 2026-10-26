@@ -1,3 +1,4 @@
+import type { ClassifierAssetStatuses } from './imageClassifierAssets';
 import type { RunnableModelType } from '../types/vision.ts';
 
 export type AssetDeliverySource = 'container-cache' | 'external-fallback' | 'external';
@@ -35,6 +36,7 @@ export interface ContainerModelStatusEntry {
 }
 
 export interface ContainerCacheStatusResponse {
+  classification?: ClassifierAssetStatuses;
   enabled: boolean;
   wasm: {
     mediapipe: {
