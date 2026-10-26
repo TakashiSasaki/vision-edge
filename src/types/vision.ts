@@ -3,7 +3,7 @@ export type ModelType = 'selfie-segmenter' | 'yolo-seg' | 'mediapipe' | 'segform
 export type RunnableModelType = 'selfie-segmenter' | 'mediapipe' | 'yolo-seg' | 'segformer';
 
 export type SelfieVariantId = 'general' | 'landscape';
-export type MediapipeVariantId = 'lite0' | 'lite2';
+export type MediapipeVariantId = 'lite0' | 'lite2' | 'ssd-mobilenet-v2';
 export type YoloSegVariantId = 'yolov8n-seg' | 'yolov8s-seg';
 export type SegFormerVariantId = 'b0' | 'b1' | 'b2';
 

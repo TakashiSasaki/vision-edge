@@ -44,8 +44,9 @@ Apache-2.0 metadata, sizes and hashes are recorded in the
 [classifier cache contract](docs/verification/classifier-cache.md). Real model
 inference has not been validated by the model-free CI controls.
 
-`npm run dev` supplies the container cache API and startup prefetch for all eleven
-registered variants. Classifier bytes must match their fixed size and SHA-256
+`npm run dev` supplies the container cache API and startup prefetch for eleven enabled
+variants. The twelfth registered variant, SSD MobileNetV2, remains unavailable
+until actual SDK compatibility is verified; user-uploaded byte pins and metadata are recorded. Classifier bytes must match their fixed size and SHA-256
 on acquisition, reuse and serving; there is no unverified upstream fallback.
 An ephemeral container's cache is lost when it is destroyed. The application
 links to the static [/model-cache.html](public/model-cache.html) inventory,
@@ -53,6 +54,23 @@ which observes status read-only without starting a download. It separates actual
 validated files from configured models. Build/preview/static hosting alone do
 not provide the API: the page reports unknown/unavailable and classification
 stays blocked. External deployment startup/support has not been established.
+
+## SSD MobileNetV2 availability
+
+The MediaPipe Object Detector family keeps EfficientDet-Lite0 as its default,
+retains Lite2, and adds the selectable SSD MobileNetV2 variant. It reuses the
+same VIDEO detector, scheduler, boxes, labels and speech path; no new engine,
+segmentation or delegate fallback is introduced. SSD is explicitly BLOCKED
+before WASM/model I/O, cache acquisition or serving while actual SDK compatibility remains unverified. Fixed size/hash and metadata
+from an independent inspection of the user upload are recorded; this executor
+could not receive the file through the supported Library transfer. Inventory lists
+it as configured/unverified, never cached merely because a file is present.
+The official guide documents256×256/float32/COCO80; those are documentation-level
+specifications, also confirmed by the independent uploaded-file inspection; actual execution
+is still unverified. The RAW outputs are two SSD tensors, with91 label positions
+including background and gaps; no contiguous80-index remapping is assumed. The official
+project's model-inclusive Apache-2.0 statement is recorded separately from SDK
+licensing. See [SSD verification contract](docs/verification/ssd-mobilenet-v2.md).
 
 ## Requirements and setup
 

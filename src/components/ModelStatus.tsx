@@ -1,9 +1,10 @@
+import { ModelAssetsBlockedError } from '../services/modelAssetResolver';
 import type { ModelState } from '../types/vision';
 
 export function ModelStatus({ state, onRetry }: { state: ModelState; onRetry: () => void }) {
   if (state.status === 'error') return (
     <div role="alert" className="px-4 py-2 text-xs text-rose-300 bg-slate-900">
-      <span>{state.stage === 'wasm' ? 'モデル実行環境の読み込みに失敗しました。' : 'モデルの生成に失敗しました。'}</span>
+      <span>{state.cause instanceof ModelAssetsBlockedError ? `BLOCKED：${state.cause.reason}。取得・配信・実推論は無効です。` : state.stage === 'wasm' ? 'モデル実行環境の読み込みに失敗しました。' : 'モデルの生成に失敗しました。'}</span>
       <button type="button" onClick={onRetry} className="ml-3 underline">モデルを再試行</button>
     </div>
   );
