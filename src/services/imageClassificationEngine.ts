@@ -127,7 +127,7 @@ export class ImageClassificationEngine {
         const owner: Owner = { task, users: 0, closed: false, released: false, lastTimestamp: -1 };
         if (!current()) { this.release(owner); return cancelled(); }
         this.active = owner;
-        const ready = { status: 'ready' as const, model: 'image-classifier' as const, variantId: entry.variantId, requestedDelegate: delegate, sdkDelegate: task.sdkDelegate ?? ('unreported' as const), actualBackend: 'unmeasured' as const, requestId };
+        const ready = { status: 'ready' as const, model: 'image-classifier' as const, variantId: entry.variantId, requestedDelegate: delegate, sdkDelegate: task.sdkDelegate ?? ('unreported' as const), actualBackend: 'unmeasured' as const, assetSource: sources.get(`image-classifier:${entry.variantId}`) ?? ('unreported' as const), wasmSource: sources.get('wasm-mediapipe') ?? ('unreported' as const), requestId };
         this.publish(ready, sources); return ready;
       } catch (cause) {
         if (!current()) return cancelled();

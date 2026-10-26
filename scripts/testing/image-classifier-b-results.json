@@ -1,0 +1,240 @@
+{
+  "stackedBasePR": 29,
+  "stackedBaseBranch": "feat/image-classifier-foundation",
+  "baseHead": "8b238424c2ca31b6d7fff7f33ff2da06377a9093",
+  "baseTree": "06f19257b1e8911fce6303e071ed9fcce61fcec4",
+  "mainAtInspection": "bebc22a7d11e2bcbd0a63fa1cd141c0a8359dceb",
+  "packageVersion": "1.0.7",
+  "versionCommand": "npm version patch --no-git-tag-version",
+  "changedNonrootDependencyEntries": [],
+  "focused": {
+    "run": "2026-10-26T02-52-46.561Z-d8d8b429",
+    "total": 90,
+    "new": 28,
+    "passed": 90,
+    "exit": 0
+  },
+  "newBrowserScenarios": 5,
+  "failedAttempts": [
+    {
+      "run": "2026-10-26T02-46-10.367Z-e58e9c5e",
+      "task": "typecheck",
+      "exit": 2,
+      "counts": null,
+      "logSha256": "9267365e953e1bae3fc303b37ae38c0ba4c2bdee2a7b37a9234cce9343af1aa8",
+      "reason": "Testing Library exact option invalid"
+    },
+    {
+      "run": "2026-10-26T02-47-57.322Z-e52270a1",
+      "task": "typecheck",
+      "exit": 2,
+      "counts": null,
+      "logSha256": "9267365e953e1bae3fc303b37ae38c0ba4c2bdee2a7b37a9234cce9343af1aa8",
+      "reason": "same fixture type error, captured before correction"
+    },
+    {
+      "run": "2026-10-26T02-49-21.157Z-9e70f6c1",
+      "task": "browser",
+      "exit": 1,
+      "counts": null,
+      "logSha256": "6182f3f87340e8f799ca6dbe99fa846e6399cbf9e2503b9b62a15fbd18e27eac",
+      "reason": "preview startup before production build; zero tests"
+    },
+    {
+      "run": "2026-10-26T02-50-57.213Z-0b1cc028",
+      "task": "browser",
+      "exit": 1,
+      "counts": {
+        "total": 5,
+        "passed": 4,
+        "failed": 1,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "58e33e313595967867a31a95bb89b9db70e0cfd506808ed5c380dc3d4da906af",
+      "reason": "source inspection attempted external WASM script GET; DNS EAI_AGAIN, not retried"
+    },
+    {
+      "run": "2026-10-26T02-54-41.958Z-e9eef0b8",
+      "task": "browser",
+      "exit": 1,
+      "counts": {
+        "total": 24,
+        "passed": 23,
+        "failed": 1,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "7fd88e7948cadd52a0949d00c42d714b001a0f9a59761e0095e1e8ab1a62776d",
+      "reason": "inherited smoke expected4 rather than exact new5 choices"
+    }
+  ],
+  "correctedProductionBrowser": {
+    "run": "2026-10-26T02-54-00.334Z-72a55de7",
+    "total": 1,
+    "passed": 1,
+    "exit": 0
+  },
+  "offline": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+    "run": "2026-10-26T02-57-43.960Z-6f8bf930",
+    "exit": 0,
+    "node": "v24.19.0",
+    "npm": "11.9.0",
+    "browser": "installed system Chromium154",
+    "phases": {
+      "browser": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 24,
+          "passed": 24,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logSha256": "22a99ebbe8c07ce827c1d3c4aaf102e30d46ca7efc71f01672e1ad24cb2880cb"
+      },
+      "build": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "f1779eb84dc4ce8884eaf1fba4a5a19384cf0c67eca3efd44b21a7bcc7171e3b"
+      },
+      "controls": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      },
+      "delegate": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "6867191a8e0ae67c14470aee87a6c22a07b6295975787b23460ee6c9e7d8d868"
+      },
+      "foundation": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "3d3ab1b883e06a6ecdfd6c0488f24448fe8686f0a2c0273d077e12de535dcfdd"
+      },
+      "lint": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "output": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "87e9ea2da032f374cc31efeb65377659f0f10fee950841ca4d5c373743067c14"
+      },
+      "preflight": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "protected": 702,
+          "violations": 0
+        },
+        "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+      },
+      "preflight-tests": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 57,
+          "passed": 57,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "5017bcb9494777a77111a26b0afc0981065116cb7461fc5626a4b2073d1c37fb"
+      },
+      "typecheck": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 719,
+          "passed": 719,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "486dda3324b2f748c07f1087cc9576c178ebfc790cd86715493fef0953a9ee93"
+      }
+    }
+  },
+  "historical": {
+    "protected": 702,
+    "mismatches": []
+  },
+  "productionCss": [
+    {
+      "file": "dist/assets/index-gErrgI2G.css",
+      "bytes": 29538,
+      "sha256": "19d4071253b5d46fafcc9f7761462c3cf69376e01f372092ae4df466b12a470a"
+    }
+  ],
+  "buildScope": "UI changes intentionally alter production JS/CSS; docs/testing excluded from Tailwind; no full-build equivalence claim",
+  "reactReview": "applied react-best-practices: ownership/ref/effect dependencies, accessibility/mobile/conditional rendering; no unrelated refactor",
+  "modelAssetsAcquired": 0,
+  "weightLicenseHashTensorVerified": false,
+  "realInference": "all classifier cases and six older CPU cases remain BLOCKED/not run",
+  "scope": "production gate unchanged; current UI + controlled model-free tests only; exact final source/hosted CI binding in Draft PR; independent review pending"
+}

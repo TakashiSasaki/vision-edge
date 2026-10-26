@@ -162,11 +162,11 @@ export function backendDescription(state: ModelState): string {
 // Phase A exposes a discoverable backend family without putting classification
 // into the current object/mask UI or its detection-only RunnableModelType.
 export const IMAGE_CLASSIFIER_MODEL = {
-  id: 'image-classifier', name: 'EfficientNet-Lite', implemented: true, availableInUI: false,
+  id: 'image-classifier', name: 'EfficientNet-Lite', implemented: true, availableInUI: true,
   runtime: 'MediaPipe ImageClassifier0.10.14', outputType: 'whole-image-classification',
   defaultVariantId: 'lite0', assetVerification: 'blocked',
   variants: Object.values(IMAGE_CLASSIFIER_ASSETS).map(entry => ({
-    id: entry.variantId, name: `EfficientNet-${entry.variantId}`, fileName: entry.file,
+    id: entry.variantId, name: entry.variantId === 'lite0' ? 'EfficientNet-Lite0' : 'EfficientNet-Lite2', fileName: entry.file,
     upstreamUrl: entry.upstreamUrl, isDefault: entry.variantId === 'lite0',
   })),
 } as const;

@@ -1,13 +1,14 @@
+import type { ModelFamilyType } from '../types/classification';
 import type { RunnableModelType } from '../types/vision';
-import { MODEL_REGISTRY, isRunnableModel } from '../services/modelRegistry';
+import { MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL, isRunnableModel } from '../services/modelRegistry';
 import { getResolvedSource } from '../services/modelAssetResolver';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  activeModel: RunnableModelType;
+  activeModel: ModelFamilyType;
   activeVariant: string;
-  onSelectModelAndVariant: (model: RunnableModelType, variantId: string) => void;
+  onSelectModelAndVariant: (model: ModelFamilyType, variantId: string) => void;
 }
 
 function sourceDescription(modelId: RunnableModelType): string {
@@ -28,7 +29,7 @@ export function ModelComparisonTable({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80">
       <section role="dialog" aria-modal="true" aria-labelledby="model-specs-title" className="bg-slate-900 border border-slate-700 rounded-xl p-4 max-w-2xl max-h-[85vh] overflow-y-auto space-y-3">
-        <h2 id="model-specs-title" className="text-white font-semibold">物体認識・セグメンテーションモデル仕様・バリアント</h2>
+        <h2 id="model-specs-title" className="text-white font-semibold">物体認識・セグメンテーションモデル仕様・バリアント／画像全体分類</h2>
         {MODEL_REGISTRY.map(model => (
           <div key={model.id} className="border border-slate-700 rounded-lg p-3 text-xs space-y-2">
             <div className="flex items-center justify-between">
@@ -81,7 +82,14 @@ export function ModelComparisonTable({
             )}
           </div>
         ))}
-        <p className="text-xs text-slate-400">MediaPipeはGPU delegateを指定します。ONNXはWebGPU優先で、利用不能時はWASMを設定します。全モデル・バリアントはサーバー起動時にコンテナ内へ一括プリフェッチされます。</p>
+        <section className="border border-slate-700 rounded-lg p-3 text-xs space-y-2" aria-label="画像全体分類仕様">
+          <h3>{IMAGE_CLASSIFIER_MODEL.name}：画像全体の分類</h3>
+          <p>Top5は画像全体の候補です。矩形・マスク・位置や物体数は生成しません。スコアは正答率ではありません。</p>
+          <p>BLOCKED：正確な重みのライセンス・SHA256・モデル検証は未完了。分類資産の取得・配信・prefetchは無効です。入力サイズ・ラベル対応・実推論も未確認です。</p>
+          <p>GPU/CPU要求は明示し、実バックエンドは未計測です。翻訳は完全一致ラベルのみ。手動音声のみ使用します。</p>
+          {IMAGE_CLASSIFIER_MODEL.variants.map(variant => <button type="button" key={variant.id} className="rounded border border-slate-600 p-2 mr-2" onClick={() => { onSelectModelAndVariant('image-classifier', variant.id); onClose(); }}>{variant.name}（画像全体分類）</button>)}
+        </section>
+        <p className="text-xs text-slate-400">MediaPipeはGPU delegateを指定します。ONNXはWebGPU優先で、利用不能時はWASMを設定します。既存4モデル9種はサーバー起動時にプリフェッチされます。画像分類2種は未検証のため取得しません。</p>
         <button type="button" onClick={onClose} className="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-200">閉じる</button>
       </section>
     </div>

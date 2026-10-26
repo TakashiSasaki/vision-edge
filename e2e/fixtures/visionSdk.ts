@@ -44,3 +44,28 @@ export const ImageSegmenter = { createFromOptions: async () => {
   probe.creates++;
   return { close() {}, segmentForVideo(video: HTMLVideoElement | VideoFrame | HTMLCanvasElement) { execute(video); return { confidenceMasks: [], close() {} }; } };
 } };
+interface ClassifierCi {
+  marker: 'CLASSIFIER_CI_ONLY'; creates: string[]; calls: number; closes: number;
+  failCreates: number; failRuns: number; gate?: Promise<void>;
+}
+declare global { interface Window { classifierCi: ClassifierCi } }
+const classifierCi: ClassifierCi = window.classifierCi = { marker: 'CLASSIFIER_CI_ONLY', creates: [], calls: 0, closes: 0, failCreates: 0, failRuns: 0 };
+export const ImageClassifier = { createFromOptions: async (_fileset: unknown, options: { baseOptions: { modelAssetPath: string; delegate: string }; runningMode: string }) => {
+  const variant = options.baseOptions.modelAssetPath.includes('efficientnet_lite2') ? 'lite2' : 'lite0';
+  classifierCi.creates.push(`${variant}:${options.baseOptions.delegate}`);
+  const gate = classifierCi.gate; if (gate) await gate;
+  if (classifierCi.failCreates > 0) { classifierCi.failCreates--; throw Error('CLASSIFIER_CI_ONLY initialization failure'); }
+  return { close() { classifierCi.closes++; }, classifyForVideo(_input: HTMLVideoElement | VideoFrame | HTMLCanvasElement, timestampMs: number) {
+    classifierCi.calls++;
+    if (classifierCi.failRuns > 0) { classifierCi.failRuns--; throw Error('CLASSIFIER_CI_ONLY run failure'); }
+    const label = variant === 'lite2' ? 'coffee mug' : 'goldfish, Carassius auratus';
+    return { timestampMs, classifications: [{ headIndex: 0, headName: 'CI model-free head', categories: [
+      { index: 1000, categoryName: 'UNKNOWN, Exact Raw Label', displayName: '', score: .7 },
+      { index: 7, categoryName: label, displayName: '', score: .95 },
+      { index: 0, categoryName: 'banana', displayName: '', score: .8 },
+      { index: 3, categoryName: 'volcano', displayName: '', score: .6 },
+      { index: 8, categoryName: 'soccer ball', displayName: '', score: .5 },
+      { index: 2, categoryName: 'orange', displayName: '', score: .1 },
+    ] }] };
+  } };
+} };

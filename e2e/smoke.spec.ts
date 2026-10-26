@@ -77,7 +77,7 @@ test('production app loads and model controls work without camera or external se
 
   const model = header.getByRole('combobox', { name: 'モデル', exact: true });
   await expect(model).toHaveValue('selfie-segmenter');
-  expect(await model.locator('option:not(:disabled)').evaluateAll(options => options.map(option => (option as HTMLOptionElement).value))).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer']);
+  expect(await model.locator('option:not(:disabled)').evaluateAll(options => options.map(option => (option as HTMLOptionElement).value))).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer', 'image-classifier']);
   await expect(header.getByRole('combobox')).toHaveCount(2);
   await model.selectOption('mediapipe');
   await expect(model).toHaveValue('mediapipe');
