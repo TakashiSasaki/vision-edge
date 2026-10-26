@@ -3,6 +3,7 @@ const stateLabels = { cached: '配信準備済み', downloading: '取得中', un
 const families = { 'selfie-segmenter': 'Selfie Segmenter', mediapipe: 'EfficientDet', 'yolo-seg': 'YOLO', segformer: 'SegFormer', 'image-classifier': 'EfficientNet（画像分類）' };
 const safeName = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(value);
 const safeFile = value => typeof value === 'string' && /^[a-zA-Z0-9_-][a-zA-Z0-9._-]{0,159}$/.test(value) && !value.includes('..');
+const safePath = value => typeof value === 'string' && /^\/api\/model-cache\/models\/[a-zA-Z0-9._-]+(\?sha256=[a-f0-9]{64})?$/.test(value);
 // A verification success belongs to a cached, present, verified byte record.
 // Non-cached states have no verified size/hash; only their state-specific
 // pending/absent/failed/unknown observations may be displayed as coherent.
@@ -24,7 +25,8 @@ export function inventorySnapshot(payload) {
     const cached = shape && value.status === 'cached' && value.filePresent === true && ['pinned', 'self-recorded'].includes(value.integrity) && Number.isSafeInteger(value.size) && value.size > 0 && typeof value.sha256 === 'string' && /^[a-f0-9]{64}$/.test(value.sha256) && value.error === null && (value.integrity !== 'pinned' || (value.sha256 === value.expectedSha256 && value.size === value.expectedSize));
     const valid = shape && coherentState(value, cached);
     if (!valid) invalid++;
-    return { family: identity ? families[value.id] : '不明なモデル', variant: identity ? value.variantId : '不明', file: identity ? value.file : '不正なファイル名（非表示）', size: cached ? `${value.size.toLocaleString('ja-JP')} bytes` : '—', presence: shape ? (value.filePresent === true ? 'あり' : value.filePresent === false ? 'なし' : '不明') : '不明', readiness: valid ? stateLabels[value.status] : '不明（不正な状態）', integrity: valid ? integrityLabels[value.integrity] : '不明', error: value?.error ? '取得・検証エラーあり（詳細は管理ログ）' : '—', cached };
+    const path = identity ? (safePath(value.localUrl) ? value.localUrl : `/api/model-cache/models/${value.file}${value.id === 'image-classifier' && typeof value.expectedSha256 === 'string' && /^[a-f0-9]{64}$/.test(value.expectedSha256) ? `?sha256=${value.expectedSha256}` : ''}`) : '—';
+    return { family: identity ? families[value.id] : '不明なモデル', variant: identity ? value.variantId : '不明', file: identity ? value.file : '不正なファイル名（非表示）', size: cached ? `${value.size.toLocaleString('ja-JP')} bytes` : '—', presence: shape ? (value.filePresent === true ? 'あり' : value.filePresent === false ? 'なし' : '不明') : '不明', readiness: valid ? stateLabels[value.status] : '不明（不正な状態）', integrity: valid ? integrityLabels[value.integrity] : '不明', error: value?.error ? '取得・検証エラーあり（詳細は管理ログ）' : '—', cached, path, url: cached ? path : null };
   });
   return { rows, invalid, observedAt: payload.observedAt };
 }
@@ -36,10 +38,70 @@ function table(document, host, rows, empty) {
   const element = document.createElement('table'), head = element.createTHead(), hrow = head.insertRow();
   for (const label of headers) { const th = document.createElement('th'); th.scope = 'col'; th.textContent = label; hrow.append(th); }
   const body = element.createTBody();
-  for (const row of rows) { const tr = body.insertRow(); keys.forEach((key, i) => { const td = tr.insertCell(); td.dataset.label = headers[i]; td.textContent = row[key]; }); }
+  for (const row of rows) {
+    const tr = body.insertRow();
+    keys.forEach((key, i) => {
+      const td = tr.insertCell();
+      td.dataset.label = headers[i];
+      if (key === 'file') {
+        if (row.cached && row.url) {
+          const a = document.createElement('a');
+          a.href = row.url;
+          a.className = 'model-link';
+          a.textContent = row.file;
+          a.setAttribute('download', row.file);
+          td.append(a);
+          if (row.path && row.path !== '—') {
+            const pDiv = document.createElement('div');
+            pDiv.className = 'cache-path';
+            pDiv.textContent = row.path;
+            td.append(pDiv);
+          }
+        } else {
+          td.textContent = row.file;
+          if (row.path && row.path !== '—') {
+            const pDiv = document.createElement('div');
+            pDiv.className = 'cache-path';
+            pDiv.textContent = row.path;
+            td.append(pDiv);
+          }
+        }
+      } else {
+        td.textContent = row[key];
+      }
+    });
+  }
   host.append(element);
 }
 export function mountInventory(document, fetchImpl) {
+  const pageUrlEl = document.getElementById('page-url'), copyBtn = document.getElementById('copy-page-url'), copyNotice = document.getElementById('copy-notice');
+  if (pageUrlEl) {
+    const currentUrl = (typeof window !== 'undefined' && window.location?.href) ? window.location.href : (document.URL || '/model-cache.html');
+    pageUrlEl.textContent = currentUrl;
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(currentUrl);
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = currentUrl;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.append(ta);
+            ta.focus();
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+          }
+          if (copyNotice) copyNotice.textContent = 'URLをコピーしました！';
+          setTimeout(() => { if (copyNotice) copyNotice.textContent = ''; }, 3000);
+        } catch {
+          if (copyNotice) copyNotice.textContent = 'コピーに失敗しました。';
+        }
+      });
+    }
+  }
   const button = document.getElementById('refresh'), notice = document.getElementById('notice'), observed = document.getElementById('observed'), cached = document.getElementById('cached'), configured = document.getElementById('configured');
   let pending = false;
   async function refresh() {

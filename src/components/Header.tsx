@@ -98,6 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Zone 3: Actions */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 order-2 sm:order-3">
         <a href="/model-cache.html" className="text-xs text-blue-300 underline px-1 py-2" aria-label="コンテナのモデルキャッシュ一覧">キャッシュ</a>
+        <a href="/sitemap.html" className="text-xs text-blue-300 underline px-1 py-2" aria-label="サイトマップ">サイトマップ</a>
         {/* Audio Mute/Unmute */}
         <button
           onClick={onToggleTTS}

@@ -4,19 +4,43 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>コンテナのモデルキャッシュ</title>
   <link rel="stylesheet" href="/model-cache.css">
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
 </head>
 <body><main>
-  <a href="/">アプリに戻る</a>
+  <nav class="site-nav" aria-label="ページナビゲーション">
+    <a href="/">アプリに戻る</a>
+    <span aria-hidden="true">·</span>
+    <a href="/sitemap.html">サイトマップ</a>
+    <span aria-hidden="true">·</span>
+    <a href="/licenses/classifier-models.txt">分類モデルの出典・ライセンス</a>
+  </nav>
   <h1>コンテナのモデルキャッシュ</h1>
   <p>現在のコンテナで登録されたモデルの読み取り専用一覧です。一覧を開いてもモデルの取得・削除は行いません。コンテナの破棄後はキャッシュも失われます。</p>
-  <p>「固定ハッシュ一致」は既知の重みと一致、「取得時ハッシュ一致」は取得時の記録との一致です。モデルの初期化・実推論・物理GPUでの動作を保証する表示ではありません。</p>
+  <p>「固定ハッシュ一致」は既知の重みと一致、「取得時ハッシュ一致」は取得時の記録との一致です。モデルの初期化・実推論・物理GPUでの動作を保証する表示ではありません。保存・検証済みのモデルファイル名は、コンテナ内キャッシュ配信URLへのダウンロードリンクとなっています。</p>
+  <div class="page-url-box" aria-labelledby="page-url-label">
+    <span id="page-url-label" class="page-url-label">ページURL:</span>
+    <code id="page-url" class="page-url-text"></code>
+    <button id="copy-page-url" type="button" class="copy-button" aria-label="ページURLをクリップボードにコピー">URLをコピー</button>
+    <span id="copy-notice" role="status" aria-live="polite" class="copy-notice"></span>
+  </div>
   <button id="refresh" type="button">状態を更新</button>
   <p id="notice" role="status" aria-live="polite">状態はまだ不明です。</p>
   <p id="observed"></p>
   <section aria-labelledby="cached-title"><h2 id="cached-title">保存・検証済みファイル</h2><div id="cached"></div></section>
   <section aria-labelledby="configured-title"><h2 id="configured-title">設定済み・未準備／未検証</h2><div id="configured"></div></section>
   <p>APIがない静的配信・previewでは取得不能と表示します。対象は登録済みモデルのみで、未登録ファイルや一時ファイルは含みません。状態は観測時点のもので、その後の変更は明示的に更新してください。</p>
-  <a href="/licenses/classifier-models.txt">分類モデルの出典・ライセンス</a>
+  <section aria-labelledby="sitemap-links-title">
+    <h2 id="sitemap-links-title">サイトマップ・関連リンク</h2>
+    <ul>
+      <li><a href="/">Webcam Vision &amp; Segmentation Studio（メイン）</a></li>
+      <li><a href="/model-cache.html">コンテナのモデルキャッシュ一覧（本ページ）</a></li>
+      <li><a href="/sitemap.html">サイトマップ (/sitemap.html)</a></li>
+      <li><a href="/sitemap.xml">XMLサイトマップ (/sitemap.xml)</a></li>
+      <li><a href="/api/model-cache/status">キャッシュ状態 API (/api/model-cache/status)</a></li>
+      <li><a href="/licenses/classifier-models.txt">分類モデルの出典・ライセンス</a></li>
+      <li><a href="/licenses/Apache-2.0.txt">Apache License 2.0</a></li>
+    </ul>
+  </section>
 </main><script type="module">
 import { mountInventory } from '/model-cache.mjs';
 mountInventory(document, window.fetch.bind(window));

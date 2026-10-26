@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>サイトマップ | VisionStudio AI</title>
+  <meta name="description" content="VisionStudio AI のサイトマップ。メインスタジオ、モデルキャッシュ一覧、再配布可能モデル配信パス、ライセンス情報への案内。">
+  <link rel="stylesheet" href="/model-cache.css">
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+</head>
+<body>
+<main>
+  <nav class="site-nav" aria-label="サイト内ナビゲーション">
+    <a href="/">アプリに戻る</a>
+    <span aria-hidden="true">·</span>
+    <a href="/model-cache.html">コンテナのモデルキャッシュ一覧</a>
+    <span aria-hidden="true">·</span>
+    <a href="/licenses/classifier-models.txt">分類モデルの出典・ライセンス</a>
+  </nav>
+
+  <h1>サイトマップ</h1>
+  <p>VisionStudio AI アプリケーション内の全ページ、モデルキャッシュ機能、公開APIエンドポイント、およびライセンス・仕様情報への案内です。</p>
+
+  <section aria-labelledby="pages-title">
+    <h2 id="pages-title">主要アプリケーション画面</h2>
+    <ul>
+      <li>
+        <a href="/"><strong>Webcam Vision &amp; Segmentation Studio</strong> (/)</a>
+        <p>リアルタイムWebカメラ入力に対する人物領域推定（Selfie Segmenter）、物体検出（MediaPipe EfficientDet）、セグメンテーション（YOLO / SegFormer）、画像全体分類（EfficientNet）を実行するメインスタジオ。</p>
+      </li>
+      <li>
+        <a href="/model-cache.html"><strong>コンテナのモデルキャッシュ一覧</strong> (/model-cache.html)</a>
+        <p>コンテナ内にキャッシュされたモデルバイナリの保存状況、SHA256ハッシュ検証状態、および再配布可能なモデルファイルの配信URL・ダウンロードリンク一覧。</p>
+      </li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="models-title">
+    <h2 id="models-title">コンテナキャッシュ対象モデルファイル（再配布可能）</h2>
+    <p>コンテナ内でキャッシュ配信される登録済みモデル一覧と各配信URLパスです。検証済みファイルはローカルキャッシュから即時配信されます。</p>
+    <ul>
+      <li>
+        <a href="/api/model-cache/models/efficientnet_lite0.tflite?sha256=6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0"><code>efficientnet_lite0.tflite</code></a>
+        <div class="cache-path">画像全体分類 Lite0 / Apache-2.0 / 224x224入力</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/efficientnet_lite2.tflite?sha256=94b6c84a5d6de20f932558de213b50e0338dcc06ab83d8d64b12128a476b4b83"><code>efficientnet_lite2.tflite</code></a>
+        <div class="cache-path">画像全体分類 Lite2 / Apache-2.0 / 260x260入力</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/selfie_segmenter.tflite"><code>selfie_segmenter.tflite</code></a>
+        <div class="cache-path">人物領域推定 Selfie Segmenter General / Apache-2.0</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/selfie_segmenter_landscape.tflite"><code>selfie_segmenter_landscape.tflite</code></a>
+        <div class="cache-path">人物領域推定 Selfie Segmenter Landscape / Apache-2.0</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/efficientdet_lite0.tflite"><code>efficientdet_lite0.tflite</code></a>
+        <div class="cache-path">物体検出 MediaPipe EfficientDet Lite0 / Apache-2.0</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/efficientdet_lite2.tflite"><code>efficientdet_lite2.tflite</code></a>
+        <div class="cache-path">物体検出 MediaPipe EfficientDet Lite2 / Apache-2.0</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/yolov8n-seg.onnx"><code>yolov8n-seg.onnx</code></a>
+        <div class="cache-path">Ultralytics YOLOv8 Nano セグメンテーション / AGPL-3.0</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/yolov8s-seg.onnx"><code>yolov8s-seg.onnx</code></a>
+        <div class="cache-path">Ultralytics YOLOv8 Small セグメンテーション / AGPL-3.0</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/segformer-b0-quantized.onnx"><code>segformer-b0-quantized.onnx</code></a>
+        <div class="cache-path">SegFormer B0 Quantized セグメンテーション / NVIDIA Non-Commercial License</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/segformer-b1-quantized.onnx"><code>segformer-b1-quantized.onnx</code></a>
+        <div class="cache-path">SegFormer B1 Quantized セグメンテーション / NVIDIA Non-Commercial License</div>
+      </li>
+      <li>
+        <a href="/api/model-cache/models/segformer-b2-quantized.onnx"><code>segformer-b2-quantized.onnx</code></a>
+        <div class="cache-path">SegFormer B2 Quantized セグメンテーション / NVIDIA Non-Commercial License</div>
+      </li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="api-title">
+    <h2 id="api-title">キャッシュ API &amp; 診断エンドポイント</h2>
+    <ul>
+      <li>
+        <a href="/api/model-cache/status"><code>/api/model-cache/status</code></a>
+        <p>モデルカタログ、ハッシュ検証状態、WASMアセット配置状態をJSON形式で返却する読み取り専用エンドポイント。</p>
+      </li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="licenses-title">
+    <h2 id="licenses-title">ライセンス・出典ドキュメント</h2>
+    <ul>
+      <li><a href="/licenses/classifier-models.txt">分類モデルの出典・ライセンス表記 (/licenses/classifier-models.txt)</a></li>
+      <li><a href="/licenses/Apache-2.0.txt">Apache License, Version 2.0 原文 (/licenses/Apache-2.0.txt)</a></li>
+      <li><a href="/sitemap.xml">検索エンジン用 XML サイトマップ (/sitemap.xml)</a></li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>
