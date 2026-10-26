@@ -20,9 +20,9 @@ beforeEach(() => { engines = []; setContainerModelCacheEnabledForTest(false); vi
 afterEach(() => { engines.forEach(e => e.dispose()); setContainerModelCacheEnabledForTest(null); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 function assetBoundary(variant: ImageClassifierVariantId) { const entry = assets.classifierAsset(variant); return vi.spyOn(assets, 'resolveClassifierAsset').mockResolvedValue({ modelId: 'image-classifier', variantId: variant, modelAssetPath: entry.upstreamUrl, source: 'external' }); }
 function sdkBoundary() { const t = task(); const load = vi.spyOn(FilesetResolver, 'forVisionTasks').mockResolvedValue({ wasmLoaderPath: 'controlled-loader', wasmBinaryPath: 'controlled-wasm' }); const create = vi.spyOn(ImageClassifier, 'createFromOptions').mockResolvedValue(t as unknown as ImageClassifier); return { t, load, create }; }
-it('registers a fifth whole-frame backend family without enabling it in the object UI', () => {
+it('registers a fifth classification UI family while keeping it outside the detection engine', () => {
   expect(ALL_MODEL_REGISTRY).toHaveLength(5); expect(MODEL_REGISTRY).toHaveLength(4);
-  expect(IMAGE_CLASSIFIER_MODEL).toMatchObject({ id: 'image-classifier', availableInUI: false, outputType: 'whole-image-classification', assetVerification: 'blocked' });
+  expect(IMAGE_CLASSIFIER_MODEL).toMatchObject({ id: 'image-classifier', availableInUI: true, outputType: 'whole-image-classification', assetVerification: 'blocked' });
   expect(IMAGE_CLASSIFIER_MODEL.variants.map(v => v.id)).toEqual(['lite0', 'lite2']);
   expect(isRunnableModel('image-classifier')).toBe(false);
   expect(() => new VisionEngine().initialize('image-classifier' as RunnableModelType)).toThrow('Unsupported');

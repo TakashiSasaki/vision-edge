@@ -2,6 +2,7 @@ import type { ModelType } from './vision';
 
 export type ImageClassifierVariantId = 'lite0' | 'lite2';
 export type ClassificationDelegate = 'GPU' | 'CPU';
+export type ClassificationAssetSource = 'container-cache' | 'external-fallback' | 'external' | 'unreported';
 export type ModelFamilyType = ModelType | 'image-classifier';
 
 // SDK output IDs are preserved. They are not ranking positions or translated IDs.
@@ -23,7 +24,7 @@ export interface ClassificationOptions {
 export type ClassificationState =
   | { status: 'idle'; model: null; requestId: number }
   | { status: 'loading'; model: 'image-classifier'; variantId: ImageClassifierVariantId; requestedDelegate: ClassificationDelegate; requestId: number }
-  | { status: 'ready'; model: 'image-classifier'; variantId: ImageClassifierVariantId; requestedDelegate: ClassificationDelegate; sdkDelegate: ClassificationDelegate | 'unreported'; actualBackend: 'unmeasured'; requestId: number }
+  | { status: 'ready'; model: 'image-classifier'; variantId: ImageClassifierVariantId; requestedDelegate: ClassificationDelegate; sdkDelegate: ClassificationDelegate | 'unreported'; actualBackend: 'unmeasured'; assetSource: ClassificationAssetSource; wasmSource: ClassificationAssetSource; requestId: number }
   | { status: 'error'; model: 'image-classifier'; variantId: ImageClassifierVariantId; requestedDelegate: ClassificationDelegate; requestId: number; stage: 'asset' | 'wasm' | 'task'; cause: unknown };
 export interface WholeImageClassificationFrame {
   readonly status: 'ready';

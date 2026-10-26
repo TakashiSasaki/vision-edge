@@ -8,10 +8,13 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss(), containerModelCachePlugin()],
     resolve: {
-      alias: {
+      alias: [
+        ...(mode === 'e2e' ? [{ find: /^\.\/imageClassifierAssets$/, replacement: path.resolve(import.meta.dirname, 'e2e/fixtures/classifierAssets.ts') }] : []),
+        ...Object.entries({
         ...(mode === 'e2e' ? { '@mediapipe/tasks-vision': path.resolve(import.meta.dirname, 'e2e/fixtures/visionSdk.ts') } : {}),
         '@': path.resolve(import.meta.dirname, '.'),
-      },
+        }).map(([find, replacement]) => ({ find, replacement })),
+      ],
     },
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',

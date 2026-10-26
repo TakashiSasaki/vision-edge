@@ -39,7 +39,7 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   const header = screen.getByRole('banner');
   const model = within(header).getByRole('combobox', { name: 'モデル' });
   const enabled = within(model).getAllByRole('option').filter(option => !(option as HTMLOptionElement).disabled);
-  expect(enabled.map(option => (option as HTMLOptionElement).value)).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer']);
+  expect(enabled.map(option => (option as HTMLOptionElement).value)).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer', 'image-classifier']);
   expect(within(header).getAllByRole('combobox')).toHaveLength(2);
   const variantSelect = within(header).getByRole('combobox', { name: 'バリアント' });
   expect(variantSelect).toHaveValue('general');

@@ -1,3 +1,6 @@
+import { ImageClassificationWorkspace } from './components/ImageClassificationWorkspace';
+import type { ImageClassificationEngine } from './services/imageClassificationEngine';
+import type { ImageClassifierVariantId, ModelFamilyType } from './types/classification';
 import React, { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
 import {
   DetectionFrame,
@@ -17,7 +20,9 @@ import { modelMetadata, isRunnableModel, getVariantMetadata } from './services/m
 import { ModelStatus } from './components/ModelStatus';
 import { speechService } from './services/speechService';
 
-export default function App({ engine: suppliedEngine }: { engine?: VisionEngine } = {}) {
+export default function App({ engine: suppliedEngine, classificationEngine }: { engine?: VisionEngine; classificationEngine?: ImageClassificationEngine } = {}) {
+  const [classifierMode, setClassifierMode] = useState(false);
+  const [classifierVariant, setClassifierVariant] = useState<ImageClassifierVariantId>('lite0');
   const [engine] = useState(() => suppliedEngine ?? new VisionEngine());
   const modelState = useSyncExternalStore(engine.subscribe, engine.getState);
   const [activeModel, setActiveModel] = useState<RunnableModelType>('selfie-segmenter');
@@ -42,7 +47,7 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
   const detectedObjects = hasCurrentFrame ? lastFrame.objects : [];
 
   useEffect(() => () => engine.dispose(), [engine]);
-  useEffect(() => { void engine.initialize(activeModel, activeVariant); }, [engine, activeModel, activeVariant]);
+  useEffect(() => { if (!classifierMode) void engine.initialize(activeModel, activeVariant); }, [engine, activeModel, activeVariant, classifierMode]);
 
   const [modelParams, setModelParams] = useState<PerModelParameterConfig>(() =>
     JSON.parse(JSON.stringify(DEFAULT_MODEL_PARAMS))
@@ -171,12 +176,26 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
     if (!frame) setSelectedObjectId(undefined);
   }, []);
 
+  const selectFamily = (model: ModelFamilyType, variant?: string) => {
+    if (model === 'image-classifier') {
+      engine.dispose(); speechService.cancel(); setLastFrame(null); setSelectedObjectId(undefined);
+      if (variant === 'lite0' || variant === 'lite2') setClassifierVariant(variant);
+      setClassifierMode(true); setIsComparisonOpen(false);
+    } else {
+      speechService.cancel(); setClassifierMode(false);
+      if (variant) handleSelectModelAndVariant(model, variant); else handleSelectModel(model);
+    }
+  };
+  if (classifierMode) return <ImageClassificationWorkspace engine={classificationEngine} variant={classifierVariant} onVariant={setClassifierVariant}
+    onSelectDetection={selectFamily} cameraActive={isCameraActive} facingMode={facingMode} onToggleFacing={handleToggleFacingMode}
+    onStart={handleCameraStart} onStop={handleCameraStop} ttsConfig={ttsConfig} />;
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col font-sans">
       {/* Compact Top Bar */}
       <Header
         activeModel={activeModel}
-        onSelectModel={handleSelectModel}
+        onSelectModel={selectFamily}
         activeVariant={activeVariant}
         onSelectVariant={handleSelectVariant}
         modelState={modelState}
@@ -238,7 +257,7 @@ export default function App({ engine: suppliedEngine }: { engine?: VisionEngine 
         onClose={() => setIsComparisonOpen(false)}
         activeModel={activeModel}
         activeVariant={activeVariant}
-        onSelectModelAndVariant={handleSelectModelAndVariant}
+        onSelectModelAndVariant={selectFamily}
       />
     </div>
   );
