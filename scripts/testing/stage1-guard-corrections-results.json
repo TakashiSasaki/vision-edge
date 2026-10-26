@@ -1,0 +1,49 @@
+{
+  "reviewedHead": "fbe45b2a30bd1982444fe6f7b7fbd47bdaabe4a8",
+  "base": "fdd37780930ef83431edcca404447b72a9c21976",
+  "findings": {
+    "S1-F1": "explicit initial package-manager-cache:false; separate hosted missing-lock checkout control",
+    "S1-F2": "strict string metadata parsing; actual CLI diagnostics for JSON value types"
+  },
+  "prior47ControlsPreserved": true,
+  "red": {
+    "run": "2026-10-25T17-35-16.112Z-1309947c",
+    "total": 56,
+    "passed": 53,
+    "failed": 3,
+    "exit": 1
+  },
+  "finalControls": {
+    "run": "2026-10-25T17-36-24.531Z-0cac9d04",
+    "total": 57,
+    "passed": 57,
+    "failed": 0,
+    "exit": 0
+  },
+  "lint": {
+    "run": "2026-10-25T17-36-26.072Z-1d8f2cd4",
+    "exit": 0
+  },
+  "preflight": {
+    "run": "2026-10-25T17-37-41.439Z-2e0ccdbd",
+    "protected": 702,
+    "violations": 0,
+    "exit": 0
+  },
+  "build": {
+    "run": "2026-10-25T17-37-41.745Z-03b9b1ef",
+    "exit": 0,
+    "all7FilesMatchPriorBase": true
+  },
+  "packageVersion": "1.0.4",
+  "versionRule": "same coherent PR; main remains1.0.3; no second bump/tag",
+  "unchanged": [
+    "src",
+    "dependency declarations and lock",
+    "historical evidence",
+    "manual tag workflow",
+    "B1/B2/B3",
+    "stage2"
+  ],
+  "hostedCi": "exact final commit/job bindings in PR response; verify job expected to fail unchanged B1; missing-lock job must pass its intended diagnostic"
+}

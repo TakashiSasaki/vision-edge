@@ -84,7 +84,9 @@ test('production app loads and model controls work without camera or external se
   await header.getByRole('button', { name: '仕様', exact: true }).click();
   await expect(page.getByRole('heading', { name: /物体認識・セグメンテーションモデル仕様/ })).toBeVisible();
   const specs = page.getByRole('dialog');
-  await expect(specs.getByRole('button', { name: /SegFormer/ })).not.toBeDisabled();
+  const defaultSegFormer = specs.getByRole('button', { name: /^SegFormer-B0 \(軽量・標準\)/ });
+  await expect(defaultSegFormer).toHaveCount(1);
+  await expect(defaultSegFormer).not.toBeDisabled();
   await specs.getByRole('button', { name: /General/ }).click();
   await expect(model).toHaveValue('selfie-segmenter');
   await expect(page.getByRole('heading', { name: '物体認識・セグメンテーションモデル仕様' })).toBeHidden();

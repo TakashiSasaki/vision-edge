@@ -12,6 +12,7 @@ type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
 export type SegmenterTask = Pick<ImageSegmenter, 'segmentForVideo' | 'close'>;
 export interface ExtraInferenceOptions {
+  confidenceThreshold?: number;
   minAreaPercent?: number;
   maxDetections?: number;
   bboxSmoothing?: number;

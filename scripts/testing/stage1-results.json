@@ -1,0 +1,201 @@
+{
+  "base": "fdd37780930ef83431edcca404447b72a9c21976",
+  "baseTree": "c16e5399e811a44a6ce5cbeb85527d149b57051e",
+  "restorationSource": "c1678e207988c939b64ad9bb47c4326a30709caf",
+  "versionCommand": "npm version patch --no-git-tag-version",
+  "packageVersion": "1.0.4",
+  "rootLockVersion": "1.0.4",
+  "changedNonRootDependencyEntries": [],
+  "tagsCreated": false,
+  "historical": {
+    "protected": 702,
+    "mismatches": []
+  },
+  "localChecks": {
+    "preflight": {
+      "path": ".cache/test-runs/2026-10-25T17-17-00.131Z-7d78db5c/preflight",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "protected": 702,
+        "violations": 0
+      },
+      "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+    },
+    "preflight-tests": {
+      "path": ".cache/test-runs/2026-10-25T17-17-00.462Z-b8cd6d9f/preflight-tests",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 47,
+        "passed": 47,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "7d488ef2b4455d7728a5ef42611b5af0c92b633648a4792f8525b926525631b7"
+    },
+    "install": {
+      "path": ".cache/test-runs/2026-10-25T17-10-03.568Z-86f48f2d/install",
+      "exit": 0,
+      "state": "PASS",
+      "counts": null,
+      "logSha256": "51a615851372566dfb139a329ee1729f19555c5270b9e32e43bd2f2e8fba5b2d"
+    },
+    "typecheck": {
+      "path": ".cache/test-runs/2026-10-25T17-10-52.130Z-32a10778/typecheck",
+      "exit": 2,
+      "state": "FAIL",
+      "counts": null,
+      "logSha256": "98fc4eceb40ce1a8a6ddd36626a7c685ce241be1b9e082f6a3d64363b6f6480d"
+    },
+    "lint": {
+      "path": ".cache/test-runs/2026-10-25T17-17-01.244Z-bc967bec/lint",
+      "exit": 0,
+      "state": "PASS",
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "unit": {
+      "path": ".cache/test-runs/2026-10-25T17-11-44.360Z-1fc5703e/unit",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 369,
+        "passed": 369,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "a9fbc85988a468eb256a42c061515a6e8d0d4b8a4a2390583e9182ac9cf333c3"
+    },
+    "foundation": {
+      "path": ".cache/test-runs/2026-10-25T17-11-50.520Z-541afa74/foundation",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "6eead70d4eecc57e5368223bf9c224833db3d051cbdce7e4780704a1bf9a19a8"
+    },
+    "delegate": {
+      "path": ".cache/test-runs/2026-10-25T17-11-51.613Z-84942c44/delegate",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 40,
+        "passed": 40,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "6be418dd36fb9334ced21032813fd53bfdfb6cedb6db73f0f9beb65daedb4a3e"
+    },
+    "output": {
+      "path": ".cache/test-runs/2026-10-25T17-11-52.652Z-2f12c8cf/output",
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 37,
+        "passed": 37,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "1a380f7bdd1f4ea3414f4b3a6288d334cc915cb3e640b9a58ab0732b68b02c96"
+    },
+    "build": {
+      "path": ".cache/test-runs/2026-10-25T17-11-57.208Z-28973c26/build",
+      "exit": 0,
+      "state": "PASS",
+      "counts": null,
+      "logSha256": "2de4eea0f369ed5e99bac6841ddf08c9fbce454c84059e7170379657174d578d"
+    },
+    "browser": {
+      "path": ".cache/test-runs/2026-10-25T17-11-58.042Z-8a223718/browser",
+      "exit": 1,
+      "state": "FAIL",
+      "counts": {
+        "total": 19,
+        "passed": 17,
+        "failed": 2,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "cce548dbbcd68ee8c52b32164819f518df9c505c77e7322d7f36a20ef64324c0"
+    },
+    "controls": {
+      "path": ".cache/test-runs/2026-10-25T17-13-39.746Z-b9be77d4/controls",
+      "exit": 1,
+      "state": "FAIL",
+      "counts": {
+        "total": 1,
+        "healthy": 0,
+        "expectedFaults": 1
+      },
+      "logSha256": "8f8ec92d12540c13dc50696f2ef8e593447043aa459b5c094d2c2e4495cf6967"
+    }
+  },
+  "controlsQualification": "FAIL: first intact smoke failed; zero confirmed expected faults; remaining6 not run. Raw expectedFaults=1 is a generic nonzero child count, not verified intended failure.",
+  "productionParity": {
+    "baseline": "fdd37780930ef83431edcca404447b72a9c21976",
+    "equal": true,
+    "baselineFiles": {
+      "index.html": "5704e8459dc34d666bced8e54feed91b51ba72224fbe9e559b830e30a0663a7a",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-Be0ZaC1p.css": "a2b30e2f641bdcd6d620b2681f4c959dd2c7cd1b8fd08c57d0873b8d3b515294",
+      "assets/index-DSf0n0ld.js": "d684087e76879925e4ac6635dab4b7970b8c1db235cb2e458252e8b9d7f293fd",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+    },
+    "currentFiles": {
+      "index.html": "5704e8459dc34d666bced8e54feed91b51ba72224fbe9e559b830e30a0663a7a",
+      "assets/index-Be0ZaC1p.css": "a2b30e2f641bdcd6d620b2681f4c959dd2c7cd1b8fd08c57d0873b8d3b515294",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-DSf0n0ld.js": "d684087e76879925e4ac6635dab4b7970b8c1db235cb2e458252e8b9d7f293fd",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b"
+    }
+  },
+  "baselineTypes": {
+    "exit": 2,
+    "diagnostics": [
+      "App.tsx:10 TS2305 missing exported ExtraInferenceOptions",
+      "ControlPanel.tsx:15 TS2305 missing exported ExtraInferenceOptions",
+      "VisionCanvas.tsx:32 TS2304 unknown ExtraInferenceOptions"
+    ]
+  },
+  "baselineBrowser": {
+    "run": "/tmp/stage1-baseline-fdd3778/.cache/test-runs/2026-10-25T17-15-08.595Z-bd4e9cbd/browser",
+    "exit": 1,
+    "total": 2,
+    "passed": 0,
+    "failed": 2
+  },
+  "offlineAttempt": {
+    "run": "2026-10-25T17-10-52.130Z-32a10778",
+    "result": "FAIL exit2 at typecheck; subsequent phases executed separately for diagnosis, not offline PASS"
+  },
+  "scope": "Stage1 only; independent review pending; existing base failures block green CI; stage2 not started",
+  "exportStateProbe": {
+    "rootSource": "fdd37780930ef83431edcca404447b72a9c21976",
+    "ledgerOnlyAddedToDisposableBase": true,
+    "status": "fail",
+    "violations": 50,
+    "codes": {
+      "LOCK_MISSING_OR_INVALID": 1,
+      "CONFLICTING_LOCK": 1,
+      "EVIDENCE_MISSING_OR_INVALID": 48
+    }
+  }
+}

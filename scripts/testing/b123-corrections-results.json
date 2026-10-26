@@ -1,0 +1,184 @@
+{
+  "base": "fdd37780930ef83431edcca404447b72a9c21976",
+  "priorGuardHead": "d9c5a2b47da3eba491ab0bd4e4940a22a805ef33",
+  "packageVersion": "1.0.4",
+  "versionRule": "same coherent PR; main remains1.0.3; lock unchanged; no tag",
+  "runtime": {
+    "node": "v24.19.0",
+    "npm": "11.9.0",
+    "browser": "system Chromium154.0.8037.57"
+  },
+  "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+  "run": "2026-10-25T23-43-14.925Z-7cc696bf",
+  "exit": 0,
+  "phases": {
+    "preflight": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "protected": 702,
+        "violations": 0
+      },
+      "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+    },
+    "preflight-tests": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 57,
+        "passed": 57,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "c2ab950b507ee55fb7b440226507fa74585178e2fcdbe506186c7e5099e87e9f"
+    },
+    "typecheck": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lint": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "unit": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 369,
+        "passed": 369,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "03efba3404da9253533b5936ad1a2ce0db1711282c439776224ddbef12ee12d4"
+    },
+    "foundation": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "94c70ebc2364e7bdc331a1a4cb8c00bc4cc6eadf01d27ed777a96c635accf9ae"
+    },
+    "delegate": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 40,
+        "passed": 40,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "aa2e57cc8124ec45667952af0d3ebc8fb4dfc2e8754847ed92139204b116a551"
+    },
+    "output": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 37,
+        "passed": 37,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "e9d414dd9fd80b8c997c97c1d80a2ce72c3fe10508d46ffc4587301c9afaaa9e"
+    },
+    "build": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": null,
+      "logSha256": "2c5905fc18e45053ba549689b46c820797db3b02866de84b6ff19d68a3c3a8bb"
+    },
+    "browser": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "fe3448161fc4a582b33dfad7eca0324baebf1eaf663d86c251e3aec1a695b6fb"
+    },
+    "controls": {
+      "state": "PASS",
+      "exit": 0,
+      "childExit": 0,
+      "signal": null,
+      "counts": {
+        "total": 7,
+        "healthy": 2,
+        "expectedFaults": 5
+      },
+      "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+    }
+  },
+  "historical": {
+    "protected": 702,
+    "mismatches": []
+  },
+  "productionOutput": {
+    "baseline": "fdd37780930ef83431edcca404447b72a9c21976",
+    "files": {
+      "index.html": "5704e8459dc34d666bced8e54feed91b51ba72224fbe9e559b830e30a0663a7a",
+      "assets/index-Be0ZaC1p.css": "a2b30e2f641bdcd6d620b2681f4c959dd2c7cd1b8fd08c57d0873b8d3b515294",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-DSf0n0ld.js": "d684087e76879925e4ac6635dab4b7970b8c1db235cb2e458252e8b9d7f293fd",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b"
+    },
+    "all7ByteIdentical": true
+  },
+  "failedAttempt": {
+    "run": "2026-10-25T23-40-29.159Z-4a3d4db2",
+    "selection": "camera-lifecycle and smoke",
+    "passed": 1,
+    "failed": 1,
+    "exit": 1,
+    "reason": "old nth(1) slider focus; only one disabled current cooldown slider; trace identifies pending focus before finalizer error"
+  },
+  "focusedRecovery": {
+    "run": "2026-10-25T23-42-26.791Z-e3f6e0b9",
+    "selection": "camera-lifecycle",
+    "total": 1,
+    "passed": 1,
+    "exit": 0
+  },
+  "scope": "B1\u2013B3 only; prior failed evidence retained; stage2 and model/cache acceptance deferred; exact hosted CI binding in PR"
+}

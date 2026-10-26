@@ -11,9 +11,9 @@ import {
   DetectedObject,
   RunnableModelType,
   RenderOptions,
-  TTSConfig,
-  ExtraInferenceOptions
+  TTSConfig
 } from '../types/vision';
+import type { ExtraInferenceOptions } from '../services/visionEngine';
 import { speechService } from '../services/speechService';
 import { confidenceDescription } from '../services/confidenceDescription';
 import { modelMetadata } from '../services/modelRegistry';
