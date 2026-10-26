@@ -1,0 +1,221 @@
+{
+  "finding": "S2-F1/P2",
+  "independentClosure": "PENDING",
+  "reviewedHead": "a0dfa4b76ea4cb00019708b1b8bf5d88dc51a622",
+  "stackedBase": "5fc8b7f32859e071e9c74d1269429ba945c4b3af",
+  "mainAtInspection": "fdd37780930ef83431edcca404447b72a9c21976",
+  "packageVersion": "1.0.5",
+  "versionPolicy": "same coherent PR retains npm-generated1.0.5 above target1.0.4/main1.0.3; no additional bump/tag/dependency change",
+  "redReproductions": [
+    {
+      "selection": "initial22",
+      "run": "2026-10-26T00-43-48.368Z-aba3f3ac",
+      "exit": 1,
+      "counts": {
+        "total": 22,
+        "passed": 8,
+        "failed": 14,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "d05170bcb69c4bb23ae9947d1b77099f4a52f4ce561d1f5ae91590ce0517bb3f"
+    },
+    {
+      "selection": "final28",
+      "run": "2026-10-26T00-45-22.065Z-33b3598c",
+      "exit": 1,
+      "counts": {
+        "total": 28,
+        "passed": 6,
+        "failed": 22,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "6a7b47a2dd7238c9cbd69485fb388d15db1c7f9ee2e2514a56b8861408c0b0e4"
+    }
+  ],
+  "firstGreen": {
+    "run": "2026-10-26T00-44-14.064Z-ae7df52b",
+    "passed": 252,
+    "exit": 0
+  },
+  "finalFocused": {
+    "run": "2026-10-26T00-45-00.547Z-7143fdc8",
+    "exit": 0,
+    "counts": {
+      "total": 261,
+      "passed": 261,
+      "failed": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  },
+  "offline": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+    "run": "2026-10-26T00-45-42.430Z-ab151f93",
+    "exit": 0,
+    "node": "v24.19.0",
+    "installedDependencyGraph": "unchanged existing canonical npm install; exact-head hosted CI clean install separately bound in PR",
+    "phases": {
+      "browser": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": {
+          "total": 19,
+          "passed": 19,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logSha256": "9aed9d7b03daf8b9f6db3fda7f6f4dc200631229999de11f41f2b097214d750d"
+      },
+      "build": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": null,
+        "logSha256": "1d16bd2053ea1ebc4d48c718d601d30e7a6a0ee422d9c5eedf44f6a79d220134"
+      },
+      "controls": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      },
+      "delegate": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "438c2ea287dfb0d2fa0b137e89870b72788966c99a73e647842715dadf4fd1b5"
+      },
+      "foundation": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "30e873a65ef51bf66dd1a1ed915647a71b998c2e6deaf0d71921a01dbaebea57"
+      },
+      "lint": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "output": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "60e49b6c82fdf6a75a79ec4ca0f51dfd6fa2abc907e1787edd7851e791e3374f"
+      },
+      "preflight": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": {
+          "protected": 702,
+          "violations": 0
+        },
+        "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+      },
+      "preflight-tests": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": {
+          "total": 57,
+          "passed": 57,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "6482d60fbf661f23bee9ea54c15d6f757a514eeda1b9eedf1a0d308f67c22c57"
+      },
+      "typecheck": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "selection": "default",
+        "counts": {
+          "total": 621,
+          "passed": 621,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "dbc57659174ce257fbe899e7b4096b7a05864f2db6ea3fbd2d48e13fe4cae1a8"
+      }
+    }
+  },
+  "historical": {
+    "protected": 702,
+    "mismatches": []
+  },
+  "css": [
+    {
+      "file": "dist/assets/index-Be0ZaC1p.css",
+      "bytes": 28799,
+      "sha256": "a2b30e2f641bdcd6d620b2681f4c959dd2c7cd1b8fd08c57d0873b8d3b515294"
+    }
+  ],
+  "modelsAcquired": 0,
+  "scope": "request-owned provenance, model-free SDK/session controls; no real inference/backend/pinning/license/ZIP acceptance; final source/hosted CI binding in PR28 body"
+}

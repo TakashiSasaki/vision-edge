@@ -1,6 +1,7 @@
 import type { RunnableModelType } from '../types/vision.ts';
 
 export type AssetDeliverySource = 'container-cache' | 'external-fallback' | 'external';
+export type AssetSourceRecorder = (assetKey: string, source: AssetDeliverySource) => void;
 
 export type AssetCacheState = 'cached' | 'downloading' | 'unavailable';
 
@@ -286,6 +287,13 @@ export function recordResolvedSource(
   source: AssetDeliverySource
 ): void {
   resolvedSources[assetKey] = source;
+  notifyListeners();
+}
+
+// Commit one accepted initialization atomically before synchronous observers run.
+export function recordResolvedSources(sources: ReadonlyMap<string, AssetDeliverySource>): void {
+  if (sources.size === 0) return;
+  for (const [key, source] of sources) resolvedSources[key] = source;
   notifyListeners();
 }
 

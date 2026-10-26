@@ -2,8 +2,9 @@ import * as ort from 'onnxruntime-web';
 import type { BoundingBox, DetectedObject, InferenceInput, OnnxBackendInfo, SegFormerVariantId } from '../types/vision';
 import { ADE20K_CLASSES, getADE20KInfo } from './ade20kDictionary';
 import { OnnxSessionOwner, OnnxInferenceError, createOrtSession, disposeTensors, unknownOnnxBackend } from './onnxSession';
-import { resolveModelAssetUrls, getVariantCatalogEntry } from './modelAssetResolver';
+import { resolveModelAssetUrls, getVariantCatalogEntry, type AssetSourceRecorder } from './modelAssetResolver';
 export interface SegFormerTaskOptions {
+    recordAssetSource?: AssetSourceRecorder;
     modelUrl?: string;
     variantId?: SegFormerVariantId;
     delegate?: 'GPU' | 'WebGPU' | 'WASM';
@@ -155,6 +156,7 @@ export class SegFormerEngine implements SegFormerTask {
 export async function createSegFormerTask(options: SegFormerTaskOptions = {}): Promise<SegFormerTask> {
     if (options.modelUrl) {
         const { session, backend } = await createOrtSession(options.modelUrl, options.delegate, {
+            recordAssetSource: options.recordAssetSource,
             modelId: 'segformer',
             primarySource: 'external',
         });
@@ -167,6 +169,7 @@ export async function createSegFormerTask(options: SegFormerTaskOptions = {}): P
         {
             fallbackModelUrl: resolved.fallbackUrl,
             variantId: getVariantCatalogEntry('segformer', options.variantId).variantId,
+            recordAssetSource: options.recordAssetSource,
             modelId: 'segformer',
             primarySource: resolved.source,
         }

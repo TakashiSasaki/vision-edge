@@ -4,6 +4,7 @@ import {
     recordResolvedSource,
     resolveOrtWasmUrls,
     type AssetDeliverySource,
+    type AssetSourceRecorder,
 } from './modelAssetResolver';
 export class OnnxInferenceError extends Error {
     constructor(public readonly model: string, public readonly stage: 'input' | 'run' | 'output' | 'closed', cause: unknown) {
@@ -64,6 +65,7 @@ export function disposeTensors(values: Iterable<ort.Tensor>) { for (const t of n
     } }
 
 export interface OrtSessionResolutionOptions {
+    recordAssetSource?: AssetSourceRecorder;
     fallbackModelUrl?: string | null;
     modelId?: Extract<RunnableModelType, 'yolo-seg' | 'segformer'>;
     primarySource?: AssetDeliverySource;
@@ -100,6 +102,7 @@ export async function createOrtSession(
     delegate?: 'GPU' | 'WebGPU' | 'WASM',
     resolution?: OrtSessionResolutionOptions
 ) {
+    const recordAssetSource = resolution?.recordAssetSource ?? recordResolvedSource;
     const wasm = await resolveOrtWasmUrls();
     if (typeof window !== 'undefined') {
         ort.env.logLevel = 'error';
@@ -109,10 +112,10 @@ export async function createOrtSession(
     }
     try {
         const created = await createOrtSessionWithUrl(modelUrl, delegate);
-        recordResolvedSource('wasm-ort', wasm.source);
+        recordAssetSource('wasm-ort', wasm.source);
         if (resolution?.modelId) {
-            recordResolvedSource(resolution.modelId, resolution.primarySource ?? 'external');
-            if (resolution.variantId) recordResolvedSource(`${resolution.modelId}:${resolution.variantId}`, resolution.primarySource ?? 'external');
+            recordAssetSource(resolution.modelId, resolution.primarySource ?? 'external');
+            if (resolution.variantId) recordAssetSource(`${resolution.modelId}:${resolution.variantId}`, resolution.primarySource ?? 'external');
         }
         return created;
     }
@@ -122,10 +125,10 @@ export async function createOrtSession(
                 ort.env.wasm.wasmPaths = wasm.fallbackUrl;
             }
             const created = await createOrtSessionWithUrl(resolution.fallbackModelUrl, delegate);
-            recordResolvedSource('wasm-ort', wasm.fallbackUrl ? 'external-fallback' : wasm.source);
+            recordAssetSource('wasm-ort', wasm.fallbackUrl ? 'external-fallback' : wasm.source);
             if (resolution.modelId) {
-                recordResolvedSource(resolution.modelId, 'external-fallback');
-                if (resolution.variantId) recordResolvedSource(`${resolution.modelId}:${resolution.variantId}`, 'external-fallback');
+                recordAssetSource(resolution.modelId, 'external-fallback');
+                if (resolution.variantId) recordAssetSource(`${resolution.modelId}:${resolution.variantId}`, 'external-fallback');
             }
             return created;
         }
