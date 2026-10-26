@@ -67,6 +67,7 @@ export interface OrtSessionResolutionOptions {
     fallbackModelUrl?: string | null;
     modelId?: Extract<RunnableModelType, 'yolo-seg' | 'segformer'>;
     primarySource?: AssetDeliverySource;
+    variantId?: string;
 }
 
 async function createOrtSessionWithUrl(
@@ -111,6 +112,7 @@ export async function createOrtSession(
         recordResolvedSource('wasm-ort', wasm.source);
         if (resolution?.modelId) {
             recordResolvedSource(resolution.modelId, resolution.primarySource ?? 'external');
+            if (resolution.variantId) recordResolvedSource(`${resolution.modelId}:${resolution.variantId}`, resolution.primarySource ?? 'external');
         }
         return created;
     }
@@ -123,6 +125,7 @@ export async function createOrtSession(
             recordResolvedSource('wasm-ort', wasm.fallbackUrl ? 'external-fallback' : wasm.source);
             if (resolution.modelId) {
                 recordResolvedSource(resolution.modelId, 'external-fallback');
+                if (resolution.variantId) recordResolvedSource(`${resolution.modelId}:${resolution.variantId}`, 'external-fallback');
             }
             return created;
         }

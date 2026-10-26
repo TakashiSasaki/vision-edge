@@ -1,0 +1,208 @@
+{
+  "stackedBasePR": 27,
+  "stackedBaseBranch": "fix/npm-evidence-preflight-stage1",
+  "baseHead": "5fc8b7f32859e071e9c74d1269429ba945c4b3af",
+  "baseTree": "27f710a3a587adc62b90830e301d7efbfae660ef",
+  "mainAtInspection": "fdd37780930ef83431edcca404447b72a9c21976",
+  "packageVersion": "1.0.5",
+  "versionCommand": "npm version patch --no-git-tag-version",
+  "changedNonrootDependencyEntries": [],
+  "modelAssetsAcquired": 0,
+  "historical": {
+    "protected": 702,
+    "mismatches": []
+  },
+  "runtime": {
+    "node": "v24.19.0",
+    "npm": "11.9.0",
+    "browser": "system Chromium154.0.8037.57"
+  },
+  "install": {
+    "run": "2026-10-25T23-59-32.611Z-6a8e50ed",
+    "exit": 0,
+    "registry": "https://registry.npmjs.org"
+  },
+  "red": {
+    "run": "2026-10-26T00-00-09.256Z-07f69635",
+    "selection": "initial21 against Stage1 code",
+    "exit": 1,
+    "passed": 8,
+    "failed": 13
+  },
+  "newFixtureTypeFailure": {
+    "run": "2026-10-26T00-06-45.839Z-4092c7b9",
+    "exit": 2,
+    "reason": "optional fixture index signature; corrected nullable return field without suppression"
+  },
+  "focused": {
+    "run": "2026-10-26T00-11-56.715Z-b6d7ac6d",
+    "total": 227,
+    "passed": 227,
+    "newCases": 224,
+    "inheritedCacheCases": 3,
+    "exit": 0
+  },
+  "offline": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+    "run": "2026-10-26T00-13-32.078Z-0a98c3e8",
+    "exit": 0,
+    "phases": {
+      "preflight": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "protected": 702,
+          "violations": 0
+        },
+        "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+      },
+      "preflight-tests": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 57,
+          "passed": 57,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "569e7d5c513b39366fe71701cf14548e3d5ae4550b1eecb040482f9ba1e50b95"
+      },
+      "typecheck": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lint": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 593,
+          "passed": 593,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "27f7e482449014db03b2bf82a82c984b76056b71ce46eb7120767bffcfe38f8f"
+      },
+      "foundation": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "f233f9f38fb652d259214ef729d2292b9fbb8acf1037973073c5b8044fb105c0"
+      },
+      "delegate": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "c1112d8c29badc3b09c9781df602c4f93c45b1f829e84dbf5101d9315bc6bbbc"
+      },
+      "output": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "3674339db1fb6d301dadb5745fe959726197bc5b87ff907c958ba3084a19f53c"
+      },
+      "build": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": null,
+        "logSha256": "7cd0abcc3dc3ea7746f3bfa5f5a2c6523fba7e9fe24372d79ea4241cac43f06c"
+      },
+      "browser": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 19,
+          "passed": 19,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logSha256": "c4ccf35e699d5ba78397bbd3affe9900a0c33ba67890b022403577ebabcfc0b5"
+      },
+      "controls": {
+        "state": "PASS",
+        "exit": 0,
+        "childExit": 0,
+        "signal": null,
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      }
+    }
+  },
+  "buildComparison": {
+    "base": {
+      "index.html": "5704e8459dc34d666bced8e54feed91b51ba72224fbe9e559b830e30a0663a7a",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-Be0ZaC1p.css": "a2b30e2f641bdcd6d620b2681f4c959dd2c7cd1b8fd08c57d0873b8d3b515294",
+      "assets/index-DSf0n0ld.js": "d684087e76879925e4ac6635dab4b7970b8c1db235cb2e458252e8b9d7f293fd",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f"
+    },
+    "current": {
+      "index.html": "1f7dcb69d2fa071cff649a03f5f99d422099b83cdab2f4158b43f696cbba312f",
+      "assets/index-Be0ZaC1p.css": "a2b30e2f641bdcd6d620b2681f4c959dd2c7cd1b8fd08c57d0873b8d3b515294",
+      "assets/ort-wasm-simd-threaded.jsep-MDYUKy93.wasm": "3ad23231b5bd6d9dda55a7f84606315e0bf35b6750c28ee993c987c54cacab0f",
+      "assets/index-DEcJyvTU.js": "41c453a011338508fd968278c11fea4fff96dd93dee16e875d99093c1d3b887c",
+      "assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png": "5d7d35f05f4b5f62ef854293e58137a08b8d623e35b516655757685fbc910323",
+      "assets/aistudio/Screenshot_20261023-184437_91894f37.png": "91894f373ef0a40ca28ca9279b5ec6c742a069c6c02cd1c639a2871662e9d49f",
+      "assets/aistudio/Screenshot_20261023-193223_8ec61247.png": "8ec6124722b431e38c6f234aa0ce2b5e95e2449755ae98692d562ffcf38d888b"
+    }
+  },
+  "scope": "model-free exact-variant routing and local metadata/byte consistency, not real model/kernel/license/pinning acceptance; retarget/review required after Stage1 integration; final source/CI binding in new Draft PR"
+}

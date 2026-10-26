@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
-import { existsSync } from 'node:fs';
-import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { existsSync, createReadStream } from 'node:fs';
+import { createHash, randomUUID } from 'node:crypto';
+import { mkdir, readFile, rename, rm, lstat, writeFile } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 import process from 'node:process';
@@ -15,10 +16,12 @@ import {
   UPSTREAM_ORT_WASM_URL,
   type ContainerCacheStatusResponse,
   type ContainerModelStatusEntry,
+  getVariantCatalogEntry,
 } from './modelAssetResolver.ts';
 
 const MIN_VALID_MODEL_BYTES = 1024;
 const PREFETCH_TIMEOUT_MS = 45_000;
+const MAX_MODEL_BYTES = 512 * 1024 * 1024;
 
 export interface ContainerModelCacheOptions {
   rootDir?: string;
@@ -50,9 +53,7 @@ export class ContainerModelCacheManager {
   public readonly rootDir: string;
   public readonly cacheDir: string;
   private readonly fetchImpl: typeof fetch;
-  private readonly states = new Map<RunnableModelType, ContainerModelStatusEntry>();
   private readonly variantStates = new Map<string, ContainerModelStatusEntry>();
-  private readonly inflight = new Map<RunnableModelType, Promise<ContainerModelStatusEntry>>();
   private readonly variantInflight = new Map<string, Promise<ContainerModelStatusEntry>>();
 
   constructor(options: ContainerModelCacheOptions = {}) {
@@ -65,6 +66,7 @@ export class ContainerModelCacheManager {
       const entry = MODEL_VARIANT_CATALOG[key];
       const statusEntry: ContainerModelStatusEntry = {
         id: entry.modelId,
+        variantId: entry.variantId,
         file: entry.file,
         status: 'unavailable',
         size: null,
@@ -75,20 +77,17 @@ export class ContainerModelCacheManager {
         license: entry.license,
       };
       this.variantStates.set(key, statusEntry);
-      if (entry.isDefault) {
-        this.states.set(entry.modelId, statusEntry);
-      }
     }
   }
 
   public getModelFilePath(modelId: RunnableModelType): string {
-    const entry = MODEL_ASSET_CATALOG[modelId];
-    return path.join(this.cacheDir, entry.file);
+    const entry = getVariantCatalogEntry(modelId);
+    return this.getVariantFilePath(`${modelId}:${entry.variantId}`);
   }
 
   public getVariantFilePath(key: string): string {
-    const entry = MODEL_VARIANT_CATALOG[key];
-    return path.join(this.cacheDir, entry ? entry.file : key);
+    const entry = this.requireVariant(key);
+    return path.join(this.cacheDir, entry.file);
   }
 
   public findModelByFilename(filename: string): RunnableModelType | null {
@@ -131,55 +130,59 @@ export class ContainerModelCacheManager {
     return existsSync(dir) && (existsSync(probeFile) || existsSync(path.join(dir, 'ort.min.js')));
   }
 
+  private requireVariant(key: string) {
+    if (!Object.hasOwn(MODEL_VARIANT_CATALOG, key)) throw new RangeError(`Unknown model variant: ${key}`);
+    return MODEL_VARIANT_CATALOG[key];
+  }
+
   public async syncDiskState(modelId: RunnableModelType): Promise<ContainerModelStatusEntry> {
-    const current = this.states.get(modelId)!;
-    const filePath = this.getModelFilePath(modelId);
-    try {
-      const info = await stat(filePath);
-      if (info.isFile() && info.size >= MIN_VALID_MODEL_BYTES) {
-        const updated: ContainerModelStatusEntry = {
-          ...current,
-          status: 'cached',
-          size: info.size,
-          cachedAt: info.mtime.toISOString(),
-          error: null,
-        };
-        this.states.set(modelId, updated);
-        return updated;
-      }
-    } catch {
-      // File not on disk yet
+    const entry = getVariantCatalogEntry(modelId);
+    return this.syncVariantDiskState(`${modelId}:${entry.variantId}`);
+  }
+
+  private async readIdentity(key: string, size: number) {
+    const entry = this.requireVariant(key), filename = `${this.getVariantFilePath(key)}.identity.json`;
+    const info = await lstat(filename);
+    if (!info.isFile() || info.isSymbolicLink() || info.size > 4096) throw new Error('invalid cache metadata file');
+    const record = JSON.parse(await readFile(filename, 'utf8'));
+    if (!record || record.schemaVersion !== 1 || record.modelId !== entry.modelId || record.variantId !== entry.variantId || record.file !== entry.file || record.localUrl !== entry.localUrl || record.upstreamUrl !== entry.upstreamUrl || record.size !== size || typeof record.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(record.sha256)) throw new Error('cache identity metadata mismatch');
+    return record as { sha256: string };
+  }
+
+  private async readVerifiedCache(key: string, collect = false) {
+    const filename = this.getVariantFilePath(key), info = await lstat(filename);
+    if (!info.isFile() || info.isSymbolicLink() || info.size < MIN_VALID_MODEL_BYTES || info.size > MAX_MODEL_BYTES) throw new Error('invalid cache file/size');
+    const record = await this.readIdentity(key, info.size);
+    const hash = createHash('sha256'), chunks: Buffer[] = []; let size = 0;
+    for await (const chunk of createReadStream(filename)) {
+      size += chunk.length; if (size > MAX_MODEL_BYTES) throw new Error('cache file exceeds size limit');
+      hash.update(chunk); if (collect) chunks.push(chunk);
     }
-    return current;
+    if (size !== info.size || hash.digest('hex') !== record.sha256) throw new Error('cache byte hash mismatch');
+    return { size, cachedAt: info.mtime.toISOString(), bytes: collect ? Buffer.concat(chunks) : null };
   }
 
   public async syncVariantDiskState(key: string): Promise<ContainerModelStatusEntry> {
-    const current = this.variantStates.get(key);
-    if (!current) return this.syncDiskState(key as RunnableModelType);
-    const filePath = this.getVariantFilePath(key);
+    this.requireVariant(key);
+    const current = this.variantStates.get(key)!;
+    if (this.variantInflight.has(key)) return current;
+    const file = this.getVariantFilePath(key);
+    let updated: ContainerModelStatusEntry;
     try {
-      const info = await stat(filePath);
-      if (info.isFile() && info.size >= MIN_VALID_MODEL_BYTES) {
-        const updated: ContainerModelStatusEntry = {
-          ...current,
-          status: 'cached',
-          size: info.size,
-          cachedAt: info.mtime.toISOString(),
-          error: null,
-        };
-        this.variantStates.set(key, updated);
-        if (MODEL_VARIANT_CATALOG[key]?.isDefault) {
-          this.states.set(current.id, updated);
-        }
-        return updated;
-      }
-    } catch {
-      // File not on disk yet
+      const data = await this.readVerifiedCache(key);
+      updated = { ...current, status: 'cached', size: data.size, cachedAt: data.cachedAt, error: null };
+    } catch (cause) {
+      const empty = !existsSync(file) && !existsSync(`${file}.identity.json`);
+      updated = { ...current, status: 'unavailable', size: null, cachedAt: null, error: empty ? current.error ?? (current.status === 'cached' ? 'Cached files disappeared' : null) : `Unverified cache: ${cause instanceof Error ? cause.message : String(cause)}` };
     }
-    return current;
+    // A validation started before a download must not overwrite newer state.
+    if (this.variantStates.get(key) !== current) return this.variantStates.get(key)!;
+    this.variantStates.set(key, updated);
+    return updated;
   }
 
   public async prefetchVariant(key: string): Promise<ContainerModelStatusEntry> {
+    const entry = this.requireVariant(key);
     const diskEntry = await this.syncVariantDiskState(key);
     if (diskEntry.status === 'cached') {
       return diskEntry;
@@ -190,42 +193,50 @@ export class ContainerModelCacheManager {
       return existingPromise;
     }
 
-    const entry = MODEL_VARIANT_CATALOG[key];
-    if (!entry) {
-      return diskEntry;
-    }
-
     const current = this.variantStates.get(key)!;
     const downloadingState: ContainerModelStatusEntry = {
       ...current,
       status: 'downloading',
-      error: null,
+      size: null, cachedAt: null, error: null,
     };
     this.variantStates.set(key, downloadingState);
-    if (entry.isDefault) this.states.set(entry.modelId, downloadingState);
 
     const task = (async (): Promise<ContainerModelStatusEntry> => {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), PREFETCH_TIMEOUT_MS);
+      let timer: ReturnType<typeof setTimeout>;
+      const deadline = new Promise<never>((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('Model cache acquisition timeout')); }, PREFETCH_TIMEOUT_MS); });
       const targetPath = this.getVariantFilePath(key);
-      const tempPath = `${targetPath}.part-${process.pid}-${Date.now()}`;
+      const tempPath = `${targetPath}.part-${randomUUID()}`;
+      const metadataPath = `${targetPath}.identity.json`, metadataTemp = `${tempPath}.identity.json`;
       try {
         await mkdir(this.cacheDir, { recursive: true });
-        const response = await this.fetchImpl(entry.upstreamUrl, {
-          method: 'GET',
-          redirect: 'follow',
-          signal: controller.signal,
-        });
+        const response = await Promise.race([this.fetchImpl(entry.upstreamUrl, {
+          method: 'GET', redirect: 'follow', signal: controller.signal,
+        }), deadline]);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status} from ${entry.upstreamUrl}`);
         }
-        const arrayBuffer = await response.arrayBuffer();
-        const bytes = Buffer.from(arrayBuffer);
+        const advertised = Number(response.headers.get('Content-Length'));
+        if (Number.isFinite(advertised) && advertised > MAX_MODEL_BYTES) throw new Error('Model exceeds cache size limit');
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('Empty model response body');
+        const chunks: Uint8Array[] = []; let size = 0;
+        try {
+          while (true) {
+            const { done, value } = await Promise.race([reader.read(), deadline]); if (done) break;
+            size += value.byteLength;
+            if (size > MAX_MODEL_BYTES) { controller.abort(); void reader.cancel().catch(() => {}); throw new Error('Model exceeds cache size limit'); }
+            chunks.push(value);
+          }
+        } finally { void reader.cancel().catch(() => {}); reader.releaseLock(); }
+        const bytes = Buffer.concat(chunks);
         if (bytes.byteLength < MIN_VALID_MODEL_BYTES) {
           throw new Error(`Downloaded payload too small (${bytes.byteLength} bytes)`);
         }
         await writeFile(tempPath, bytes);
+        await writeFile(metadataTemp, JSON.stringify({ schemaVersion: 1, modelId: entry.modelId, variantId: entry.variantId, file: entry.file, localUrl: entry.localUrl, upstreamUrl: entry.upstreamUrl, size: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }));
         await rename(tempPath, targetPath);
+        await rename(metadataTemp, metadataPath);
 
         const cachedState: ContainerModelStatusEntry = {
           ...current,
@@ -235,21 +246,19 @@ export class ContainerModelCacheManager {
           error: null,
         };
         this.variantStates.set(key, cachedState);
-        if (entry.isDefault) this.states.set(entry.modelId, cachedState);
         return cachedState;
       } catch (cause) {
-        await rm(tempPath, { force: true }).catch(() => {});
+        await Promise.allSettled([rm(tempPath, { force: true }), rm(metadataTemp, { force: true })]);
         const unavailableState: ContainerModelStatusEntry = {
           ...current,
           status: 'unavailable',
-          size: null,
+          size: null, cachedAt: null,
           error: cause instanceof Error ? cause.message : String(cause),
         };
         this.variantStates.set(key, unavailableState);
-        if (entry.isDefault) this.states.set(entry.modelId, unavailableState);
         return unavailableState;
       } finally {
-        clearTimeout(timer);
+        clearTimeout(timer!);
         this.variantInflight.delete(key);
       }
     })();
@@ -259,54 +268,35 @@ export class ContainerModelCacheManager {
   }
 
   public async prefetchModel(modelId: RunnableModelType): Promise<ContainerModelStatusEntry> {
-    const defaultEntry = Object.values(MODEL_VARIANT_CATALOG).find(e => e.modelId === modelId && e.isDefault);
-    if (defaultEntry) {
-      return this.prefetchVariant(`${modelId}:${defaultEntry.variantId}`);
-    }
-    return this.syncDiskState(modelId);
+    const entry = getVariantCatalogEntry(modelId);
+    return this.prefetchVariant(`${modelId}:${entry.variantId}`);
   }
 
   public async prefetchAllModels(): Promise<Record<RunnableModelType, ContainerModelStatusEntry>> {
-    const variantKeys = Object.keys(MODEL_VARIANT_CATALOG);
-    await Promise.allSettled(variantKeys.map(key => this.prefetchVariant(key)));
+    await Promise.allSettled(Object.keys(MODEL_VARIANT_CATALOG).map(key => this.prefetchVariant(key)));
     return this.getModelsSnapshot();
   }
 
+  public getVariantsSnapshot(): Record<string, ContainerModelStatusEntry> {
+    return Object.fromEntries([...this.variantStates].map(([key, value]) => [key, { ...value }]));
+  }
+
   public getModelsSnapshot(): Record<RunnableModelType, ContainerModelStatusEntry> {
-    return {
-      'selfie-segmenter': { ...this.states.get('selfie-segmenter')! },
-      mediapipe: { ...this.states.get('mediapipe')! },
-      'yolo-seg': { ...this.states.get('yolo-seg')! },
-      segformer: { ...this.states.get('segformer')! },
-    };
+    return Object.fromEntries(Object.keys(MODEL_ASSET_CATALOG).map(id => {
+      const entry = getVariantCatalogEntry(id as RunnableModelType);
+      return [id, { ...this.variantStates.get(`${id}:${entry.variantId}`)! }];
+    })) as Record<RunnableModelType, ContainerModelStatusEntry>;
   }
 
   public async getStatusResponse(): Promise<ContainerCacheStatusResponse> {
-    const modelIds = Object.keys(MODEL_ASSET_CATALOG) as RunnableModelType[];
-    await Promise.all(
-      modelIds.map(async id => {
-        if (!this.inflight.has(id)) {
-          await this.syncDiskState(id);
-        }
-      })
-    );
+    await Promise.all(Object.keys(MODEL_VARIANT_CATALOG).map(key => this.syncVariantDiskState(key)));
     return {
       enabled: true,
       wasm: {
-        mediapipe: {
-          available: this.isWasmAvailable('mediapipe'),
-          localUrl: LOCAL_MEDIAPIPE_WASM_URL,
-          upstreamUrl: UPSTREAM_MEDIAPIPE_WASM_URL,
-          license: 'Apache-2.0',
-        },
-        ort: {
-          available: this.isWasmAvailable('ort'),
-          localUrl: LOCAL_ORT_WASM_URL,
-          upstreamUrl: UPSTREAM_ORT_WASM_URL,
-          license: 'MIT',
-        },
+        mediapipe: { available: this.isWasmAvailable('mediapipe'), localUrl: LOCAL_MEDIAPIPE_WASM_URL, upstreamUrl: UPSTREAM_MEDIAPIPE_WASM_URL, license: 'Apache-2.0' },
+        ort: { available: this.isWasmAvailable('ort'), localUrl: LOCAL_ORT_WASM_URL, upstreamUrl: UPSTREAM_ORT_WASM_URL, license: 'MIT' },
       },
-      models: this.getModelsSnapshot(),
+      models: this.getModelsSnapshot(), variants: this.getVariantsSnapshot(),
     };
   }
 
@@ -347,33 +337,15 @@ export class ContainerModelCacheManager {
             pathname.slice('/api/model-cache/models/'.length)
           );
           const variantKey = this.findVariantKeyByFilename(filename);
-          const modelId = this.findModelByFilename(filename);
-          if (!variantKey && !modelId) {
-            res.statusCode = 404;
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.end(JSON.stringify({ error: 'Unknown model file' }));
-            return;
+          if (!variantKey) {
+            res.statusCode = 404; res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ error: 'Unknown model file' })); return;
           }
-
-          let state: ContainerModelStatusEntry;
-          let filePath: string;
-          if (variantKey) {
-            state = await this.syncVariantDiskState(variantKey);
-            if (this.variantInflight.has(variantKey)) {
-              state = await this.variantInflight.get(variantKey)!;
-            } else if (state.status !== 'cached' && state.error === null) {
-              state = await this.prefetchVariant(variantKey);
-            }
-            filePath = this.getVariantFilePath(variantKey);
-          } else {
-            state = await this.syncDiskState(modelId!);
-            if (this.inflight.has(modelId!)) {
-              state = await this.inflight.get(modelId!)!;
-            } else if (state.status !== 'cached' && state.error === null) {
-              state = await this.prefetchModel(modelId!);
-            }
-            filePath = this.getModelFilePath(modelId!);
-          }
+          const entry = this.requireVariant(variantKey);
+          const modelId = entry.modelId;
+          let state = await this.syncVariantDiskState(variantKey);
+          if (this.variantInflight.has(variantKey)) state = await this.variantInflight.get(variantKey)!;
+          else if (state.status !== 'cached' && state.error === null) state = await this.prefetchVariant(variantKey);
 
           if (state.status !== 'cached') {
             res.statusCode = 503;
@@ -382,6 +354,7 @@ export class ContainerModelCacheManager {
               JSON.stringify({
                 error: 'Model not available in container cache; use external fallback',
                 model: modelId,
+                variantId: entry.variantId,
                 upstreamUrl: state.upstreamUrl,
                 reason: state.error,
               })
@@ -389,12 +362,20 @@ export class ContainerModelCacheManager {
             return;
           }
 
-          const bytes = await readFile(filePath);
+          let bytes: Buffer;
+          try { bytes = (await this.readVerifiedCache(variantKey, true)).bytes!; }
+          catch (cause) {
+            this.variantStates.set(variantKey, { ...state, status: 'unavailable', size: null, cachedAt: null, error: `Unverified cache: ${String(cause)}` });
+            res.statusCode = 503; res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ error: 'Cached model identity changed; use requested upstream', model: entry.modelId, variantId: entry.variantId, upstreamUrl: entry.upstreamUrl })); return;
+          }
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/octet-stream');
           res.setHeader('Content-Length', String(bytes.byteLength));
           res.setHeader('Cache-Control', 'public, max-age=3600');
           res.setHeader('X-Model-Source', 'container-cache');
+          res.setHeader('X-Model-Id', entry.modelId);
+          res.setHeader('X-Model-Variant', entry.variantId);
           res.setHeader('X-Model-License', state.license);
           res.end(req.method === 'HEAD' ? undefined : bytes);
           return;

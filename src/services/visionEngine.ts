@@ -1,12 +1,12 @@
 import { FilesetResolver, ObjectDetector, ImageSegmenter, type ImageSegmenterResult } from '@mediapipe/tasks-vision';
 import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput, YoloSegVariantId, SegFormerVariantId } from '../types/vision';
 import { PipelineProbe, type PipelineObserver, type AttemptOutcome } from './pipelineMetrics';
-import { requireRunnableModel, getVariantMetadata } from './modelRegistry';
+import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
 import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
 import { unknownOnnxBackend } from './onnxSession';
-import { resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSource } from './modelAssetResolver';
+import { getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSource } from './modelAssetResolver';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
@@ -147,7 +147,7 @@ export class VisionEngine {
 
   initialize(model: RunnableModelType, variantId?: string): Promise<InitializationResult> {
     requireRunnableModel(model);
-    const targetVariantId = variantId || getVariantMetadata(model, variantId).id;
+    const targetVariantId = getVariantCatalogEntry(model, variantId).variantId;
     if (this.state.model === model && this.state.variantId === targetVariantId) {
       if (this.state.status === 'loading' && this.pending) return this.pending;
       if (this.state.status === 'ready') return Promise.resolve(this.state);
