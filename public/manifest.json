@@ -1,5 +1,5 @@
 {
-  "id": "https://vision-edge.ai.studio/",
+  "id": "/",
   "name": "Webcam Vision & Segmentation Studio",
   "short_name": "VisionStudio",
   "description": "MediaPipe EfficientDet-Lite0 による物体検出と Selfie Segmenter による人物領域推定。モデル準備状態を表示する Web カメラデモ。",
