@@ -448,5 +448,6 @@ function matchesVariantStatus(value: unknown, entry: ModelVariantCatalogEntry, m
     && value.file === entry.file && value.localUrl === entry.localUrl && value.upstreamUrl === entry.upstreamUrl
     && value.license === entry.license && value.error === null
     && ((value.status === 'cached' && Number.isSafeInteger(value.size) && Number(value.size) >= 1024 && typeof value.cachedAt === 'string')
-      || (value.status === 'downloading' && value.size === null && value.cachedAt === null));
+      || (value.status === 'downloading' && value.size === null && value.cachedAt === null)
+      || (value.status === 'unavailable' && value.filePresent === false && value.integrity === 'not-present' && value.size === null && value.cachedAt === null));
 }

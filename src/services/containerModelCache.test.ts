@@ -296,6 +296,11 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
       }
       expect(mockPreviewServer.middlewares.use).toHaveBeenCalledTimes(1);
       expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[container-model-cache] Container preview server started'));
+      await vi.waitFor(() =>
+        expect(logSpy).toHaveBeenCalledWith(
+          expect.stringContaining('[container-model-cache] Startup download completed')
+        )
+      );
     } finally {
       if (savedTestLogDir !== undefined) process.env.TEST_LOG_DIR = savedTestLogDir;
       if (savedCi !== undefined) process.env.CI = savedCi;
@@ -315,5 +320,94 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     // 9 legacy variants accept synthetic bytes; 2 pinned image classifiers strictly require their pinned SHA256/size
     expect(result.cachedCount).toBe(9);
     expect(result.unavailableCount).toBe(2);
+  });
+
+  it('waits for container download to complete before responding when an uncached model file is accessed', async () => {
+    let releaseDownload!: () => void;
+    const downloadGate = new Promise<void>(resolve => {
+      releaseDownload = resolve;
+    });
+    const fakePayload = Buffer.alloc(4096, 0x5a);
+    let downloadCompleted = false;
+    const mockFetch = vi.fn(async () => {
+      await downloadGate;
+      downloadCompleted = true;
+      return new Response(fakePayload, { status: 200 });
+    });
+
+    const manager = new ContainerModelCacheManager({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+    });
+    const middleware = manager.createMiddleware();
+
+    let responseResolved = false;
+    const responsePromise = invokeMiddleware(
+      middleware,
+      '/api/model-cache/models/yolov8n-seg.onnx'
+    ).then(res => {
+      responseResolved = true;
+      return res;
+    });
+
+    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
+    expect(downloadCompleted).toBe(false);
+    expect(responseResolved).toBe(false);
+
+    releaseDownload();
+    const res = await responsePromise;
+    expect(downloadCompleted).toBe(true);
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['x-model-source']).toBe('container-cache');
+    expect(res.body).toEqual(fakePayload);
+
+    // Even if the cached file is removed from the container later, accessing the model URL re-downloads and waits
+    await rm(manager.getVariantFilePath('yolo-seg:yolov8n-seg'), { force: true });
+    await rm(`${manager.getVariantFilePath('yolo-seg:yolov8n-seg')}.identity.json`, { force: true });
+    const redownloadRes = await invokeMiddleware(
+      middleware,
+      '/api/model-cache/models/yolov8n-seg.onnx'
+    );
+    expect(redownloadRes.statusCode).toBe(200);
+    expect(redownloadRes.body).toEqual(fakePayload);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('serves /model-cache.html with readable model file URLs for non-JS user agents without triggering downloads', async () => {
+    const mockFetch = vi.fn(async () => new Response(Buffer.alloc(2048, 0x42), { status: 200 }));
+    const manager = new ContainerModelCacheManager({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+    });
+    const middleware = manager.createMiddleware();
+
+    const headers: Record<string, string> = {};
+    let body = '';
+    const req = {
+      url: '/model-cache.html',
+      method: 'GET',
+      headers: {
+        host: 'example.run.app',
+        'x-forwarded-proto': 'https',
+      },
+    } as unknown as IncomingMessage;
+    const res = {
+      statusCode: 200,
+      setHeader(name: string, value: string) {
+        headers[name.toLowerCase()] = String(value);
+      },
+      end(chunk?: Buffer | string) {
+        body = chunk ? String(chunk) : '';
+      },
+    } as unknown as ServerResponse;
+
+    await middleware(req, res, () => {});
+    expect(res.statusCode).toBe(200);
+    expect(headers['content-type']).toContain('text/html');
+    expect(body).not.toContain('<noscript>');
+    expect(body).toContain('https://example.run.app/model-cache.html');
+    expect(body).toContain('https://example.run.app/api/model-cache/models/yolov8n-seg.onnx');
+    expect(body).toContain('https://example.run.app/api/model-cache/models/efficientnet_lite0.tflite?sha256=');
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 });

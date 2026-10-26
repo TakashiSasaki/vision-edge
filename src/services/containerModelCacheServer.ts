@@ -69,6 +69,29 @@ function isSafeFilename(name: string): boolean {
   );
 }
 
+function getRequestOrigin(req: IncomingMessage): string | null {
+  const forwardedHost = req.headers?.['x-forwarded-host'];
+  const rawHost =
+    (Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost) ||
+    req.headers?.host;
+  if (!rawHost) return null;
+  const host = rawHost.split(',')[0].trim();
+  if (!host || !/^[a-zA-Z0-9.:-]+$/.test(host)) return null;
+  const forwardedProto = req.headers?.['x-forwarded-proto'];
+  const rawProto = (
+    Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto
+  )
+    ?.split(',')[0]
+    ?.trim();
+  const proto =
+    rawProto === 'https' || rawProto === 'http'
+      ? rawProto
+      : host.endsWith('.run.app') || host.endsWith('.ai.studio')
+        ? 'https'
+        : 'http';
+  return `${proto}://${host}`;
+}
+
 export class ContainerModelCacheManager {
   public readonly rootDir: string;
   public readonly cacheDir: string;
@@ -199,7 +222,7 @@ export class ContainerModelCacheManager {
       updated = { ...current, status: 'cached', size: data.size, sha256: data.sha256, filePresent: true, integrity: current.expectedSha256 ? 'pinned' : 'self-recorded', cachedAt: data.cachedAt, error: null };
     } catch (cause) {
       const empty = !existsSync(file) && !existsSync(`${file}.identity.json`);
-      updated = { ...current, status: 'unavailable', size: null, sha256: null, filePresent: existsSync(file), integrity: empty ? 'not-present' : 'invalid', cachedAt: null, error: empty ? current.error ?? (current.status === 'cached' ? 'Cached files disappeared' : null) : `Unverified cache: ${publicCacheError(cause)}` };
+      updated = { ...current, status: 'unavailable', size: null, sha256: null, filePresent: existsSync(file), integrity: empty ? 'not-present' : 'invalid', cachedAt: null, error: empty ? current.error : `Unverified cache: ${publicCacheError(cause)}` };
     }
     // A validation started before a download must not overwrite newer state.
     if (this.variantStates.get(key) !== current) return this.variantStates.get(key)!;
@@ -209,6 +232,11 @@ export class ContainerModelCacheManager {
 
   public async prefetchVariant(key: string): Promise<ContainerModelStatusEntry> {
     const entry = this.requireVariant(key);
+    const existingInflight = this.variantInflight.get(key);
+    if (existingInflight) {
+      return existingInflight;
+    }
+
     const diskEntry = await this.syncVariantDiskState(key);
     if (diskEntry.status === 'cached') {
       return diskEntry;
@@ -229,8 +257,19 @@ export class ContainerModelCacheManager {
 
     const task = (async (): Promise<ContainerModelStatusEntry> => {
       const controller = new AbortController();
-      let timer: ReturnType<typeof setTimeout>;
-      const deadline = new Promise<never>((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('Model cache acquisition timeout')); }, PREFETCH_TIMEOUT_MS); });
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      let rejectDeadline!: (err: Error) => void;
+      const deadline = new Promise<never>((_, reject) => {
+        rejectDeadline = reject;
+      });
+      const resetTimer = () => {
+        if (timer !== undefined) clearTimeout(timer);
+        timer = setTimeout(() => {
+          controller.abort();
+          rejectDeadline(new Error('Model cache acquisition timeout'));
+        }, PREFETCH_TIMEOUT_MS);
+      };
+      resetTimer();
       const targetPath = this.getVariantFilePath(key);
       const tempPath = `${targetPath}.part-${randomUUID()}`;
       const metadataPath = `${targetPath}.identity.json`, metadataTemp = `${tempPath}.identity.json`;
@@ -251,6 +290,7 @@ export class ContainerModelCacheManager {
         try {
           while (true) {
             const { done, value } = await Promise.race([reader.read(), deadline]); if (done) break;
+            resetTimer();
             size += value.byteLength;
             if (size > (entry.expectedSize ?? MAX_MODEL_BYTES)) { controller.abort(); void reader.cancel().catch(() => {}); throw new Error('Model exceeds cache size limit'); }
             chunks.push(value);
@@ -289,7 +329,7 @@ export class ContainerModelCacheManager {
         this.variantStates.set(key, unavailableState);
         return unavailableState;
       } finally {
-        clearTimeout(timer!);
+        if (timer !== undefined) clearTimeout(timer);
         this.variantInflight.delete(key);
       }
     })();
@@ -342,6 +382,115 @@ export class ContainerModelCacheManager {
         const rawUrl = req.url ?? '/';
         const pathname = new URL(rawUrl, 'http://localhost').pathname;
 
+        if (
+          pathname === '/model-cache.html' &&
+          (req.method === 'GET' || req.method === 'HEAD')
+        ) {
+          const htmlPath = path.join(this.rootDir, 'public', 'model-cache.html');
+          if (existsSync(htmlPath)) {
+            let html = await readFile(htmlPath, 'utf8');
+            const origin = getRequestOrigin(req);
+            const status = await this.getStatusResponse();
+            const families: Record<string, string> = {
+              'selfie-segmenter': 'Selfie Segmenter',
+              mediapipe: 'EfficientDet',
+              'yolo-seg': 'YOLO',
+              segformer: 'SegFormer',
+              'image-classifier': 'EfficientNet（画像分類）',
+            };
+            const stateLabels: Record<string, string> = {
+              cached: '配信準備済み',
+              downloading: '取得中',
+              unavailable: '未準備',
+            };
+            const integrityLabels: Record<string, string> = {
+              pinned: '固定ハッシュ一致',
+              'self-recorded': '取得時ハッシュ一致',
+              invalid: '検証失敗',
+              'not-present': '未保存',
+              pending: '検証待ち',
+              unknown: '不明',
+            };
+            const escapeHtml = (str: string) =>
+              str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+            const rows = Object.values(status.variants ?? {}).map(v => {
+              const cached =
+                v.status === 'cached' &&
+                v.filePresent === true &&
+                (v.integrity === 'pinned' || v.integrity === 'self-recorded') &&
+                typeof v.size === 'number' &&
+                v.size > 0 &&
+                v.error === null;
+              const relUrl = v.localUrl;
+              const fullUrl = origin ? `${origin}${relUrl}` : relUrl;
+              return {
+                family: families[v.id] ?? v.id,
+                variant: v.variantId ?? '',
+                file: v.file,
+                size: cached && v.size ? `${v.size.toLocaleString('ja-JP')} bytes` : '—',
+                presence: v.filePresent === true ? 'あり' : v.filePresent === false ? 'なし' : '不明',
+                readiness: stateLabels[v.status] ?? '不明',
+                integrity: integrityLabels[v.integrity ?? 'unknown'] ?? '不明',
+                error: v.error ? '取得・検証エラーあり（詳細は管理ログ）' : '—',
+                cached,
+                relUrl,
+                fullUrl,
+              };
+            });
+            const renderTable = (items: typeof rows, emptyText: string, isCachedTable: boolean) => {
+              if (!items.length) return `<p>${escapeHtml(emptyText)}</p>`;
+              const headers = ['モデル', 'バリアント', 'ファイル名', '検証済みサイズ', '実ファイル', '準備状態', '整合性', '診断'];
+              const ths = headers.map(h => `<th scope="col">${escapeHtml(h)}</th>`).join('');
+              const trs = items
+                .map(r => {
+                  const fileCell = isCachedTable
+                    ? `<a href="${escapeHtml(r.relUrl)}" class="model-link" download="${escapeHtml(r.file)}">${escapeHtml(r.file)}</a><div class="cache-path"><a href="${escapeHtml(r.fullUrl)}"><code>${escapeHtml(r.fullUrl)}</code></a></div>`
+                    : `${escapeHtml(r.file)}<div class="cache-path"><a class="catalog-model-url" href="${escapeHtml(r.fullUrl)}" download="${escapeHtml(r.file)}"><code>${escapeHtml(r.fullUrl)}</code></a></div>`;
+                  return `<tr><td data-label="モデル">${escapeHtml(r.family)}</td><td data-label="バリアント">${escapeHtml(r.variant)}</td><td data-label="ファイル名">${fileCell}</td><td data-label="検証済みサイズ">${escapeHtml(r.size)}</td><td data-label="実ファイル">${escapeHtml(r.presence)}</td><td data-label="準備状態">${escapeHtml(r.readiness)}</td><td data-label="整合性">${escapeHtml(r.integrity)}</td><td data-label="診断">${escapeHtml(r.error)}</td></tr>`;
+                })
+                .join('');
+              return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+            };
+            const readyRows = rows.filter(r => r.cached);
+            const configuredRows = rows.filter(r => !r.cached);
+            html = html.replace(
+              '<p id="notice" role="status" aria-live="polite">状態はまだ不明です。</p>',
+              `<p id="notice" role="status" aria-live="polite">保存・検証済み ${readyRows.length}件 ／ 設定済み ${rows.length}件</p>`
+            );
+            html = html.replace(
+              '<p id="observed"></p>',
+              `<p id="observed">サーバー観測時刻: ${escapeHtml(status.observedAt ?? '')}</p>`
+            );
+            html = html.replace(
+              '<div id="cached"></div>',
+              `<div id="cached">${renderTable(readyRows, 'この観測では保存・検証済みファイルはありません。', true)}</div>`
+            );
+            html = html.replace(
+              '<div id="configured"></div>',
+              `<div id="configured">${renderTable(configuredRows, '未準備の登録ファイルはありません。', false)}</div>`
+            );
+            if (origin) {
+              html = html.replace(
+                '<code id="page-url" class="page-url-text">/model-cache.html</code>',
+                `<code id="page-url" class="page-url-text">${escapeHtml(origin)}/model-cache.html</code>`
+              );
+              html = html.replace(
+                /<a class="catalog-model-url" href="(\/api\/model-cache\/models\/[^"]+)" download="([^"]+)"><code>\1<\/code><\/a>/g,
+                `<a class="catalog-model-url" href="${escapeHtml(origin)}$1" download="$2"><code>${escapeHtml(origin)}$1</code></a> <span class="cache-path">(パス: <a href="$1"><code>$1</code></a>)</span>`
+              );
+            }
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-store');
+            res.end(req.method === 'HEAD' ? undefined : html);
+            return;
+          }
+        }
+
         if (!pathname.startsWith('/api/model-cache')) {
           next();
           return;
@@ -379,9 +528,15 @@ export class ContainerModelCacheManager {
             res.statusCode = 400; res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.end(JSON.stringify({ error: 'Pinned asset URL required' })); return;
           }
-          let state = await this.syncVariantDiskState(variantKey);
-          if (this.variantInflight.has(variantKey)) state = await this.variantInflight.get(variantKey)!;
-          else if (state.status !== 'cached' && state.error === null) state = await this.prefetchVariant(variantKey);
+          const inflight = this.variantInflight.get(variantKey);
+          let state = inflight
+            ? await inflight
+            : await this.syncVariantDiskState(variantKey);
+          if (this.variantInflight.has(variantKey)) {
+            state = await this.variantInflight.get(variantKey)!;
+          } else if (state.status !== 'cached' && state.error === null) {
+            state = await this.prefetchVariant(variantKey);
+          }
 
           if (state.status !== 'cached') {
             res.statusCode = 503;

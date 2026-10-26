@@ -36,3 +36,22 @@ for(const integrity of ['pinned','self-recorded'])test(`C31-F1: static page reje
   await page.goto('/model-cache.html');await expect(page.getByRole('status')).toContainText('一部の状態が不正');await expect(page.locator('#configured').getByRole('cell',{name:'不明',exact:true})).toHaveCount(1);await expect(page.locator('#configured')).not.toContainText('ハッシュ一致');await expect(page.locator('#cached table')).toHaveCount(0);
   expect(requests).toBe(1);expect(modelRequests).toEqual([]);await page.screenshot({path:info.outputPath(`c31-f1-${integrity}.png`),fullPage:true});
 });
+test('non-JS user agent can read all 11 model file URLs on /model-cache.html',async({browser,baseURL})=>{
+  const context=await browser.newContext({javaScriptEnabled:false,baseURL});
+  try {
+    const page=await context.newPage();
+    await page.goto('/model-cache.html');
+    const links=page.locator('#static-model-catalog a.catalog-model-url');
+    await expect(links).toHaveCount(11);
+    const hrefs=await links.evaluateAll(els=>els.map(e=>e.getAttribute('href')??''));
+    const texts=await links.evaluateAll(els=>els.map(e=>(e.textContent??'').trim()));
+    expect(hrefs).toContain('/api/model-cache/models/efficientnet_lite0.tflite?sha256=6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0');
+    expect(hrefs).toContain('/api/model-cache/models/yolov8n-seg.onnx');
+    for(let i=0;i<hrefs.length;i++){
+      expect(hrefs[i]).toMatch(/^\/api\/model-cache\/models\//);
+      expect(texts[i]).toContain(hrefs[i]);
+    }
+  } finally {
+    await context.close();
+  }
+});
