@@ -94,6 +94,7 @@ export class ContainerModelCacheManager {
         localUrl: entry.localUrl,
         upstreamUrl: entry.upstreamUrl,
         license: entry.license,
+        acquisitionEnabled: !entry.blockedReason, blockedReason: entry.blockedReason ?? null,
         filePresent: null, integrity: 'unknown', sha256: null,
         expectedSize: entry.expectedSize ?? null, expectedSha256: entry.expectedSha256 ?? null,
       };
@@ -188,8 +189,12 @@ export class ContainerModelCacheManager {
   }
 
   public async syncVariantDiskState(key: string): Promise<ContainerModelStatusEntry> {
-    this.requireVariant(key);
+    const entry = this.requireVariant(key);
     const current = this.variantStates.get(key)!;
+    if (entry.blockedReason) {
+      const blocked: ContainerModelStatusEntry = { ...current, status: 'unavailable', filePresent: existsSync(this.getVariantFilePath(key)), size: null, sha256: null, cachedAt: null, integrity: 'blocked', error: `BLOCKED: ${entry.blockedReason}` };
+      this.variantStates.set(key, blocked); return blocked;
+    }
     if (this.variantInflight.has(key)) return current;
     const file = this.getVariantFilePath(key);
     let updated: ContainerModelStatusEntry;
@@ -209,6 +214,7 @@ export class ContainerModelCacheManager {
   public async prefetchVariant(key: string): Promise<ContainerModelStatusEntry> {
     const entry = this.requireVariant(key);
     const diskEntry = await this.syncVariantDiskState(key);
+    if (entry.blockedReason) return diskEntry;
     if (diskEntry.status === 'cached') {
       return diskEntry;
     }
@@ -387,7 +393,7 @@ export class ContainerModelCacheManager {
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.end(
               JSON.stringify({
-                error: entry.expectedSha256 ? 'Pinned model unavailable; no upstream fallback permitted' : 'Model not available in container cache; use external fallback',
+                error: entry.blockedReason ? 'BLOCKED: asset verification pending; acquisition and serving disabled' : entry.expectedSha256 ? 'Pinned model unavailable; no upstream fallback permitted' : 'Model not available in container cache; use external fallback',
                 model: modelId,
                 variantId: entry.variantId,
                 upstreamUrl: state.upstreamUrl,
@@ -413,7 +419,10 @@ export class ContainerModelCacheManager {
           res.setHeader('X-Model-Id', entry.modelId);
           res.setHeader('X-Model-Variant', entry.variantId);
           res.setHeader('X-Model-License', state.license);
-          if (entry.expectedSha256) res.setHeader('Link', '</licenses/Apache-2.0.txt>; rel="license", </licenses/classifier-models.txt>; rel="describedby"');
+          if (entry.expectedSha256) {
+            const notice = entry.licenseNoticeUrl ?? (entry.modelId === 'image-classifier' ? '/licenses/classifier-models.txt' : null);
+            res.setHeader('Link', `</licenses/Apache-2.0.txt>; rel="license"${notice ? `, <${notice}>; rel="describedby"` : ''}`);
+          }
           res.end(req.method === 'HEAD' ? undefined : bytes);
           return;
         }

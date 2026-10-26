@@ -6,7 +6,7 @@ import { getCategoryColor, getLabelInfo } from './dictionary';
 import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
 import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
 import { unknownOnnxBackend } from './onnxSession';
-import { getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSources, type AssetSourceRecorder, type AssetDeliverySource } from './modelAssetResolver';
+import { assertVariantAssetAvailable, getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSources, type AssetSourceRecorder, type AssetDeliverySource } from './modelAssetResolver';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
@@ -178,6 +178,9 @@ export class VisionEngine {
       let stage: 'wasm' | 'task' = 'wasm';
       try {
         if (!current()) return cancelled();
+        // Production refuses unverified variants before WASM/SDK or any fetch.
+        // Existing explicit task-factory injection remains model-free test scope.
+        if (!this.factory) { stage = 'task'; assertVariantAssetAvailable(model, targetVariantId); stage = 'wasm'; }
         let active: ActiveTask;
         if (model === 'yolo-seg') {
           stage = 'task';
@@ -399,7 +402,7 @@ export class VisionEngine {
         }
       }
 
-      // EfficientDet-Lite0 produces boxes only; no substitute segmentation.
+      // MediaPipe ObjectDetector variants produce boxes only; no substitute segmentation.
       if (active.model === 'mediapipe') {
         const sdkStart = probe?.start();
         let sdkOutcome: AttemptOutcome = 'failed';

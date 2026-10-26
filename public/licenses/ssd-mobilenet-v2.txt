@@ -1,0 +1,39 @@
+SSD MobileNetV2 reference and license evidence
+
+Official candidate URL referenced by Google's Web sample:
+https://storage.googleapis.com/mediapipe-models/object_detector/ssd_mobilenet_v2/float32/1/ssd_mobilenet_v2.tflite
+
+The owner supplied ssd_mobilenet_v2.tflite. Independent byte/metadata inspection
+of that upload reports11316189 bytes and SHA-256:
+b8ccb1a25d45455ba52e85f26531948e1cb75efeb94c7c3d456d54fd4d6fbdd2
+Provenance is USER-UPLOADED; equality with the official GCS object has not been
+independently verified by a remote download. No model bytes are committed or
+redistributed by this change. Supported transfer to the coding executor failed,
+so this executor has not independently rehashed or executed the model.
+
+The exact uploaded ModelMetadata says author MediaPipe, version1. Its license
+field is absent; this is NOT an embedded Apache declaration. The official
+MediaPipe collaborator schmidt-sebastian states source and models are Apache-2.0
+unless otherwise noted,2026-10-05:
+https://github.com/google-ai-edge/mediapipe/issues/6355#issuecomment-5997480830
+This model-inclusive project statement is the licensing source, distinct from
+SDK licensing. No SSD-specific exception was established. Apache terms are at
+/licenses/Apache-2.0.txt.
+
+Input FLOAT32[1,256,256,3], normalization mean/std127.5. RAW outputs:
+location[1,12276,4], score[1,12276,91]. labels.txt has91 positions: background0,
+ten placeholder gaps and80 semantic classes. Category indices are label-file
+positions; no contiguous0..79 mapping/background offset is applied by the app.
+DETECTOR_METADATA/V001 supplies native anchors/decoding; scores already follow
+LOGISTIC and decoder sigmoid_score=false. No second sigmoid or custom NMS added.
+
+Official guide and sample:
+https://developers.google.com/edge/mediapipe/solutions/vision/object_detector#ssd_mobilenetv2_model
+https://github.com/google-ai-edge/mediapipe-samples-web/blob/main/src/tasks/object-detector.ts
+Pinned source schema and native graph:
+https://github.com/google-ai-edge/mediapipe/blob/v0.10.14/mediapipe/tasks/metadata/object_detector_metadata_schema.fbs
+https://github.com/google-ai-edge/mediapipe/blob/v0.10.14/mediapipe/tasks/cc/components/processors/detection_postprocessing_graph.cc
+
+Actual pinned SDK0.10.14 model initialization/inference and same-input performance
+benchmark are NOT RUN. Acquisition and serving remain disabled pending reviewed
+compatibility evidence. No denied model route, mirror or other machine was used.

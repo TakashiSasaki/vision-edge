@@ -36,9 +36,9 @@ async function request(m: ContainerModelCacheManager, url: string, method = 'GET
   await m.createMiddleware()({url,method} as IncomingMessage, res as unknown as ServerResponse, e=>{throw e??Error('Unexpected route');});
   return {status,bytes,headers};
 }
-it('status and inventory observation never acquire models; all eleven identities are present', async()=>{
+it('status and inventory observation never acquire models; all twelve identities are present', async()=>{
   const {m,fetch}=await manager(); const s=await m.getStatusResponse();
-  expect(s).toMatchObject({schemaVersion:2,catalogCount:11}); expect(Object.keys(s.models)).toHaveLength(4); expect(Object.keys(s.variants!)).toHaveLength(11);
+  expect(s).toMatchObject({schemaVersion:2,catalogCount:12}); expect(Object.keys(s.models)).toHaveLength(4); expect(Object.keys(s.variants!)).toHaveLength(12);
   for (const v of variants) { expect(s.variants!['image-classifier:'+v]).toMatchObject({status:'unavailable',filePresent:false,integrity:'not-present',sha256:null,size:null}); expect(s.classification![v]).toMatchObject({status:'unavailable',filePresent:false,sha256:null}); }
   const response=await request(m,'/api/model-cache/status'); expect(response.status).toBe(200); expect(fetch).not.toHaveBeenCalled(); expect(response.bytes.toString()).not.toContain(m.cacheDir);
 });
@@ -96,7 +96,7 @@ it('actual Vite serve plugin supplies read-only status and validated model route
   const vite=await viteServer({configFile:false,root:process.cwd(),plugins:[containerModelCachePlugin({cacheDir:dir,fetchImpl:fake,autoPrefetchOnStart:false})],server:{middlewareMode:true,hmr:false,watch:null}});
   close.push(()=>vite.close()); const server=httpServer(vite.middlewares);await new Promise<void>(r=>server.listen(0,'127.0.0.1',r)); close.push(()=>new Promise<void>((r,e)=>server.close(x=>x?e(x):r())));
   const address=server.address(); if(!address||typeof address==='string')throw Error('No local port'); const base=`http://127.0.0.1:${address.port}`;
-  const before=await (await fetch(base+'/api/model-cache/status')).json();expect(before.catalogCount).toBe(11);expect(fake).not.toHaveBeenCalled();
+  const before=await (await fetch(base+'/api/model-cache/status')).json();expect(before.catalogCount).toBe(12);expect(fake).not.toHaveBeenCalled();
   expect((await (await fetch(base+'/model-cache.html')).text())).toContain('mountInventory');expect(fake).not.toHaveBeenCalled();
   const response=await fetch(base+IMAGE_CLASSIFIER_ASSETS.lite2.localUrl);expect(response.status).toBe(200);expect(Buffer.from(await response.arrayBuffer())).toEqual(payload('lite2'));expect(fake).toHaveBeenCalledTimes(1);
   const after=await (await fetch(base+'/api/model-cache/status')).json();expect(after.classification.lite2.status).toBe('cached');expect(after.classification.lite0.status).toBe('unavailable');expect(fake).toHaveBeenCalledTimes(1);

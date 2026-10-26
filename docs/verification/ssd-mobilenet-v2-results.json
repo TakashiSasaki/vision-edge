@@ -1,0 +1,284 @@
+{
+  "base": "479c74527a5b5e13f4f5938c6f26787e60890f14",
+  "baseTree": "72d346c1158abf3dbef6073e31fccc2721364985",
+  "finalBinding": "Draft PR metadata and exact-head CI; no self-referential commit hash",
+  "version": "1.0.9 npm-generated package/lock; dependencies unchanged",
+  "modelEvidence": {
+    "provenance": "owner-uploaded file; independent inspection results supplied by parent",
+    "filename": "ssd_mobilenet_v2.tflite",
+    "reportedBytes": 11316189,
+    "reportedSHA256": "b8ccb1a25d45455ba52e85f26531948e1cb75efeb94c7c3d456d54fd4d6fbdd2",
+    "consumerLocalFilePresent": false,
+    "consumerLocalHash": null,
+    "officialGCSHashComparison": "NOT RUN",
+    "format": "TFL3/schema3",
+    "input": {
+      "type": "FLOAT32",
+      "shape": [
+        1,
+        256,
+        256,
+        3
+      ],
+      "mean": 127.5,
+      "std": 127.5
+    },
+    "rawOutputs": {
+      "location": [
+        1,
+        12276,
+        4
+      ],
+      "score": [
+        1,
+        12276,
+        91
+      ]
+    },
+    "metadata": {
+      "name": "ObjectDetector",
+      "author": "MediaPipe",
+      "version": "1",
+      "licenseField": null
+    },
+    "labels": {
+      "file": "labels.txt",
+      "positions": 91,
+      "background": 0,
+      "placeholderIndices": [
+        12,
+        26,
+        29,
+        30,
+        45,
+        66,
+        68,
+        69,
+        71,
+        83
+      ],
+      "semanticClasses": 80,
+      "remappingImplemented": false
+    },
+    "customMetadata": {
+      "name": "DETECTOR_METADATA",
+      "bytes": 294764,
+      "identifier": "V001",
+      "numClasses": 91,
+      "numBoxes": 12276,
+      "numCoords": 4,
+      "scales": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "applyExponentialOnBoxSize": true,
+      "sigmoidScore": false,
+      "scoreGraph": "already LOGISTIC"
+    },
+    "licenseEvidence": "https://github.com/google-ai-edge/mediapipe/issues/6355#issuecomment-5997480830",
+    "embeddedApacheClaimed": false
+  },
+  "sdkVersion": "0.10.14",
+  "installedSDKFiles": {
+    "package.json": {
+      "bytes": 592,
+      "sha256": "20120384b2b0c1300d27ba769fff3cacfdbc964d5eb4cc12dda37a68d6c3885b"
+    },
+    "vision.d.ts": {
+      "bytes": 123365,
+      "sha256": "fc8a3cf4a55f7d1ae3f2efdda84bbeaeea605a92e535ac52b99deed6366917d5"
+    },
+    "vision_bundle.mjs": {
+      "bytes": 136870,
+      "sha256": "e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669"
+    },
+    "wasm/vision_wasm_internal.wasm": {
+      "bytes": 9423986,
+      "sha256": "f82a8e6c05e08a44cc9f9e7ec5f845935bcbb1b1500ebe8c2f4812fb4e2917dc"
+    }
+  },
+  "consumerHandoff": {
+    "flow": "current Library skill resolved-reference prepare/materialize helper",
+    "attempts": 2,
+    "exits": [
+      1,
+      1
+    ],
+    "messages": [
+      "library file transfer failed: download failed",
+      "library file transfer failed: download failed"
+    ],
+    "finalPathsExist": [
+      false,
+      false
+    ],
+    "failureLayer": "transfer failed; detailed HTTP/auth reason not returned",
+    "furtherAttempts": 0,
+    "GCSModelRetry": false,
+    "alternateRoute": false
+  },
+  "localFullCommand": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+  "localReceipts": {
+    "preflight": {
+      "run": "2026-10-26T08-01-50.594Z-412a2e90",
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "protected": 702,
+        "violations": 0
+      },
+      "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+    },
+    "preflight-tests": {
+      "run": "2026-10-26T08-01-50.594Z-412a2e90",
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "total": 57,
+        "passed": 57,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "518d02af7c52e50ec123f17b24b174cd64cf2c402f5a34e9db7eda62e0d1b5f0"
+    },
+    "typecheck": {
+      "run": "2026-10-26T08-06-25.160Z-736d6f53",
+      "state": "PASS",
+      "exit": 0,
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lint": {
+      "run": "2026-10-26T08-06-28.826Z-a41aa9a9",
+      "state": "PASS",
+      "exit": 0,
+      "counts": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "unit": {
+      "run": "2026-10-26T08-07-10.023Z-63e648c0",
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "total": 829,
+        "passed": 829,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "79c4e44f146ae7669647043dfc80b4449f8db5505223b7546f3b09727326fc78"
+    },
+    "foundation": {
+      "run": "2026-10-26T08-01-50.594Z-412a2e90",
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "27734260cabbfcefd082e0c0ff1293ade8477265435f395a235e815e59caf0c8"
+    },
+    "delegate": {
+      "run": "2026-10-26T08-01-50.594Z-412a2e90",
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "total": 40,
+        "passed": 40,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "18060dadc596d3c9bc8d91523633e1ec66fe1bd2d0b82ce3a6e85b940ad0e477"
+    },
+    "output": {
+      "run": "2026-10-26T08-01-50.594Z-412a2e90",
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "total": 37,
+        "passed": 37,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "logSha256": "bed7646e2b1b816ba7378e7d366f3286022141b0dc37248cf2cebc1a7df957fb"
+    },
+    "build": {
+      "run": "2026-10-26T08-01-50.594Z-412a2e90",
+      "state": "PASS",
+      "exit": 0,
+      "counts": null,
+      "logSha256": "ee630b9a152acd83ad25d64735fbf9cef55a4118c12498de87c0ac7623c2a9e1"
+    },
+    "browser": {
+      "run": "2026-10-26T08-01-50.594Z-412a2e90",
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "total": 35,
+        "passed": 35,
+        "failed": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "logSha256": "86c7295072a36380a23721d5d0950b7aaf9e1e27d5973e4b636395ea66b7b4fe"
+    },
+    "controls": {
+      "run": "2026-10-26T08-01-50.594Z-412a2e90",
+      "state": "PASS",
+      "exit": 0,
+      "counts": {
+        "total": 7,
+        "healthy": 2,
+        "expectedFaults": 5
+      },
+      "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+    }
+  },
+  "laterChecks": {
+    "focused51": "2026-10-26T08-06-23.910Z-33ee166f",
+    "finalUnit829": "2026-10-26T08-07-10.023Z-63e648c0",
+    "reason": "after the full826 run, three additional cache/pin/attribution controls and a narrow SSD attribution-header correction were validated; original35 browser cases unchanged"
+  },
+  "initialFailedAttempt": {
+    "run": "2026-10-26T07-48-29.316Z-25b47b82",
+    "total": 11,
+    "passed": 9,
+    "failed": 2,
+    "cause": "SSD URL was not yet hash-qualified after real pins were supplied; server correctly returned400 instead of the expected blocked503. Corrected the catalog URL, not the assertion."
+  },
+  "historical": {
+    "protected": 702,
+    "mismatches": 0,
+    "oldEvidenceOverwritten": false
+  },
+  "build": {
+    "CSSBytes": 29713,
+    "CSSSHA256": "d0e5b75b2d4e886e687d6fc6da60adbb3c93f6d20cebd70faf0438a6dc56f36b",
+    "CSSMatchesMain": true,
+    "JSIntentionallyChanged": true
+  },
+  "acceptance": {
+    "registryEngineUIOffline": "PASS",
+    "actualSSDLibraryTransferToConsumer": "BLOCKED/FAILED",
+    "actualSDKInitialization": "NOT RUN",
+    "actualSSDInference": "NOT RUN",
+    "sameInputBenchmark": "NOT RUN",
+    "physicalGPU": "UNVERIFIED",
+    "olderSixCPUScenarios": "BLOCKED",
+    "deployedAPI": "UNVERIFIED; existing dev-only support",
+    "hostedZIPContents": "UNVERIFIED",
+    "independentReview": "PENDING"
+  }
+}

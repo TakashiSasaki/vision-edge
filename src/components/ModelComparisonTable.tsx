@@ -77,7 +77,7 @@ export function ModelComparisonTable({
 
             {model.license && (
               <p className="text-slate-400 text-[10px] pt-1">
-                ライセンス: {model.licenseNote ?? model.license} ／ 供給経路: {sourceDescription(model.id)}
+                {model.id === 'mediapipe' ? '既定Lite0のライセンス' : 'ライセンス'}: {model.licenseNote ?? model.license} ／ 供給経路: {sourceDescription(model.id)}
               </p>
             )}
           </div>
@@ -89,6 +89,7 @@ export function ModelComparisonTable({
           <p>GPU/CPU要求は明示し、実バックエンドは未計測です。翻訳は完全一致ラベルのみ。手動音声のみ使用します。</p>
           {IMAGE_CLASSIFIER_MODEL.variants.map(variant => <button type="button" key={variant.id} className="rounded border border-slate-600 p-2 mr-2" onClick={() => { onSelectModelAndVariant('image-classifier', variant.id); onClose(); }}>{variant.name}（画像全体分類）</button>)}
         </section>
+        <p className="text-xs text-slate-400">SSD MobileNetV2は実体未確認のため取得・配信を行いません。Apache-2.0のプロジェクト声明と残る検証事項は <a href="/licenses/ssd-mobilenet-v2.txt" className="underline">SSD出典</a> を参照してください。</p>
         <p className="text-xs text-slate-400">MediaPipeはGPU delegateを指定します。ONNXはWebGPU優先で、利用不能時はWASMを設定します。対応する開発サーバーでは既存4モデル9種と分類2種を起動時にプリフェッチします。分類2種は固定ハッシュ・サイズ一致が必須です。</p>
         <button type="button" onClick={onClose} className="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-200">閉じる</button>
       </section>

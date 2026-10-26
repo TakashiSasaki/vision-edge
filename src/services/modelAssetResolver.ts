@@ -5,7 +5,7 @@ export type AssetDeliverySource = 'container-cache' | 'external-fallback' | 'ext
 export type AssetSourceRecorder = (assetKey: string, source: AssetDeliverySource) => void;
 
 export type CacheAssetModelId = RunnableModelType | 'image-classifier';
-export type CacheIntegrity = 'pinned' | 'self-recorded' | 'invalid' | 'not-present' | 'pending' | 'unknown';
+export type CacheIntegrity = 'pinned' | 'self-recorded' | 'invalid' | 'not-present' | 'pending' | 'unknown' | 'blocked';
 
 export type AssetCacheState = 'cached' | 'downloading' | 'unavailable';
 
@@ -26,6 +26,8 @@ export interface WasmAssetCatalogEntry {
 }
 
 export interface ContainerModelStatusEntry {
+  acquisitionEnabled?: boolean;
+  blockedReason?: string | null;
   id: CacheAssetModelId;
   filePresent?: boolean | null;
   integrity?: CacheIntegrity;
@@ -97,6 +99,10 @@ export const WASM_ASSET_CATALOG: Record<'mediapipe' | 'ort', WasmAssetCatalogEnt
 };
 
 export interface ModelVariantCatalogEntry {
+  blockedReason?: string;
+  licenseNoticeUrl?: string;
+  expectedSize?: number;
+  expectedSha256?: string;
   modelId: RunnableModelType;
   variantId: string;
   file: string;
@@ -149,6 +155,17 @@ export const MODEL_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = {
     localUrl: '/api/model-cache/models/efficientdet_lite2.tflite',
     license: 'Apache-2.0',
     licenseNote: 'Google MediaPipe / Apache License 2.0（コンテナキャッシュ・再配布可）',
+  },
+  'mediapipe:ssd-mobilenet-v2': {
+    modelId: 'mediapipe', variantId: 'ssd-mobilenet-v2', file: 'ssd_mobilenet_v2.tflite',
+    upstreamUrl: 'https://storage.googleapis.com/mediapipe-models/object_detector/ssd_mobilenet_v2/float32/1/ssd_mobilenet_v2.tflite',
+    localUrl: '/api/model-cache/models/ssd_mobilenet_v2.tflite?sha256=b8ccb1a25d45455ba52e85f26531948e1cb75efeb94c7c3d456d54fd4d6fbdd2',
+    license: 'Apache-2.0',
+    licenseNoticeUrl: '/licenses/ssd-mobilenet-v2.txt',
+    licenseNote: 'MediaPipe協力者のモデルを含むApache-2.0声明に基づく。提供ファイルにはlicenseフィールドなし。',
+    expectedSize: 11_316_189,
+    expectedSha256: 'b8ccb1a25d45455ba52e85f26531948e1cb75efeb94c7c3d456d54fd4d6fbdd2',
+    blockedReason: '提供モデルのSDK0.10.14互換性の確認待ち（固定ピン取得済み）',
   },
   'yolo-seg:yolov8n-seg': {
     modelId: 'yolo-seg',
@@ -408,19 +425,31 @@ export async function resolveOrtWasmUrls(): Promise<ResolvedAssetUrls> {
   };
 }
 
+export class ModelAssetsBlockedError extends Error {
+  constructor(public readonly model: RunnableModelType, public readonly variantId: string, public readonly reason: string) {
+    super(`${model}:${variantId} BLOCKED: ${reason}`); this.name = 'ModelAssetsBlockedError';
+  }
+}
+export function assertVariantAssetAvailable(model: RunnableModelType, variantId?: string): void {
+  const entry = getVariantCatalogEntry(model, variantId);
+  if (entry.blockedReason) throw new ModelAssetsBlockedError(model, entry.variantId, entry.blockedReason);
+}
+
 export async function resolveModelAssetUrls(
   model: RunnableModelType,
   variantId?: string
 ): Promise<ResolvedAssetUrls> {
   const entry = getVariantCatalogEntry(model, variantId);
+  assertVariantAssetAvailable(model, entry.variantId);
   if (!isContainerModelCacheEnabled()) {
+    if (entry.expectedSha256) throw new ModelAssetsBlockedError(model, entry.variantId, '検証済みコンテナAPIが必要です');
     return {
       primaryUrl: entry.upstreamUrl,
       fallbackUrl: null,
       source: 'external',
     };
   }
-  const status = await fetchContainerCacheStatus();
+  const status = await fetchContainerCacheStatus(!!entry.expectedSha256);
   const variantKey = `${entry.modelId}:${entry.variantId}`;
   // A present variants map is authoritative, including a missing/invalid row.
   // Only a legacy response with no variants field may identify a default model.
@@ -428,6 +457,16 @@ export async function resolveModelAssetUrls(
   const candidate = modern
     ? (isRecord(status?.variants) ? status.variants[variantKey] : undefined)
     : (entry.isDefault ? status?.models?.[model] : undefined);
+  // Fixed-pin variants never inherit legacy direct-upstream fallback behavior.
+  // The server must verify the exact bytes even for on-demand acquisition.
+  if (entry.expectedSha256) {
+    const row = isRecord(candidate) ? candidate : null;
+    const identity = status?.enabled && row && row.id === entry.modelId && row.variantId === entry.variantId && row.file === entry.file && row.localUrl === entry.localUrl && row.upstreamUrl === entry.upstreamUrl && row.license === entry.license && row.expectedSha256 === entry.expectedSha256 && row.expectedSize === entry.expectedSize && row.error === null && row.acquisitionEnabled === true && row.blockedReason === null;
+    const cached = row?.status === 'cached' && row.filePresent === true && row.integrity === 'pinned' && row.size === entry.expectedSize && row.sha256 === entry.expectedSha256;
+    const pending = row?.size === null && row.sha256 === null && (row.status === 'downloading' ? row.integrity === 'pending' && row.filePresent === null : row.status === 'unavailable' && row.integrity === 'not-present' && row.filePresent === false);
+    if (!identity || (!cached && !pending)) throw new ModelAssetsBlockedError(model, entry.variantId, '固定ピンに一致するコンテナ状態を確認できません');
+    return { primaryUrl: entry.localUrl, fallbackUrl: null, source: 'container-cache' };
+  }
   if (status?.enabled && matchesVariantStatus(candidate, entry, modern)) {
     return { primaryUrl: entry.localUrl, fallbackUrl: entry.upstreamUrl, source: 'container-cache' };
   }
