@@ -146,31 +146,31 @@
       "logSha256": "518d02af7c52e50ec123f17b24b174cd64cf2c402f5a34e9db7eda62e0d1b5f0"
     },
     "typecheck": {
-      "run": "2026-10-26T08-06-25.160Z-736d6f53",
+      "run": "2026-10-26T08-17-59.475Z-134b4ba7",
       "state": "PASS",
       "exit": 0,
       "counts": null,
       "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "lint": {
-      "run": "2026-10-26T08-06-28.826Z-a41aa9a9",
+      "run": "2026-10-26T08-18-02.817Z-15b2bf92",
       "state": "PASS",
       "exit": 0,
       "counts": null,
       "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "unit": {
-      "run": "2026-10-26T08-07-10.023Z-63e648c0",
+      "run": "2026-10-26T08-17-50.765Z-fc148bfb",
       "state": "PASS",
       "exit": 0,
       "counts": {
-        "total": 829,
-        "passed": 829,
+        "total": 830,
+        "passed": 830,
         "failed": 0,
         "skipped": 0,
         "todo": 0
       },
-      "logSha256": "79c4e44f146ae7669647043dfc80b4449f8db5505223b7546f3b09727326fc78"
+      "logSha256": "11ff7b8ad6c88e38f2ff32530f767b75d4c16a9cecbb7474933dd28b70c17f38"
     },
     "foundation": {
       "run": "2026-10-26T08-01-50.594Z-412a2e90",
@@ -215,11 +215,11 @@
       "logSha256": "bed7646e2b1b816ba7378e7d366f3286022141b0dc37248cf2cebc1a7df957fb"
     },
     "build": {
-      "run": "2026-10-26T08-01-50.594Z-412a2e90",
+      "run": "2026-10-26T08-18-05.091Z-fce0dd57",
       "state": "PASS",
       "exit": 0,
       "counts": null,
-      "logSha256": "ee630b9a152acd83ad25d64735fbf9cef55a4118c12498de87c0ac7623c2a9e1"
+      "logSha256": "a8c73591d60a1dec204c54bc9fd66994b3c8f04709845522c2ee47a289899998"
     },
     "browser": {
       "run": "2026-10-26T08-01-50.594Z-412a2e90",
@@ -280,5 +280,32 @@
     "deployedAPI": "UNVERIFIED; existing dev-only support",
     "hostedZIPContents": "UNVERIFIED",
     "independentReview": "PENDING"
+  },
+  "previousPublishedHead": "e0e25f689885a189a74b2718553698341935ed1d",
+  "previousPublishedTree": "806f8f184aed7aaa1d9d0f5bec0c1f6393540d7f",
+  "previousHeadCI": {
+    "run": 40290575748,
+    "bothJobs": "success",
+    "scope": "before final comparison-copy clarification"
+  },
+  "priorUnit829": {
+    "run": "2026-10-26T08-07-10.023Z-63e648c0",
+    "state": "PASS",
+    "exit": 0,
+    "counts": {
+      "total": 829,
+      "passed": 829,
+      "failed": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "logSha256": "79c4e44f146ae7669647043dfc80b4449f8db5505223b7546f3b09727326fc78"
+  },
+  "finalClarification": {
+    "reason": "comparison dialog still used a superseded uninspected-bytes explanation; actual gate is unverified0.10.14 execution",
+    "runtimeChange": "copy only; pins/gate unchanged",
+    "newControl": "same existing detector/variant selected through the specification dialog; no unsupported bytes claim",
+    "unit": 830,
+    "fullBrowser35Population": "unchanged; final hosted CI will exercise it at the new source"
   }
 }

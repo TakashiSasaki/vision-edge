@@ -133,3 +133,11 @@ weakened. Library transfer failures are separate from test/model failures.
 matches main exactly (29713 bytes); application JS intentionally changes for the
 new registry/gate/UI. No dependency or historical evidence change. See
 [receipts and model metadata](ssd-mobilenet-v2-results.json).
+
+Final explanatory correction: after initial source e0e25f689885a189a74b2718553698341935ed1d
+passed CI40290575748, the comparison dialog's superseded uninspected-bytes
+explanation was clarified to the actual remaining0.10.14 execution prerequisite.
+A new component control verifies that wording and selection of the same mediapipe
+SSD variant through the specification dialog. Pins and availability gate are
+unchanged. Fresh final830/830 unit, type/lint/build pass; earlier829 and full826
+records remain historical. Final hosted CI binds the complete new source.
