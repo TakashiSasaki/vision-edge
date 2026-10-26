@@ -23,3 +23,39 @@ it('rendering uses text, hides paths/arbitrary errors, refreshes read-only and c
   fetch.mockRejectedValue(Error('denied private'));await refresh();expect(document.getElementById('notice')!.textContent).toContain('不明');expect(document.querySelector('#cached')!.children).toHaveLength(0);
   expect(fetch).toHaveBeenCalledTimes(2);for(const [url,options]of fetch.mock.calls){expect(url).toBe('/api/model-cache/status');expect(options).toMatchObject({method:'GET',cache:'no-store'});}
 });
+it.each(['pinned','self-recorded'])('C31-F1: unavailable absent file cannot claim %s verification',integrity=>{
+  const data={...base(),catalogCount:1,variants:{'image-classifier:lite0':{...row(),status:'unavailable',filePresent:false,size:null,sha256:null,integrity}}};
+  const snapshot=inventorySnapshot(data);
+  expect(snapshot.invalid).toBe(1);expect(snapshot.rows[0]).toMatchObject({cached:false,integrity:'不明',readiness:'不明（不正な状態）'});
+});
+const nonCached={status:'unavailable',filePresent:false,size:null,sha256:null,integrity:'not-present',error:null};
+it.each([
+  ['empty',nonCached,'未保存',false],
+  ['failed acquisition',{...nonCached,error:'HTTP 403'},'未保存',false],
+  ['corrupt file',{...nonCached,filePresent:true,integrity:'invalid',error:'Unverified cache'},'検証失敗',false],
+  ['orphan metadata',{...nonCached,integrity:'invalid',error:'Unverified cache'},'検証失敗',false],
+  ['unknown',{...nonCached,filePresent:null,integrity:'unknown'},'不明',false],
+  ['downloading',{...nonCached,status:'downloading',filePresent:null,integrity:'pending'},'検証待ち',false],
+  ['pinned cached',{},'固定ハッシュ一致',true],
+  ['self-recorded cached',{integrity:'self-recorded'},'取得時ハッシュ一致',true],
+] as const)('C31-F1 adjacent coherent %s state remains accurately displayable',(_name,override,integrity,cached)=>{
+  const s=inventorySnapshot({...base(),catalogCount:1,variants:{'image-classifier:lite0':{...row(),...override}}});
+  expect(s.invalid).toBe(0);expect(s.rows[0]).toMatchObject({integrity,cached});expect(s.rows[0].readiness).not.toContain('不正');
+});
+it.each([
+  {...nonCached,filePresent:true,integrity:'pinned'},
+  {...nonCached,status:'downloading',filePresent:null,integrity:'pinned'},
+  {...nonCached,status:'downloading',filePresent:null,integrity:'self-recorded'},
+  {...nonCached,filePresent:true},
+  {...nonCached,integrity:'invalid'},
+  {...nonCached,filePresent:true,integrity:'unknown'},
+  {...nonCached,status:'downloading',filePresent:null,integrity:'pending',error:'failure'},
+  {...nonCached,status:'downloading',filePresent:null,integrity:'pending',sha256:'a'.repeat(64)},
+  {...nonCached,size:2048},
+  {...nonCached,sha256:'a'.repeat(64)},
+  {...nonCached,error:{message:'not a diagnostic string'}},
+  {...nonCached,error:''},
+])('C31-F1 contradictory non-cached fields are visibly unknown: %j',override=>{
+  const s=inventorySnapshot({...base(),catalogCount:1,variants:{'image-classifier:lite0':{...row(),...override}}});
+  expect(s.invalid).toBe(1);expect(s.rows[0]).toMatchObject({cached:false,size:'—',integrity:'不明',readiness:'不明（不正な状態）'});
+});

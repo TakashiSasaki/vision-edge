@@ -112,3 +112,17 @@ it.each(variants)('%s revalidates the exact served buffer if bytes change after 
   });
   const response=await request(m,e.localUrl);expect(response.status).toBe(503);expect(response.bytes.toString()).toContain('no upstream fallback');expect(response.headers['Content-Type']).toContain('application/json');expect(fetch).toHaveBeenCalledTimes(1);
 });
+it('C31-F1 actual server lifecycle snapshots remain coherent for the static inventory',async()=>{
+  const {inventorySnapshot}=await import('../../public/model-cache.mjs');
+  let release!:()=>void;const gate=new Promise<void>(r=>{release=r;});
+  const fake=vi.fn<typeof fetch>(async url=>{await gate;return String(url).includes('lite0')?new Response(payload('lite0')):new Response('denied',{status:403});});
+  const {m,dir}=await manager(fake);
+  const empty=inventorySnapshot(await m.getStatusResponse());expect(empty.invalid).toBe(0);expect(empty.rows.filter(r=>r.cached)).toHaveLength(0);expect(fake).not.toHaveBeenCalled();
+  const pending=m.prefetchVariant('image-classifier:lite0');await vi.waitFor(()=>expect(fake).toHaveBeenCalledTimes(1));
+  const downloading=inventorySnapshot(await m.getStatusResponse());expect(downloading.invalid).toBe(0);expect(downloading.rows.find(r=>r.variant==='lite0'&&r.family.includes('画像分類'))).toMatchObject({cached:false,integrity:'検証待ち'});
+  release();await pending;const cached=inventorySnapshot(await m.getStatusResponse());expect(cached.invalid).toBe(0);expect(cached.rows.filter(r=>r.cached)).toHaveLength(1);
+  await writeFile(path.join(dir,IMAGE_CLASSIFIER_ASSETS.lite0.file),Buffer.alloc(1024));
+  const invalid=inventorySnapshot(await m.getStatusResponse());expect(invalid.invalid).toBe(0);expect(invalid.rows.find(r=>r.variant==='lite0'&&r.family.includes('画像分類'))).toMatchObject({cached:false,integrity:'検証失敗'});
+  await rm(path.join(dir,IMAGE_CLASSIFIER_ASSETS.lite0.file));expect(inventorySnapshot(await m.getStatusResponse()).invalid).toBe(0);
+  await m.prefetchVariant('image-classifier:lite2');const failure=inventorySnapshot(await m.getStatusResponse());expect(failure.invalid).toBe(0);expect(failure.rows.filter(r=>r.cached)).toHaveLength(0);
+});

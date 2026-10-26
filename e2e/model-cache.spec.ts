@@ -22,3 +22,9 @@ test('actual static preview without cache APIs reports unknown rather than zero 
   await page.goto('/model-cache.html');await expect(page.getByRole('status')).toContainText('取得不能');await expect(page.getByRole('status')).toContainText('状態は不明');
   await expect(page.getByRole('status')).not.toContainText('0件');
 });
+for(const integrity of ['pinned','self-recorded'])test(`C31-F1: static page rejects unavailable absent file with ${integrity} verification`,async({page},info)=>{
+  let requests=0;const modelRequests:string[]=[];page.on('request',r=>{if(r.url().includes('/models/'))modelRequests.push(r.url());});
+  await page.route('**/api/model-cache/status',route=>{requests++;expect(route.request().method()).toBe('GET');return route.fulfill({json:snapshot({'image-classifier:lite0':{...row('image-classifier','lite0','efficientnet_lite0.tflite',integrity),status:'unavailable',filePresent:false,size:null,sha256:null}})});});
+  await page.goto('/model-cache.html');await expect(page.getByRole('status')).toContainText('一部の状態が不正');await expect(page.locator('#configured').getByRole('cell',{name:'不明',exact:true})).toHaveCount(1);await expect(page.locator('#configured')).not.toContainText('ハッシュ一致');await expect(page.locator('#cached table')).toHaveCount(0);
+  expect(requests).toBe(1);expect(modelRequests).toEqual([]);await page.screenshot({path:info.outputPath(`c31-f1-${integrity}.png`),fullPage:true});
+});
