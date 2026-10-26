@@ -2,7 +2,7 @@ import * as ort from 'onnxruntime-web';
 import type { DetectedObject, InferenceInput, OnnxBackendInfo, YoloSegVariantId } from '../types/vision';
 import { OnnxSessionOwner, OnnxInferenceError, createOrtSession, disposeTensors, unknownOnnxBackend } from './onnxSession';
 import { getCategoryColor, getLabelInfo } from './dictionary';
-import { resolveModelAssetUrls } from './modelAssetResolver';
+import { resolveModelAssetUrls, getVariantCatalogEntry, type AssetSourceRecorder } from './modelAssetResolver';
 
 export const COCO_CLASSES: readonly string[] = [
   'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
@@ -26,12 +26,12 @@ export interface YoloSegTask {
 }
 
 export interface YoloSegTaskOptions {
+  recordAssetSource?: AssetSourceRecorder;
   modelUrl?: string;
   variantId?: YoloSegVariantId;
   delegate?: 'GPU' | 'WebGPU' | 'WASM';
 }
 
-const DEFAULT_YOLO_SEG_URL = 'https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/yolov8n-seg.onnx';
 const TARGET_INPUT_WIDTH = 640;
 const TARGET_INPUT_HEIGHT = 480;
 const NUM_MASK_COEFFS = 32;
@@ -340,6 +340,7 @@ export class YoloSegEngine implements YoloSegTask {
 export async function createYoloSegTask(options: YoloSegTaskOptions = {}): Promise<YoloSegTask> {
   if (options.modelUrl) {
     const { session, backend } = await createOrtSession(options.modelUrl, options.delegate, {
+      recordAssetSource: options.recordAssetSource,
       modelId: 'yolo-seg',
       primarySource: 'external',
     });
@@ -347,10 +348,12 @@ export async function createYoloSegTask(options: YoloSegTaskOptions = {}): Promi
   }
   const resolved = await resolveModelAssetUrls('yolo-seg', options.variantId);
   const { session, backend } = await createOrtSession(
-    resolved.primaryUrl || DEFAULT_YOLO_SEG_URL,
+    resolved.primaryUrl,
     options.delegate,
     {
       fallbackModelUrl: resolved.fallbackUrl,
+      variantId: getVariantCatalogEntry('yolo-seg', options.variantId).variantId,
+      recordAssetSource: options.recordAssetSource,
       modelId: 'yolo-seg',
       primarySource: resolved.source,
     }

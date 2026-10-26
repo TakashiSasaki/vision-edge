@@ -1,12 +1,12 @@
 import { FilesetResolver, ObjectDetector, ImageSegmenter, type ImageSegmenterResult } from '@mediapipe/tasks-vision';
 import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput, YoloSegVariantId, SegFormerVariantId } from '../types/vision';
 import { PipelineProbe, type PipelineObserver, type AttemptOutcome } from './pipelineMetrics';
-import { requireRunnableModel, getVariantMetadata } from './modelRegistry';
+import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
 import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
 import { unknownOnnxBackend } from './onnxSession';
-import { resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSource } from './modelAssetResolver';
+import { getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSources, type AssetSourceRecorder, type AssetDeliverySource } from './modelAssetResolver';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
@@ -28,17 +28,18 @@ export interface VisionTaskFactory {
   segformer?: (options?: SegFormerTaskOptions) => Promise<SegFormerTask>;
 }
 const DELEGATE = 'GPU' as const;
-const defaultFactory: VisionTaskFactory = {
+function createDefaultFactory(recordAssetSource: AssetSourceRecorder): VisionTaskFactory {
+  return {
   load: async () => {
     const wasm = await resolveMediaPipeWasmUrls();
     try {
       const fileset = await FilesetResolver.forVisionTasks(wasm.primaryUrl);
-      recordResolvedSource('wasm-mediapipe', wasm.source);
+      recordAssetSource('wasm-mediapipe', wasm.source);
       return fileset;
     } catch (primaryError) {
       if (wasm.fallbackUrl) {
         const fileset = await FilesetResolver.forVisionTasks(wasm.fallbackUrl);
-        recordResolvedSource('wasm-mediapipe', 'external-fallback');
+        recordAssetSource('wasm-mediapipe', 'external-fallback');
         return fileset;
       }
       throw primaryError;
@@ -51,8 +52,8 @@ const defaultFactory: VisionTaskFactory = {
         baseOptions: { modelAssetPath: asset.primaryUrl, delegate },
         scoreThreshold: 0.25, runningMode: 'VIDEO',
       });
-      recordResolvedSource('mediapipe', asset.source);
-      if (variantId) recordResolvedSource(`mediapipe:${variantId}`, asset.source);
+      recordAssetSource('mediapipe', asset.source);
+      if (variantId) recordAssetSource(`mediapipe:${variantId}`, asset.source);
       return task;
     } catch (primaryError) {
       if (asset.fallbackUrl) {
@@ -60,8 +61,8 @@ const defaultFactory: VisionTaskFactory = {
           baseOptions: { modelAssetPath: asset.fallbackUrl, delegate },
           scoreThreshold: 0.25, runningMode: 'VIDEO',
         });
-        recordResolvedSource('mediapipe', 'external-fallback');
-        if (variantId) recordResolvedSource(`mediapipe:${variantId}`, 'external-fallback');
+        recordAssetSource('mediapipe', 'external-fallback');
+        if (variantId) recordAssetSource(`mediapipe:${variantId}`, 'external-fallback');
         return task;
       }
       throw primaryError;
@@ -74,8 +75,8 @@ const defaultFactory: VisionTaskFactory = {
         baseOptions: { modelAssetPath: asset.primaryUrl, delegate },
         runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
       });
-      recordResolvedSource('selfie-segmenter', asset.source);
-      if (variantId) recordResolvedSource(`selfie-segmenter:${variantId}`, asset.source);
+      recordAssetSource('selfie-segmenter', asset.source);
+      if (variantId) recordAssetSource(`selfie-segmenter:${variantId}`, asset.source);
       return task;
     } catch (primaryError) {
       if (asset.fallbackUrl) {
@@ -83,16 +84,17 @@ const defaultFactory: VisionTaskFactory = {
           baseOptions: { modelAssetPath: asset.fallbackUrl, delegate },
           runningMode: 'VIDEO', outputConfidenceMasks: true, outputCategoryMask: false,
         });
-        recordResolvedSource('selfie-segmenter', 'external-fallback');
-        if (variantId) recordResolvedSource(`selfie-segmenter:${variantId}`, 'external-fallback');
+        recordAssetSource('selfie-segmenter', 'external-fallback');
+        if (variantId) recordAssetSource(`selfie-segmenter:${variantId}`, 'external-fallback');
         return task;
       }
       throw primaryError;
     }
   },
-  yoloSeg: (options) => createYoloSegTask(options),
-  segformer: (options) => createSegFormerTask(options),
-};
+  yoloSeg: (options) => createYoloSegTask({ ...options, recordAssetSource }),
+  segformer: (options) => createSegFormerTask({ ...options, recordAssetSource }),
+  };
+}
 type ActiveTask =
   | { model: 'mediapipe'; variantId: string; task: DetectorTask }
   | { model: 'selfie-segmenter'; variantId: string; task: SegmenterTask }
@@ -115,15 +117,16 @@ export class VisionEngine {
   private outputGeneration = 0;
   private acceptedInspector: {task:SegFormerTask;objects:DetectedObject[];generation:number;requestId:number}|null=null;
 
-  constructor(private readonly factory: VisionTaskFactory = defaultFactory) {}
+  constructor(private readonly factory?: VisionTaskFactory) {}
 
   getState = (): ModelState => this.state;
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => { this.listeners.delete(listener); };
   };
-  private publish(state: ModelState): void {
+  private publish(state: ModelState, sources?: ReadonlyMap<string, AssetDeliverySource>): void {
     this.state = state;
+    if (sources) recordResolvedSources(sources);
     this.listeners.forEach(listener => listener());
   }
   private resetOutputs(): void {
@@ -147,7 +150,7 @@ export class VisionEngine {
 
   initialize(model: RunnableModelType, variantId?: string): Promise<InitializationResult> {
     requireRunnableModel(model);
-    const targetVariantId = variantId || getVariantMetadata(model, variantId).id;
+    const targetVariantId = getVariantCatalogEntry(model, variantId).variantId;
     if (this.state.model === model && this.state.variantId === targetVariantId) {
       if (this.state.status === 'loading' && this.pending) return this.pending;
       if (this.state.status === 'ready') return Promise.resolve(this.state);
@@ -158,6 +161,11 @@ export class VisionEngine {
     this.resetOutputs();
     const cancelled = (): InitializationResult => ({ status: 'cancelled', model, requestId });
     const current = () => requestId === this.generation;
+    // SDK completions write only to this request's journal. Cancelled/error
+    // journals are discarded, including same-variant ABA and stale WASM loads.
+    const assetSources = new Map<string, AssetDeliverySource>();
+    const recordAssetSource: AssetSourceRecorder = (key, source) => { assetSources.set(key, source); };
+    const factory = this.factory ?? createDefaultFactory(recordAssetSource);
 
     // Establish ownership before synchronous subscribers can reenter initialize
     // or dispose. Return this request's Promise, never a replacement's pending.
@@ -173,29 +181,29 @@ export class VisionEngine {
         let active: ActiveTask;
         if (model === 'yolo-seg') {
           stage = 'task';
-          const yoloCreator = this.factory.yoloSeg ?? createYoloSegTask;
-          const task = await yoloCreator({ variantId: targetVariantId as YoloSegVariantId });
+          const yoloCreator = factory.yoloSeg ?? createYoloSegTask;
+          const task = await yoloCreator({ variantId: targetVariantId as YoloSegVariantId, recordAssetSource });
           if (!task) throw new Error('Model task was not created');
           active = { model, variantId: targetVariantId, task };
         } else if (model === 'segformer') {
           stage = 'task';
-          const segformerCreator = this.factory.segformer ?? createSegFormerTask;
-          const task = await segformerCreator({ variantId: targetVariantId as SegFormerVariantId });
+          const segformerCreator = factory.segformer ?? createSegFormerTask;
+          const task = await segformerCreator({ variantId: targetVariantId as SegFormerVariantId, recordAssetSource });
           if (!task) throw new Error('Model task was not created');
           active = { model, variantId: targetVariantId, task };
         } else {
-          const fileset = await this.factory.load();
+          const fileset = await factory.load();
           if (!current()) return cancelled();
           stage = 'task';
           active = model === 'mediapipe'
-            ? { model, variantId: targetVariantId, task: await this.factory.detector(fileset, DELEGATE, targetVariantId) }
-            : { model, variantId: targetVariantId, task: await this.factory.segmenter(fileset, DELEGATE, targetVariantId) };
+            ? { model, variantId: targetVariantId, task: await factory.detector(fileset, DELEGATE, targetVariantId) }
+            : { model, variantId: targetVariantId, task: await factory.segmenter(fileset, DELEGATE, targetVariantId) };
           if (!active.task) throw new Error('Model task was not created');
         }
         if (!current()) { this.closeTask(active); return cancelled(); }
         this.activeTask = active;
         const ready = { status: 'ready' as const, model, variantId: targetVariantId, requestId, ...(active.model==='yolo-seg'||active.model==='segformer'?{backend:active.task.backend??unknownOnnxBackend()}:{delegate:DELEGATE}) };
-        this.publish(ready);
+        this.publish(ready, assetSources);
         return ready;
       } catch (cause) {
         if (!current()) return cancelled();

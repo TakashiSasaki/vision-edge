@@ -2,8 +2,9 @@ import * as ort from 'onnxruntime-web';
 import type { BoundingBox, DetectedObject, InferenceInput, OnnxBackendInfo, SegFormerVariantId } from '../types/vision';
 import { ADE20K_CLASSES, getADE20KInfo } from './ade20kDictionary';
 import { OnnxSessionOwner, OnnxInferenceError, createOrtSession, disposeTensors, unknownOnnxBackend } from './onnxSession';
-import { resolveModelAssetUrls } from './modelAssetResolver';
+import { resolveModelAssetUrls, getVariantCatalogEntry, type AssetSourceRecorder } from './modelAssetResolver';
 export interface SegFormerTaskOptions {
+    recordAssetSource?: AssetSourceRecorder;
     modelUrl?: string;
     variantId?: SegFormerVariantId;
     delegate?: 'GPU' | 'WebGPU' | 'WASM';
@@ -28,7 +29,6 @@ export interface SegFormerTask {
     close: () => void | Promise<void>;
     readonly backend?: OnnxBackendInfo;
 }
-const DEFAULT_SEGFORMER_URL = 'https://huggingface.co/Xenova/segformer-b0-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx';
 const TARGET_SIZE = 512;
 const MEAN = [.485, .456, .406], STD = [.229, .224, .225];
 const RGB = ADE20K_CLASSES.map(c => [parseInt(c.color.slice(1, 3), 16), parseInt(c.color.slice(3, 5), 16), parseInt(c.color.slice(5, 7), 16)]);
@@ -156,6 +156,7 @@ export class SegFormerEngine implements SegFormerTask {
 export async function createSegFormerTask(options: SegFormerTaskOptions = {}): Promise<SegFormerTask> {
     if (options.modelUrl) {
         const { session, backend } = await createOrtSession(options.modelUrl, options.delegate, {
+            recordAssetSource: options.recordAssetSource,
             modelId: 'segformer',
             primarySource: 'external',
         });
@@ -163,10 +164,12 @@ export async function createSegFormerTask(options: SegFormerTaskOptions = {}): P
     }
     const resolved = await resolveModelAssetUrls('segformer', options.variantId);
     const { session, backend } = await createOrtSession(
-        resolved.primaryUrl || DEFAULT_SEGFORMER_URL,
+        resolved.primaryUrl,
         options.delegate,
         {
             fallbackModelUrl: resolved.fallbackUrl,
+            variantId: getVariantCatalogEntry('segformer', options.variantId).variantId,
+            recordAssetSource: options.recordAssetSource,
             modelId: 'segformer',
             primarySource: resolved.source,
         }

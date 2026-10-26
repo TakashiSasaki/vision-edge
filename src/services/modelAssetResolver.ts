@@ -1,6 +1,7 @@
 import type { RunnableModelType } from '../types/vision.ts';
 
 export type AssetDeliverySource = 'container-cache' | 'external-fallback' | 'external';
+export type AssetSourceRecorder = (assetKey: string, source: AssetDeliverySource) => void;
 
 export type AssetCacheState = 'cached' | 'downloading' | 'unavailable';
 
@@ -22,6 +23,7 @@ export interface WasmAssetCatalogEntry {
 
 export interface ContainerModelStatusEntry {
   id: RunnableModelType;
+  variantId?: string;
   file: string;
   status: AssetCacheState;
   size: number | null;
@@ -49,6 +51,7 @@ export interface ContainerCacheStatusResponse {
     };
   };
   models: Record<RunnableModelType, ContainerModelStatusEntry>;
+  variants?: Record<string, ContainerModelStatusEntry>;
 }
 
 export interface ResolvedAssetUrls {
@@ -192,18 +195,15 @@ export function getVariantCatalogEntry(
   model: RunnableModelType,
   variantId?: string
 ): ModelVariantCatalogEntry {
-  if (variantId) {
+  if (variantId !== undefined && typeof variantId !== 'string') throw new RangeError('Variant id must be a string');
+  if (variantId !== undefined && variantId !== '') {
     const key = `${model}:${variantId}`;
-    if (MODEL_VARIANT_CATALOG[key]) {
-      return MODEL_VARIANT_CATALOG[key];
-    }
+    if (Object.hasOwn(MODEL_VARIANT_CATALOG, key)) return MODEL_VARIANT_CATALOG[key];
+    throw new RangeError(`Unknown model variant: ${key}`);
   }
-  // Fallback to default variant for model
-  const defaultEntry = Object.values(MODEL_VARIANT_CATALOG).find(
-    e => e.modelId === model && e.isDefault
-  );
-  if (defaultEntry) return defaultEntry;
-  return Object.values(MODEL_VARIANT_CATALOG).find(e => e.modelId === model)!;
+  const entry = Object.values(MODEL_VARIANT_CATALOG).find(e => e.modelId === model && e.isDefault);
+  if (!entry) throw new RangeError(`Unknown model: ${model}`);
+  return entry;
 }
 
 export const MODEL_ASSET_CATALOG: Record<RunnableModelType, ModelAssetCatalogEntry> = {
@@ -290,6 +290,13 @@ export function recordResolvedSource(
   notifyListeners();
 }
 
+// Commit one accepted initialization atomically before synchronous observers run.
+export function recordResolvedSources(sources: ReadonlyMap<string, AssetDeliverySource>): void {
+  if (sources.size === 0) return;
+  for (const [key, source] of sources) resolvedSources[key] = source;
+  notifyListeners();
+}
+
 export function getResolvedSource(
   assetKey: RunnableModelType | 'wasm-mediapipe' | 'wasm-ort' | string
 ): AssetDeliverySource {
@@ -315,16 +322,17 @@ export async function fetchContainerCacheStatus(
       headers: { Accept: 'application/json' },
       signal: controller.signal,
     });
-    if (!response.ok) return null;
+    if (!response.ok) throw new Error('Cache status HTTP failure');
     const contentType = response.headers.get('content-type') ?? '';
-    if (!contentType.includes('application/json')) return null;
+    if (!contentType.includes('application/json')) throw new Error('Cache status is not JSON');
     const data = (await response.json()) as ContainerCacheStatusResponse;
-    if (!data || typeof data !== 'object' || !data.models || !data.wasm) return null;
+    if (!isRecord(data) || typeof data.enabled !== 'boolean' || !isRecord(data.models) || !isRecord(data.wasm)) throw new Error('Malformed cache status');
     cachedStatusResponse = data;
     cachedStatusAt = Date.now();
     notifyListeners();
     return data;
   } catch {
+    cachedStatusResponse = null; cachedStatusAt = 0;
     return null;
   } finally {
     clearTimeout(timer);
@@ -344,7 +352,7 @@ export async function resolveMediaPipeWasmUrls(): Promise<ResolvedAssetUrls> {
     };
   }
   const status = await fetchContainerCacheStatus();
-  if (status?.wasm?.mediapipe?.available) {
+  if (status?.enabled && status.wasm?.mediapipe?.available === true && status.wasm.mediapipe.localUrl === LOCAL_MEDIAPIPE_WASM_URL && status.wasm.mediapipe.upstreamUrl === UPSTREAM_MEDIAPIPE_WASM_URL) {
     return {
       primaryUrl: status.wasm.mediapipe.localUrl || LOCAL_MEDIAPIPE_WASM_URL,
       fallbackUrl: UPSTREAM_MEDIAPIPE_WASM_URL,
@@ -367,7 +375,7 @@ export async function resolveOrtWasmUrls(): Promise<ResolvedAssetUrls> {
     };
   }
   const status = await fetchContainerCacheStatus();
-  if (status?.wasm?.ort?.available) {
+  if (status?.enabled && status.wasm?.ort?.available === true && status.wasm.ort.localUrl === LOCAL_ORT_WASM_URL && status.wasm.ort.upstreamUrl === UPSTREAM_ORT_WASM_URL) {
     const rawLocal = status.wasm.ort.localUrl || LOCAL_ORT_WASM_URL;
     const localWithSlash = rawLocal.endsWith('/') ? rawLocal : `${rawLocal}/`;
     const origin =
@@ -401,18 +409,31 @@ export async function resolveModelAssetUrls(
   }
   const status = await fetchContainerCacheStatus();
   const variantKey = `${entry.modelId}:${entry.variantId}`;
-  const rawStatus = (status as unknown as { variants?: Record<string, ContainerModelStatusEntry> })?.variants?.[variantKey];
-  const modelStatus = rawStatus || status?.models?.[model];
-  if (modelStatus && (modelStatus.status === 'cached' || modelStatus.status === 'downloading')) {
-    return {
-      primaryUrl: modelStatus.localUrl || entry.localUrl,
-      fallbackUrl: entry.upstreamUrl,
-      source: 'container-cache',
-    };
+  // A present variants map is authoritative, including a missing/invalid row.
+  // Only a legacy response with no variants field may identify a default model.
+  const modern = !!status && Object.hasOwn(status, 'variants');
+  const candidate = modern
+    ? (isRecord(status?.variants) ? status.variants[variantKey] : undefined)
+    : (entry.isDefault ? status?.models?.[model] : undefined);
+  if (status?.enabled && matchesVariantStatus(candidate, entry, modern)) {
+    return { primaryUrl: entry.localUrl, fallbackUrl: entry.upstreamUrl, source: 'container-cache' };
   }
   return {
     primaryUrl: entry.upstreamUrl,
     fallbackUrl: null,
     source: 'external-fallback',
   };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+function matchesVariantStatus(value: unknown, entry: ModelVariantCatalogEntry, modern: boolean): boolean {
+  if (!isRecord(value)) return false;
+  return value.id === entry.modelId
+    && (modern ? value.variantId === entry.variantId : value.variantId === undefined || value.variantId === entry.variantId)
+    && value.file === entry.file && value.localUrl === entry.localUrl && value.upstreamUrl === entry.upstreamUrl
+    && value.license === entry.license && value.error === null
+    && ((value.status === 'cached' && Number.isSafeInteger(value.size) && Number(value.size) >= 1024 && typeof value.cachedAt === 'string')
+      || (value.status === 'downloading' && value.size === null && value.cachedAt === null));
 }
