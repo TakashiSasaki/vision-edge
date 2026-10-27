@@ -44,15 +44,28 @@ Apache-2.0 metadata, sizes and hashes are recorded in the
 [classifier cache contract](docs/verification/classifier-cache.md). Real model
 inference has not been validated by the model-free CI controls.
 
-`npm run dev` supplies the container cache API and startup prefetch for all eleven
-registered variants. Classifier bytes must match their fixed size and SHA-256
-on acquisition, reuse and serving; there is no unverified upstream fallback.
-An ephemeral container's cache is lost when it is destroyed. The application
-links to the static [/model-cache.html](public/model-cache.html) inventory,
-which observes status read-only without starting a download. It separates actual
-validated files from configured models. Build/preview/static hosting alone do
-not provide the API: the page reports unknown/unavailable and classification
-stays blocked. External deployment startup/support has not been established.
+`npm run dev` and ordinary `npm run preview` / `npm start` supply the container
+cache API and schedule startup prefetch for registered variants. Startup waits
+for the server to listen and uses the configured delay/concurrency. Classifier
+bytes must match their fixed size and SHA-256 on acquisition, reuse and serving;
+there is no unverified upstream fallback. An ephemeral container's cache is lost
+when it is destroyed. The static [/model-cache.html](public/model-cache.html)
+inventory itself only reads status; starting a normal server can independently
+start downloads. It separates validated files from configured models.
+
+In preview, defining `CI` or `TEST_LOG_DIR` suppresses the default cache API and
+startup prefetch. `CONTAINER_MODEL_CACHE=true` overrides that suppression, so
+ensure it is absent for model-free checks; setting it to `false` alone is not
+an off switch for ordinary preview. This suppression does not apply to the dev
+server. Use the repository test wrappers or injected-fetch cache fixtures
+rather than starting a normal server to verify documentation or npm contracts.
+See the [server hooks](src/services/containerModelCacheServer.ts) and
+[model-free cache tests](src/services/containerModelCache.test.ts).
+
+A build or pure static host supplies no cache API by itself. Without a reachable
+API, the inventory reports unknown/unavailable and classification stays blocked.
+These repository hooks do not establish deployed startup or real-inference
+acceptance; those remain separate verification steps.
 
 ## Requirements and setup
 
@@ -87,7 +100,7 @@ changing dependencies.
 | `npm test` | Run Vitest unit/component tests once and exit |
 | `npm run test:watch` | Run Vitest interactively in watch mode |
 | `npm run build` | Write production assets to `dist/` |
-| `npm run preview` | Serve an existing production build locally (default port 4173) |
+| `npm run preview` | Serve an existing production build locally (port 3000 by default; override with `PORT` or `--port`) |
 | `npm run test:e2e` | Run Playwright against production preview; build first |
 | `npm run test:e2e:controls` | Check production-smoke sensitivity using disposable healthy and faulty builds |
 | `npm run clean` | Remove `dist/` and legacy generated `server.js`, using Node filesystem APIs |
