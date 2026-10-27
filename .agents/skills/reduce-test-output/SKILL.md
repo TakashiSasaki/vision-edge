@@ -21,3 +21,6 @@ description: テスト・オフライン CI・検証ログが長く、コーデ�
 14. 別途承認された CPU 検証は明示コマンドで行う。GPU既定動作と証拠を保持し、要求delegate・SDKへ渡った値・未確認の内部backend・WebGL描画器を区別する。各呼出しモデルに対応する生成/delegate観測がなければ、空集合の一致を根拠に推論・計測を採用しない。汎用の生観測とモードを検証できた証拠は分ける。CPU指定の故障診断成功も推論成功ではない。手順は `scripts/testing/cpu-verification.md`。
 
 個別 reporter や完全なストリームを調べるときは既存の直接 CLI、`npm run test:raw`、または `TEST_OUTPUT=verbose` を明示的に使う。既定の入力へ巨大な JSON を戻さない。絞り込み実行は全件検証と区別する。Node は filter で除外したケースを skip として数えない場合があるため、存在しない skip 件数を補わない。
+
+npm契約・保護証拠の復旧は [preserve-npm-evidence](../preserve-npm-evidence/SKILL.md)、
+固定HEADのレビュー・累積統合は [review-fixed-commits](../review-fixed-commits/SKILL.md) を参照する。
