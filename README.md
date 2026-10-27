@@ -100,7 +100,7 @@ changing dependencies.
 | `npm test` | Run Vitest unit/component tests once and exit |
 | `npm run test:watch` | Run Vitest interactively in watch mode |
 | `npm run build` | Write production assets to `dist/` |
-| `npm run preview` | Serve an existing production build locally (default port 4173) |
+| `npm run preview` | Serve an existing production build locally (port 3000 by default; override with `PORT` or `--port`) |
 | `npm run test:e2e` | Run Playwright against production preview; build first |
 | `npm run test:e2e:controls` | Check production-smoke sensitivity using disposable healthy and faulty builds |
 | `npm run clean` | Remove `dist/` and legacy generated `server.js`, using Node filesystem APIs |
