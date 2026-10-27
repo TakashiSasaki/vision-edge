@@ -3,7 +3,7 @@ import { classifierAssetStatuses } from './imageClassifierAssets.ts';
 import { Buffer } from 'node:buffer';
 import { existsSync, createReadStream } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, readFile, rename, rm, lstat, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, rename, rm, lstat, type FileHandle, writeFile } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 import process from 'node:process';
@@ -30,6 +30,29 @@ const CACHE_CATALOG: Record<string, CacheCatalogEntry> = {
   ...MODEL_VARIANT_CATALOG,
   ...Object.fromEntries(Object.values(IMAGE_CLASSIFIER_ASSETS).map(e => [`${e.modelId}:${e.variantId}`, e])),
 };
+
+const STARTUP_PRIORITY_KEYS: readonly string[] = [
+  'selfie-segmenter:general',
+  'mediapipe:lite0',
+  'segformer:b0',
+  'yolo-seg:yolov8n-seg',
+  'image-classifier:lite0',
+  'selfie-segmenter:landscape',
+  'mediapipe:lite2',
+  'segformer:b1',
+  'image-classifier:lite2',
+  'segformer:b2',
+  'yolo-seg:yolov8s-seg',
+];
+
+function getOrderedCatalogKeys(prioritizeDefaults = false): string[] {
+  const allKeys = Object.keys(CACHE_CATALOG);
+  if (!prioritizeDefaults) return allKeys;
+  const prioritized = STARTUP_PRIORITY_KEYS.filter(key => Object.hasOwn(CACHE_CATALOG, key));
+  const remaining = allKeys.filter(key => !prioritized.includes(key));
+  return [...prioritized, ...remaining];
+}
+
 // Public API errors are bounded diagnostics, never raw filesystem paths or
 // arbitrary upstream messages (which may contain credentials).
 function publicCacheError(cause: unknown): string {
@@ -48,6 +71,16 @@ export interface ContainerModelCacheOptions {
   fetchImpl?: typeof fetch;
   autoPrefetchOnStart?: boolean;
   enableInPreview?: boolean;
+  startupDelayMs?: number;
+  startupConcurrency?: number;
+  startupYieldMs?: number;
+}
+
+export interface PrefetchAllModelsOptions {
+  concurrency?: number;
+  yieldMs?: number;
+  signal?: AbortSignal;
+  prioritizeDefaults?: boolean;
 }
 
 function contentTypeForFile(filename: string): string {
@@ -286,37 +319,61 @@ export class ContainerModelCacheManager {
         if (response.headers.has('Content-Length') && entry.expectedSize !== undefined && advertised !== entry.expectedSize) throw new Error('Pinned model size mismatch');
         const reader = response.body?.getReader();
         if (!reader) throw new Error('Empty model response body');
-        const chunks: Uint8Array[] = []; let size = 0;
+        const hash = createHash('sha256');
+        let headChunks: Uint8Array[] = [];
+        let fh: FileHandle | undefined;
+        let size = 0;
         try {
           while (true) {
             const { done, value } = await Promise.race([reader.read(), deadline]); if (done) break;
             resetTimer();
             size += value.byteLength;
             if (size > (entry.expectedSize ?? MAX_MODEL_BYTES)) { controller.abort(); void reader.cancel().catch(() => {}); throw new Error('Model exceeds cache size limit'); }
-            chunks.push(value);
+            hash.update(value);
+            if (!fh) {
+              headChunks.push(value);
+              if (size >= MIN_VALID_MODEL_BYTES) {
+                fh = await open(tempPath, 'w');
+                for (const c of headChunks) await fh.write(c);
+                headChunks = [];
+              }
+            } else {
+              await fh.write(value);
+            }
           }
-        } finally { void reader.cancel().catch(() => {}); reader.releaseLock(); }
-        const bytes = Buffer.concat(chunks);
-        if (bytes.byteLength < MIN_VALID_MODEL_BYTES) {
-          throw new Error(`Downloaded payload too small (${bytes.byteLength} bytes)`);
-        }
-        if (entry.expectedSize !== undefined && bytes.byteLength !== entry.expectedSize) throw new Error('Pinned model size mismatch');
-        const sha256 = createHash('sha256').update(bytes).digest('hex');
-        if (entry.expectedSha256 !== undefined && sha256 !== entry.expectedSha256) throw new Error('Pinned model SHA256 mismatch');
-        await writeFile(tempPath, bytes);
-        await writeFile(metadataTemp, JSON.stringify({ schemaVersion: 1, modelId: entry.modelId, variantId: entry.variantId, file: entry.file, localUrl: entry.localUrl, upstreamUrl: entry.upstreamUrl, size: bytes.byteLength, sha256 }));
-        await rename(tempPath, targetPath);
-        await rename(metadataTemp, metadataPath);
+          if (size < MIN_VALID_MODEL_BYTES) {
+            throw new Error(`Downloaded payload too small (${size} bytes)`);
+          }
+          if (entry.expectedSize !== undefined && size !== entry.expectedSize) throw new Error('Pinned model size mismatch');
+          const sha256 = hash.digest('hex');
+          if (entry.expectedSha256 !== undefined && sha256 !== entry.expectedSha256) throw new Error('Pinned model SHA256 mismatch');
+          if (fh) {
+            await fh.close();
+            fh = undefined;
+          } else {
+            await writeFile(tempPath, Buffer.concat(headChunks));
+          }
+          await writeFile(metadataTemp, JSON.stringify({ schemaVersion: 1, modelId: entry.modelId, variantId: entry.variantId, file: entry.file, localUrl: entry.localUrl, upstreamUrl: entry.upstreamUrl, size, sha256 }));
+          await rename(tempPath, targetPath);
+          await rename(metadataTemp, metadataPath);
 
-        const cachedState: ContainerModelStatusEntry = {
-          ...current,
-          status: 'cached',
-          size: bytes.byteLength, sha256, filePresent: true, integrity: entry.expectedSha256 ? 'pinned' : 'self-recorded',
-          cachedAt: new Date().toISOString(),
-          error: null,
-        };
-        this.variantStates.set(key, cachedState);
-        return cachedState;
+          const cachedState: ContainerModelStatusEntry = {
+            ...current,
+            status: 'cached',
+            size, sha256, filePresent: true, integrity: entry.expectedSha256 ? 'pinned' : 'self-recorded',
+            cachedAt: new Date().toISOString(),
+            error: null,
+          };
+          this.variantStates.set(key, cachedState);
+          return cachedState;
+        } finally {
+          if (fh) {
+            await fh.close().catch(() => {});
+            fh = undefined;
+          }
+          void reader.cancel().catch(() => {});
+          reader.releaseLock();
+        }
       } catch (cause) {
         controller.abort();
         await Promise.allSettled([rm(tempPath, { force: true }), rm(metadataTemp, { force: true })]);
@@ -343,8 +400,64 @@ export class ContainerModelCacheManager {
     return this.prefetchVariant(`${modelId}:${entry.variantId}`);
   }
 
-  public async prefetchAllModels(): Promise<Record<RunnableModelType, ContainerModelStatusEntry>> {
-    await Promise.allSettled(Object.keys(CACHE_CATALOG).map(key => this.prefetchVariant(key)));
+  public async prefetchAllModels(
+    options: PrefetchAllModelsOptions = {}
+  ): Promise<Record<RunnableModelType, ContainerModelStatusEntry>> {
+    const keys = getOrderedCatalogKeys(Boolean(options.prioritizeDefaults));
+    const concurrency = options.concurrency;
+    if (
+      concurrency === undefined &&
+      !options.yieldMs &&
+      !options.signal &&
+      !options.prioritizeDefaults
+    ) {
+      await Promise.allSettled(keys.map(key => this.prefetchVariant(key)));
+      return this.getModelsSnapshot();
+    }
+
+    const maxConcurrency = Math.max(1, Math.min(keys.length || 1, concurrency ?? keys.length));
+    const yieldMs = Math.max(0, options.yieldMs ?? 0);
+    const signal = options.signal;
+    let nextIndex = 0;
+
+    const waitYield = (): Promise<void> =>
+      new Promise<void>(resolve => {
+        if (signal?.aborted) {
+          resolve();
+          return;
+        }
+        const onAbort = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+        const timer = setTimeout(() => {
+          signal?.removeEventListener('abort', onAbort);
+          resolve();
+        }, yieldMs);
+        timer.unref?.();
+        signal?.addEventListener('abort', onAbort, { once: true });
+      });
+
+    const worker = async (): Promise<void> => {
+      while (!signal?.aborted) {
+        const currentIndex = nextIndex++;
+        if (currentIndex >= keys.length) break;
+        const key = keys[currentIndex];
+        try {
+          await this.prefetchVariant(key);
+        } catch {
+          // Individual variant errors are recorded inside variantStates
+        }
+        if (signal?.aborted || nextIndex >= keys.length) break;
+        if (yieldMs > 0) {
+          await waitYield();
+        } else {
+          await Promise.resolve();
+        }
+      }
+    };
+
+    await Promise.allSettled(Array.from({ length: maxConcurrency }, () => worker()));
     return this.getModelsSnapshot();
   }
 
@@ -625,37 +738,119 @@ export class ContainerModelCacheManager {
   }
 }
 
+type MinimalHttpServer = {
+  listening?: boolean;
+  once?: (event: string, listener: () => void) => unknown;
+};
+
 export function containerModelCachePlugin(
   options: ContainerModelCacheOptions = {}
 ): Plugin {
   const manager = new ContainerModelCacheManager(options);
-  const triggerStartupPrefetch = (serverType: string) => {
-    if (options.autoPrefetchOnStart !== false) {
-      console.log(`[container-model-cache] Container ${serverType} server started: initiating startup download for all model files...`);
-      void manager.prefetchAllModels().then(() => {
-        const variants = manager.getVariantsSnapshot();
-        const cachedCount = Object.values(variants).filter(v => v.status === 'cached').length;
-        const totalCount = Object.keys(variants).length;
-        console.log(`[container-model-cache] Startup download completed: ${cachedCount}/${totalCount} variants cached.`);
-      }).catch(err => {
-        console.warn('[container-model-cache] Startup download encountered an error:', err instanceof Error ? err.message : String(err));
+  const defaultDelayMs = options.fetchImpl ? 0 : 5_000;
+  const envDelayRaw = process.env.MODEL_CACHE_STARTUP_DELAY_MS;
+  const envDelayMs =
+    envDelayRaw !== undefined && envDelayRaw.trim() !== ''
+      ? Number(envDelayRaw)
+      : undefined;
+  const startupDelayMs = Math.max(
+    0,
+    options.startupDelayMs ??
+      (envDelayMs !== undefined && Number.isFinite(envDelayMs)
+        ? envDelayMs
+        : defaultDelayMs)
+  );
+  const startupConcurrency = Math.max(1, options.startupConcurrency ?? 1);
+  const startupYieldMs = Math.max(
+    0,
+    options.startupYieldMs ?? (options.fetchImpl ? 0 : 200)
+  );
+
+  const triggerStartupPrefetch = (
+    serverType: string,
+    httpServer?: MinimalHttpServer | null
+  ) => {
+    if (options.autoPrefetchOnStart === false) return;
+
+    console.log(
+      `[container-model-cache] Container ${serverType} server started: initiating startup download for all model files...`
+    );
+
+    const controller = new AbortController();
+    let delayTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const runPrefetch = () => {
+      if (controller.signal.aborted) return;
+      void manager
+        .prefetchAllModels({
+          concurrency: startupConcurrency,
+          yieldMs: startupYieldMs,
+          signal: controller.signal,
+          prioritizeDefaults: true,
+        })
+        .then(() => {
+          if (controller.signal.aborted) return;
+          const variants = manager.getVariantsSnapshot();
+          const cachedCount = Object.values(variants).filter(
+            v => v.status === 'cached'
+          ).length;
+          const totalCount = Object.keys(variants).length;
+          console.log(
+            `[container-model-cache] Startup download completed: ${cachedCount}/${totalCount} variants cached.`
+          );
+        })
+        .catch(err => {
+          if (controller.signal.aborted) return;
+          console.warn(
+            '[container-model-cache] Startup download encountered an error:',
+            err instanceof Error ? err.message : String(err)
+          );
+        });
+    };
+
+    const scheduleAfterListen = () => {
+      if (controller.signal.aborted) return;
+      if (startupDelayMs <= 0) {
+        queueMicrotask(runPrefetch);
+        return;
+      }
+      delayTimer = setTimeout(runPrefetch, startupDelayMs);
+      delayTimer.unref?.();
+    };
+
+    if (httpServer && typeof httpServer.once === 'function') {
+      httpServer.once('close', () => {
+        controller.abort();
+        if (delayTimer !== undefined) clearTimeout(delayTimer);
       });
+      if ('listening' in httpServer && httpServer.listening === false) {
+        httpServer.once('listening', scheduleAfterListen);
+        return;
+      }
     }
+
+    scheduleAfterListen();
   };
 
   return {
     name: 'container-model-cache-server',
     apply: 'serve',
     configureServer(server) {
-      triggerStartupPrefetch('dev');
       server.middlewares.use(manager.createMiddleware());
+      triggerStartupPrefetch(
+        'dev',
+        (server as { httpServer?: MinimalHttpServer | null }).httpServer
+      );
     },
     configurePreviewServer(server) {
       const isTest = process.env.TEST_LOG_DIR !== undefined || process.env.CI !== undefined;
       const enabled = process.env.CONTAINER_MODEL_CACHE === 'true' || (!isTest && options.enableInPreview !== false);
       if (enabled) {
-        triggerStartupPrefetch('preview');
         server.middlewares.use(manager.createMiddleware());
+        triggerStartupPrefetch(
+          'preview',
+          (server as { httpServer?: MinimalHttpServer | null }).httpServer
+        );
       }
     },
     transformIndexHtml(html) {

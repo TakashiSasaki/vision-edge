@@ -410,4 +410,65 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     expect(body).toContain('https://example.run.app/api/model-cache/models/efficientnet_lite0.tflite?sha256=');
     expect(mockFetch).not.toHaveBeenCalled();
   });
+
+  it('defers startup prefetch until after httpServer emits listening and startupDelayMs elapses, running sequentially in priority order', async () => {
+    const requestedUrls: string[] = [];
+    let activeFetches = 0;
+    let maxConcurrentFetches = 0;
+
+    const mockFetch = vi.fn(async (url: string | URL | Request) => {
+      requestedUrls.push(String(url));
+      activeFetches++;
+      maxConcurrentFetches = Math.max(maxConcurrentFetches, activeFetches);
+      await new Promise<void>(resolve => setTimeout(resolve, 2));
+      activeFetches--;
+      return new Response(Buffer.alloc(2048, 0x42), { status: 200 });
+    });
+
+    const listeners: Record<string, (() => void)[]> = {};
+    const mockHttpServer = {
+      listening: false,
+      once(event: string, fn: () => void) {
+        (listeners[event] ??= []).push(fn);
+      },
+      emit(event: string) {
+        for (const fn of listeners[event] ?? []) fn();
+      },
+    };
+
+    const plugin = containerModelCachePlugin({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+      startupDelayMs: 30,
+      startupConcurrency: 1,
+      startupYieldMs: 0,
+    });
+
+    const mockDevServer = {
+      middlewares: { use: vi.fn() },
+      httpServer: mockHttpServer,
+    };
+
+    if (typeof plugin.configureServer === 'function') {
+      (plugin.configureServer as (server: unknown) => void)(mockDevServer);
+    }
+
+    // Before httpServer is listening, no model download is started
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
+    expect(mockFetch).not.toHaveBeenCalled();
+
+    // Once httpServer starts listening, downloads begin after startupDelayMs
+    mockHttpServer.listening = true;
+    mockHttpServer.emit('listening');
+    expect(mockFetch).not.toHaveBeenCalled();
+
+    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(11), {
+      timeout: 2000,
+    });
+
+    // Startup background prefetch runs one model at a time and starts with the default selfie-segmenter model
+    expect(maxConcurrentFetches).toBe(1);
+    expect(requestedUrls[0]).toContain('selfie_segmenter.tflite');
+  });
 });
+
