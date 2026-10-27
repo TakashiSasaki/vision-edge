@@ -1,3 +1,40 @@
+# Current reconciliation checkpoint
+
+The original1.0.16 record below is historical. Main advanced to
+2bb5a78321ebb3ddc5ab69bd9a93bf18c84651d0, adding legitimate cache startup
+scheduling/source/tests. The cumulative PR now targets main directly and merges
+that commit without squashing or replacing its functionality. The new candidate
+uses version1.0.17 with synchronized npm-generated lock. The cache server, its
+test and prefetch script match new main byte-for-byte; only the original Node,
+npm and evidence restoration plus updated verification records remain as delta.
+
+The sole merge conflict was package.json. Its incoming dependency declarations
+and scripts were unchanged; conflict resolution preserved them by key while
+retaining the patched Node engine floor and npm declaration, then invoked npm
+version patch --no-git-tag-version. All354 locked dependency versions remain
+unchanged, as do all702 historical hashes and the ledger.
+
+Fresh local Node24.22.1/npm11.19.1 run2026-10-27T01-17-37.671Z-2472f7a5
+passes all offline tasks:702/0 preflight,60 guard,types/lint,810 unit,73
+foundation,40 delegate,37 output,build,33 browser and7 controls (2 healthy,
+5 intended faults), with no failures/skips/cancelled/todo/flaky as applicable.
+The isolated missing-lock control also passes with its sole intended child
+exit1. Raw logs and the prior snapshot remain preserved.
+
+Fresh local and exact-head hosted results are recorded separately for this new
+candidate; the old CI40429487140 and original receipts below cannot substitute
+for them. See integrity-reconciliation-results.json and the PR body for the
+current frozen HEAD/tree, terminal CI and independent-review status. Re-review
+is required before any user-authorized integration; no merge occurs in this
+reconciliation phase. No model acquisition or real inference is performed.
+
+A new disposable build comparison uses main2bb5a78, the same locked dependencies
+and only a normalized package version1.0.17: all23 build files are byte-identical
+to this candidate. This preserves the new product/cache features as well as
+PWA/SEO/catalog/download/classification assets.
+
+---
+
 # npm and historical evidence restoration
 
 This bounded restoration is stacked on Node-runtime PR33, frozen at

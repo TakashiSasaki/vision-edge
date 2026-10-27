@@ -12,7 +12,7 @@ export async function prefetchModels(manager = new ContainerModelCacheManager())
   const startTime = Date.now();
   console.log('[container-model-cache] Starting download for all registered model variants (11 variants)...');
 
-  await manager.prefetchAllModels();
+  await manager.prefetchAllModels({ concurrency: 1, prioritizeDefaults: true });
   const variants = manager.getVariantsSnapshot();
   const keys = Object.keys(variants);
 
