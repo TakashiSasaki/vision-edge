@@ -56,7 +56,7 @@ stays blocked. External deployment startup/support has not been established.
 
 ## Requirements and setup
 
-- Node.js 24 LTS, at least 24.15.0 and below 25; `.nvmrc` and CI use 24.19.0.
+- Node.js 24 LTS, at least 24.22.1 and below 25; `.nvmrc` and CI use 24.22.1 (security release).
 - npm 11; the lockfile was generated with npm 11.9.0.
 - Node.js and npm are the only supported runtime/package manager. `package-lock.json` is the sole lockfile; the unused Bun bootstrap lock has been removed.
 - A modern browser with WebAssembly and WebGL for real inference.
