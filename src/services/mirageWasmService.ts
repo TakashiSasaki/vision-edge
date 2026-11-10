@@ -126,9 +126,16 @@ function getInputDimensions(input: InferenceInput): { width: number; height: num
 
 function formatPositionTagJa(bbox: { x: number; y: number; width: number; height: number }): string {
   const centerX = bbox.x + bbox.width / 2;
-  if (centerX < 0.35) return '左';
-  if (centerX > 0.65) return '右';
-  return '中央';
+  const dir = centerX < 0.35 ? '左' : centerX > 0.65 ? '右' : '中央';
+  const area = bbox.width * bbox.height;
+  const bottomY = bbox.y + bbox.height;
+  const dist =
+    area >= 0.16 || (bottomY >= 0.85 && area >= 0.08)
+      ? '近'
+      : area >= 0.04
+        ? '中'
+        : '遠';
+  return `${dir}・${dist}`;
 }
 
 export class MirageWasmEngine implements MirageTask {
@@ -251,7 +258,7 @@ export class MirageWasmEngine implements MirageTask {
 
   public async detectForVideo(
     videoElement: InferenceInput,
-    confidenceThreshold = 0.30,
+    confidenceThreshold = 0.25,
     extraOptions?: MirageInferExtraOptions
   ): Promise<DetectedObject[]> {
     if (this.closed) return [];
@@ -312,6 +319,7 @@ export class MirageWasmEngine implements MirageTask {
       maxDetections,
       includeOcrAsDetections: includeOcr,
       includeRegionsAsDetections: true,
+      bboxFormat: 'yxyx',
     });
 
     return objects.map((obj) => {
@@ -358,6 +366,24 @@ export async function createMirageWasmTask(
   options: MirageTaskOptions = {}
 ): Promise<MirageTask> {
   const variantId: MirageVariantId = options.variantId ?? 'mirage-51m';
+
+  if (variantId === 'mirage-webgpu' && !options.workerFactory) {
+    const { createMirageWebGpuTask } = await import('./mirageWebGpuService');
+    let wasmTask: MirageTask | undefined;
+    try {
+      wasmTask = await createMirageWasmTask({
+        variantId: 'mirage-51m',
+        recordAssetSource: options.recordAssetSource,
+      });
+    } catch {
+      wasmTask = undefined;
+    }
+    return createMirageWebGpuTask({
+      recordAssetSource: options.recordAssetSource,
+      wasmTask,
+    });
+  }
+
   const asset = await resolveModelAssetUrls('mirage', variantId);
   const origin =
     typeof window !== 'undefined' && window.location?.origin

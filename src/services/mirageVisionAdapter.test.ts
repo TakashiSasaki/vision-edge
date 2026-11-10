@@ -138,6 +138,26 @@ describe('MirageVisionAdapter & Mirage Perception Utilities', () => {
     ]);
 
     expect(convertMirageMaskToPolygon([100, 200, 300, 400])).toBeUndefined();
+
+    // Cactus native WASM [ymin, xmin, ymax, xmax] mapping
+    const cactusRedSquareBbox = convertMirageBBoxToNormalized([661, 430, 786, 750], 'yxyx');
+    expect(cactusRedSquareBbox).toEqual({
+      x: 0.43,
+      y: 0.661,
+      width: 0.32,
+      height: 0.125,
+    });
+
+    const cactusMaskPolygon = convertMirageMaskToPolygon(
+      [668, 430, 664, 434, 664, 738, 668, 747],
+      'yxyx'
+    );
+    expect(cactusMaskPolygon).toEqual([
+      { x: 0.43, y: 0.668 },
+      { x: 0.434, y: 0.664 },
+      { x: 0.738, y: 0.664 },
+      { x: 0.747, y: 0.668 },
+    ]);
   });
 
   it('maps Mirage objects and OCR lines to VisionStudio DetectedObject[] with Japanese dictionary labels', () => {
@@ -575,4 +595,201 @@ describe('MirageVisionAdapter & Mirage Perception Utilities', () => {
     expect(mockWorker.terminate).toHaveBeenCalledTimes(1);
     vi.restoreAllMocks();
   });
+
+  it('converts Mirage Walsh-Hadamard HConvGLU kernels to ONNX, preserves WASM in-place archive pointer, and decodes MirageWebGpuEngine tensors', async () => {
+    const {
+      buildSequencyWalshMatrix,
+      fuseHConvGluKernel,
+      buildMirageWebGpuOnnxBytes,
+    } = await import('./mirageOnnxConverter');
+    const {
+      MirageWebGpuEngine,
+      formatSpatialGuidanceTagJa,
+    } = await import('./mirageWebGpuService');
+    const { loadMirageArchiveIntoModule } = await import('./mirageWasmWorker');
+    const ort = await import('onnxruntime-web');
+
+    // 1. Verify Sequency Walsh-Hadamard 16x16 matrix orthogonality (W * W^T = I)
+    const walsh = buildSequencyWalshMatrix(16);
+    expect(walsh).toHaveLength(256);
+    for (let r = 0; r < 16; r++) {
+      let diagDot = 0;
+      for (let c = 0; c < 16; c++) {
+        diagDot += walsh[r * 16 + c] * walsh[r * 16 + c];
+      }
+      expect(diagDot).toBeCloseTo(1.0, 5);
+    }
+
+    // 2. Verify fuseHConvGluKernel produces [16, 16] fused Walsh-Hadamard kernel
+    const mockBandedConv = new Float32Array(16 * 7).fill(0.05);
+    const fused = fuseHConvGluKernel(mockBandedConv, 16, 3);
+    expect(fused).toHaveLength(16 * 16);
+
+    // 3. Verify buildMirageWebGpuOnnxBytes builds a valid Opset-17 ONNX ModelProto
+    const onnxBytes = buildMirageWebGpuOnnxBytes();
+    expect(onnxBytes.byteLength).toBeGreaterThan(200_000);
+
+    // 4. Verify loadMirageArchiveIntoModule keeps the .cact buffer allocated in WASM heap
+    // so in-place weight mapping does not read freed memory
+    const heap = new Uint8Array(1024);
+    const freeSpy = vi.fn();
+    const mockMod = {
+      HEAPU8: heap,
+      _malloc: vi.fn(() => 128),
+      _free: freeSpy,
+      _cactus_load: vi.fn(() => 0),
+      _cactus_unload: vi.fn(),
+      _cactus_models: vi.fn(() => 0),
+      _cactus_error: vi.fn(() => 0),
+      _cactus_describe: vi.fn(() => 0),
+      UTF8ToString: vi.fn(() => ''),
+    };
+    loadMirageArchiveIntoModule(mockMod, new Uint8Array([0xca, 0xc7, 0x01, 0x00]));
+    expect(mockMod._cactus_load).toHaveBeenCalledWith(128, 4n);
+    expect(freeSpy).not.toHaveBeenCalled();
+
+    // 5. Verify formatSpatialGuidanceTagJa produces directional & proximity tags
+    expect(
+      formatSpatialGuidanceTagJa({ x: 0.05, y: 0.1, width: 0.5, height: 0.6 })
+    ).toBe('左・近');
+    expect(
+      formatSpatialGuidanceTagJa({ x: 0.4, y: 0.4, width: 0.2, height: 0.2 })
+    ).toBe('中央・中');
+    expect(
+      formatSpatialGuidanceTagJa({ x: 0.8, y: 0.4, width: 0.05, height: 0.05 })
+    ).toBe('右・遠');
+
+    // 6. Verify Moore-Neighbor contour tracing & Ramer-Douglas-Peucker simplification
+    const { traceMaskContourPolygon } = await import('./mirageWebGpuService');
+    const mockMask = new Uint8Array(64 * 64);
+    // Draw a 10x10 square mask at (20, 20)..(29, 29)
+    for (let y = 20; y < 30; y++) {
+      for (let x = 20; x < 30; x++) {
+        mockMask[y * 64 + x] = 1;
+      }
+    }
+    const polygon = traceMaskContourPolygon(
+      mockMask,
+      64,
+      18,
+      18,
+      32,
+      32,
+      { x: 0.3, y: 0.3, width: 0.2, height: 0.2 },
+      0.005
+    );
+    expect(polygon.length).toBeGreaterThanOrEqual(4);
+    expect(polygon.length).toBeLessThanOrEqual(16);
+
+    // 7. Verify MirageWebGpuEngine decodes CenterNet dense_out, mask_coeffs, mask_protos, class_logits
+    const gh = 32;
+    const gw = 32;
+    const gridArea = gh * gw;
+    const denseData = new Float32Array(1 * 10 * gridArea);
+    const maskCoeffsData = new Float32Array(1 * 32 * gridArea);
+    const maskProtosData = new Float32Array(1 * 32 * 64 * 64);
+    const classLogitsData = new Float32Array(1 * 32 * gridArea).fill(-5.0);
+
+    // Activate a high-confidence person peak at cell (16, 16) with regW=0.35, regH=0.55
+    const personCell = 16 * gw + 16;
+    denseData[0 * gridArea + personCell] = 0.92; // foreground CenterNet peak
+    denseData[1 * gridArea + personCell] = 0.35; // direct regW
+    denseData[2 * gridArea + personCell] = 0.55; // direct regH
+    denseData[3 * gridArea + personCell] = 0.50; // regDx center
+    denseData[4 * gridArea + personCell] = 0.50; // regDy center
+    classLogitsData[0 * gridArea + personCell] = 5.0; // class 0 = person
+    maskCoeffsData[0 * gridArea + personCell] = 2.0;
+
+    // Activate horizontal OCR stroke on channel 5 at row 4, cols 6..8
+    for (let cx = 6; cx <= 8; cx++) {
+      denseData[5 * gridArea + 4 * gw + cx] = 0.88;
+    }
+
+    // Populate prototype channel 0 inside central region
+    for (let py = 16; py < 48; py++) {
+      for (let px = 16; px < 48; px++) {
+        maskProtosData[0 * 64 * 64 + py * 64 + px] = 2.0;
+      }
+    }
+
+    const fakeSession = {
+      inputNames: ['images'],
+      outputNames: ['dense_out', 'mask_coeffs', 'mask_protos', 'class_logits'],
+      run: vi.fn(async () => ({
+        dense_out: new ort.Tensor('float32', denseData, [1, 10, gh, gw]),
+        mask_coeffs: new ort.Tensor('float32', maskCoeffsData, [1, 32, gh, gw]),
+        mask_protos: new ort.Tensor('float32', maskProtosData, [1, 32, 64, 64]),
+        class_logits: new ort.Tensor('float32', classLogitsData, [1, 32, gh, gw]),
+      })),
+      release: vi.fn(async () => {}),
+    };
+
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      fillStyle: '',
+      fillRect: vi.fn(),
+      drawImage: vi.fn(),
+      getImageData: (_x: number, _y: number, w: number, h: number) => ({
+        data: new Uint8ClampedArray(w * h * 4).fill(120),
+      }),
+      createImageData: (w: number, h: number) => ({
+        data: new Uint8ClampedArray(w * h * 4),
+        width: w,
+        height: h,
+      }),
+      putImageData: vi.fn(),
+    } as unknown as CanvasRenderingContext2D);
+
+    const webgpuEngine = new MirageWebGpuEngine(fakeSession as never);
+    const inputCanvas = document.createElement('canvas');
+    inputCanvas.width = 640;
+    inputCanvas.height = 480;
+
+    // 8. Test Hybrid Perception Fusion with WASM observation cache
+    webgpuEngine.fuseWasmObservations([
+      {
+        id: 'wasm-obj-0',
+        label: 'software window',
+        labelJa: 'ソフトウェア画面',
+        category: '電子機器',
+        confidence: 0.95,
+        color: '#3b82f6',
+        bbox: { x: 0.32, y: 0.22, width: 0.38, height: 0.58 },
+      },
+      {
+        id: 'wasm-ocr-0',
+        label: 'ocr:VisionStudio AI',
+        labelJa: '文字: "VisionStudio AI"',
+        category: 'テキスト (OCR)',
+        confidence: 0.98,
+        color: '#38bdf8',
+        bbox: { x: 0.15, y: 0.10, width: 0.15, height: 0.08 },
+      },
+    ]);
+
+    const detections = await webgpuEngine.detectForVideo(inputCanvas, 0.25, {
+      analysisMode: 'fast',
+      includeOcr: true,
+      maxDetections: 10,
+    });
+
+    expect(detections.length).toBeGreaterThanOrEqual(2);
+    // CenterNet box regression verification: bbox reflects regW ~0.35 and regH ~0.55
+    const personDet = detections.find(
+      (d) => d.label === 'software window' || d.label === 'person'
+    );
+    expect(personDet).toBeDefined();
+    expect(personDet?.bbox.width).toBeCloseTo(0.35, 1);
+    expect(personDet?.bbox.height).toBeCloseTo(0.55, 1);
+    expect(personDet?.confidence).toBeCloseTo(0.92, 2);
+    expect(personDet?.maskPolygon?.length).toBeGreaterThanOrEqual(3);
+
+    // OCR detection with fused text string verification
+    const ocrDet = detections.find((d) => d.category === 'テキスト (OCR)');
+    expect(ocrDet).toBeDefined();
+    expect(ocrDet?.labelJa).toContain('VisionStudio AI');
+
+    webgpuEngine.close();
+    vi.restoreAllMocks();
+  });
 });
+

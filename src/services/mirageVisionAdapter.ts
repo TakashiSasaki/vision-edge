@@ -146,6 +146,7 @@ export interface MirageAdapterOptions {
   includeReasoningTrace?: boolean;
   defaultFormSchema?: MirageFormSchema;
   runner?: MirageInferenceRunner;
+  bboxFormat?: MirageBBoxFormat;
 }
 
 export type MirageInputSource =
@@ -302,12 +303,32 @@ function clamp01(value: number): number {
  * Converts Mirage's 0..1000 `[x1, y1, x2, y2]` bounding box to VisionStudio's
  * normalized `[0, 1]` `{ x, y, width, height }` `BoundingBox`.
  */
-export function convertMirageBBoxToNormalized(bbox: MirageBBox1000): BoundingBox {
-  const [rawX1, rawY1, rawX2, rawY2] = bbox;
-  const x1 = clamp01(Math.min(rawX1, rawX2) / 1000);
-  const y1 = clamp01(Math.min(rawY1, rawY2) / 1000);
-  const x2 = clamp01(Math.max(rawX1, rawX2) / 1000);
-  const y2 = clamp01(Math.max(rawY1, rawY2) / 1000);
+export type MirageBBoxFormat = 'xyxy' | 'yxyx' | 'auto';
+
+export function convertMirageBBoxToNormalized(
+  bbox: MirageBBox1000,
+  format: MirageBBoxFormat = 'auto'
+): BoundingBox {
+  let x1: number;
+  let y1: number;
+  let x2: number;
+  let y2: number;
+
+  if (format === 'yxyx') {
+    // Cactus WASM native order: [ymin, xmin, ymax, xmax]
+    const [ymin, xmin, ymax, xmax] = bbox;
+    x1 = clamp01(Math.min(xmin, xmax) / 1000);
+    y1 = clamp01(Math.min(ymin, ymax) / 1000);
+    x2 = clamp01(Math.max(xmin, xmax) / 1000);
+    y2 = clamp01(Math.max(ymin, ymax) / 1000);
+  } else {
+    // Standard normalized order: [x1, y1, x2, y2]
+    const [rawX1, rawY1, rawX2, rawY2] = bbox;
+    x1 = clamp01(Math.min(rawX1, rawX2) / 1000);
+    y1 = clamp01(Math.min(rawY1, rawY2) / 1000);
+    x2 = clamp01(Math.max(rawX1, rawX2) / 1000);
+    y2 = clamp01(Math.max(rawY1, rawY2) / 1000);
+  }
 
   return {
     x: Number(x1.toFixed(4)),
@@ -318,12 +339,12 @@ export function convertMirageBBoxToNormalized(bbox: MirageBBox1000): BoundingBox
 }
 
 /**
- * Converts Mirage's 0..1000 polygon vertex list (`[x1, y1, x2, y2, ...]` for `mask_format: 'largest'`
- * or `[[x1, y1, x2, y2, ...], ...]` for `mask_format: 'polygons'`)
+ * Converts Mirage's 0..1000 polygon vertex list (`[x1, y1, x2, y2, ...]` or `[y0, x0, y1, x1, ...]`)
  * into VisionStudio's normalized `Array<{ x: number; y: number }>` polygon.
  */
 export function convertMirageMaskToPolygon(
-  mask?: number[] | number[][]
+  mask?: number[] | number[][],
+  format: MirageBBoxFormat = 'auto'
 ): Array<{ x: number; y: number }> | undefined {
   if (!Array.isArray(mask) || mask.length === 0) {
     return undefined;
@@ -346,10 +367,14 @@ export function convertMirageMaskToPolygon(
   }
   const pointCount = Math.floor(flatCoords.length / 2);
   const polygon: Array<{ x: number; y: number }> = [];
+  const isYx = format === 'yxyx';
+
   for (let i = 0; i < pointCount * 2; i += 2) {
+    const rawX = isYx ? flatCoords[i + 1] : flatCoords[i];
+    const rawY = isYx ? flatCoords[i] : flatCoords[i + 1];
     polygon.push({
-      x: Number(clamp01(flatCoords[i] / 1000).toFixed(4)),
-      y: Number(clamp01(flatCoords[i + 1] / 1000).toFixed(4)),
+      x: Number(clamp01(rawX / 1000).toFixed(4)),
+      y: Number(clamp01(rawY / 1000).toFixed(4)),
     });
   }
   return polygon.length >= 3 ? polygon : undefined;
@@ -380,8 +405,8 @@ export function mapMirageObservationToDetectedObjects(
     }
     const normalizedLabel = (item.name || 'object').trim().toLowerCase();
     const labelInfo = getLabelInfo(normalizedLabel);
-    const bbox = convertMirageBBoxToNormalized(item.bbox ?? [0, 0, 0, 0]);
-    const maskPolygon = convertMirageMaskToPolygon(item.mask);
+    const bbox = convertMirageBBoxToNormalized(item.bbox ?? [0, 0, 0, 0], options.bboxFormat);
+    const maskPolygon = convertMirageMaskToPolygon(item.mask, options.bboxFormat);
 
     mappedObjects.push({
       id: `mirage-obj-${idx}-${item.id ?? idx}-${normalizedLabel.replace(/\s+/g, '-')}`,
@@ -404,8 +429,8 @@ export function mapMirageObservationToDetectedObjects(
       }
       const normalizedLabel = (region.name || 'region').trim().toLowerCase();
       const labelInfo = getLabelInfo(normalizedLabel);
-      const bbox = convertMirageBBoxToNormalized(region.bbox);
-      const maskPolygon = convertMirageMaskToPolygon(region.mask);
+      const bbox = convertMirageBBoxToNormalized(region.bbox, options.bboxFormat);
+      const maskPolygon = convertMirageMaskToPolygon(region.mask, options.bboxFormat);
 
       mappedObjects.push({
         id: `mirage-reg-${idx}-${region.id ?? idx}-${normalizedLabel.replace(/\s+/g, '-')}`,
@@ -428,7 +453,7 @@ export function mapMirageObservationToDetectedObjects(
     if (!line || !line.string || line.score < textConfidenceThreshold) {
       continue;
     }
-    const bbox = convertMirageBBoxToNormalized(line.bbox ?? [0, 0, 0, 0]);
+    const bbox = convertMirageBBoxToNormalized(line.bbox ?? [0, 0, 0, 0], options.bboxFormat);
     ocrRegions.push({
       id: `mirage-ocr-${idx}`,
       label: `ocr:${line.string}`,

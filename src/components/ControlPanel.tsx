@@ -146,7 +146,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         )}
         {activeModel === 'mirage' && (
           <p className="text-slate-400">
-            Mirage (51.3M) は Web Worker 上の CPU WebAssembly で非同期推論を行います。カメラ映像は滑らかに保ちながら、検出物体・輪郭マスクと OCR テキスト領域を順次更新・読み上げます。
+            Mirage は WebGPU コンバート版（ONNX Runtime Web）による高速推論と、公式 .cact（WASM Worker）による非同期推論に対応。検出物体・輪郭マスク・OCR・方向/距離（近/中/遠）を表示・読み上げます。
           </p>
         )}
 
@@ -469,9 +469,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   {/* Fast vs Full Analysis Mode Selector */}
                   <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-medium text-slate-200">WASM CPU 解析モード</span>
+                      <span className="font-medium text-slate-200">Mirage 解析モード</span>
                       <span className="font-mono text-emerald-400 font-semibold text-[11px]">
-                        {mirageAnalysisMode === 'fast' ? '高速モード (320px)' : 'フル解析 (512px)'}
+                        {mirageAnalysisMode === 'fast' ? '高速モード (256/320px)' : 'フル解析 (512px)'}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Mirage 解析モード">
@@ -486,7 +486,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       >
                         <div className="text-[11px]">高速モード（推奨）</div>
                         <div className="text-[10px] text-slate-400 font-normal mt-0.5">
-                          物体・輪郭・OCR優先（320px）
+                          物体・輪郭・OCR優先（WebGPU/高速）
                         </div>
                       </button>
                       <button
@@ -505,7 +505,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       </button>
                     </div>
                     <p className="text-[10px] text-slate-400 leading-tight">
-                      高速モードは出力項目を物体・輪郭マスク・OCRに絞ることで WASM CPU 推論時間を短縮します
+                      ヘッダーの「バリアント」から WebGPU (ONNX コンバート版) と WASM (.cact 版) を切り替えられます
                     </p>
                   </div>
 

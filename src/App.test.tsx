@@ -55,15 +55,19 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   expect(model).toHaveValue('segformer');
   expect(variantSelect).toHaveValue('b0');
   await user.selectOptions(model, 'mirage');
-  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mirage', variantId: 'mirage-51m' }));
+  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mirage', variantId: 'mirage-webgpu' }));
   expect(model).toHaveValue('mirage');
+  expect(variantSelect).toHaveValue('mirage-webgpu');
+  expect(within(header).getByLabelText('バックエンド状態')).toHaveTextContent('Mirage WebGPU (ONNX Runtime Web / WebGPU 優先)');
+  await user.selectOptions(variantSelect, 'mirage-51m');
+  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mirage', variantId: 'mirage-51m' }));
   expect(variantSelect).toHaveValue('mirage-51m');
   expect(within(header).getByLabelText('バックエンド状態')).toHaveTextContent('Cactus WebAssembly (CPU / Web Worker 非同期推論)');
   await user.selectOptions(model, 'mediapipe');
   await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mediapipe', variantId: 'lite0' }));
   await user.click(within(header).getByRole('button', { name: '仕様' }));
   const dialog = screen.getByRole('dialog');
-  for (const name of [/General/, /EfficientDet-Lite0/, /YOLOv8n-seg/, /SegFormer-B0/, /Mirage 51\.3M/]) {
+  for (const name of [/General/, /EfficientDet-Lite0/, /YOLOv8n-seg/, /SegFormer-B0/, /Mirage WebGPU/, /Mirage 51\.3M/]) {
     const button = within(dialog).getByRole('button', { name });
     expect(button).not.toBeDisabled();
   }

@@ -210,12 +210,27 @@ export const MIRAGE_UPSTREAM_URL =
   'https://huggingface.co/Cactus-Compute/mirage/resolve/76c1e9e53381aca8fc3843c636216c96ff220122/mirage.cact';
 export const MIRAGE_LOCAL_URL = '/api/model-cache/mirage/mirage.cact';
 
+export const MIRAGE_WEBGPU_UPSTREAM_URL =
+  'https://huggingface.co/Cactus-Compute/mirage/resolve/main/mirage.safetensors';
+export const MIRAGE_WEBGPU_LOCAL_URL =
+  '/api/model-cache/mirage/mirage-webgpu.onnx';
+
 export const LOCAL_CACTUS_WASM_JS_URL = '/wasm/cactus/cactus.js';
 export const LOCAL_CACTUS_WASM_BINARY_URL = '/wasm/cactus/cactus.wasm';
 export const CACHE_CACTUS_WASM_JS_URL = '/api/model-cache/wasm/cactus/cactus.js';
 export const CACHE_CACTUS_WASM_BINARY_URL = '/api/model-cache/wasm/cactus/cactus.wasm';
 
 export const MIRAGE_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = {
+  'mirage:mirage-webgpu': {
+    modelId: 'mirage',
+    variantId: 'mirage-webgpu',
+    file: 'mirage-webgpu.onnx',
+    upstreamUrl: MIRAGE_WEBGPU_UPSTREAM_URL,
+    localUrl: MIRAGE_WEBGPU_LOCAL_URL,
+    license: 'Apache-2.0',
+    licenseNote: 'Cactus Compute, Inc. / Apache License 2.0（ONNX WebGPU コンバート版）',
+    isDefault: true,
+  },
   'mirage:mirage-51m': {
     modelId: 'mirage',
     variantId: 'mirage-51m',
@@ -224,17 +239,16 @@ export const MIRAGE_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = 
     localUrl: MIRAGE_LOCAL_URL,
     license: 'Apache-2.0',
     licenseNote: 'Cactus Compute, Inc. / Apache License 2.0（ブラウザWASM・ローカル推論可）',
-    isDefault: true,
   },
 };
 
 export const MIRAGE_MODEL_ASSET_ENTRY: ModelAssetCatalogEntry = {
   id: 'mirage',
-  file: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].file,
-  upstreamUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].upstreamUrl,
-  localUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].localUrl,
-  license: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].license,
-  licenseNote: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].licenseNote,
+  file: MIRAGE_VARIANT_CATALOG['mirage:mirage-webgpu'].file,
+  upstreamUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-webgpu'].upstreamUrl,
+  localUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-webgpu'].localUrl,
+  license: MIRAGE_VARIANT_CATALOG['mirage:mirage-webgpu'].license,
+  licenseNote: MIRAGE_VARIANT_CATALOG['mirage:mirage-webgpu'].licenseNote,
 };
 
 export function getVariantCatalogEntry(
@@ -248,7 +262,7 @@ export function getVariantCatalogEntry(
       if (Object.hasOwn(MIRAGE_VARIANT_CATALOG, key)) return MIRAGE_VARIANT_CATALOG[key];
       throw new RangeError(`Unknown model variant: ${key}`);
     }
-    return MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'];
+    return MIRAGE_VARIANT_CATALOG['mirage:mirage-webgpu'];
   }
   if (variantId !== undefined && variantId !== '') {
     const key = `${model}:${variantId}`;

@@ -67,20 +67,24 @@ export function disposeTensors(values: Iterable<ort.Tensor>) { for (const t of n
 export interface OrtSessionResolutionOptions {
     recordAssetSource?: AssetSourceRecorder;
     fallbackModelUrl?: string | null;
-    modelId?: Extract<RunnableModelType, 'yolo-seg' | 'segformer'>;
+    fallbackModelBytes?: () => Uint8Array | Promise<Uint8Array>;
+    modelId?: Extract<RunnableModelType, 'yolo-seg' | 'segformer' | 'mirage'>;
     primarySource?: AssetDeliverySource;
     variantId?: string;
 }
 
 async function createOrtSessionWithUrl(
-    targetUrl: string,
+    targetUrlOrBytes: string | Uint8Array,
     delegate?: 'GPU' | 'WebGPU' | 'WASM'
 ): Promise<{ session: ort.InferenceSession; backend: OnnxBackendInfo }> {
     const requestedProvider = delegate === 'WASM' ? 'wasm' : delegate ? 'webgpu' : 'auto';
     const available = typeof navigator !== 'undefined' && !!navigator.gpu;
     const providers = delegate === 'WASM' || !available ? ['wasm'] : ['webgpu', 'wasm'];
     const backend: OnnxBackendInfo = { runtime: 'onnxruntime-web', requestedProvider, configuredProviders: providers, fallbackReason: delegate !== 'WASM' && !available ? 'WebGPU API unavailable; WASM configured' : null, actualBackend: 'unmeasured' };
-    const create = (executionProviders: string[]) => ort.InferenceSession.create(targetUrl, { executionProviders, graphOptimizationLevel: 'all', logSeverityLevel: 3 });
+    const create = (executionProviders: string[]) =>
+        typeof targetUrlOrBytes === 'string'
+            ? ort.InferenceSession.create(targetUrlOrBytes, { executionProviders, graphOptimizationLevel: 'all', logSeverityLevel: 3 })
+            : ort.InferenceSession.create(targetUrlOrBytes, { executionProviders, graphOptimizationLevel: 'all', logSeverityLevel: 3 });
     try {
         return { session: await create(providers), backend };
     }
@@ -124,11 +128,25 @@ export async function createOrtSession(
             if (typeof window !== 'undefined' && wasm.fallbackUrl) {
                 ort.env.wasm.wasmPaths = wasm.fallbackUrl;
             }
-            const created = await createOrtSessionWithUrl(resolution.fallbackModelUrl, delegate);
-            recordAssetSource('wasm-ort', wasm.fallbackUrl ? 'external-fallback' : wasm.source);
+            try {
+                const created = await createOrtSessionWithUrl(resolution.fallbackModelUrl, delegate);
+                recordAssetSource('wasm-ort', wasm.fallbackUrl ? 'external-fallback' : wasm.source);
+                if (resolution.modelId) {
+                    recordAssetSource(resolution.modelId, 'external-fallback');
+                    if (resolution.variantId) recordAssetSource(`${resolution.modelId}:${resolution.variantId}`, 'external-fallback');
+                }
+                return created;
+            } catch (fallbackUrlError) {
+                if (!resolution.fallbackModelBytes) throw fallbackUrlError;
+            }
+        }
+        if (resolution?.fallbackModelBytes) {
+            const bytes = await Promise.resolve(resolution.fallbackModelBytes());
+            const created = await createOrtSessionWithUrl(bytes, delegate);
+            recordAssetSource('wasm-ort', wasm.source);
             if (resolution.modelId) {
-                recordAssetSource(resolution.modelId, 'external-fallback');
-                if (resolution.variantId) recordAssetSource(`${resolution.modelId}:${resolution.variantId}`, 'external-fallback');
+                recordAssetSource(resolution.modelId, resolution.primarySource ?? 'container-cache');
+                if (resolution.variantId) recordAssetSource(`${resolution.modelId}:${resolution.variantId}`, resolution.primarySource ?? 'container-cache');
             }
             return created;
         }

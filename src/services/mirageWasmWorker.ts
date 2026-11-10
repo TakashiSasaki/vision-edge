@@ -5,7 +5,8 @@ export interface CactusEmscriptenModule {
   _malloc(size: number): number;
   _free(ptr: number): void;
   _cactus_load(ptr: number, byteLength: bigint): number;
-  _cactus_unload(): void;
+  _cactus_reset?(): void;
+  _cactus_unload?(): void;
   _cactus_models(): number;
   _cactus_describe(
     rgbPtr: number,
@@ -17,7 +18,8 @@ export interface CactusEmscriptenModule {
     outPtr: number,
     outCap: number
   ): number;
-  _cactus_error(): number;
+  _cactus_last_error?(): number;
+  _cactus_error?(): number;
   UTF8ToString(ptr: number, maxBytesToRead?: number): string;
 }
 
@@ -74,6 +76,17 @@ export function sanitizeCactusJson(rawJson: string): string {
 }
 
 let cactusMod: CactusEmscriptenModule | null = null;
+let loadedModelPtr = 0;
+
+function readCactusError(mod: CactusEmscriptenModule, fallbackCode: number): string {
+  const errPtr =
+    typeof mod._cactus_last_error === 'function'
+      ? mod._cactus_last_error()
+      : typeof mod._cactus_error === 'function'
+        ? mod._cactus_error()
+        : 0;
+  return errPtr ? mod.UTF8ToString(errPtr) : `code ${fallbackCode}`;
+}
 
 async function fetchBinaryWithCheck(url: string): Promise<Uint8Array> {
   const res = await fetch(url);
@@ -113,25 +126,28 @@ async function instantiateCactusModule(
   });
 }
 
-function loadMirageArchiveIntoModule(
+/**
+ * Loads `mirage.cact` into the Cactus WASM module.
+ * CRITICAL: `_cactus_load(ptr, len)` maps the `.cact` tensor archive in-place on the WASM heap.
+ * Therefore `ptr` MUST remain allocated for the lifetime of the loaded model and only be freed
+ * when the model is unloaded/disposed or if `_cactus_load` fails.
+ */
+export function loadMirageArchiveIntoModule(
   mod: CactusEmscriptenModule,
   cactBytes: Uint8Array
-): void {
+): number {
   const ptr = mod._malloc(cactBytes.byteLength);
   if (!ptr) {
     throw new Error('Failed to allocate WASM heap for mirage.cact');
   }
-  try {
-    mod.HEAPU8.set(cactBytes, ptr);
-    const rc = mod._cactus_load(ptr, BigInt(cactBytes.byteLength));
-    if (rc !== 0) {
-      const errPtr = mod._cactus_error();
-      const errMsg = errPtr ? mod.UTF8ToString(errPtr) : `code ${rc}`;
-      throw new Error(`cactus_load failed: ${errMsg}`);
-    }
-  } finally {
+  mod.HEAPU8.set(cactBytes, ptr);
+  const rc = mod._cactus_load(ptr, BigInt(cactBytes.byteLength));
+  if (rc !== 0) {
     mod._free(ptr);
+    const errMsg = readCactusError(mod, rc);
+    throw new Error(`cactus_load failed: ${errMsg}`);
   }
+  return ptr;
 }
 
 export function runCactusDescribe(
@@ -177,8 +193,7 @@ export function runCactusDescribe(
       outCap
     );
     if (written < 0) {
-      const errPtr = mod._cactus_error();
-      const errMsg = errPtr ? mod.UTF8ToString(errPtr) : `code ${written}`;
+      const errMsg = readCactusError(mod, written);
       throw new Error(`cactus_describe failed: ${errMsg}`);
     }
     const rawJson = mod.UTF8ToString(outPtr, outCap);
@@ -209,6 +224,15 @@ if (workerScope) {
     if (msg.type === 'init') {
       let stage: 'wasm' | 'task' = 'wasm';
       try {
+        if (cactusMod) {
+          if (typeof cactusMod._cactus_reset === 'function') cactusMod._cactus_reset();
+          else if (typeof cactusMod._cactus_unload === 'function') cactusMod._cactus_unload();
+          if (loadedModelPtr) {
+            cactusMod._free(loadedModelPtr);
+            loadedModelPtr = 0;
+          }
+          cactusMod = null;
+        }
         const mod = await instantiateCactusModule(msg.jsUrl, msg.wasmUrl);
         stage = 'task';
         let cactBytes: Uint8Array;
@@ -223,7 +247,7 @@ if (workerScope) {
             throw primaryErr;
           }
         }
-        loadMirageArchiveIntoModule(mod, cactBytes);
+        loadedModelPtr = loadMirageArchiveIntoModule(mod, cactBytes);
         cactusMod = mod;
         workerScope.postMessage({
           type: 'init-result',
@@ -277,7 +301,12 @@ if (workerScope) {
     if (msg.type === 'dispose') {
       try {
         if (cactusMod) {
-          cactusMod._cactus_unload();
+          if (typeof cactusMod._cactus_reset === 'function') cactusMod._cactus_reset();
+          else if (typeof cactusMod._cactus_unload === 'function') cactusMod._cactus_unload();
+          if (loadedModelPtr) {
+            cactusMod._free(loadedModelPtr);
+            loadedModelPtr = 0;
+          }
           cactusMod = null;
         }
       } finally {
