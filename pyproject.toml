@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vision-studio-mirage"
+version = "1.0.21"
+description = "Optional Cactus Compute Mirage (51.3M) ultra-lightweight perception model integration and benchmark suite for VisionStudio AI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = []
+
+[project.optional-dependencies]
+mirage = [
+  "cactus-compute==4.1.0",
+  "Pillow>=10.0.0",
+  "huggingface_hub>=0.23.0",
+]
+
+[tool.mirage]
+model_id = "Cactus-Compute/mirage"
+revision = "76c1e9e53381aca8fc3843c636216c96ff220122"
+artifact_filename = "mirage.cact"
+artifact_bytes = 21611043
+artifact_sha256 = "4249a0f7515272ff76b9414bec17d7e7daf84b15b66c7fb4f17fce1e66f9f237"
+engine_version = "4.1.0"

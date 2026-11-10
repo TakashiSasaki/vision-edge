@@ -1,6 +1,6 @@
 import type { ModelFamilyType } from '../types/classification';
 import type { RunnableModelType } from '../types/vision';
-import { MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL, isRunnableModel } from '../services/modelRegistry';
+import { RUNNABLE_MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL, isRunnableModel } from '../services/modelRegistry';
 import { getResolvedSource } from '../services/modelAssetResolver';
 
 interface Props {
@@ -30,7 +30,7 @@ export function ModelComparisonTable({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80">
       <section role="dialog" aria-modal="true" aria-labelledby="model-specs-title" className="bg-slate-900 border border-slate-700 rounded-xl p-4 max-w-2xl max-h-[85vh] overflow-y-auto space-y-3">
         <h2 id="model-specs-title" className="text-white font-semibold">物体認識・セグメンテーションモデル仕様・バリアント／画像全体分類</h2>
-        {MODEL_REGISTRY.map(model => (
+        {RUNNABLE_MODEL_REGISTRY.map(model => (
           <div key={model.id} className="border border-slate-700 rounded-lg p-3 text-xs space-y-2">
             <div className="flex items-center justify-between">
               <div className="font-semibold text-white">

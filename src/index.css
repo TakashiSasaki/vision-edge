@@ -7,6 +7,12 @@
 @source not "../docs/test-output.md";
 @source not "../docs/verification/test-output*";
 @source not "../docs/verification/pr22-output-corrections";
+@source not "../docs/verification/mirage*";
+@source not "../docs/mirage-integration.md";
+@source not "../scripts/mirage";
+@source not "../pyproject.toml";
+@source not "../requirements-mirage.txt";
+@source not "../public/wasm";
 
 html, body, #root {
   height: 100%;

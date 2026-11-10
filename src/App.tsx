@@ -31,6 +31,7 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
     'mediapipe': 'lite0',
     'yolo-seg': 'yolov8n-seg',
     'segformer': 'b0',
+    'mirage': 'mirage-51m',
   });
   const activeVariant = selectedVariants[activeModel] || modelMetadata(activeModel).defaultVariantId;
 

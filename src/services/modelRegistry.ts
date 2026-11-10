@@ -1,7 +1,12 @@
 import { IMAGE_CLASSIFIER_ASSETS } from './imageClassifierAssets';
 import type { ModelFamilyType } from '../types/classification';
 import type { ModelMetadata, ModelVariantMetadata, ModelState, RunnableModelType } from '../types/vision';
-import { MODEL_ASSET_CATALOG, MODEL_VARIANT_CATALOG } from './modelAssetResolver';
+import {
+  MIRAGE_MODEL_ASSET_ENTRY,
+  MIRAGE_VARIANT_CATALOG,
+  MODEL_ASSET_CATALOG,
+  MODEL_VARIANT_CATALOG,
+} from './modelAssetResolver';
 
 export const MODEL_REGISTRY: readonly ModelMetadata[] = [
   { id: 'selfie-segmenter', name: 'Selfie Segmenter', implemented: true,
@@ -126,8 +131,38 @@ export const MODEL_REGISTRY: readonly ModelMetadata[] = [
   },
 ];
 
+export const MIRAGE_MODEL: ModelMetadata = {
+  id: 'mirage',
+  name: 'Mirage (Cactus WASM)',
+  implemented: true,
+  runtime: 'Cactus WebAssembly (CPU / Web Worker)',
+  outputType: '検出物体・輪郭マスク・OCRテキスト・空間位置',
+  description: '51.3M超軽量知覚モデル。Web Worker上のCPU WebAssemblyで非同期推論し、物体・輪郭マスクとOCRテキスト領域を同時に抽出・読み上げます。',
+  license: MIRAGE_MODEL_ASSET_ENTRY.license,
+  licenseNote: MIRAGE_MODEL_ASSET_ENTRY.licenseNote,
+  upstreamUrl: MIRAGE_MODEL_ASSET_ENTRY.upstreamUrl,
+  localCachePath: MIRAGE_MODEL_ASSET_ENTRY.localUrl,
+  defaultVariantId: 'mirage-51m',
+  variants: [
+    {
+      id: 'mirage-51m',
+      name: 'Mirage 51.3M (2-bit/4-bit .cact · 20.6MB)',
+      description: '物体検出・ポリゴン輪郭マスク・OCR文字認識を単一パスで出力する超軽量モデル（WASM CPU非同期推論）。',
+      fileName: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].file,
+      upstreamUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].upstreamUrl,
+      localUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].localUrl,
+      isDefault: true,
+    },
+  ],
+};
+
+export const RUNNABLE_MODEL_REGISTRY: readonly ModelMetadata[] = [
+  ...MODEL_REGISTRY,
+  MIRAGE_MODEL,
+];
+
 export function isRunnableModel(id: unknown): id is RunnableModelType {
-  return MODEL_REGISTRY.some(model => model.id === id && model.implemented);
+  return RUNNABLE_MODEL_REGISTRY.some(model => model.id === id && model.implemented);
 }
 
 export function requireRunnableModel(id: unknown): asserts id is RunnableModelType {
@@ -136,7 +171,7 @@ export function requireRunnableModel(id: unknown): asserts id is RunnableModelTy
 
 export function modelMetadata(id: RunnableModelType): ModelMetadata {
   requireRunnableModel(id);
-  return MODEL_REGISTRY.find(model => model.id === id)!;
+  return RUNNABLE_MODEL_REGISTRY.find(model => model.id === id)!;
 }
 
 export function getVariantMetadata(
@@ -152,6 +187,7 @@ export function getVariantMetadata(
 
 export function backendDescription(state: ModelState): string {
   if(state.status!=='ready')return 'バックエンド未準備';
+  if(state.model==='mirage')return 'Cactus WebAssembly (CPU / Web Worker 非同期推論)';
   if(state.model==='mediapipe'||state.model==='selfie-segmenter')return `${state.delegate} delegate 指定・初期化済み（GPU実動作は未計測）`;
   const backend=state.backend;
   const requested=backend?.requestedProvider==='auto'?'自動(WebGPU優先)':backend?.requestedProvider==='webgpu'?'WebGPU優先':backend?.requestedProvider==='wasm'?'WASM':'未報告';
@@ -170,7 +206,7 @@ export const IMAGE_CLASSIFIER_MODEL = {
     upstreamUrl: entry.upstreamUrl, isDefault: entry.variantId === 'lite0',
   })),
 } as const;
-export const ALL_MODEL_REGISTRY = [...MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL] as const;
+export const ALL_MODEL_REGISTRY = [...RUNNABLE_MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL] as const;
 export function modelFamilyMetadata(id: ModelFamilyType) {
   const found = ALL_MODEL_REGISTRY.find(entry => entry.id === id);
   if (!found) throw new RangeError(`Unsupported model family: ${String(id)}`);

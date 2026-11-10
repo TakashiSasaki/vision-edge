@@ -11,7 +11,7 @@
 
 - OpenAI Codex and Google AI Studio agents work in this repository. At task start and before publishing/pushing or merging, inspect the current branch, live main/PR refs, uncommitted changes and relevant ongoing work. Missing visible progress is not evidence that another agent is idle; local worktrees and other environments need not share state.
 - Preserve other agents' legitimate changes. Use an isolated branch/worktree; do not publish an old exported tree wholesale or force-push a stale snapshot. If unexpected updates or conflicts change the affected scope, stop that write. Reconcile safely within the existing task or clarify scope when needed, then validate the exact new candidate and renew review where affected.
-- Use `.agents/skills/preserve-npm-evidence/SKILL.md` for npm/evidence recovery and `.agents/skills/review-fixed-commits/SKILL.md` for review/integration. These procedures do not expand the task's authorization.
+- Use `.agents/skills/preserve-npm-evidence/SKILL.md` for npm/evidence recovery, `.agents/skills/nodejs-standard-runtime/SKILL.md` for runtime policies (prohibiting Bun and mandating Node.js), and `.agents/skills/review-fixed-commits/SKILL.md` for review/integration. These procedures do not expand the task's authorization.
 
 # Model-free verification
 
@@ -21,7 +21,8 @@
 # Runtime Environment & Package Manager Note (Google AI Studio)
 
 - **Standard Runtime**: Node.js (`v24.x`, CI24.22.1) and `npm` are the canonical, active runtime and package manager for this application in Google AI Studio (`npm run dev`, `npm ci`, etc.).
-- **Lockfile**: `package-lock.json` is the sole dependency lock. Do not use Bun or introduce competing lockfiles. Preserve the pinned Node24/npm11 setup and canonical registry URLs.
+- **Strict Node.js & Prohibition of Bun**: `bun` は本アプリケーションの開発・ビルド・テスト・パッケージ管理において一切使用しません。作業環境に標準で含まれている標準の Node.js (`node`, `npm`) のみを使用して開発作業を進めます。`bun` / `bunx` の呼び出しは禁止です。
+- **Lockfile**: `package-lock.json` is the sole dependency lock. Do not use Bun or introduce competing lockfiles (`bun.lock`, `bun.lockb`). If any competing lock is found, remove it immediately. Preserve the pinned Node24/npm11 setup and canonical registry URLs.
 - Before cache/install, run `npm run --silent preflight` and `npm run --silent test:preflight` using the pinned Node. Follow `scripts/testing/ai-studio-sync.md` when reconciling imports. Preserve reviewed historical bytes; guard failures require reconciliation, not automatic repair or removal of ledger entries. CI guards do not prevent direct-main writes.
 
 # Application versioning and tags (mandatory for all coding agents)

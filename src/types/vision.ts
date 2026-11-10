@@ -1,13 +1,14 @@
-export type ModelType = 'selfie-segmenter' | 'yolo-seg' | 'mediapipe' | 'segformer';
+export type ModelType = 'selfie-segmenter' | 'yolo-seg' | 'mediapipe' | 'segformer' | 'mirage';
 
-export type RunnableModelType = 'selfie-segmenter' | 'mediapipe' | 'yolo-seg' | 'segformer';
+export type RunnableModelType = 'selfie-segmenter' | 'mediapipe' | 'yolo-seg' | 'segformer' | 'mirage';
 
 export type SelfieVariantId = 'general' | 'landscape';
 export type MediapipeVariantId = 'lite0' | 'lite2';
 export type YoloSegVariantId = 'yolov8n-seg' | 'yolov8s-seg';
 export type SegFormerVariantId = 'b0' | 'b1' | 'b2';
+export type MirageVariantId = 'mirage-51m';
 
-export type ModelVariantId = SelfieVariantId | MediapipeVariantId | YoloSegVariantId | SegFormerVariantId;
+export type ModelVariantId = SelfieVariantId | MediapipeVariantId | YoloSegVariantId | SegFormerVariantId | MirageVariantId;
 
 export interface ModelVariantMetadata {
   id: string;
@@ -89,11 +90,22 @@ export interface SegFormerInferenceParams {
   minAreaPercent: number;
 }
 
+export type MirageAnalysisMode = 'fast' | 'full';
+
+export interface MirageInferenceParams {
+  confidenceThreshold: number;
+  maxDetections: number;
+  iouThreshold: number;
+  analysisMode: MirageAnalysisMode;
+  includeOcr: boolean;
+}
+
 export type ModelInferenceParamsMap = {
   'selfie-segmenter': SelfieInferenceParams;
   'mediapipe': MediapipeInferenceParams;
   'yolo-seg': YoloSegInferenceParams;
   'segformer': SegFormerInferenceParams;
+  'mirage': MirageInferenceParams;
 };
 
 export interface ModelParameterConfig<T = unknown> {
@@ -121,6 +133,10 @@ export const DEFAULT_MODEL_PARAMS: PerModelParameterConfig = {
   'segformer': {
     inference: { confidenceThreshold: 0.35, minAreaPercent: 0.5 },
     render: { showBoxes: true, showMasks: true, showLabels: true, showConfidence: true, maskOpacity: 0.35, confidenceThreshold: 0.35 }
+  },
+  'mirage': {
+    inference: { confidenceThreshold: 0.25, maxDetections: 15, iouThreshold: 0.45, analysisMode: 'fast', includeOcr: true },
+    render: { showBoxes: true, showMasks: true, showLabels: true, showConfidence: true, maskOpacity: 0.35, confidenceThreshold: 0.25 }
   }
 };
 

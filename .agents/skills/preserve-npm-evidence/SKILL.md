@@ -9,6 +9,9 @@ description: npmロック・ランタイム契約や保護済み検証ファイ�
 [同期手順](../../../scripts/testing/ai-studio-sync.md) を読み、作業範囲を確認する。
 このスキル自体は変更・取得・マージの許可を与えない。
 
+**ランタイム原則（Bun禁止）**:
+本アプリケーションの開発・ビルド・テスト・依存関係解決において `bun` は一切使用しません。作業環境に標準で提供されている Node.js (`node`, `npm`) のみを使用してすべての作業を実行します。`bun` コマンドの実行は禁止されており、`bun.lock` 等の競合ファイルは即座に排除します。
+
 1. 現在のbranch/main、作業HEAD/tree、dirty状態、並行作業を記録する。専用branch/worktreeを使い、最新mainとの差分を読む。外部エディタの動作原因を観測だけで断定しない。
 2. 正しい値を [.nvmrc](../../../.nvmrc)、[package.json](../../../package.json)、[preflight](../../../scripts/testing/preflight.mjs) から読む。版・件数・依存グラフを古い報告から固定値としてコピーしない。
 3. キャッシュ／install前に `npm run --silent preflight` を実行する。失敗の完全な構造化出力を保存し、lock欠落、不正JSON、root定義不一致、競合lock、Node/npm不一致、証拠欠落／改変を別々に扱う。セットアップ失敗や未実行を、preflightの意図した失敗に数えない。

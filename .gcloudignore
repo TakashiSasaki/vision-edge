@@ -1,0 +1,35 @@
+# Exclude version control and tool metadata
+.git/
+.gitignore
+.gcloudignore
+.dockerignore
+.github/
+.agents/
+.vscode/
+.idea/
+
+# Exclude local dependencies (installed in build)
+node_modules/
+
+# Exclude cached ML model files (165 MB+)
+.cache/
+
+# Exclude historical test/verification reports and archives (24 MB+)
+docs/
+
+# Exclude build output and test coverage/results
+dist/
+coverage/
+.vitest/
+test-results/
+playwright-report/
+blob-report/
+e2e/
+e2e-real-sdk/
+
+# Logs and system files
+*.log
+.DS_Store
+Thumbs.db
+bun.lock
+bun.lockb

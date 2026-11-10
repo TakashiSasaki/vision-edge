@@ -1,10 +1,11 @@
 import { FilesetResolver, ObjectDetector, ImageSegmenter, type ImageSegmenterResult } from '@mediapipe/tasks-vision';
-import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput, YoloSegVariantId, SegFormerVariantId } from '../types/vision';
+import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput, YoloSegVariantId, SegFormerVariantId, MirageVariantId, MirageAnalysisMode } from '../types/vision';
 import { PipelineProbe, type PipelineObserver, type AttemptOutcome } from './pipelineMetrics';
 import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
 import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
 import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
+import { createMirageWasmTask, type MirageTask, type MirageTaskOptions } from './mirageWasmService';
 import { unknownOnnxBackend } from './onnxSession';
 import { getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSources, type AssetSourceRecorder, type AssetDeliverySource } from './modelAssetResolver';
 
@@ -18,6 +19,8 @@ export interface ExtraInferenceOptions {
   bboxSmoothing?: number;
   iouThreshold?: number;
   maskThreshold?: number;
+  analysisMode?: MirageAnalysisMode;
+  includeOcr?: boolean;
 }
 
 export interface VisionTaskFactory {
@@ -26,6 +29,7 @@ export interface VisionTaskFactory {
   segmenter: (fileset: Fileset, delegate: 'GPU', variantId?: string) => Promise<SegmenterTask>;
   yoloSeg?: (options?: YoloSegTaskOptions) => Promise<YoloSegTask>;
   segformer?: (options?: SegFormerTaskOptions) => Promise<SegFormerTask>;
+  mirage?: (options?: MirageTaskOptions) => Promise<MirageTask>;
 }
 const DELEGATE = 'GPU' as const;
 function createDefaultFactory(recordAssetSource: AssetSourceRecorder): VisionTaskFactory {
@@ -93,13 +97,15 @@ function createDefaultFactory(recordAssetSource: AssetSourceRecorder): VisionTas
   },
   yoloSeg: (options) => createYoloSegTask({ ...options, recordAssetSource }),
   segformer: (options) => createSegFormerTask({ ...options, recordAssetSource }),
+  mirage: (options) => createMirageWasmTask({ ...options, recordAssetSource }),
   };
 }
 type ActiveTask =
   | { model: 'mediapipe'; variantId: string; task: DetectorTask }
   | { model: 'selfie-segmenter'; variantId: string; task: SegmenterTask }
   | { model: 'yolo-seg'; variantId: string; task: YoloSegTask }
-  | { model: 'segformer'; variantId: string; task: SegFormerTask };
+  | { model: 'segformer'; variantId: string; task: SegFormerTask }
+  | { model: 'mirage'; variantId: string; task: MirageTask };
 type InitializationResult = Extract<ModelState, { status: 'ready' | 'error' }> | { status: 'cancelled'; model: RunnableModelType; requestId: number };
 
 // One owner, one active task, no task cache. Pending tasks cannot be aborted by
@@ -191,6 +197,12 @@ export class VisionEngine {
           const task = await segformerCreator({ variantId: targetVariantId as SegFormerVariantId, recordAssetSource });
           if (!task) throw new Error('Model task was not created');
           active = { model, variantId: targetVariantId, task };
+        } else if (model === 'mirage') {
+          stage = 'task';
+          const mirageCreator = factory.mirage ?? createMirageWasmTask;
+          const task = await mirageCreator({ variantId: targetVariantId as MirageVariantId, recordAssetSource });
+          if (!task) throw new Error('Model task was not created');
+          active = { model, variantId: targetVariantId, task };
         } else {
           const fileset = await factory.load();
           if (!current()) return cancelled();
@@ -202,7 +214,7 @@ export class VisionEngine {
         }
         if (!current()) { this.closeTask(active); return cancelled(); }
         this.activeTask = active;
-        const ready = { status: 'ready' as const, model, variantId: targetVariantId, requestId, ...(active.model==='yolo-seg'||active.model==='segformer'?{backend:active.task.backend??unknownOnnxBackend()}:{delegate:DELEGATE}) };
+        const ready = { status: 'ready' as const, model, variantId: targetVariantId, requestId, ...(active.model==='yolo-seg'||active.model==='segformer'||active.model==='mirage'?{backend:active.task.backend??unknownOnnxBackend()}:{delegate:DELEGATE}) };
         this.publish(ready, assetSources);
         return ready;
       } catch (cause) {
@@ -238,7 +250,7 @@ export class VisionEngine {
   ): FrameResult;
   public detectVideoFrame(
     videoElement: InferenceInput,
-    model: 'yolo-seg' | 'segformer',
+    model: 'yolo-seg' | 'segformer' | 'mirage',
     confidenceThreshold: number,
     instrumentation?: PipelineObserver,
     extraOptions?: ExtraInferenceOptions
@@ -271,6 +283,9 @@ export class VisionEngine {
     }
     if (active.model === 'segformer') {
       return this.detectSegFormerVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration, extraOptions);
+    }
+    if (active.model === 'mirage') {
+      return this.detectMirageVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration, extraOptions);
     }
     const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
     const engineStart = probe?.start();
@@ -666,6 +681,72 @@ export class VisionEngine {
     } catch (cause) {
       if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) {this.resetOutputs();throw cause;}
       engineOutcome='stale';return {status:'not-ready',model:'segformer',requestId:state.requestId};
+    } finally {
+      if (postStarted && probe) {
+        const tail = postActive ? probe.elapsed(postStart)?.ms ?? null : 0;
+        probe.duration('postprocess', postMs === null || tail === null ? null : postMs + tail, engineOutcome);
+      }
+      probe?.end('engine', engineStart, engineOutcome);
+    }
+  }
+
+  private async detectMirageVideoFrame(
+    videoElement: InferenceInput,
+    confidenceThreshold: number,
+    instrumentation: PipelineObserver | undefined,
+    state: Extract<ModelState, { status: 'ready' }>,
+    active: { model: 'mirage'; task: MirageTask },
+    outputGeneration: number,
+    extraOptions?: ExtraInferenceOptions
+  ): Promise<FrameResult> {
+    const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
+    const engineStart = probe?.start();
+    let engineOutcome: AttemptOutcome = 'failed';
+    let postStart: ReturnType<PipelineProbe['start']>;
+    let postStarted = false;
+    let postActive = false;
+    const postMs: number | null = 0;
+    try {
+      const sdkStart = probe?.start();
+      let sdkOutcome: AttemptOutcome = 'failed';
+      let rawObjects: DetectedObject[] = [];
+      try {
+        const detectResult = active.task.detectForVideo(videoElement, confidenceThreshold, {
+          iouThreshold: extraOptions?.iouThreshold,
+          maxDetections: extraOptions?.maxDetections,
+          analysisMode: extraOptions?.analysisMode,
+          includeOcr: extraOptions?.includeOcr,
+        });
+        rawObjects = detectResult instanceof Promise ? await detectResult : detectResult;
+        sdkOutcome = 'success';
+      } finally {
+        probe?.end('sdk', sdkStart, sdkOutcome);
+      }
+      postStart = probe?.start();
+      postStarted = true;
+      postActive = true;
+      if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        engineOutcome = 'stale';
+        return { status: 'not-ready', model: 'mirage', requestId: state.requestId };
+      }
+
+      const filteredObjects = rawObjects.filter(obj => obj.confidence >= confidenceThreshold);
+      this.lastStableObjects = filteredObjects;
+      this.emptyFrameBufferCount = 0;
+
+      if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        engineOutcome = 'stale';
+        return { status: 'not-ready', model: 'mirage', requestId: state.requestId };
+      }
+      engineOutcome = 'success';
+      return { status: 'ready', model: 'mirage', requestId: state.requestId, objects: filteredObjects };
+    } catch (cause) {
+      if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) {
+        this.resetOutputs();
+        throw cause;
+      }
+      engineOutcome = 'stale';
+      return { status: 'not-ready', model: 'mirage', requestId: state.requestId };
     } finally {
       if (postStarted && probe) {
         const tail = postActive ? probe.elapsed(postStart)?.ms ?? null : 0;

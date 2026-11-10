@@ -1,0 +1,1520 @@
+{
+  "benchmarkSuite": "VisionStudio AI - Cactus Mirage (51.3M) Comparative Benchmark",
+  "environment": {
+    "pythonVersion": "3.10.12",
+    "platform": "Linux-4.19.0-gvisor-x86_64-with-glibc2.36",
+    "cpuCount": 4,
+    "cactusVersion": "4.1.0"
+  },
+  "mirageArtifact": {
+    "modelId": "Cactus-Compute/mirage",
+    "revision": "76c1e9e53381aca8fc3843c636216c96ff220122",
+    "weightsBytes": 21611043,
+    "weightsSizeMb": 20.61,
+    "initMs": 312.64,
+    "warmupExtractMs": 8043.52
+  },
+  "memoryMetricsMb": {
+    "baselineRssMb": 49.47,
+    "afterInitRssMb": 109.08,
+    "steadyStateRssMb": 194.47,
+    "peakRssMb": 223.86,
+    "modelLoadDeltaRssMb": 59.61,
+    "peakInferenceDeltaRssMb": 174.39
+  },
+  "aggregateLatencyMs": {
+    "fullDescribeNativeRes": {
+      "meanMs": 7139.16,
+      "medianMs": 6843.51,
+      "minMs": 6371.64,
+      "maxMs": 9572.28,
+      "p95Ms": 9572.28
+    },
+    "fastTriage448": {
+      "meanMs": 8036.99,
+      "medianMs": 7712.73,
+      "minMs": 6682.94,
+      "maxMs": 12009.85,
+      "p95Ms": 12009.85
+    },
+    "decisionsForm448": {
+      "meanMs": 9062.12,
+      "medianMs": 8286.27,
+      "minMs": 7985.03,
+      "maxMs": 13016.82,
+      "p95Ms": 13016.82
+    }
+  },
+  "aggregateAccuracy": {
+    "imageCount": 8,
+    "objectCategoryHitRate": 0.75,
+    "meanOcrTokenRecall": 0.8917
+  },
+  "perImageResults": [
+    {
+      "id": "img_01_cloud_run_dialog",
+      "path": "public/assets/aistudio/image_c2b3e52e.png",
+      "category": "Error Modal Dialog (English)",
+      "dimensions": "676x243",
+      "fileBytes": 54385,
+      "latencyMs": {
+        "fullDescribeMs": 6801.58,
+        "fastTriage448Ms": 6717.47,
+        "decisionsOnly448Ms": 7985.03
+      },
+      "rssMb": 182.42,
+      "counts": {
+        "objects": 4,
+        "regions": 1,
+        "triageObjects": 5,
+        "ocrTextLines": 32,
+        "relations": 4
+      },
+      "accuracy": {
+        "expectedObjectHit": true,
+        "detectedObjectAndRegionNames": [
+          "red circle",
+          "text",
+          "red arrow",
+          "window",
+          "pink border"
+        ],
+        "ocrTokenRecall": 0.8,
+        "matchedOcrTokens": [
+          "create",
+          "Cloud",
+          "250",
+          "publish"
+        ],
+        "missedOcrTokens": [
+          "Failed"
+        ]
+      },
+      "sampleOutputs": {
+        "scene": {
+          "background": "blurred",
+          "style": "screenshot"
+        },
+        "topObjects": [
+          {
+            "name": "red circle",
+            "score": 0.493,
+            "bbox": [
+              105,
+              205,
+              142,
+              280
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.305,
+            "bbox": [
+              147,
+              197,
+              862,
+              276
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "red arrow",
+            "score": 0.417,
+            "bbox": [
+              888,
+              210,
+              918,
+              274
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "window",
+            "score": 0.742,
+            "bbox": [
+              53,
+              161,
+              951,
+              789
+            ],
+            "hasPolygonMask": true
+          }
+        ],
+        "topRegions": [
+          {
+            "name": "pink border",
+            "score": null
+          }
+        ],
+        "topOcrLines": [
+          {
+            "string": "O",
+            "score": 0.392
+          },
+          {
+            "string": "create",
+            "score": 0.353
+          },
+          {
+            "string": "Cloud",
+            "score": 0.511
+          },
+          {
+            "string": "Cloud Run serv",
+            "score": 0.467
+          },
+          {
+            "string": "n serv",
+            "score": 0.341
+          },
+          {
+            "string": "your",
+            "score": 0.385
+          },
+          {
+            "string": "app's",
+            "score": 0.381
+          },
+          {
+            "string": "X",
+            "score": 0.436
+          }
+        ],
+        "decisions": {
+          "scene_domain": {
+            "value": null,
+            "abstainProb": 0.989
+          },
+          "primary_subject": {
+            "value": "person",
+            "abstainProb": 0.2587
+          },
+          "contains_readable_text": {
+            "value": "no",
+            "abstainProb": 0.4414
+          },
+          "person_count": {
+            "value": 0,
+            "abstainProb": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "img_02_vision_studio_idle",
+      "path": "public/assets/aistudio/Screenshot_20261023-184437_91894f37.png",
+      "category": "VisionStudio AI Mobile UI (Idle Camera)",
+      "dimensions": "1080x2424",
+      "fileBytes": 137914,
+      "latencyMs": {
+        "fullDescribeMs": 6885.45,
+        "fastTriage448Ms": 7713.5,
+        "decisionsOnly448Ms": 8176.78
+      },
+      "rssMb": 206.38,
+      "counts": {
+        "objects": 15,
+        "regions": 2,
+        "triageObjects": 10,
+        "ocrTextLines": 21,
+        "relations": 0
+      },
+      "accuracy": {
+        "expectedObjectHit": true,
+        "detectedObjectAndRegionNames": [
+          "arrow",
+          "arrow",
+          "text",
+          "text",
+          "arrow",
+          "arrow",
+          "text",
+          "screen",
+          "text",
+          "text",
+          "text",
+          "text",
+          "arrow",
+          "text",
+          "text",
+          "button",
+          "button"
+        ],
+        "ocrTokenRecall": 1.0,
+        "matchedOcrTokens": [
+          "VisionStudio",
+          "YOLO",
+          "60",
+          "FPS",
+          "16ms",
+          "Preview"
+        ],
+        "missedOcrTokens": []
+      },
+      "sampleOutputs": {
+        "scene": {
+          "setting": "mobile interface",
+          "background": "dark",
+          "style": "screenshot"
+        },
+        "topObjects": [
+          {
+            "name": "arrow",
+            "score": 0.0,
+            "bbox": [
+              905,
+              0,
+              1000,
+              20
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "arrow",
+            "score": 0.45,
+            "bbox": [
+              34,
+              75,
+              87,
+              105
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.333,
+            "bbox": [
+              136,
+              77,
+              309,
+              99
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.385,
+            "bbox": [
+              413,
+              77,
+              674,
+              103
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "arrow",
+            "score": 0.365,
+            "bbox": [
+              767,
+              75,
+              823,
+              102
+            ],
+            "hasPolygonMask": true
+          }
+        ],
+        "topRegions": [
+          {
+            "name": "button",
+            "score": null
+          },
+          {
+            "name": "button",
+            "score": null
+          }
+        ],
+        "topOcrLines": [
+          {
+            "string": "18:44S",
+            "score": 0.421
+          },
+          {
+            "string": "18:44S",
+            "score": 0.447
+          },
+          {
+            "string": "S",
+            "score": 0.0
+          },
+          {
+            "string": "VisionStudio AI",
+            "score": 0.573
+          },
+          {
+            "string": "YOLO-seg (+EM)",
+            "score": 0.707
+          },
+          {
+            "string": "x",
+            "score": 0.497
+          },
+          {
+            "string": "isIL",
+            "score": 0.471
+          },
+          {
+            "string": "YOLO-SEG60 FPS1",
+            "score": 0.438
+          }
+        ],
+        "decisions": {
+          "scene_domain": {
+            "value": null,
+            "abstainProb": 0.6953
+          },
+          "primary_subject": {
+            "value": null,
+            "abstainProb": 0.4664
+          },
+          "contains_readable_text": {
+            "value": null,
+            "abstainProb": 0.4508
+          },
+          "person_count": {
+            "value": 0,
+            "abstainProb": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "img_03_vision_studio_yolo_live",
+      "path": "public/assets/aistudio/Screenshot_20261023-184440_5d7d35f0.png",
+      "category": "VisionStudio AI Live Camera (2 People + YOLOv8-seg)",
+      "dimensions": "1080x2424",
+      "fileBytes": 772699,
+      "latencyMs": {
+        "fullDescribeMs": 6629.0,
+        "fastTriage448Ms": 7990.12,
+        "decisionsOnly448Ms": 8395.76
+      },
+      "rssMb": 210.96,
+      "counts": {
+        "objects": 13,
+        "regions": 1,
+        "triageObjects": 7,
+        "ocrTextLines": 23,
+        "relations": 3
+      },
+      "accuracy": {
+        "expectedObjectHit": false,
+        "detectedObjectAndRegionNames": [
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "smartphone",
+          "profile picture",
+          "digital display",
+          "status bar"
+        ],
+        "ocrTokenRecall": 0.5,
+        "matchedOcrTokens": [
+          "VisionStudio",
+          "YOLO",
+          "24"
+        ],
+        "missedOcrTokens": [
+          "FPS",
+          "person",
+          "94%"
+        ]
+      },
+      "sampleOutputs": {
+        "scene": {
+          "setting": "smartphone screen",
+          "background": "dark",
+          "style": "digital interface"
+        },
+        "topObjects": [
+          {
+            "name": "button",
+            "score": 0.386,
+            "bbox": [
+              34,
+              75,
+              87,
+              105
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "button",
+            "score": 0.323,
+            "bbox": [
+              415,
+              77,
+              672,
+              102
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "button",
+            "score": 0.313,
+            "bbox": [
+              768,
+              75,
+              822,
+              102
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "button",
+            "score": 0.32,
+            "bbox": [
+              862,
+              72,
+              980,
+              106
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "button",
+            "score": 0.334,
+            "bbox": [
+              100,
+              139,
+              239,
+              162
+            ],
+            "hasPolygonMask": true
+          }
+        ],
+        "topRegions": [
+          {
+            "name": "status bar",
+            "score": null
+          }
+        ],
+        "topOcrLines": [
+          {
+            "string": "18:44",
+            "score": 0.454
+          },
+          {
+            "string": "18:44S",
+            "score": 0.395
+          },
+          {
+            "string": "S",
+            "score": 0.0
+          },
+          {
+            "string": "VisionStudio AI",
+            "score": 0.561
+          },
+          {
+            "string": "YOLO-seg (+",
+            "score": 0.673
+          },
+          {
+            "string": "Jx",
+            "score": 0.479
+          },
+          {
+            "string": "1",
+            "score": 0.489
+          },
+          {
+            "string": "YOLO-SEG",
+            "score": 0.575
+          }
+        ],
+        "decisions": {
+          "scene_domain": {
+            "value": null,
+            "abstainProb": 0.5917
+          },
+          "primary_subject": {
+            "value": "person",
+            "abstainProb": 0.1106
+          },
+          "contains_readable_text": {
+            "value": null,
+            "abstainProb": 0.3944
+          },
+          "person_count": {
+            "value": 0,
+            "abstainProb": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "img_04_vision_studio_segformer_live",
+      "path": "public/assets/aistudio/Screenshot_20261023-193223_8ec61247.png",
+      "category": "VisionStudio AI Live Camera (Person + SegFormer)",
+      "dimensions": "1080x2424",
+      "fileBytes": 797410,
+      "latencyMs": {
+        "fullDescribeMs": 6578.2,
+        "fastTriage448Ms": 7975.13,
+        "decisionsOnly448Ms": 8099.6
+      },
+      "rssMb": 211.03,
+      "counts": {
+        "objects": 18,
+        "regions": 2,
+        "triageObjects": 6,
+        "ocrTextLines": 25,
+        "relations": 3
+      },
+      "accuracy": {
+        "expectedObjectHit": false,
+        "detectedObjectAndRegionNames": [
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "button",
+          "smartphone",
+          "app"
+        ],
+        "ocrTokenRecall": 0.8333,
+        "matchedOcrTokens": [
+          "VisionStudio",
+          "SEGFORMER",
+          "20",
+          "FPS",
+          "person"
+        ],
+        "missedOcrTokens": [
+          "42%"
+        ]
+      },
+      "sampleOutputs": {
+        "scene": {
+          "setting": "smartphone screen",
+          "style": "digital composite"
+        },
+        "topObjects": [
+          {
+            "name": "text",
+            "score": 0.0,
+            "bbox": [
+              901,
+              0,
+              1000,
+              19
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.324,
+            "bbox": [
+              134,
+              77,
+              310,
+              98
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.368,
+            "bbox": [
+              410,
+              77,
+              609,
+              101
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.345,
+            "bbox": [
+              122,
+              143,
+              257,
+              160
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.318,
+            "bbox": [
+              459,
+              138,
+              563,
+              164
+            ],
+            "hasPolygonMask": true
+          }
+        ],
+        "topRegions": [
+          {
+            "name": "smartphone",
+            "score": null
+          },
+          {
+            "name": "app",
+            "score": null
+          }
+        ],
+        "topOcrLines": [
+          {
+            "string": "19:32",
+            "score": 0.489
+          },
+          {
+            "string": "19:32M+n",
+            "score": 0.481
+          },
+          {
+            "string": "S",
+            "score": 0.0
+          },
+          {
+            "string": "VisionStudio AI",
+            "score": 0.615
+          },
+          {
+            "string": "SegFormer (at)",
+            "score": 0.693
+          },
+          {
+            "string": "V",
+            "score": 0.342
+          },
+          {
+            "string": "x",
+            "score": 0.505
+          },
+          {
+            "string": "lk",
+            "score": 0.491
+          }
+        ],
+        "decisions": {
+          "scene_domain": {
+            "value": null,
+            "abstainProb": 0.5422
+          },
+          "primary_subject": {
+            "value": "person",
+            "abstainProb": 0.1459
+          },
+          "contains_readable_text": {
+            "value": null,
+            "abstainProb": 0.4181
+          },
+          "person_count": {
+            "value": 0,
+            "abstainProb": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "img_05_publish_quota_screen",
+      "path": "public/assets/aistudio/Screenshot_20261026-232426_3567612a.png",
+      "category": "Mobile Quota Alert & Action Screen",
+      "dimensions": "1080x1890",
+      "fileBytes": 235578,
+      "latencyMs": {
+        "fullDescribeMs": 7385.82,
+        "fastTriage448Ms": 7711.96,
+        "decisionsOnly448Ms": 8418.87
+      },
+      "rssMb": 211.86,
+      "counts": {
+        "objects": 15,
+        "regions": 3,
+        "triageObjects": 10,
+        "ocrTextLines": 19,
+        "relations": 0
+      },
+      "accuracy": {
+        "expectedObjectHit": true,
+        "detectedObjectAndRegionNames": [
+          "text",
+          "button",
+          "button",
+          "text",
+          "text",
+          "text",
+          "button",
+          "text",
+          "text",
+          "smartphone screen",
+          "red circle",
+          "text",
+          "button",
+          "text",
+          "text",
+          "status bar",
+          "search bar",
+          "text"
+        ],
+        "ocrTokenRecall": 1.0,
+        "matchedOcrTokens": [
+          "Failed",
+          "Cloud",
+          "quota",
+          "Retry",
+          "Publish"
+        ],
+        "missedOcrTokens": []
+      },
+      "sampleOutputs": {
+        "scene": {
+          "setting": "mobile phone screen",
+          "background": "white",
+          "style": "screenshot",
+          "location": "smartphone interface"
+        },
+        "topObjects": [
+          {
+            "name": "text",
+            "score": 0.471,
+            "bbox": [
+              84,
+              27,
+              174,
+              54
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "button",
+            "score": 0.49,
+            "bbox": [
+              215,
+              19,
+              354,
+              66
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "button",
+            "score": 0.437,
+            "bbox": [
+              61,
+              107,
+              138,
+              135
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.463,
+            "bbox": [
+              224,
+              107,
+              314,
+              133
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.379,
+            "bbox": [
+              425,
+              108,
+              533,
+              132
+            ],
+            "hasPolygonMask": true
+          }
+        ],
+        "topRegions": [
+          {
+            "name": "status bar",
+            "score": null
+          },
+          {
+            "name": "search bar",
+            "score": null
+          },
+          {
+            "name": "text",
+            "score": null
+          }
+        ],
+        "topOcrLines": [
+          {
+            "string": "23:24",
+            "score": 0.677
+          },
+          {
+            "string": "*:!!",
+            "score": 0.48
+          },
+          {
+            "string": "S",
+            "score": 0.0
+          },
+          {
+            "string": "Chat",
+            "score": 0.806
+          },
+          {
+            "string": "Share",
+            "score": 0.733
+          },
+          {
+            "string": "Publish",
+            "score": 0.645
+          },
+          {
+            "string": "Versions",
+            "score": 0.683
+          },
+          {
+            "string": ">",
+            "score": 0.354
+          }
+        ],
+        "decisions": {
+          "scene_domain": {
+            "value": null,
+            "abstainProb": 0.6621
+          },
+          "primary_subject": {
+            "value": "person",
+            "abstainProb": 0.3392
+          },
+          "contains_readable_text": {
+            "value": null,
+            "abstainProb": 0.3955
+          },
+          "person_count": {
+            "value": 0,
+            "abstainProb": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "img_06_camera_two_people_crop",
+      "path": ".cache/mirage-bench/images/bench_06_camera_two_people_crop.png",
+      "category": "Cropped Camera Viewport (Two People Indoor)",
+      "dimensions": "580x1010",
+      "fileBytes": 616059,
+      "latencyMs": {
+        "fullDescribeMs": 6889.33,
+        "fastTriage448Ms": 7494.93,
+        "decisionsOnly448Ms": 7994.04
+      },
+      "rssMb": 192.69,
+      "counts": {
+        "objects": 13,
+        "regions": 2,
+        "triageObjects": 7,
+        "ocrTextLines": 9,
+        "relations": 2
+      },
+      "accuracy": {
+        "expectedObjectHit": true,
+        "detectedObjectAndRegionNames": [
+          "text label",
+          "text label",
+          "text label",
+          "text label",
+          "man",
+          "digital display",
+          "digital display",
+          "digital display",
+          "digital display",
+          "digital display",
+          "text label",
+          "text label",
+          "text label",
+          "digital display",
+          "woman"
+        ],
+        "ocrTokenRecall": 1.0,
+        "matchedOcrTokens": [
+          "94%",
+          "88%"
+        ],
+        "missedOcrTokens": []
+      },
+      "sampleOutputs": {
+        "scene": {
+          "setting": "digital interface",
+          "background": "white",
+          "style": "digital screenshot"
+        },
+        "topObjects": [
+          {
+            "name": "text label",
+            "score": 0.456,
+            "bbox": [
+              46,
+              22,
+              472,
+              90
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text label",
+            "score": 0.471,
+            "bbox": [
+              371,
+              41,
+              487,
+              74
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text label",
+            "score": 0.354,
+            "bbox": [
+              933,
+              25,
+              996,
+              94
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text label",
+            "score": 0.517,
+            "bbox": [
+              299,
+              143,
+              494,
+              159
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "man",
+            "score": 0.399,
+            "bbox": [
+              880,
+              106,
+              989,
+              251
+            ],
+            "hasPolygonMask": true
+          }
+        ],
+        "topRegions": [
+          {
+            "name": "digital display",
+            "score": null
+          },
+          {
+            "name": "woman",
+            "score": null
+          }
+        ],
+        "topOcrLines": [
+          {
+            "string": "24",
+            "score": 0.323
+          },
+          {
+            "string": "FPS",
+            "score": 0.522
+          },
+          {
+            "string": "24ms",
+            "score": 0.838
+          },
+          {
+            "string": "Co",
+            "score": 0.452
+          },
+          {
+            "string": ".",
+            "score": 0.0
+          },
+          {
+            "string": "A (xSt) 94%",
+            "score": 0.693
+          },
+          {
+            "string": "7-IL·M88%",
+            "score": 0.718
+          },
+          {
+            "string": "wgEC",
+            "score": 0.651
+          }
+        ],
+        "decisions": {
+          "scene_domain": {
+            "value": null,
+            "abstainProb": 0.8442
+          },
+          "primary_subject": {
+            "value": "person",
+            "abstainProb": 0.1066
+          },
+          "contains_readable_text": {
+            "value": "no",
+            "abstainProb": 0.3513
+          },
+          "person_count": {
+            "value": 1,
+            "abstainProb": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "img_07_camera_person_crop",
+      "path": ".cache/mirage-bench/images/bench_07_camera_person_crop.png",
+      "category": "Cropped Camera Viewport (Single Person Indoor)",
+      "dimensions": "615x1070",
+      "fileBytes": 639717,
+      "latencyMs": {
+        "fullDescribeMs": 6371.64,
+        "fastTriage448Ms": 6682.94,
+        "decisionsOnly448Ms": 13016.82
+      },
+      "rssMb": 194.47,
+      "counts": {
+        "objects": 11,
+        "regions": 0,
+        "triageObjects": 7,
+        "ocrTextLines": 9,
+        "relations": 3
+      },
+      "accuracy": {
+        "expectedObjectHit": true,
+        "detectedObjectAndRegionNames": [
+          "text",
+          "app icon",
+          "app interface",
+          "text",
+          "app icon",
+          "text",
+          "text",
+          "woman",
+          "smartphone",
+          "app interface",
+          "text"
+        ],
+        "ocrTokenRecall": 1.0,
+        "matchedOcrTokens": [
+          "42%"
+        ],
+        "missedOcrTokens": []
+      },
+      "sampleOutputs": {
+        "scene": {
+          "setting": "indoor",
+          "lighting": "dim",
+          "style": "digital screenshot"
+        },
+        "topObjects": [
+          {
+            "name": "text",
+            "score": 0.323,
+            "bbox": [
+              8,
+              38,
+              95,
+              68
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "app icon",
+            "score": 0.333,
+            "bbox": [
+              182,
+              36,
+              239,
+              70
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "app interface",
+            "score": 0.481,
+            "bbox": [
+              63,
+              27,
+              561,
+              81
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text",
+            "score": 0.423,
+            "bbox": [
+              439,
+              34,
+              597,
+              73
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "app icon",
+            "score": 0.474,
+            "bbox": [
+              926,
+              41,
+              981,
+              77
+            ],
+            "hasPolygonMask": true
+          }
+        ],
+        "topRegions": [],
+        "topOcrLines": [
+          {
+            "string": "MER",
+            "score": 0.634
+          },
+          {
+            "string": "20",
+            "score": 0.487
+          },
+          {
+            "string": "FPS",
+            "score": 0.411
+          },
+          {
+            "string": "73",
+            "score": 0.353
+          },
+          {
+            "string": "73.4ms",
+            "score": 0.617
+          },
+          {
+            "string": "Co",
+            "score": 0.504
+          },
+          {
+            "string": "-",
+            "score": 0.0
+          },
+          {
+            "string": "At42%",
+            "score": 0.491
+          }
+        ],
+        "decisions": {
+          "scene_domain": {
+            "value": "application_ui_screenshot",
+            "abstainProb": 0.391
+          },
+          "primary_subject": {
+            "value": "person",
+            "abstainProb": 0.2883
+          },
+          "contains_readable_text": {
+            "value": "no",
+            "abstainProb": 0.3064
+          },
+          "person_count": {
+            "value": 1,
+            "abstainProb": 0.0
+          }
+        }
+      }
+    },
+    {
+      "id": "img_08_inspection_form_card",
+      "path": ".cache/mirage-bench/images/bench_08_inspection_form_card.png",
+      "category": "Structured Inspection & Invoice Card",
+      "dimensions": "800x500",
+      "fileBytes": 12131,
+      "latencyMs": {
+        "fullDescribeMs": 9572.28,
+        "fastTriage448Ms": 12009.85,
+        "decisionsOnly448Ms": 10410.1
+      },
+      "rssMb": 194.47,
+      "counts": {
+        "objects": 9,
+        "regions": 1,
+        "triageObjects": 9,
+        "ocrTextLines": 7,
+        "relations": 3
+      },
+      "accuracy": {
+        "expectedObjectHit": true,
+        "detectedObjectAndRegionNames": [
+          "text box",
+          "text box",
+          "text box",
+          "text box",
+          "text box",
+          "text box",
+          "text box",
+          "window",
+          "red square",
+          "title bar"
+        ],
+        "ocrTokenRecall": 1.0,
+        "matchedOcrTokens": [
+          "QUALITY",
+          "INVOICE",
+          "INV-2026-0842",
+          "PASS",
+          "HIGH"
+        ],
+        "missedOcrTokens": []
+      },
+      "sampleOutputs": {
+        "scene": {
+          "background": "white",
+          "style": "software interface"
+        },
+        "topObjects": [
+          {
+            "name": "text box",
+            "score": 0.54,
+            "bbox": [
+              83,
+              137,
+              329,
+              173
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text box",
+            "score": 0.42,
+            "bbox": [
+              92,
+              287,
+              249,
+              316
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text box",
+            "score": 0.593,
+            "bbox": [
+              82,
+              372,
+              275,
+              404
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text box",
+            "score": 0.525,
+            "bbox": [
+              88,
+              468,
+              171,
+              494
+            ],
+            "hasPolygonMask": true
+          },
+          {
+            "name": "text box",
+            "score": 0.528,
+            "bbox": [
+              91,
+              556,
+              188,
+              583
+            ],
+            "hasPolygonMask": true
+          }
+        ],
+        "topRegions": [
+          {
+            "name": "title bar",
+            "score": null
+          }
+        ],
+        "topOcrLines": [
+          {
+            "string": "QUALITYINSPECTION & INVoICE FORM",
+            "score": 0.681
+          },
+          {
+            "string": "INVoICEID: INV-2026-0842",
+            "score": 0.524
+          },
+          {
+            "string": "MODELCACTUS MIRAGE51.3M",
+            "score": 0.842
+          },
+          {
+            "string": "STATUs PASS",
+            "score": 0.718
+          },
+          {
+            "string": "WEIGHT:21.6 MB",
+            "score": 0.741
+          },
+          {
+            "string": "PRIORITY: HIGH",
+            "score": 0.788
+          },
+          {
+            "string": "VERIFIED FOR EDGE DEPLOYMENT",
+            "score": 0.742
+          }
+        ],
+        "decisions": {
+          "scene_domain": {
+            "value": null,
+            "abstainProb": 0.8804
+          },
+          "primary_subject": {
+            "value": "error_dialog",
+            "abstainProb": 0.4066
+          },
+          "contains_readable_text": {
+            "value": null,
+            "abstainProb": 0.5244
+          },
+          "person_count": {
+            "value": 0,
+            "abstainProb": 0.0
+          }
+        }
+      }
+    }
+  ],
+  "existingPipelineComparison": [
+    {
+      "modelId": "selfie-segmenter (general)",
+      "runtime": "MediaPipe Tasks Vision (WASM/GPU)",
+      "artifactFile": "mediapipe/selfie_segmenter.tflite",
+      "artifactSizeMb": 0.24,
+      "capabilities": {
+        "objectDetection": false,
+        "openVocabularyDetection": false,
+        "instanceOrSemanticMasks": true,
+        "ocrText": false,
+        "spatialRelations": false,
+        "zeroShotDecisionsForm": false
+      },
+      "typicalInitMs": 185.0,
+      "typicalInferenceMs": 14.2,
+      "typicalMemoryRssDeltaMb": 68.0,
+      "outputStructure": "Single-class confidence mask Float32Array + derived person bbox"
+    },
+    {
+      "modelId": "mediapipe (EfficientDet-Lite0)",
+      "runtime": "MediaPipe Tasks Vision (WASM/GPU)",
+      "artifactFile": "mediapipe/efficientdet_lite0.tflite",
+      "artifactSizeMb": 7.04,
+      "capabilities": {
+        "objectDetection": true,
+        "openVocabularyDetection": false,
+        "instanceOrSemanticMasks": false,
+        "ocrText": false,
+        "spatialRelations": false,
+        "zeroShotDecisionsForm": false
+      },
+      "typicalInitMs": 220.0,
+      "typicalInferenceMs": 24.8,
+      "typicalMemoryRssDeltaMb": 85.0,
+      "outputStructure": "Fixed 80-class COCO bounding boxes + scores (no masks, no OCR)"
+    },
+    {
+      "modelId": "yolo-seg (YOLOv8n-seg)",
+      "runtime": "ONNX Runtime Web (WASM / WebGPU)",
+      "artifactFile": "yolo/yolov8n-seg.onnx",
+      "artifactSizeMb": 13.7,
+      "capabilities": {
+        "objectDetection": true,
+        "openVocabularyDetection": false,
+        "instanceOrSemanticMasks": true,
+        "ocrText": false,
+        "spatialRelations": false,
+        "zeroShotDecisionsForm": false
+      },
+      "typicalInitMs": 340.0,
+      "typicalInferenceMs": 78.5,
+      "typicalMemoryRssDeltaMb": 145.0,
+      "outputStructure": "Fixed 80-class COCO bounding boxes + 160x160 prototype instance masks"
+    },
+    {
+      "modelId": "yolo-seg (YOLOv8s-seg)",
+      "runtime": "ONNX Runtime Web (WASM / WebGPU)",
+      "artifactFile": "yolo/yolov8s-seg.onnx",
+      "artifactSizeMb": 45.88,
+      "capabilities": {
+        "objectDetection": true,
+        "openVocabularyDetection": false,
+        "instanceOrSemanticMasks": true,
+        "ocrText": false,
+        "spatialRelations": false,
+        "zeroShotDecisionsForm": false
+      },
+      "typicalInitMs": 490.0,
+      "typicalInferenceMs": 168.0,
+      "typicalMemoryRssDeltaMb": 210.0,
+      "outputStructure": "Fixed 80-class COCO bounding boxes + 160x160 prototype instance masks"
+    },
+    {
+      "modelId": "segformer (SegFormer-B0 quantized)",
+      "runtime": "ONNX Runtime Web (WASM / WebGPU)",
+      "artifactFile": "segformer/segformer-b0-quantized.onnx",
+      "artifactSizeMb": 4.3,
+      "capabilities": {
+        "objectDetection": false,
+        "openVocabularyDetection": false,
+        "instanceOrSemanticMasks": true,
+        "ocrText": false,
+        "spatialRelations": false,
+        "zeroShotDecisionsForm": false
+      },
+      "typicalInitMs": 280.0,
+      "typicalInferenceMs": 92.4,
+      "typicalMemoryRssDeltaMb": 130.0,
+      "outputStructure": "Fixed 150-class ADE20K dense semantic segmentation logits + class regions"
+    },
+    {
+      "modelId": "image-classifier (EfficientNet-Lite0)",
+      "runtime": "MediaPipe Tasks Vision ImageClassifier",
+      "artifactFile": "mediapipe/efficientnet_lite0.tflite",
+      "artifactSizeMb": 17.75,
+      "capabilities": {
+        "objectDetection": false,
+        "openVocabularyDetection": false,
+        "instanceOrSemanticMasks": false,
+        "ocrText": false,
+        "spatialRelations": false,
+        "zeroShotDecisionsForm": false
+      },
+      "typicalInitMs": 213.7,
+      "typicalInferenceMs": 11.5,
+      "typicalMemoryRssDeltaMb": 92.0,
+      "outputStructure": "Fixed 1000-class ImageNet top-K whole-image labels"
+    }
+  ]
+}

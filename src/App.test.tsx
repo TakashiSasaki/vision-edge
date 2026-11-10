@@ -14,13 +14,15 @@ function fixture() {
   const segmenter: SegmenterTask = { segmentForVideo: vi.fn(), close: vi.fn() };
   const yoloTask = { detectForVideo: vi.fn(async () => []), close: vi.fn() };
   const segformerTask = { detectForVideo: vi.fn(async () => []), close: vi.fn() };
+  const mirageTask = { detectForVideo: vi.fn(async () => []), close: vi.fn() };
   const factory: VisionTaskFactory = {
     load: vi.fn(async () => ({ wasmLoaderPath: 'loader', wasmBinaryPath: 'wasm' })),
     detector: vi.fn(async () => detector), segmenter: vi.fn(async () => segmenter),
     yoloSeg: vi.fn(async () => yoloTask),
     segformer: vi.fn(async () => segformerTask),
+    mirage: vi.fn(async () => mirageTask),
   };
-  return { engine: new VisionEngine(factory), factory, detector, segmenter, yoloTask, segformerTask };
+  return { engine: new VisionEngine(factory), factory, detector, segmenter, yoloTask, segformerTask, mirageTask };
 }
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -39,7 +41,7 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   const header = screen.getByRole('banner');
   const model = within(header).getByRole('combobox', { name: 'モデル' });
   const enabled = within(model).getAllByRole('option').filter(option => !(option as HTMLOptionElement).disabled);
-  expect(enabled.map(option => (option as HTMLOptionElement).value)).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer', 'image-classifier']);
+  expect(enabled.map(option => (option as HTMLOptionElement).value)).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer', 'mirage', 'image-classifier']);
   expect(within(header).getAllByRole('combobox')).toHaveLength(2);
   const variantSelect = within(header).getByRole('combobox', { name: 'バリアント' });
   expect(variantSelect).toHaveValue('general');
@@ -52,11 +54,16 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'segformer', variantId: 'b0' }));
   expect(model).toHaveValue('segformer');
   expect(variantSelect).toHaveValue('b0');
+  await user.selectOptions(model, 'mirage');
+  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mirage', variantId: 'mirage-51m' }));
+  expect(model).toHaveValue('mirage');
+  expect(variantSelect).toHaveValue('mirage-51m');
+  expect(within(header).getByLabelText('バックエンド状態')).toHaveTextContent('Cactus WebAssembly (CPU / Web Worker 非同期推論)');
   await user.selectOptions(model, 'mediapipe');
   await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mediapipe', variantId: 'lite0' }));
   await user.click(within(header).getByRole('button', { name: '仕様' }));
   const dialog = screen.getByRole('dialog');
-  for (const name of [/General/, /EfficientDet-Lite0/, /YOLOv8n-seg/, /SegFormer-B0/]) {
+  for (const name of [/General/, /EfficientDet-Lite0/, /YOLOv8n-seg/, /SegFormer-B0/, /Mirage 51\.3M/]) {
     const button = within(dialog).getByRole('button', { name });
     expect(button).not.toBeDisabled();
   }

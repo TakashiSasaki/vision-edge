@@ -207,6 +207,11 @@ controlled races and remaining device/scheduler limits.
 See [PR-02 verification evidence](docs/verification/pr02.md) for state/task ownership,
 regression coverage and remaining lifecycle/measurement limits.
 
+See [Cactus Mirage Technical Reference](docs/mirage-integration.md) and
+[Mirage Evaluation Report](docs/verification/mirage-evaluation-report.md) for the
+51.3M ultra-lightweight perception model evaluation, comparative benchmarks, and
+hybrid triage edge-routing architecture.
+
 See [PR-01 verification evidence](docs/verification/pr01.md) for executed checks,
 dependency decisions, environmental limits, and known deferred issues. Real
 camera/device acceptance, inference accuracy, tracking, timing semantics, full TTS

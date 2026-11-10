@@ -12,12 +12,14 @@ import type { RunnableModelType } from '../types/vision.ts';
 import {
   LOCAL_MEDIAPIPE_WASM_URL,
   LOCAL_ORT_WASM_URL,
+  MIRAGE_UPSTREAM_URL,
   MODEL_ASSET_CATALOG,
   MODEL_VARIANT_CATALOG,
   UPSTREAM_MEDIAPIPE_WASM_URL,
   UPSTREAM_ORT_WASM_URL,
   type ContainerCacheStatusResponse,
   type CacheAssetModelId,
+  type LegacyRunnableModelType,
   type ModelVariantCatalogEntry,
   type ContainerModelStatusEntry,
   getVariantCatalogEntry,
@@ -175,7 +177,7 @@ export class ContainerModelCacheManager {
         return CACHE_CATALOG[key].modelId;
       }
     }
-    for (const modelId of Object.keys(MODEL_ASSET_CATALOG) as RunnableModelType[]) {
+    for (const modelId of Object.keys(MODEL_ASSET_CATALOG) as LegacyRunnableModelType[]) {
       if (MODEL_ASSET_CATALOG[modelId].file === filename) {
         return modelId;
       }
@@ -193,7 +195,10 @@ export class ContainerModelCacheManager {
     return null;
   }
 
-  public getWasmDir(kind: 'mediapipe' | 'ort'): string {
+  public getWasmDir(kind: 'mediapipe' | 'ort' | 'cactus'): string {
+    if (kind === 'cactus') {
+      return path.join(this.rootDir, 'public', 'wasm', 'cactus');
+    }
     return kind === 'mediapipe'
       ? path.join(this.rootDir, 'node_modules', '@mediapipe', 'tasks-vision', 'wasm')
       : path.join(this.rootDir, 'node_modules', 'onnxruntime-web', 'dist');
@@ -467,9 +472,9 @@ export class ContainerModelCacheManager {
 
   public getModelsSnapshot(): Record<RunnableModelType, ContainerModelStatusEntry> {
     return Object.fromEntries(Object.keys(MODEL_ASSET_CATALOG).map(id => {
-      const entry = getVariantCatalogEntry(id as RunnableModelType);
+      const entry = getVariantCatalogEntry(id as LegacyRunnableModelType);
       return [id, { ...this.variantStates.get(`${id}:${entry.variantId}`)! }];
-    })) as Record<RunnableModelType, ContainerModelStatusEntry>;
+    })) as unknown as Record<RunnableModelType, ContainerModelStatusEntry>;
   }
 
   public async getStatusResponse(): Promise<ContainerCacheStatusResponse> {
@@ -687,14 +692,74 @@ export class ContainerModelCacheManager {
           return;
         }
 
+        if (pathname === '/api/model-cache/mirage/mirage.cact') {
+          const candidatePaths = [
+            path.join(this.cacheDir, 'mirage.cact'),
+            '/root/.cache/cactus/models/mirage/76c1e9e53381aca8fc3843c636216c96ff220122/mirage.cact',
+          ];
+          let foundPath: string | null = null;
+          for (const candidate of candidatePaths) {
+            if (existsSync(candidate)) {
+              foundPath = candidate;
+              break;
+            }
+          }
+          if (!foundPath) {
+            try {
+              await mkdir(this.cacheDir, { recursive: true });
+              const upstreamRes = await this.fetchImpl(MIRAGE_UPSTREAM_URL, {
+                method: 'GET',
+                redirect: 'follow',
+              });
+              if (upstreamRes.ok) {
+                const buf = Buffer.from(await upstreamRes.arrayBuffer());
+                if (buf.byteLength >= MIN_VALID_MODEL_BYTES) {
+                  const target = path.join(this.cacheDir, 'mirage.cact');
+                  await writeFile(target, buf);
+                  foundPath = target;
+                }
+              }
+            } catch {
+              // Fall through to 503 if upstream fetch fails
+            }
+          }
+          if (!foundPath) {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(
+              JSON.stringify({
+                error: 'Mirage model not available in container cache; use external fallback',
+                model: 'mirage',
+                variantId: 'mirage-51m',
+                upstreamUrl: MIRAGE_UPSTREAM_URL,
+              })
+            );
+            return;
+          }
+          const bytes = await readFile(foundPath);
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/octet-stream');
+          res.setHeader('Content-Length', String(bytes.byteLength));
+          res.setHeader('Cache-Control', 'public, max-age=3600');
+          res.setHeader('X-Model-Source', 'container-cache');
+          res.setHeader('X-Model-Id', 'mirage');
+          res.setHeader('X-Model-Variant', 'mirage-51m');
+          res.setHeader('X-Model-License', 'Apache-2.0');
+          res.end(req.method === 'HEAD' ? undefined : bytes);
+          return;
+        }
+
         if (
           pathname.startsWith('/api/model-cache/wasm/mediapipe/') ||
-          pathname.startsWith('/api/model-cache/wasm/ort/')
+          pathname.startsWith('/api/model-cache/wasm/ort/') ||
+          pathname.startsWith('/api/model-cache/wasm/cactus/')
         ) {
-          const isMediaPipe = pathname.startsWith('/api/model-cache/wasm/mediapipe/');
-          const prefix = isMediaPipe
-            ? '/api/model-cache/wasm/mediapipe/'
-            : '/api/model-cache/wasm/ort/';
+          const kind = pathname.startsWith('/api/model-cache/wasm/mediapipe/')
+            ? 'mediapipe'
+            : pathname.startsWith('/api/model-cache/wasm/ort/')
+              ? 'ort'
+              : 'cactus';
+          const prefix = `/api/model-cache/wasm/${kind}/`;
           const filename = decodeURIComponent(pathname.slice(prefix.length));
           if (!isSafeFilename(filename)) {
             res.statusCode = 400;
@@ -703,7 +768,7 @@ export class ContainerModelCacheManager {
             return;
           }
 
-          const baseDir = this.getWasmDir(isMediaPipe ? 'mediapipe' : 'ort');
+          const baseDir = this.getWasmDir(kind);
           const filePath = path.resolve(baseDir, filename);
           if (!filePath.startsWith(`${path.resolve(baseDir)}${path.sep}`)) {
             res.statusCode = 403;
