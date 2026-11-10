@@ -394,20 +394,34 @@ export class MirageWebGpuEngine implements MirageTask {
         if (
           this.wasmTask &&
           !this.isWasmInFlight &&
-          ++this.frameCount % 8 === 0
+          (this.frameCount === 0 || this.frameCount % 5 === 0)
         ) {
           this.isWasmInFlight = true;
-          this.wasmTask
-            .detectForVideo(input, confidenceThreshold, extraOptions)
-            .then((objs) => {
+          this.frameCount++;
+          const wasmPromise = this.wasmTask.detectForVideo(input, confidenceThreshold, extraOptions);
+          if (this.wasmCache.length === 0) {
+            try {
+              const objs = await wasmPromise;
               if (!this.owner.closed) {
                 this.fuseWasmObservations(objs);
               }
-            })
-            .catch(() => {})
-            .finally(() => {
+            } catch {
+              // Standalone WebGPU fallback
+            } finally {
               this.isWasmInFlight = false;
-            });
+            }
+          } else {
+            wasmPromise
+              .then((objs) => {
+                if (!this.owner.closed) {
+                  this.fuseWasmObservations(objs);
+                }
+              })
+              .catch(() => {})
+              .finally(() => {
+                this.isWasmInFlight = false;
+              });
+          }
         }
 
         const candidates: CandidatePeak[] = [];
@@ -533,7 +547,7 @@ export class MirageWebGpuEngine implements MirageTask {
 
           const spatialTag = formatSpatialGuidanceTagJa(item.bbox);
 
-          if (bestWasm && bestIoU >= 0.28) {
+          if (bestWasm && bestIoU >= 0.20) {
             finalLabel = bestWasm.label;
             finalCategory = bestWasm.category;
             const baseJa = bestWasm.labelJa.split('（')[0].trim();
@@ -549,7 +563,7 @@ export class MirageWebGpuEngine implements MirageTask {
           const colorHex = getCategoryColor(finalLabel);
           const [cr, cg, cb] = parseHexColor(colorHex);
 
-          const { maskCanvas, maskPolygon, tightBbox } =
+          const { maskCanvas, maskPolygon } =
             this.buildInstanceMaskAndContour(
               item.bbox,
               item.coeffs,
@@ -561,7 +575,7 @@ export class MirageWebGpuEngine implements MirageTask {
               cb
             );
 
-          const finalBbox = tightBbox ?? item.bbox;
+          const finalBbox = item.bbox;
 
           detectedObjects.push({
             id: `mirage-webgpu-obj-${i}-${finalLabel.replace(/\s+/g, '-')}`,
@@ -571,12 +585,32 @@ export class MirageWebGpuEngine implements MirageTask {
             confidence: item.score,
             bbox: finalBbox,
             color: colorHex,
-            ...(maskCanvas ? { maskCanvas } : {}),
-            ...(maskPolygon ? { maskPolygon } : {}),
+            ...(maskCanvas || bestWasm?.maskCanvas ? { maskCanvas: maskCanvas ?? bestWasm?.maskCanvas } : {}),
+            ...(maskPolygon || bestWasm?.maskPolygon ? { maskPolygon: maskPolygon ?? bestWasm?.maskPolygon } : {}),
             areaFraction: Number(
               (finalBbox.width * finalBbox.height).toFixed(4)
             ),
           });
+        }
+
+        // Recover any high-confidence WASM objects that had no matching CenterNet peak
+        if (this.wasmCache.length > 0) {
+          for (const wasmObj of this.wasmCache) {
+            if (detectedObjects.length >= maxDetections) break;
+            if (wasmObj.category === 'テキスト (OCR)') continue;
+            const overlaps = detectedObjects.some(
+              (d) => calculateIoU(d.bbox, wasmObj.bbox) > 0.3
+            );
+            if (!overlaps) {
+              const spatialTag = formatSpatialGuidanceTagJa(wasmObj.bbox);
+              const baseJa = wasmObj.labelJa.split('（')[0].trim();
+              detectedObjects.push({
+                ...wasmObj,
+                id: `mirage-fused-${wasmObj.id}`,
+                labelJa: `${baseJa}（${spatialTag}）`,
+              });
+            }
+          }
         }
 
         // Extract OCR text regions from channel 5 of dense_out when enabled
@@ -647,51 +681,41 @@ export class MirageWebGpuEngine implements MirageTask {
           bestIdx = c;
         }
       }
-      if (bestVal > 0.45 && MIRAGE_OPEN_VOCAB_LABELS[bestIdx]) {
+      if (bestVal > 0.05 && MIRAGE_OPEN_VOCAB_LABELS[bestIdx]) {
         return MIRAGE_OPEN_VOCAB_LABELS[bestIdx];
       }
     }
 
-    // 2. High-contrast icon / logo detection (app icon or logo)
-    if (
-      area >= 0.06 &&
-      Math.abs(aspect - 1.0) < 0.28 &&
-      (rMean > 0.85 || gMean > 0.85 || bMean > 0.85 || rMean < 0.15)
-    ) {
-      return 'logo';
-    }
-
-    // 3. Warm skin-like / portrait detection
+    // 2. Warm skin-like / portrait detection
     const isWarmSkin =
-      rMean > 0.38 &&
-      gMean > 0.24 &&
+      rMean > 0.35 &&
+      gMean > 0.22 &&
       bMean > 0.15 &&
       rMean > gMean * 1.05 &&
       gMean >= bMean * 0.90;
 
-    if (isWarmSkin && area >= 0.05 && aspect >= 0.45 && aspect <= 1.45) {
+    if (isWarmSkin && area >= 0.04 && aspect >= 0.35 && aspect <= 1.60) {
       return 'person';
     }
 
-    // 4. Tall slender object
-    if (aspect < 0.50 && bbox.height >= 0.20) {
+    // 3. Common scene items
+    if (aspect < 0.55 && bbox.height >= 0.18) {
       return 'bottle';
     }
 
-    // 5. Broad horizontal rectangular container (software window / panel)
-    if (aspect > 1.25 && area >= 0.08) {
-      if (rMean > 0.72 && gMean > 0.72 && bMean > 0.72) {
-        return 'software window';
-      }
-      return bMean > rMean * 1.12 ? 'software window' : 'laptop';
+    if (aspect > 1.30 && area >= 0.08) {
+      return 'table';
     }
 
-    // 6. Vertical sidebar / card
-    if (aspect < 0.60 && area >= 0.07) {
-      return 'sidebar';
+    if (aspect >= 0.65 && aspect <= 1.35 && area >= 0.03 && area < 0.15) {
+      return 'chair';
     }
 
-    return 'box';
+    if (area < 0.04 && aspect > 0.60 && aspect < 1.40) {
+      return 'cup';
+    }
+
+    return 'object';
   }
 
   private buildInstanceMaskAndContour(
@@ -708,10 +732,12 @@ export class MirageWebGpuEngine implements MirageTask {
     maskPolygon?: Array<{ x: number; y: number }>;
     tightBbox?: BoundingBox;
   } {
-    const minPx = Math.max(0, Math.floor(bbox.x * protoSize));
-    const maxPx = Math.min(protoSize, Math.ceil((bbox.x + bbox.width) * protoSize));
-    const minPy = Math.max(0, Math.floor(bbox.y * protoSize));
-    const maxPy = Math.min(protoSize, Math.ceil((bbox.y + bbox.height) * protoSize));
+    const padX = Math.max(2, Math.round(bbox.width * protoSize * 0.15));
+    const padY = Math.max(2, Math.round(bbox.height * protoSize * 0.15));
+    const minPx = Math.max(0, Math.floor(bbox.x * protoSize) - padX);
+    const maxPx = Math.min(protoSize, Math.ceil((bbox.x + bbox.width) * protoSize) + padX);
+    const minPy = Math.max(0, Math.floor(bbox.y * protoSize) - padY);
+    const maxPy = Math.min(protoSize, Math.ceil((bbox.y + bbox.height) * protoSize) + padY);
 
     let minActiveX = protoSize;
     let maxActiveX = -1;
