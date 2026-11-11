@@ -21,6 +21,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up pinned Node before research dependency installation
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Validate repository contract before research dependency installation
+        run: |
+          node scripts/testing/run.mjs preflight
+          node scripts/testing/run.mjs preflight-tests
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
@@ -39,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: mirage-research-controls
-          path: .cache/test-runs/mirage-research-controls/
+          path: .cache/test-runs/
           include-hidden-files: true
           retention-days: 14
 
