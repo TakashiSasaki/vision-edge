@@ -184,3 +184,28 @@ report records the exact wheel identity; it is not inferred from version alone.
 Raw logs, initial failures, generated fixtures and ONNX files are preserved under
 `.cache/mirage-resume/`. Committed numerical reports contain measurements and
 identities; model binaries are excluded from Git.
+
+## Review and application regressions
+
+The cumulative change from PR #36's `dc28e44` to implementation commit
+`5795226eda397501d00c0d479506ed93b44ca08a` (tree
+`7b79c69c126f5ea67d2974c1bfad7df1937273c5`) received independent review with no
+blocking code findings for this research-only scope. The reviewer independently
+checked the original artifact identities, all 583 inventory rows, all 112 saved
+ONNX hashes/checkers, detailed comparison counts, and the native fixture hashes.
+They reran all 21 controls and reproduced the first FP32 stress failure.
+
+The prescribed `verify:offline` application checks all passed: preflight with
+702 protected files unchanged, 60 preflight controls, typecheck, lint, 847 unit
+tests, 73 foundation tests, 40 delegate tests, 37 output tests, build, 33 browser
+tests, and seven stylesheet controls (two healthy, five expected faults).
+The built CSS, application JavaScript and WASM-worker JavaScript are byte-for-byte
+identical to the pre-documentation/version-bump build using the same dependencies.
+The version is 1.0.32; no application source or npm dependency graph changed.
+
+[`mirage-research-validation.json`](verification/mirage-research-validation.json)
+records the commands, counts, raw-log hashes, independent review and asset hashes.
+The local offline run started with the pre-commit dirty tree; that metadata is
+retained accurately. Its tested source was then committed without modification.
+Hosted PR checks are a separate verification of the final committed head; do not
+substitute the old PR #36 CI or local launch SHA for those checks.
