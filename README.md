@@ -12,6 +12,11 @@ region mask and enclosing box, not per-person instance segmentation),
 `src/services/modelRegistry.ts` defines the names, implementation status,
 outputs and descriptions shared by the engine, selectors, model dialog and HUD.
 
+**Mirage** uses the original `.cact` model in a Cactus WASM worker. Its ONNX
+variant is unavailable until a faithful export passes reference-output checks;
+synthetic model generation and fallback are disabled. See the
+[Mirage ONNX status and validation requirements](docs/mirage-onnx-status.md).
+
 Each App owns one engine and at most one active task. Model state is separate from
 camera state: `idle`, `loading`, `ready`, or `error`. Only the selected task is
 created; duplicate pending requests share a Promise. Failures retain their WASM or

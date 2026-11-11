@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from './App';
 import { VisionEngine, type SegmenterTask, type VisionTaskFactory } from './services/visionEngine';
+import { ModelStatus } from './components/ModelStatus';
+import { MIRAGE_WEBGPU_UNAVAILABLE_CODE, MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA } from './services/mirageAvailability';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -55,22 +57,27 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   expect(model).toHaveValue('segformer');
   expect(variantSelect).toHaveValue('b0');
   await user.selectOptions(model, 'mirage');
-  await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mirage', variantId: 'mirage-webgpu' }));
-  expect(model).toHaveValue('mirage');
-  expect(variantSelect).toHaveValue('mirage-webgpu');
-  expect(within(header).getByLabelText('バックエンド状態')).toHaveTextContent('Mirage WebGPU (ONNX Runtime Web / WebGPU 優先)');
-  await user.selectOptions(variantSelect, 'mirage-51m');
   await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mirage', variantId: 'mirage-51m' }));
+  expect(model).toHaveValue('mirage');
+  expect(within(variantSelect).getByRole('option', { name: /Mirage WebGPU/ })).toBeDisabled();
+  await user.selectOptions(variantSelect, 'mirage-webgpu');
   expect(variantSelect).toHaveValue('mirage-51m');
+  expect(f.factory.mirage).toHaveBeenCalledTimes(1);
+  expect(f.factory.mirage).toHaveBeenCalledWith(expect.objectContaining({ variantId: 'mirage-51m' }));
   expect(within(header).getByLabelText('バックエンド状態')).toHaveTextContent('Cactus WebAssembly (CPU / Web Worker 非同期推論)');
   await user.selectOptions(model, 'mediapipe');
   await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mediapipe', variantId: 'lite0' }));
   await user.click(within(header).getByRole('button', { name: '仕様' }));
   const dialog = screen.getByRole('dialog');
-  for (const name of [/General/, /EfficientDet-Lite0/, /YOLOv8n-seg/, /SegFormer-B0/, /Mirage WebGPU/, /Mirage 51\.3M/]) {
+  for (const name of [/General/, /EfficientDet-Lite0/, /YOLOv8n-seg/, /SegFormer-B0/, /Mirage 51\.3M/]) {
     const button = within(dialog).getByRole('button', { name });
     expect(button).not.toBeDisabled();
   }
+  const blockedMirage = within(dialog).getByRole('button', { name: /Mirage WebGPU/ });
+  expect(blockedMirage).toBeDisabled();
+  expect(blockedMirage).toHaveTextContent(MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA);
+  await user.click(blockedMirage);
+  expect(model).toHaveValue('mediapipe');
   expect(within(dialog).queryByText('稼働中')).not.toBeInTheDocument();
   await user.click(within(dialog).getByRole('button', { name: /General/ }));
   expect(model).toHaveValue('selfie-segmenter');
@@ -78,6 +85,25 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   expect(screen.queryByText('現在しきい値を超える物体はありません')).not.toBeInTheDocument();
   expect(screen.getByLabelText('推論FPS')).toHaveTextContent('推論: 未計測');
   expect(document.body).not.toHaveTextContent(/\d+\s*FPS|\d+ms|稼働中/);
+});
+
+it('rejects blocked Mirage initialization before custom factories and offers the native variant without a futile retry', async () => {
+  const f = fixture();
+  const blocked = await f.engine.initialize('mirage', 'mirage-webgpu');
+  expect(blocked).toMatchObject({
+    status: 'error', model: 'mirage', variantId: 'mirage-webgpu', stage: 'task',
+    cause: { code: MIRAGE_WEBGPU_UNAVAILABLE_CODE },
+  });
+  expect(f.factory.mirage).not.toHaveBeenCalled();
+  expect(f.factory.load).not.toHaveBeenCalled();
+  const retry = vi.fn();
+  render(<ModelStatus state={f.engine.getState()} onRetry={retry} />);
+  expect(screen.getByRole('alert')).toHaveTextContent(MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA);
+  expect(screen.queryByRole('button', { name: 'モデルを再試行' })).not.toBeInTheDocument();
+  expect(retry).not.toHaveBeenCalled();
+  expect(await f.engine.initialize('mirage')).toMatchObject({ status: 'ready', variantId: 'mirage-51m' });
+  expect(f.factory.mirage).toHaveBeenCalledTimes(1);
+  f.engine.dispose();
 });
 
 it('renders WASM failure separately from camera failure, and retries only on the explicit button', async () => {

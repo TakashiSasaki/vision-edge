@@ -7,6 +7,7 @@ import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './
 import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
 import { createMirageWasmTask, type MirageTask, type MirageTaskOptions } from './mirageWasmService';
 import { unknownOnnxBackend } from './onnxSession';
+import { mirageWebGpuUnavailableError } from './mirageAvailability';
 import { getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSources, type AssetSourceRecorder, type AssetDeliverySource } from './modelAssetResolver';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
@@ -156,7 +157,11 @@ export class VisionEngine {
 
   initialize(model: RunnableModelType, variantId?: string): Promise<InitializationResult> {
     requireRunnableModel(model);
-    const targetVariantId = getVariantCatalogEntry(model, variantId).variantId;
+    // Keep blocked variants in the normal initialization/error lifecycle without
+    // resolving a downloadable asset or allowing an injected factory to bypass it.
+    const targetVariantId = model === 'mirage' && variantId === 'mirage-webgpu'
+      ? variantId
+      : getVariantCatalogEntry(model, variantId).variantId;
     if (this.state.model === model && this.state.variantId === targetVariantId) {
       if (this.state.status === 'loading' && this.pending) return this.pending;
       if (this.state.status === 'ready') return Promise.resolve(this.state);
@@ -199,6 +204,7 @@ export class VisionEngine {
           active = { model, variantId: targetVariantId, task };
         } else if (model === 'mirage') {
           stage = 'task';
+          if (targetVariantId === 'mirage-webgpu') throw mirageWebGpuUnavailableError();
           const mirageCreator = factory.mirage ?? createMirageWasmTask;
           const task = await mirageCreator({ variantId: targetVariantId as MirageVariantId, recordAssetSource });
           if (!task) throw new Error('Model task was not created');

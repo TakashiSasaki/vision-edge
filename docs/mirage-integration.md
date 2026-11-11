@@ -1,5 +1,10 @@
 # Cactus Mirage (51.3M) 技術知見・統合ドキュメント
 
+> Current implementation: the official `.cact` WASM variant is the default.
+> ONNX is unavailable pending a faithful export and reference-output validation.
+> The native measurements below do not establish ONNX equivalence. See
+> [current status and acceptance requirements](mirage-onnx-status.md).
+
 本ドキュメントは、Cactus Compute が公開した知覚特化型超軽量ビジョンモデル「**Mirage**」の技術的仕様、実機検証（8枚のテスト画像）で判明した動作特性、エッジケースとその回避策、既存ビジョンパイプライン（VisionStudio AI）との統合方法、およびハイブリッドルーティングのベストプラクティスをまとめたリファレンスです。
 
 ---

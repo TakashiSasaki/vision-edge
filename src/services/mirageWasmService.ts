@@ -20,6 +20,7 @@ import type {
   MirageWorkerRequest,
   MirageWorkerResponse,
 } from './mirageWasmWorker';
+import { mirageWebGpuUnavailableError } from './mirageAvailability';
 
 export interface MirageInferExtraOptions {
   iouThreshold?: number;
@@ -367,21 +368,8 @@ export async function createMirageWasmTask(
 ): Promise<MirageTask> {
   const variantId: MirageVariantId = options.variantId ?? 'mirage-51m';
 
-  if (variantId === 'mirage-webgpu' && !options.workerFactory) {
-    const { createMirageWebGpuTask } = await import('./mirageWebGpuService');
-    let wasmTask: MirageTask | undefined;
-    try {
-      wasmTask = await createMirageWasmTask({
-        variantId: 'mirage-51m',
-        recordAssetSource: options.recordAssetSource,
-      });
-    } catch {
-      wasmTask = undefined;
-    }
-    return createMirageWebGpuTask({
-      recordAssetSource: options.recordAssetSource,
-      wasmTask,
-    });
+  if (variantId === 'mirage-webgpu') {
+    throw mirageWebGpuUnavailableError();
   }
 
   const asset = await resolveModelAssetUrls('mirage', variantId);

@@ -24,7 +24,7 @@ import {
   type ContainerModelStatusEntry,
   getVariantCatalogEntry,
 } from './modelAssetResolver.ts';
-import { buildMirageWebGpuOnnxBytes } from './mirageOnnxConverter.ts';
+import { MIRAGE_WEBGPU_UNAVAILABLE_CODE, MIRAGE_WEBGPU_UNAVAILABLE_REASON } from './mirageAvailability.ts';
 
 type CacheCatalogEntry = Omit<ModelVariantCatalogEntry, 'modelId'> & {
   modelId: CacheAssetModelId; expectedSize?: number; expectedSha256?: string;
@@ -751,29 +751,18 @@ export class ContainerModelCacheManager {
         }
 
         if (pathname === '/api/model-cache/mirage/mirage-webgpu.onnx') {
-          const targetPath = path.join(this.cacheDir, 'mirage-webgpu.onnx');
-          let bytes: Buffer;
-          if (existsSync(targetPath)) {
-            bytes = await readFile(targetPath);
-          } else {
-            const generated = Buffer.from(buildMirageWebGpuOnnxBytes());
-            try {
-              await mkdir(this.cacheDir, { recursive: true });
-              await writeFile(targetPath, generated);
-            } catch {
-              // Ignore write error and serve generated buffer directly
-            }
-            bytes = generated;
-          }
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/octet-stream');
-          res.setHeader('Content-Length', String(bytes.byteLength));
-          res.setHeader('Cache-Control', 'public, max-age=3600');
-          res.setHeader('X-Model-Source', 'container-cache');
-          res.setHeader('X-Model-Id', 'mirage');
-          res.setHeader('X-Model-Variant', 'mirage-webgpu');
-          res.setHeader('X-Model-License', 'Apache-2.0');
-          res.end(req.method === 'HEAD' ? undefined : bytes);
+          // Old generated files are not validated Mirage exports. Keep them on
+          // disk for inspection, but never serve them or generate replacements.
+          res.statusCode = 503;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-store');
+          res.end(req.method === 'HEAD' ? undefined : JSON.stringify({
+            status: 'unavailable',
+            code: MIRAGE_WEBGPU_UNAVAILABLE_CODE,
+            error: MIRAGE_WEBGPU_UNAVAILABLE_REASON,
+            model: 'mirage',
+            variantId: 'mirage-webgpu',
+          }));
           return;
         }
 

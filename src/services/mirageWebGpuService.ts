@@ -6,19 +6,15 @@ import type {
   OnnxBackendInfo,
 } from '../types/vision';
 import {
-  createOrtSession,
   disposeTensors,
   OnnxInferenceError,
   OnnxSessionOwner,
   unknownOnnxBackend,
 } from './onnxSession';
 import { getCategoryColor, getLabelInfo } from './dictionary';
+import type { AssetSourceRecorder } from './modelAssetResolver';
+import { mirageWebGpuUnavailableError } from './mirageAvailability';
 import {
-  resolveModelAssetUrls,
-  type AssetSourceRecorder,
-} from './modelAssetResolver';
-import {
-  buildMirageWebGpuOnnxBytes,
   MIRAGE_OPEN_VOCAB_LABELS,
   MIRAGE_WEBGPU_GRID_SIZE,
   MIRAGE_WEBGPU_INPUT_SIZE,
@@ -271,13 +267,13 @@ interface CandidatePeak {
   label: string;
 }
 
+/** Unvalidated legacy decoder retained for isolated research; its public factory is blocked. */
 export class MirageWebGpuEngine implements MirageTask {
   private inputCanvas: HTMLCanvasElement | null = null;
   private inputCtx: CanvasRenderingContext2D | null = null;
   private readonly owner: OnnxSessionOwner;
-  private wasmCache: DetectedObject[] = [];
   private wasmTask: MirageTask | null = null;
-  private isWasmInFlight = false;
+  private inferenceInFlight = false;
   private frameCount = 0;
 
   constructor(
@@ -290,14 +286,24 @@ export class MirageWebGpuEngine implements MirageTask {
   }
 
   public setWasmTask(wasmTask: MirageTask | null): void {
+    if (this.owner.closed) {
+      throw new OnnxInferenceError('Mirage-WebGPU', 'closed', 'task is closed');
+    }
+    if (this.inferenceInFlight) {
+      throw new OnnxInferenceError('Mirage-WebGPU', 'run', 'cannot replace the WASM task during inference');
+    }
+    if (this.wasmTask === wasmTask) return;
+    const previousTask = this.wasmTask;
     this.wasmTask = wasmTask;
-  }
-
-  public fuseWasmObservations(objects: DetectedObject[]): void {
-    this.wasmCache = objects;
+    try {
+      previousTask?.close();
+    } catch {
+      // The former task is retired even if its cleanup fails.
+    }
   }
 
   public close(): void {
+    void this.owner.close();
     this.inputCanvas = null;
     this.inputCtx = null;
     if (this.wasmTask) {
@@ -308,7 +314,6 @@ export class MirageWebGpuEngine implements MirageTask {
       }
       this.wasmTask = null;
     }
-    void this.owner.close();
   }
 
   public async detectForVideo(
@@ -316,7 +321,14 @@ export class MirageWebGpuEngine implements MirageTask {
     confidenceThreshold = 0.25,
     extraOptions?: MirageInferExtraOptions
   ): Promise<DetectedObject[]> {
+    // The canvas belongs to one call until both runtimes have finished reading it.
+    // Reject overlap instead of allowing a later frame to overwrite that snapshot.
+    if (this.inferenceInFlight) {
+      throw new OnnxInferenceError('Mirage-WebGPU', 'run', 'inference is already in progress');
+    }
+    this.inferenceInFlight = true;
     return this.owner.use(async () => {
+      const frameOptions = { ...extraOptions };
       const S = MIRAGE_WEBGPU_INPUT_SIZE;
       if (!this.inputCanvas) {
         this.inputCanvas = document.createElement('canvas');
@@ -335,6 +347,8 @@ export class MirageWebGpuEngine implements MirageTask {
         );
       }
 
+      const frameCanvas = this.inputCanvas;
+      const frameNumber = ++this.frameCount;
       ctx.drawImage(input as CanvasImageSource, 0, 0, S, S);
       const imgData = ctx.getImageData(0, 0, S, S);
       const rgba = imgData.data;
@@ -386,43 +400,41 @@ export class MirageWebGpuEngine implements MirageTask {
         const G = MIRAGE_WEBGPU_GRID_SIZE; // 32
         const gridArea = G * G;
         const threshold = Math.max(0.15, Math.min(0.95, confidenceThreshold));
-        const iouThreshold = extraOptions?.iouThreshold ?? 0.45;
-        const maxDetections = extraOptions?.maxDetections ?? 15;
-        const includeOcr = extraOptions?.includeOcr ?? true;
+        const iouThreshold = frameOptions.iouThreshold ?? 0.45;
+        const requestedMax = frameOptions.maxDetections ?? 15;
+        const maxDetections = Number.isFinite(requestedMax)
+          ? Math.max(0, Math.floor(requestedMax))
+          : 15;
+        const includeOcr = frameOptions.includeOcr ?? true;
 
-        // Trigger background WASM engine perception for open-vocabulary and OCR label enrichment
-        if (
-          this.wasmTask &&
-          !this.isWasmInFlight &&
-          (this.frameCount === 0 || this.frameCount % 5 === 0)
-        ) {
-          this.isWasmInFlight = true;
-          this.frameCount++;
-          const wasmPromise = this.wasmTask.detectForVideo(input, confidenceThreshold, extraOptions);
-          if (this.wasmCache.length === 0) {
-            try {
-              const objs = await wasmPromise;
-              if (!this.owner.closed) {
-                this.fuseWasmObservations(objs);
-              }
-            } catch {
-              // Standalone WebGPU fallback
-            } finally {
-              this.isWasmInFlight = false;
-            }
-          } else {
-            wasmPromise
-              .then((objs) => {
-                if (!this.owner.closed) {
-                  this.fuseWasmObservations(objs);
-                }
-              })
-              .catch(() => {})
-              .finally(() => {
-                this.isWasmInFlight = false;
-              });
+        // Research-only fusion uses the same captured pixels for this call. There
+        // is deliberately no cross-frame cache: skipped/failed frames have no
+        // native observations, and late results after close are discarded.
+        let wasmObservations: DetectedObject[] = [];
+        if (this.wasmTask && (frameNumber === 1 || frameNumber % 5 === 0)) {
+          try {
+            const observations = await this.wasmTask.detectForVideo(
+              frameCanvas,
+              confidenceThreshold,
+              { ...frameOptions, maxDetections }
+            );
+            if (this.owner.closed) return [];
+            wasmObservations = observations.filter((obj) => {
+              const isOcr = obj.category === 'テキスト (OCR)';
+              const requiredConfidence = Math.max(
+                confidenceThreshold,
+                threshold,
+                isOcr ? 0.25 : 0
+              );
+              return (!isOcr || includeOcr)
+                && Number.isFinite(obj.confidence)
+                && obj.confidence >= requiredConfidence;
+            }).slice(0, maxDetections);
+          } catch {
+            // No native observations for this frame. Later cadence slots retry.
           }
         }
+        if (this.owner.closed) return [];
 
         const candidates: CandidatePeak[] = [];
 
@@ -529,14 +541,14 @@ export class MirageWebGpuEngine implements MirageTask {
         for (let i = 0; i < selected.length; i++) {
           const item = selected[i];
 
-          // Check if an overlapping WASM observation exists in the fusion cache
+          // Match only native observations produced from this frame's snapshot.
           let finalLabel = item.label;
           let finalLabelJa: string;
           let finalCategory: string;
 
           let bestIoU = 0;
           let bestWasm: DetectedObject | null = null;
-          for (const wasmObj of this.wasmCache) {
+          for (const wasmObj of wasmObservations) {
             if (wasmObj.category === 'テキスト (OCR)') continue;
             const iou = calculateIoU(item.bbox, wasmObj.bbox);
             if (iou > bestIoU) {
@@ -594,8 +606,8 @@ export class MirageWebGpuEngine implements MirageTask {
         }
 
         // Recover any high-confidence WASM objects that had no matching CenterNet peak
-        if (this.wasmCache.length > 0) {
-          for (const wasmObj of this.wasmCache) {
+        if (wasmObservations.length > 0) {
+          for (const wasmObj of wasmObservations) {
             if (detectedObjects.length >= maxDetections) break;
             if (wasmObj.category === 'テキスト (OCR)') continue;
             const overlaps = detectedObjects.some(
@@ -621,7 +633,7 @@ export class MirageWebGpuEngine implements MirageTask {
             gridArea,
             Math.max(0.25, threshold),
             maxDetections - detectedObjects.length,
-            this.wasmCache
+            wasmObservations
           );
           detectedObjects.push(...ocrRegions);
         }
@@ -630,6 +642,8 @@ export class MirageWebGpuEngine implements MirageTask {
       } finally {
         disposeTensors(owned);
       }
+    }).finally(() => {
+      this.inferenceInFlight = false;
     });
   }
 
@@ -822,7 +836,7 @@ export class MirageWebGpuEngine implements MirageTask {
     gridArea: number,
     textThreshold: number,
     maxLines: number,
-    wasmCache?: readonly DetectedObject[]
+    wasmObservations?: readonly DetectedObject[]
   ): DetectedObject[] {
     if (maxLines <= 0) return [];
     const textOffset = 5 * gridArea;
@@ -871,9 +885,9 @@ export class MirageWebGpuEngine implements MirageTask {
 
         // Check if WASM engine recognized the exact OCR string for this region
         let matchedText: string | null = null;
-        if (wasmCache && wasmCache.length > 0) {
+        if (wasmObservations && wasmObservations.length > 0) {
           let bestOcrIoU = 0;
-          for (const item of wasmCache) {
+          for (const item of wasmObservations) {
             if (item.category !== 'テキスト (OCR)') continue;
             const iou = calculateIoU(bbox, item.bbox);
             if (iou > bestOcrIoU) {
@@ -907,33 +921,8 @@ export class MirageWebGpuEngine implements MirageTask {
 export async function createMirageWebGpuTask(
   options: MirageWebGpuTaskOptions = {}
 ): Promise<MirageTask> {
-  if (options.modelUrl) {
-    const { session, backend } = await createOrtSession(
-      options.modelUrl,
-      options.delegate,
-      {
-        recordAssetSource: options.recordAssetSource,
-        modelId: 'mirage',
-        variantId: 'mirage-webgpu',
-        primarySource: 'external',
-        fallbackModelBytes: () => buildMirageWebGpuOnnxBytes(),
-      }
-    );
-    return new MirageWebGpuEngine(session, backend, options.wasmTask);
-  }
-
-  const resolved = await resolveModelAssetUrls('mirage', 'mirage-webgpu');
-  const { session, backend } = await createOrtSession(
-    resolved.primaryUrl,
-    options.delegate,
-    {
-      fallbackModelUrl: resolved.fallbackUrl,
-      fallbackModelBytes: () => buildMirageWebGpuOnnxBytes(),
-      variantId: 'mirage-webgpu',
-      recordAssetSource: options.recordAssetSource,
-      modelId: 'mirage',
-      primarySource: resolved.source,
-    }
-  );
-  return new MirageWebGpuEngine(session, backend, options.wasmTask);
+  // Even a caller-supplied URL cannot bypass the missing fidelity evidence.
+  // Keep the decoder class available for isolated research and fixture tests.
+  void options;
+  throw mirageWebGpuUnavailableError();
 }
