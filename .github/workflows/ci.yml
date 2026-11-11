@@ -13,6 +13,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  mirage-research-controls:
+    name: Mirage research controls (synthetic, no model downloads)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install isolated pinned numerical tooling
+        run: |
+          mkdir -p .cache/test-runs/mirage-research-controls
+          python -m venv .cache/mirage-ci-python
+          .cache/mirage-ci-python/bin/python -m pip install -r scripts/mirage/requirements-hconvglu.txt > .cache/test-runs/mirage-research-controls/install.log 2>&1
+      - name: Run operator and encoder controls without checkpoints
+        run: |
+          mkdir -p .cache/test-runs/mirage-research-controls
+          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_hconvglu.py' -v > .cache/test-runs/mirage-research-controls/hconvglu.log 2>&1
+          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_encoder_candidate.py' -v > .cache/test-runs/mirage-research-controls/encoder.log 2>&1
+      - name: Upload raw research control logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mirage-research-controls
+          path: .cache/test-runs/mirage-research-controls/
+          include-hidden-files: true
+          retention-days: 14
+
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15

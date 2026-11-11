@@ -1,0 +1,82 @@
+{
+  "square_blank": {
+    "shape": [
+      512,
+      512,
+      3
+    ],
+    "rgb_sha256": "902ab44f9b6b07c34a29958b325726ba7f6d506403335cf95a2af25e0ca1ad00"
+  },
+  "landscape_blank": {
+    "shape": [
+      256,
+      512,
+      3
+    ],
+    "rgb_sha256": "c97fce784428a2e10cd6d4ef97ccc756f2e4c1b146a9b9dc5415d4e3e245b70a"
+  },
+  "portrait_blank": {
+    "shape": [
+      512,
+      256,
+      3
+    ],
+    "rgb_sha256": "c97fce784428a2e10cd6d4ef97ccc756f2e4c1b146a9b9dc5415d4e3e245b70a"
+  },
+  "small_objects": {
+    "shape": [
+      512,
+      512,
+      3
+    ],
+    "rgb_sha256": "9ac43e75c00b4b331cb8af4f6ad899a04d0eafe946344f3c6ffa6a79dd1e50d8"
+  },
+  "boundary_objects": {
+    "shape": [
+      256,
+      512,
+      3
+    ],
+    "rgb_sha256": "d25e46b5ea08ef7beea383a5a03da439794647304d017dd1e3b7083bf766189a"
+  },
+  "overlap_shapes": {
+    "shape": [
+      512,
+      512,
+      3
+    ],
+    "rgb_sha256": "32f352b43145f112fcc5b626a926ae22b882715dba02f1479e4d18d8ce8c74c9"
+  },
+  "text_regions": {
+    "shape": [
+      256,
+      512,
+      3
+    ],
+    "rgb_sha256": "0e3bef220dd089069579e24a4340a1a33caafbac1cf5f4fbb8e0e087c226af44"
+  },
+  "photo_original_portrait": {
+    "shape": [
+      512,
+      342,
+      3
+    ],
+    "rgb_sha256": "dbb207d687cb0e63667d34c939df3308c582d8bd820a578369c86e2fce529214"
+  },
+  "photo_square_stretched": {
+    "shape": [
+      512,
+      512,
+      3
+    ],
+    "rgb_sha256": "c98e1155c00e1a06e3922fbee85ea20cb35cf7f3ff3df7c5ba0a048d785a5210"
+  },
+  "photo_rotated_landscape": {
+    "shape": [
+      342,
+      512,
+      3
+    ],
+    "rgb_sha256": "70683bc3677f8bbc04d1f2d5b644eb882d6f0cdae128058020524917491947a8"
+  }
+}
