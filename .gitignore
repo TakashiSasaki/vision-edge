@@ -20,3 +20,6 @@ blob-report/
 Thumbs.db
 bun.lock
 bun.lockb
+
+# Local Python verification bytecode
+__pycache__/

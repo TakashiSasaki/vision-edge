@@ -29,6 +29,8 @@ jobs:
         run: node scripts/testing/run.mjs preflight
       - name: Repository preflight controls (no dependencies)
         run: node scripts/testing/run.mjs preflight-tests
+      - name: Check Mirage checkpoint tooling (synthetic, no model downloads)
+        run: python3 -m unittest discover -s scripts/mirage -p 'test_verify_checkpoint.py' -v
       - name: Set up npm dependency cache
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
