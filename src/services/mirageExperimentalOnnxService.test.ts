@@ -15,6 +15,7 @@ import {
   MIRAGE_EXPERIMENTAL_ONNX_FILE,
   MIRAGE_EXPERIMENTAL_ONNX_FINAL_OUTPUTS,
   MirageExperimentalOnnxEngine,
+  fetchModelBuffer,
   packResizedPixelsToMirageTensor,
   verifyMirageExperimentalOnnxBytes,
   type MirageCeil32PreprocessMetadata,
@@ -559,5 +560,85 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
     expect(computeBoxIou([0, 0, 10, 10], [0, 0, 10, 10])).toBe(1);
     visionEngine.dispose();
     vi.restoreAllMocks();
+  });
+
+  describe('fetchModelBuffer', () => {
+    it('fetches large models in chunks using HTTP Range requests', async () => {
+      const mockTotalSize = 34_281_503;
+      const CHUNK_SIZE = 16 * 1024 * 1024;
+      const c1Size = CHUNK_SIZE;
+      const c2Size = CHUNK_SIZE;
+      const c3Size = mockTotalSize - 2 * CHUNK_SIZE;
+
+      const c1Data = new Uint8Array(c1Size).fill(1);
+      const c2Data = new Uint8Array(c2Size).fill(2);
+      const c3Data = new Uint8Array(c3Size).fill(3);
+
+      const requestedRanges: string[] = [];
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
+        const range = (init?.headers as Record<string, string>)?.['Range'] ?? '';
+        requestedRanges.push(range);
+
+        let body: Uint8Array;
+        if (range === `bytes=0-${c1Size - 1}`) {
+          body = c1Data;
+        } else if (range === `bytes=${c1Size}-${c1Size + c2Size - 1}`) {
+          body = c2Data;
+        } else {
+          body = c3Data;
+        }
+
+        return new Response(body, {
+          status: 206,
+          headers: {
+            'Content-Range': `${range}/${mockTotalSize}`,
+            'Content-Length': String(body.byteLength),
+          },
+        });
+      });
+
+      const onChunkSpy = vi.fn();
+      const buffer = await fetchModelBuffer('https://mock.invalid/model.onnx', {
+        expectedSize: mockTotalSize,
+        onChunk: onChunkSpy,
+      });
+
+      expect(fetchSpy).toHaveBeenCalledTimes(3);
+      expect(requestedRanges).toEqual([
+        `bytes=0-${c1Size - 1}`,
+        `bytes=${c1Size}-${c1Size + c2Size - 1}`,
+        `bytes=${c1Size + c2Size}-${mockTotalSize - 1}`,
+      ]);
+      expect(onChunkSpy).toHaveBeenCalledTimes(3);
+      expect(buffer.byteLength).toBe(mockTotalSize);
+
+      const uint8 = new Uint8Array(buffer);
+      expect(uint8[0]).toBe(1);
+      expect(uint8[c1Size]).toBe(2);
+      expect(uint8[c1Size + c2Size]).toBe(3);
+
+      fetchSpy.mockRestore();
+    });
+
+    it('falls back to single payload when server returns 200 on first chunk', async () => {
+      const mockSize = 34_281_503;
+      const fullData = new Uint8Array(mockSize).fill(42);
+
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+        return new Response(fullData, {
+          status: 200,
+          headers: { 'Content-Length': String(mockSize) },
+        });
+      });
+
+      const buffer = await fetchModelBuffer('https://mock.invalid/model.onnx', {
+        expectedSize: mockSize,
+      });
+
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      expect(buffer.byteLength).toBe(mockSize);
+
+      fetchSpy.mockRestore();
+    });
   });
 });

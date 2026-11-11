@@ -19,6 +19,8 @@ import { VisionEngine, type ExtraInferenceOptions } from './services/visionEngin
 import { modelMetadata, isRunnableModel, getVariantMetadata } from './services/modelRegistry';
 import { isMirageExperimentalVariant } from './services/mirageExperimentalOnnxService';
 import { ModelStatus } from './components/ModelStatus';
+import { DiagnosticsModal } from './components/DiagnosticsModal';
+import { diagnosticLogger } from './services/diagnosticLogger';
 import { speechService } from './services/speechService';
 
 function drawSyntheticFixtureCanvas(
@@ -92,6 +94,7 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
   const [stillImageSource, setStillImageSource] = useState<StillImageSource | null>(null);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isComparisonOpen, setIsComparisonOpen] = useState<boolean>(false);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState<boolean>(false);
 
   const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
   const [lastFrame, setLastFrame] = useState<DetectionFrame | null>(null);
@@ -101,6 +104,9 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
   const detectedObjects = hasCurrentFrame ? lastFrame.objects : [];
 
   useEffect(() => () => engine.dispose(), [engine]);
+  useEffect(() => {
+    diagnosticLogger.enableServerTelemetry(true);
+  }, []);
   useEffect(() => { if (!classifierMode) void engine.initialize(activeModel, activeVariant); }, [engine, activeModel, activeVariant, classifierMode]);
 
   const [modelParams, setModelParams] = useState<PerModelParameterConfig>(() =>
@@ -341,9 +347,14 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
         onToggleTTS={() => setTTSConfig(prev => ({ ...prev, enabled: !prev.enabled }))}
         isSpeaking={isSpeaking}
         onOpenComparison={() => setIsComparisonOpen(true)}
+        onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
       />
 
-      <ModelStatus state={modelState} onRetry={() => { void engine.initialize(activeModel, activeVariant); }} />
+      <ModelStatus
+        state={modelState}
+        onRetry={() => { void engine.initialize(activeModel, activeVariant); }}
+        onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
+      />
 
       {/* Zero-Scroll Main Stage (Side-by-Side) */}
       <main className="flex-1 min-h-0 overflow-hidden p-2.5 sm:p-4 max-w-7xl w-full mx-auto grid grid-cols-1 grid-rows-[auto_1fr] md:grid-rows-1 md:grid-cols-12 gap-3 items-stretch">
@@ -401,6 +412,15 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
         activeModel={activeModel}
         activeVariant={activeVariant}
         onSelectModelAndVariant={selectFamily}
+      />
+
+      {/* Model Diagnostics & Log Inspector Modal */}
+      <DiagnosticsModal
+        isOpen={isDiagnosticsOpen}
+        onClose={() => setIsDiagnosticsOpen(false)}
+        activeModel={activeModel}
+        activeVariant={activeVariant}
+        onRetryModel={() => { void engine.initialize(activeModel, activeVariant); }}
       />
     </div>
   );

@@ -17,6 +17,7 @@ interface HeaderProps {
   onToggleTTS: () => void;
   isSpeaking: boolean;
   onOpenComparison: () => void;
+  onOpenDiagnostics?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -30,7 +31,8 @@ export const Header: React.FC<HeaderProps> = ({
   ttsEnabled,
   onToggleTTS,
   isSpeaking,
-  onOpenComparison
+  onOpenComparison,
+  onOpenDiagnostics,
 }) => {
   const currentMeta = modelFamilyMetadata(activeModel);
   const backend = modelState.model === 'image-classifier'
@@ -126,6 +128,18 @@ export const Header: React.FC<HeaderProps> = ({
             <VolumeX className="w-3.5 h-3.5" />
           )}
         </button>
+
+        {/* Diagnostics Modal Trigger */}
+        {onOpenDiagnostics && (
+          <button
+            onClick={onOpenDiagnostics}
+            title="モデル診断・ログインスペクター"
+            className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-300 bg-slate-800/80 border border-slate-700 rounded-md hover:bg-slate-700 hover:text-cyan-300 transition-colors whitespace-nowrap"
+          >
+            <Cpu className="w-3 h-3 text-cyan-400" />
+            <span>診断</span>
+          </button>
+        )}
 
         {/* Specs Modal Trigger */}
         <button

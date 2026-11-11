@@ -19,6 +19,7 @@ import {
   OnnxSessionOwner,
   unknownOnnxBackend,
 } from './onnxSession';
+import { diagnosticLogger } from './diagnosticLogger';
 
 export const MIRAGE_EXPERIMENTAL_ONNX_FILE = 'cact-dequantized-reference-order.onnx';
 export const MIRAGE_EXPERIMENTAL_ONNX_RELATIVE_PATH =
@@ -657,14 +658,15 @@ export async function verifyMirageExperimentalOnnxBytes(
 }
 
 export class MirageExperimentalOnnxEngine implements MirageTask {
-  public readonly backend: OnnxBackendInfo;
+  public backend: OnnxBackendInfo;
   public readonly variantId: MirageExperimentalVariantId;
-  private readonly rawSession: ort.InferenceSession;
-  private readonly owner: OnnxSessionOwner;
+  private rawSession: ort.InferenceSession;
+  private owner: OnnxSessionOwner;
   private resizeCanvas: HTMLCanvasElement | null = null;
   private resizeCtx: CanvasRenderingContext2D | null = null;
   private nativeOverlayTask: MirageTask | null = null;
   private readonly nativeOverlayTaskFactory?: () => Promise<MirageTask>;
+  private readonly modelBytes?: Uint8Array;
   private lastDiagnostics: MirageExperimentalExecutionDiagnostics | null = null;
   private runMutex: Promise<unknown> = Promise.resolve();
 
@@ -672,7 +674,8 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     session: ort.InferenceSession,
     variantId: MirageExperimentalVariantId,
     backend?: OnnxBackendInfo,
-    nativeOverlayTaskFactory?: () => Promise<MirageTask>
+    nativeOverlayTaskFactory?: () => Promise<MirageTask>,
+    modelBytes?: Uint8Array
   ) {
     this.variantId = variantId;
     const requestedProvider =
@@ -690,6 +693,7 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     this.rawSession = session;
     this.owner = new OnnxSessionOwner(session, 'Mirage-Exp-ONNX');
     this.nativeOverlayTaskFactory = nativeOverlayTaskFactory;
+    this.modelBytes = modelBytes;
   }
 
   public getLastDiagnostics(): MirageExperimentalExecutionDiagnostics | null {
@@ -773,7 +777,41 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
               ...MIRAGE_EXPERIMENTAL_ONNX_FINAL_OUTPUTS,
             ]);
           } catch (err) {
-            throw new OnnxInferenceError('Mirage-Exp-ONNX', 'run', err);
+            if (
+              this.backend.configuredProviders.includes('webgpu') &&
+              this.modelBytes
+            ) {
+              const fallbackSession = await ort.InferenceSession.create(
+                this.modelBytes,
+                {
+                  executionProviders: ['wasm'],
+                  graphOptimizationLevel: 'all',
+                  logSeverityLevel: 3,
+                }
+              );
+              try {
+                await Promise.resolve(this.rawSession.release?.());
+              } catch {
+                // Ignore release failure of broken WebGPU session
+              }
+              this.rawSession = fallbackSession;
+              this.owner = new OnnxSessionOwner(
+                fallbackSession,
+                'Mirage-Exp-ONNX'
+              );
+              this.backend = {
+                ...this.backend,
+                configuredProviders: ['wasm'],
+                fallbackReason: `WebGPU runtime inference failed; fell back to WASM: ${
+                  err instanceof Error ? err.message : String(err)
+                }`,
+              };
+              results = await this.rawSession.run(feeds, [
+                ...MIRAGE_EXPERIMENTAL_ONNX_FINAL_OUTPUTS,
+              ]);
+            } else {
+              throw new OnnxInferenceError('Mirage-Exp-ONNX', 'run', err);
+            }
           }
           if (results && typeof results === 'object') {
             for (const val of Object.values(results)) {
@@ -949,6 +987,75 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
   }
 }
 
+export interface FetchModelBufferOptions {
+  expectedSize?: number;
+  onChunk?: (loaded: number, total: number) => void;
+  variantId?: string;
+}
+
+/**
+ * Fetches model bytes from the given URL.
+ * When the expected size exceeds Cloud Run's 32 MiB response threshold (e.g. >28 MiB),
+ * fetches in 16 MiB chunks using HTTP Range requests to avoid connection drops / synthetic HTTP 500.
+ */
+export async function fetchModelBuffer(
+  url: string,
+  options: FetchModelBufferOptions = {}
+): Promise<ArrayBuffer> {
+  const { expectedSize = MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE } = options;
+  const CHUNK_SIZE = 16 * 1024 * 1024; // 16 MiB per chunk
+
+  if (expectedSize && expectedSize > 28 * 1024 * 1024) {
+    const totalChunks = Math.ceil(expectedSize / CHUNK_SIZE);
+    const combined = new Uint8Array(expectedSize);
+    let offset = 0;
+
+    for (let chunkIdx = 0; chunkIdx < totalChunks; chunkIdx++) {
+      const start = chunkIdx * CHUNK_SIZE;
+      const end = Math.min((chunkIdx + 1) * CHUNK_SIZE - 1, expectedSize - 1);
+
+      const response = await fetch(url, {
+        headers: {
+          Range: `bytes=${start}-${end}`,
+        },
+      });
+
+      if (response.status === 206) {
+        const chunkBuf = await response.arrayBuffer();
+        combined.set(new Uint8Array(chunkBuf), start);
+        offset += chunkBuf.byteLength;
+        if (options.onChunk) {
+          options.onChunk(offset, expectedSize);
+        }
+        continue;
+      }
+
+      if (response.status === 200 && chunkIdx === 0) {
+        const fullBuf = await response.arrayBuffer();
+        if (fullBuf.byteLength === expectedSize) {
+          return fullBuf;
+        }
+      }
+
+      const errorText = await response.text().catch(() => '');
+      throw new Error(
+        `Failed to fetch chunk ${chunkIdx + 1}/${totalChunks} (bytes ${start}-${end}) from ${url}: HTTP ${response.status} ${response.statusText} (${errorText})`
+      );
+    }
+
+    return combined.buffer;
+  }
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(
+      `Failed to fetch model from ${url}: HTTP ${response.status} ${response.statusText} (${errorText})`
+    );
+  }
+  return await response.arrayBuffer();
+}
+
 export interface CreateMirageExperimentalOnnxOptions {
   variantId: MirageExperimentalVariantId;
   recordAssetSource?: AssetSourceRecorder;
@@ -965,6 +1072,10 @@ export async function createMirageExperimentalOnnxTask(
     );
   }
 
+  diagnosticLogger.log('info', 'resolve', 'mirage', variantId, 'Resolving model asset URLs', {
+    details: { variantId },
+  });
+
   const asset = await resolveModelAssetUrls(
     'mirage',
     variantId as MirageVariantId
@@ -972,29 +1083,104 @@ export async function createMirageExperimentalOnnxTask(
   const delegate: 'WebGPU' | 'WASM' =
     variantId === 'mirage-onnx-exp-webgpu' ? 'WebGPU' : 'WASM';
 
-  const { session, backend } = await createOrtSession(
-    asset.primaryUrl,
-    delegate,
-    {
-      fallbackModelUrl: asset.fallbackUrl,
-      variantId,
-      recordAssetSource,
-      modelId: 'mirage',
-      primarySource: asset.source,
-    }
-  );
+  diagnosticLogger.log('info', 'resolve', 'mirage', variantId, 'Asset resolved', {
+    details: {
+      primaryUrl: asset.primaryUrl,
+      fallbackUrl: asset.fallbackUrl,
+      source: asset.source,
+      delegate,
+    },
+  });
 
-  return new MirageExperimentalOnnxEngine(
-    session,
-    variantId,
-    backend ?? unknownOnnxBackend(),
-    nativeOverlayTaskFactory
-  );
+  let verifiedBytes: Uint8Array | undefined;
+  if (typeof fetch === 'function') {
+    diagnosticLogger.log('info', 'fetch', 'mirage', variantId, 'Starting direct pre-fetch and verification', {
+      details: { url: asset.primaryUrl },
+    });
+    const fetchStart = performance.now();
+    try {
+      const buffer = await fetchModelBuffer(asset.primaryUrl, {
+        expectedSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+        variantId,
+        onChunk: (loaded, total) => {
+          diagnosticLogger.log(
+            'info',
+            'fetch',
+            'mirage',
+            variantId,
+            `Downloaded ${loaded}/${total} bytes (${Math.round((loaded / total) * 100)}%)`,
+            { details: { loaded, total } }
+          );
+        },
+      });
+      const fetchMs = Math.round(performance.now() - fetchStart);
+      diagnosticLogger.log('info', 'verify', 'mirage', variantId, `Received ${buffer.byteLength} bytes. Verifying SHA-256...`, {
+        details: { byteLength: buffer.byteLength, fetchMs },
+      });
+      const verifyStart = performance.now();
+      const verified = await verifyMirageExperimentalOnnxBytes(buffer);
+      const verifyMs = Math.round(performance.now() - verifyStart);
+      verifiedBytes = new Uint8Array(buffer);
+      diagnosticLogger.log('info', 'verify', 'mirage', variantId, 'SHA-256 integrity verified', {
+        details: { sha256: verified.sha256, size: verified.size, verifyMs },
+      });
+    } catch (fetchErr) {
+      diagnosticLogger.log('error', 'fetch', 'mirage', variantId, 'Pre-fetch and verification failed', {
+        error: fetchErr,
+        sendToServer: typeof window !== 'undefined',
+      });
+      throw fetchErr;
+    }
+  }
+
+  diagnosticLogger.log('info', 'ort-session', 'mirage', variantId, 'Creating ONNX Runtime session', {
+    details: { delegate, hasVerifiedBytes: Boolean(verifiedBytes), byteLength: verifiedBytes?.byteLength },
+  });
+
+  try {
+    const sessionStart = performance.now();
+    const { session, backend } = await createOrtSession(
+      verifiedBytes ?? asset.primaryUrl,
+      delegate,
+      {
+        fallbackModelUrl: asset.fallbackUrl,
+        fallbackModelBytes: verifiedBytes ? () => verifiedBytes! : undefined,
+        variantId,
+        recordAssetSource,
+        modelId: 'mirage',
+        primarySource: asset.source,
+      }
+    );
+    const sessionMs = Math.round(performance.now() - sessionStart);
+    diagnosticLogger.log('info', 'ort-session', 'mirage', variantId, 'ONNX session created successfully', {
+      details: {
+        backend,
+        sessionMs,
+        inputNames: session.inputNames,
+        outputNames: session.outputNames,
+      },
+    });
+
+    return new MirageExperimentalOnnxEngine(
+      session,
+      variantId,
+      backend ?? unknownOnnxBackend(),
+      nativeOverlayTaskFactory,
+      verifiedBytes
+    );
+  } catch (ortErr) {
+    diagnosticLogger.log('error', 'ort-session', 'mirage', variantId, 'ONNX Runtime session creation failed', {
+      error: ortErr,
+      sendToServer: typeof window !== 'undefined',
+    });
+    throw ortErr;
+  }
 }
 
 export interface MirageExperimentalBrowserBridge {
   ort: typeof ort;
   createMirageExperimentalOnnxTask: typeof createMirageExperimentalOnnxTask;
+  fetchModelBuffer: typeof fetchModelBuffer;
   verifyMirageExperimentalOnnxBytes: typeof verifyMirageExperimentalOnnxBytes;
   computeMirageCeil32Metadata: typeof computeMirageCeil32Metadata;
   packResizedPixelsToMirageTensor: typeof packResizedPixelsToMirageTensor;
@@ -1012,6 +1198,7 @@ if (typeof window !== 'undefined') {
   window.__mirageExperimentalBridge = {
     ort,
     createMirageExperimentalOnnxTask,
+    fetchModelBuffer,
     verifyMirageExperimentalOnnxBytes,
     computeMirageCeil32Metadata,
     packResizedPixelsToMirageTensor,

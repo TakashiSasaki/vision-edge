@@ -70,7 +70,7 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
   afterEach(async () => {
     setContainerModelCacheEnabledForTest(null);
     vi.restoreAllMocks();
-    await rm(tempDir, { recursive: true, force: true });
+    await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 }).catch(() => {});
   });
 
   it('exposes upstream URLs, local cache paths, and verified licenses for all 4 models in MODEL_REGISTRY', () => {

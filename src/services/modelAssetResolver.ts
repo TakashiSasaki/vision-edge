@@ -517,10 +517,24 @@ export async function resolveModelAssetUrls(
   const entry = getVariantCatalogEntry(model, variantId);
   assertVariantAssetAvailable(model, entry.variantId);
   if (model === 'mirage') {
+    if (!isContainerModelCacheEnabled()) {
+      if (entry.expectedSha256) {
+        return {
+          primaryUrl: entry.localUrl,
+          fallbackUrl: null,
+          source: 'container-cache',
+        };
+      }
+      return {
+        primaryUrl: entry.upstreamUrl,
+        fallbackUrl: null,
+        source: 'external',
+      };
+    }
     return {
       primaryUrl: entry.localUrl,
       fallbackUrl: entry.expectedSha256 ? null : entry.upstreamUrl,
-      source: isContainerModelCacheEnabled() ? 'container-cache' : 'external',
+      source: 'container-cache',
     };
   }
   if (!isContainerModelCacheEnabled()) {

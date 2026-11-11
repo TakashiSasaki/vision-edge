@@ -3,7 +3,8 @@ import { classifierAssetStatuses } from './imageClassifierAssets.ts';
 import { Buffer } from 'node:buffer';
 import { existsSync, createReadStream } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, open, readFile, rename, rm, lstat, type FileHandle, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, rename, rm, lstat, type FileHandle, writeFile, copyFile } from 'node:fs/promises';
+import { gzipSync } from 'node:zlib';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 import process from 'node:process';
@@ -28,6 +29,7 @@ import {
   getVariantCatalogEntry,
 } from './modelAssetResolver.ts';
 import { MIRAGE_WEBGPU_UNAVAILABLE_CODE, MIRAGE_WEBGPU_UNAVAILABLE_REASON } from './mirageAvailability.ts';
+import { ensureReconstructedMirageOnnxFile } from './mirageOnnxReconstructor.ts';
 
 type CacheCatalogEntry = Omit<ModelVariantCatalogEntry, 'modelId'> & {
   modelId: CacheAssetModelId; expectedSize?: number; expectedSha256?: string;
@@ -137,6 +139,8 @@ export class ContainerModelCacheManager {
   private readonly fetchImpl: typeof fetch;
   private readonly variantStates = new Map<string, ContainerModelStatusEntry>();
   private readonly variantInflight = new Map<string, Promise<ContainerModelStatusEntry>>();
+  private readonly diagnosticLogs: unknown[] = [];
+  private readonly verifiedOnnxHashes = new Map<string, string>();
 
   constructor(options: ContainerModelCacheOptions = {}) {
     this.rootDir = options.rootDir ?? process.cwd();
@@ -624,6 +628,50 @@ export class ContainerModelCacheManager {
           return;
         }
 
+        if (pathname === '/api/model-cache/diagnostics/log') {
+          if (req.method !== 'POST') {
+            res.statusCode = 405;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+            return;
+          }
+          const chunks: Buffer[] = [];
+          req.on('data', chunk => chunks.push(Buffer.from(chunk)));
+          req.on('end', () => {
+            try {
+              const body = Buffer.concat(chunks).toString('utf8');
+              const data = JSON.parse(body);
+              this.diagnosticLogs.push(data);
+              if (this.diagnosticLogs.length > 200) this.diagnosticLogs.shift();
+              console.log(
+                `[client-diagnostics] [${data.level ?? 'info'}] [${data.stage ?? 'unknown'}] [${data.modelId ?? ''}:${data.variantId ?? ''}] ${data.message ?? ''}`,
+                data.details ?? '',
+                data.error ?? ''
+              );
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              res.end(JSON.stringify({ ok: true, receivedId: data.id }));
+            } catch {
+              res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              res.end(JSON.stringify({ error: 'Invalid JSON payload' }));
+            }
+          });
+          return;
+        }
+
+        if (pathname === '/api/model-cache/diagnostics/recent') {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-store');
+          res.end(
+            req.method === 'HEAD'
+              ? undefined
+              : JSON.stringify({ ok: true, logs: this.diagnosticLogs })
+          );
+          return;
+        }
+
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           res.statusCode = 405;
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -795,21 +843,96 @@ export class ContainerModelCacheManager {
             return;
           }
 
+          const refinementTarget = path.join(
+            this.rootDir,
+            '.cache',
+            'mirage-refinement',
+            'numerical-cact-dequantized-pixel-0-r3',
+            MIRAGE_EXPERIMENTAL_ONNX_FILE
+          );
           const candidatePaths = [
             path.join(this.cacheDir, MIRAGE_EXPERIMENTAL_ONNX_FILE),
-            path.join(
-              this.rootDir,
-              '.cache',
-              'mirage-refinement',
-              'numerical-cact-dequantized-pixel-0-r3',
-              MIRAGE_EXPERIMENTAL_ONNX_FILE
-            ),
+            refinementTarget,
           ];
           let foundPath: string | null = null;
           for (const candidate of candidatePaths) {
             if (existsSync(candidate)) {
               foundPath = candidate;
               break;
+            }
+          }
+
+          if (!foundPath) {
+            const skeletonPath = path.join(
+              this.rootDir,
+              'scripts',
+              'mirage',
+              'cact_onnx_skeleton.bin.gz'
+            );
+            if (existsSync(skeletonPath)) {
+              const cactCandidates = [
+                path.join(this.cacheDir, 'mirage.cact'),
+                '/root/.cache/cactus/models/mirage/76c1e9e53381aca8fc3843c636216c96ff220122/mirage.cact',
+              ];
+              let cactPath: string | null = null;
+              for (const candidate of cactCandidates) {
+                if (existsSync(candidate)) {
+                  cactPath = candidate;
+                  break;
+                }
+              }
+              if (!cactPath) {
+                try {
+                  await mkdir(this.cacheDir, { recursive: true });
+                  const upstreamRes = await this.fetchImpl(MIRAGE_UPSTREAM_URL, {
+                    method: 'GET',
+                    redirect: 'follow',
+                  });
+                  if (upstreamRes.ok) {
+                    const buf = Buffer.from(await upstreamRes.arrayBuffer());
+                    if (buf.byteLength >= MIN_VALID_MODEL_BYTES) {
+                      const target = path.join(this.cacheDir, 'mirage.cact');
+                      await writeFile(target, buf);
+                      cactPath = target;
+                    }
+                  }
+                } catch {
+                  // Ignore fetch failure; handled below if cactPath remains null
+                }
+              }
+              if (cactPath) {
+                try {
+                  const cactBytes = await readFile(cactPath);
+                  ensureReconstructedMirageOnnxFile(
+                    refinementTarget,
+                    cactBytes,
+                    this.rootDir
+                  );
+                  foundPath = refinementTarget;
+                  try {
+                    await mkdir(this.cacheDir, { recursive: true });
+                    const containerTargetPath = path.join(
+                      this.cacheDir,
+                      MIRAGE_EXPERIMENTAL_ONNX_FILE
+                    );
+                    if (!existsSync(containerTargetPath)) {
+                      await copyFile(refinementTarget, containerTargetPath);
+                    }
+                    const refinementGz = `${refinementTarget}.gz`;
+                    const containerGz = `${containerTargetPath}.gz`;
+                    if (existsSync(refinementGz) && !existsSync(containerGz)) {
+                      await copyFile(refinementGz, containerGz);
+                    }
+                  } catch {
+                    // Non-critical cache mirror
+                  }
+                } catch (reconstructErr) {
+                  console.warn(
+                    '[container-model-cache] Failed to reconstruct experimental Mirage ONNX from mirage.cact:',
+                    reconstructErr
+                  );
+                }
+              }
             }
           }
 
@@ -843,38 +966,108 @@ export class ContainerModelCacheManager {
             ) {
               throw new Error('Pinned model size mismatch');
             }
-            const hash = createHash('sha256');
-            const chunks: Buffer[] = [];
-            let readBytes = 0;
-            for await (const chunk of createReadStream(foundPath)) {
-              readBytes += chunk.length;
-              if (readBytes > MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE) {
-                throw new Error('Pinned model size mismatch');
+
+            const cacheKey = `${foundPath}:${info.mtimeMs}:${info.size}`;
+            if (!this.verifiedOnnxHashes.has(cacheKey)) {
+              const hash = createHash('sha256');
+              for await (const chunk of createReadStream(foundPath)) {
+                hash.update(chunk);
               }
-              hash.update(chunk);
-              if (req.method !== 'HEAD') {
-                chunks.push(chunk);
+              const actualSha256 = hash.digest('hex');
+              if (actualSha256 !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256) {
+                throw new Error('Pinned model SHA256 mismatch');
+              }
+              this.verifiedOnnxHashes.set(cacheKey, actualSha256);
+            }
+
+            res.setHeader('Accept-Ranges', 'bytes');
+            const rangeHeader = req.headers.range;
+            if (rangeHeader && typeof rangeHeader === 'string' && rangeHeader.startsWith('bytes=')) {
+              const parts = rangeHeader.slice('bytes='.length).trim().split('-');
+              const start = parseInt(parts[0], 10);
+              const end = parts[1] && parts[1].trim() !== '' ? parseInt(parts[1], 10) : info.size - 1;
+
+              if (isNaN(start) || isNaN(end) || start < 0 || end >= info.size || start > end) {
+                res.statusCode = 416;
+                res.setHeader('Content-Range', `bytes */${info.size}`);
+                res.setHeader('Content-Type', 'application/json; charset=utf-8');
+                res.end(JSON.stringify({ error: 'Range Not Satisfiable' }));
+                return;
+              }
+
+              const chunkSize = end - start + 1;
+              res.statusCode = 206;
+              res.setHeader('Content-Type', 'application/octet-stream');
+              res.setHeader('Content-Range', `bytes ${start}-${end}/${info.size}`);
+              res.setHeader('Content-Length', String(chunkSize));
+              res.setHeader('Cache-Control', 'no-store');
+              res.setHeader('X-Model-SHA256', MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256);
+              res.setHeader('X-Model-Uncompressed-Size', String(MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE));
+              res.setHeader('X-Model-Source', 'container-cache');
+              res.setHeader('X-Model-Id', 'mirage');
+              res.setHeader('X-Model-Variant', 'cact-dequantized-reference-order');
+              res.setHeader('X-Model-License', 'Apache-2.0');
+
+              if (req.method === 'HEAD') {
+                res.end();
+                return;
+              }
+
+              const rangeStream = createReadStream(foundPath, { start, end });
+              rangeStream.on('error', (err) => {
+                if (!res.headersSent) {
+                  res.statusCode = 500;
+                  res.end();
+                } else {
+                  res.destroy(err);
+                }
+              });
+              rangeStream.pipe(res);
+              return;
+            }
+
+            const acceptEncoding = String(req.headers['accept-encoding'] || '');
+            const clientAcceptsGzip = acceptEncoding.includes('gzip');
+            const gzPath = `${foundPath}.gz`;
+
+            let filePathToServe = foundPath;
+            let serveGzip = false;
+            let serveLength: number = info.size;
+
+            if (clientAcceptsGzip) {
+              if (existsSync(gzPath)) {
+                filePathToServe = gzPath;
+                serveGzip = true;
+                const gzStat = await lstat(gzPath);
+                serveLength = gzStat.size;
+              } else {
+                try {
+                  const gzBytes = gzipSync(await readFile(foundPath), { level: 9 });
+                  await writeFile(gzPath, gzBytes);
+                  filePathToServe = gzPath;
+                  serveGzip = true;
+                  serveLength = gzBytes.byteLength;
+                } catch {
+                  // Fall back to uncompressed
+                }
               }
             }
-            const actualSha256 = hash.digest('hex');
-            if (
-              readBytes !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE ||
-              actualSha256 !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256
-            ) {
-              throw new Error('Pinned model SHA256 mismatch');
-            }
-            const payload =
-              req.method === 'HEAD' ? undefined : Buffer.concat(chunks);
+
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/octet-stream');
-            res.setHeader(
-              'Content-Length',
-              String(MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE)
-            );
+            res.setHeader('Content-Length', String(serveLength));
             res.setHeader('Cache-Control', 'no-store');
+            res.setHeader('Vary', 'Accept-Encoding');
+            if (serveGzip) {
+              res.setHeader('Content-Encoding', 'gzip');
+            }
             res.setHeader(
               'X-Model-SHA256',
               MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256
+            );
+            res.setHeader(
+              'X-Model-Uncompressed-Size',
+              String(MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE)
             );
             res.setHeader('X-Model-Source', 'container-cache');
             res.setHeader('X-Model-Id', 'mirage');
@@ -883,25 +1076,49 @@ export class ContainerModelCacheManager {
               'cact-dequantized-reference-order'
             );
             res.setHeader('X-Model-License', 'Apache-2.0');
-            res.end(payload);
+
+            if (req.method === 'HEAD') {
+              res.end();
+              return;
+            }
+
+            const stream = createReadStream(filePathToServe);
+            stream.on('error', (streamErr) => {
+              console.error(
+                '[container-model-cache] Error streaming experimental ONNX:',
+                streamErr
+              );
+              if (!res.headersSent) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json; charset=utf-8');
+                res.end(JSON.stringify({ error: 'Streaming error' }));
+              } else {
+                res.destroy(streamErr);
+              }
+            });
+            stream.pipe(res);
             return;
           } catch (cause) {
-            res.statusCode = 503;
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.setHeader('Cache-Control', 'no-store');
-            res.end(
-              req.method === 'HEAD'
-                ? undefined
-                : JSON.stringify({
-                    status: 'unavailable',
-                    code: 'MIRAGE_EXPERIMENTAL_ONNX_INTEGRITY_FAILED',
-                    error: publicCacheError(cause),
-                    model: 'mirage',
-                    file: MIRAGE_EXPERIMENTAL_ONNX_FILE,
-                    expectedSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
-                    expectedSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
-                  })
-            );
+            if (!res.headersSent) {
+              res.statusCode = 503;
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              res.setHeader('Cache-Control', 'no-store');
+              res.end(
+                req.method === 'HEAD'
+                  ? undefined
+                  : JSON.stringify({
+                      status: 'unavailable',
+                      code: 'MIRAGE_EXPERIMENTAL_ONNX_INTEGRITY_FAILED',
+                      error: publicCacheError(cause),
+                      model: 'mirage',
+                      file: MIRAGE_EXPERIMENTAL_ONNX_FILE,
+                      expectedSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+                      expectedSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
+                    })
+              );
+            } else {
+              res.destroy();
+            }
             return;
           }
         }
@@ -921,14 +1138,27 @@ export class ContainerModelCacheManager {
             '.cache',
             'mirage-browser-fixtures'
           );
-          const filePath = path.resolve(fixturesDir, filename);
-          if (!filePath.startsWith(`${fixturesDir}${path.sep}`)) {
+          const presetsDir = path.resolve(
+            this.rootDir,
+            'scripts',
+            'mirage',
+            'presets'
+          );
+          const primaryPath = path.resolve(fixturesDir, filename);
+          const fallbackPath = path.resolve(presetsDir, filename);
+          if (
+            !primaryPath.startsWith(`${fixturesDir}${path.sep}`) ||
+            !fallbackPath.startsWith(`${presetsDir}${path.sep}`)
+          ) {
             res.statusCode = 403;
             res.end();
             return;
           }
+          const targetPath = existsSync(primaryPath)
+            ? primaryPath
+            : fallbackPath;
           try {
-            const bytes = await readFile(filePath);
+            const bytes = await readFile(targetPath);
             res.statusCode = 200;
             res.setHeader(
               'Content-Type',
@@ -996,7 +1226,31 @@ export class ContainerModelCacheManager {
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
         res.end(JSON.stringify({ error: 'Not Found' }));
       } catch (error) {
-        next(error);
+        console.error('[container-model-cache] Unhandled middleware error:', error);
+        this.diagnosticLogs.push({
+          id: `srv-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          level: 'error',
+          stage: 'server-middleware',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        if (!res.headersSent) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.end(
+            JSON.stringify({
+              error: 'Internal Server Error',
+              message: error instanceof Error ? error.message : String(error),
+            })
+          );
+        } else {
+          try {
+            res.end();
+          } catch {
+            // Ignore
+          }
+        }
       }
     };
   }

@@ -15,6 +15,7 @@ import {
 import { unknownOnnxBackend } from './onnxSession';
 import { mirageWebGpuUnavailableError } from './mirageAvailability';
 import { assertVariantAssetAvailable, getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSources, type AssetSourceRecorder, type AssetDeliverySource } from './modelAssetResolver';
+import { diagnosticLogger } from './diagnosticLogger';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 export type DetectorTask = Pick<ObjectDetector, 'detectForVideo' | 'close'>;
@@ -209,6 +210,9 @@ export class VisionEngine {
     const pending = new Promise<InitializationResult>((yes, no) => { resolve = yes; reject = no; });
     this.pending = pending;
     this.publish({ status: 'loading', model, variantId: targetVariantId, requestId });
+    diagnosticLogger.log('info', 'system', model, targetVariantId, `Starting initialization of ${model} (${targetVariantId})`, {
+      details: { requestId },
+    });
     void (async (): Promise<InitializationResult> => {
       let stage: 'wasm' | 'task' = 'wasm';
       try {
@@ -248,11 +252,19 @@ export class VisionEngine {
         if (!current()) { this.closeTask(active); return cancelled(); }
         this.activeTask = active;
         const ready = { status: 'ready' as const, model, variantId: targetVariantId, requestId, ...(active.model==='yolo-seg'||active.model==='segformer'||active.model==='mirage'?{backend:active.task.backend??unknownOnnxBackend()}:{delegate:DELEGATE}) };
+        diagnosticLogger.log('info', 'system', model, targetVariantId, `Model ${model} (${targetVariantId}) ready`, {
+          details: { requestId, backend: 'backend' in ready ? ready.backend : undefined },
+        });
         this.publish(ready, assetSources);
         return ready;
       } catch (cause) {
         if (!current()) return cancelled();
         const error = { status: 'error' as const, model, variantId: targetVariantId, requestId, stage, cause };
+        diagnosticLogger.log('error', stage, model, targetVariantId, `Initialization failed: ${cause instanceof Error ? cause.message : String(cause)}`, {
+          error: cause,
+          details: { stage, requestId },
+          sendToServer: typeof window !== 'undefined',
+        });
         console.warn('Vision initialization failed', { model, variantId: targetVariantId, stage, cause });
         this.publish(error);
         return error;

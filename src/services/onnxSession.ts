@@ -102,7 +102,7 @@ async function createOrtSessionWithUrl(
 }
 
 export async function createOrtSession(
-    modelUrl: string,
+    modelUrl: string | Uint8Array,
     delegate?: 'GPU' | 'WebGPU' | 'WASM',
     resolution?: OrtSessionResolutionOptions
 ) {
@@ -124,7 +124,7 @@ export async function createOrtSession(
         return created;
     }
     catch (primaryError) {
-        if (resolution?.fallbackModelUrl && resolution.fallbackModelUrl !== modelUrl) {
+        if (typeof modelUrl === 'string' && resolution?.fallbackModelUrl && resolution.fallbackModelUrl !== modelUrl) {
             if (typeof window !== 'undefined' && wasm.fallbackUrl) {
                 ort.env.wasm.wasmPaths = wasm.fallbackUrl;
             }
