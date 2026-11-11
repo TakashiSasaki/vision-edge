@@ -1,0 +1,108 @@
+{
+  "revision": "76c1e9e53381aca8fc3843c636216c96ff220122",
+  "identity_source": "live official Hub metadata and local full-file hashes",
+  "artifacts": {
+    "mirage.safetensors": {
+      "size": 216370504,
+      "sha256": "6ba97c5c1bef661c9b0c80782135682b38b4312fb33e0b645c93c10604bb16cd"
+    },
+    "mirage.cact": {
+      "size": 21611043,
+      "sha256": "4249a0f7515272ff76b9414bec17d7e7daf84b15b66c7fb4f17fce1e66f9f237"
+    }
+  },
+  "config": {
+    "size": 1430,
+    "sha256": "f7a3c37642086f954b1000fe80edb544a153c76fe68fb1b8173ddb97d465e915"
+  },
+  "status": "PASS",
+  "upstream_metadata": {
+    "_id": "6aecd2a160c141cc2447af28",
+    "id": "Cactus-Compute/mirage",
+    "private": false,
+    "tags": [
+      "mirage",
+      "cactus",
+      "region:us"
+    ],
+    "downloads": 12844,
+    "likes": 134,
+    "modelId": "Cactus-Compute/mirage",
+    "author": "Cactus-Compute",
+    "sha": "76c1e9e53381aca8fc3843c636216c96ff220122",
+    "lastModified": "2026-11-05T23:18:57.000Z",
+    "gated": false,
+    "disabled": false,
+    "model-index": null,
+    "config": {
+      "model_type": "mirage"
+    },
+    "cardData": {
+      "tags": [
+        "cactus",
+        "mirage"
+      ]
+    },
+    "siblings": [
+      {
+        "rfilename": ".gitattributes",
+        "blobId": "ae3d9e11aed2e30465ad2392c589ace4afb16d7a",
+        "size": 1567
+      },
+      {
+        "rfilename": "README.md",
+        "blobId": "f4b0bd31db2a3b680c337f61dc8a8099ae845d25",
+        "size": 771
+      },
+      {
+        "rfilename": "config.json",
+        "blobId": "c3b3ad2dc5db355553f4eaaafdcea696ba573673",
+        "size": 1430
+      },
+      {
+        "rfilename": "mirage.cact",
+        "blobId": "523901a19ec2d30b734e8166fd5b8c569f615032",
+        "size": 21611043,
+        "lfs": {
+          "sha256": "4249a0f7515272ff76b9414bec17d7e7daf84b15b66c7fb4f17fce1e66f9f237",
+          "size": 21611043,
+          "pointerSize": 133
+        }
+      },
+      {
+        "rfilename": "mirage.safetensors",
+        "blobId": "441199c823d7dfbcbabab4a7bf14564f6bc651b8",
+        "size": 216370504,
+        "lfs": {
+          "sha256": "6ba97c5c1bef661c9b0c80782135682b38b4312fb33e0b645c93c10604bb16cd",
+          "size": 216370504,
+          "pointerSize": 134
+        }
+      }
+    ],
+    "spaces": [
+      "hugging-apps/mirage-vision"
+    ],
+    "createdAt": "2026-11-05T19:01:53.000Z",
+    "usedStorage": 919934807
+  },
+  "runtime": {
+    "engine_repo": "Cactus-Compute/cactus",
+    "engine_revision": "4e822c9036be2eb0e47ef556df32a818bb1572ef",
+    "engine_version": "4.1.0",
+    "manifest_sha256": "32e182f6f811acde1109084ee5f5c9a606098b95cc8774f27ece8bc1a506de3b",
+    "wheel_name": "python/cactus_runtime-4.1.0-py3-none-manylinux2014_x86_64.whl",
+    "wheel_expected": {
+      "size": 856875,
+      "sha256": "e4a1c56e23b62fda5dcd62ece09b6757d350c7d8d909200ef2e10a68048a095f"
+    },
+    "wheel_actual": {
+      "size": 856875,
+      "sha256": "e4a1c56e23b62fda5dcd62ece09b6757d350c7d8d909200ef2e10a68048a095f"
+    },
+    "library": {
+      "size": 1938312,
+      "sha256": "2a4c9afa68aad5122dacb0adc60773988622debbffe4572f535404a676fb0e6a"
+    }
+  }
+}

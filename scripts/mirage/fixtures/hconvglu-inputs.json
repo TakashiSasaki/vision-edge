@@ -1,0 +1,56 @@
+{
+  "zero": {
+    "shape": [
+      1,
+      512
+    ],
+    "dtype": "float32",
+    "raw_little_endian_sha256": "e5a00aa9991ac8a5ee3109844d84a55583bd20572ad3ffcd42792f3c36b183ad",
+    "kind": "synthetic feature vectors with original pretrained weights"
+  },
+  "all_channel_impulses": {
+    "shape": [
+      512,
+      512
+    ],
+    "dtype": "float32",
+    "raw_little_endian_sha256": "fc6ed15324fa8fe5d0b68455503165a6b03a0df03bf86de07bd40b703281be58",
+    "kind": "synthetic feature vectors with original pretrained weights"
+  },
+  "signed_ramp": {
+    "shape": [
+      1,
+      512
+    ],
+    "dtype": "float32",
+    "raw_little_endian_sha256": "a79e22d13680658589f896ee719e13f9d7434a35f9d447c510e3e439edf1bd47",
+    "kind": "synthetic feature vectors with original pretrained weights"
+  },
+  "bounded_integer_pattern": {
+    "shape": [
+      17,
+      512
+    ],
+    "dtype": "float32",
+    "raw_little_endian_sha256": "5064bf0fbd82e5ffc4b685b46f8c0c85b7d87a7e2ebc3fa7c5aabd479c5102bc",
+    "kind": "synthetic feature vectors with original pretrained weights"
+  },
+  "diverse_integer_mix": {
+    "shape": [
+      33,
+      512
+    ],
+    "dtype": "float32",
+    "raw_little_endian_sha256": "57e53aa5be1d4c2c6dfd59e91a3cb150eb9dd703b8305d88e996552a8314e23e",
+    "kind": "synthetic feature vectors with original pretrained weights"
+  },
+  "stress_integer_pattern": {
+    "shape": [
+      17,
+      512
+    ],
+    "dtype": "float32",
+    "raw_little_endian_sha256": "116e2321e8180c21d7c652c3a8c8759d95e61ce3cc10e731510892148b30de87",
+    "kind": "synthetic feature vectors with original pretrained weights"
+  }
+}

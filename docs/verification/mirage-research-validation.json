@@ -1,0 +1,371 @@
+{
+  "schema_version": 1,
+  "implementation_commit": "5795226eda397501d00c0d479506ed93b44ca08a",
+  "implementation_tree": "7b79c69c126f5ea67d2974c1bfad7df1937273c5",
+  "stack_base": "dc28e446a7e0fdb22aa82e9e3193cc7ab1b2bf9f",
+  "live_main_at_audit": "e6bf2899fd2e9d916f3904d344171f167588b8d4",
+  "scope": "isolated HConvGLU research; full Mirage conversion is incomplete",
+  "local_offline": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run --silent verify:offline",
+    "exit": 0,
+    "artifacts": ".cache/test-runs/2026-11-11T02-24-40.046Z-fee2822d",
+    "launch_source_metadata": {
+      "head": "320513d0cc4157997440d34f575f95085b2953a6",
+      "tree": "8ee4b7d90048fce08bb3e719a2fdfb84116132f5",
+      "dirty": true,
+      "diffSha256": "039912c0f78f3ff0bc8cc49adcb5330fd8aa247abe946cf3f9f2b3a4e431ae65",
+      "node": "v24.22.1",
+      "npm": "npm/11.9.0 node/v24.22.1 linux x64 workspaces/false",
+      "start": "2026-11-11T02:24:40.085Z"
+    },
+    "note": "Started with the pre-commit dirty working tree; no source changes during execution. Final hosted PR CI is a separate exact-commit check.",
+    "checks": {
+      "browser": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 33,
+          "passed": 33,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logBytes": 6605,
+        "logSha256": "4e5e46a10ccab8d11d57ba6394ff9e18638cf72c3359faa819ce6bd53c452a5f"
+      },
+      "build": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": null,
+        "logBytes": 1374,
+        "logSha256": "28a64e703c2b39fcbef4975de1f033a19ad8c564e0ba46ca17cd8dcc71ea26fa"
+      },
+      "controls": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logBytes": 624,
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      },
+      "delegate": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logBytes": 8349,
+        "logSha256": "1c6a151f4bdb8a70e23dd710dd47be6599f1bdf0870772461fe7106910bd30da"
+      },
+      "foundation": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logBytes": 12682,
+        "logSha256": "777235b5580be8feed9c7f693fa5d9faf7d59726fd802ba720ee0973a4b95d1a"
+      },
+      "lint": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": null,
+        "logBytes": 0,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "output": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logBytes": 7430,
+        "logSha256": "4ce69cdca3390a3e0dec202e7585993a5a1bde3a73f06d1ed0cddd0d91929050"
+      },
+      "preflight": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "protected": 702,
+          "violations": 0
+        },
+        "logBytes": 83,
+        "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+      },
+      "preflight-tests": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 60,
+          "passed": 60,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logBytes": 10320,
+        "logSha256": "6f1bb6ededd7772416be49265adf4717c579ff9718d678e665084b76312c4d2a"
+      },
+      "typecheck": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": null,
+        "logBytes": 0,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": {
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 847,
+          "passed": 847,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logBytes": 419,
+        "logSha256": "721fbc4c003fc5c6ae709c718653a2aa8470ff7c9da282e5edf61022f6b0911d"
+      }
+    }
+  },
+  "python_controls": {
+    "checkpoint": 13,
+    "metadata": 2,
+    "operator": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "numerical": {
+    "fp32": {
+      "exit": 1,
+      "passed": 1991,
+      "failed": 25,
+      "first_divergence": {
+        "block": "body_1/hconv",
+        "mode": "explicit",
+        "fixture": "stress_integer_pattern",
+        "stage": "output"
+      },
+      "report": "mirage-hconvglu-fp32.json"
+    },
+    "fp64_diagnosis": {
+      "exit": 0,
+      "passed": 2016,
+      "failed": 0,
+      "does_not_validate_fp32": true,
+      "report": "mirage-hconvglu-fp64.json"
+    }
+  },
+  "native_capture": {
+    "exit": 1,
+    "observed": 6,
+    "failed": 1,
+    "failure": "portrait_blank: native raw JSON includes score:-nan",
+    "report": "mirage-native-observations.json"
+  },
+  "production_assets": {
+    "status": "IDENTICAL",
+    "before": {
+      "index-DzX4C1J_.css": "20539b55d07619de51956eddb8d8f0194e0bff1e368ab90ff19040159a406273",
+      "index-mS_p1VS3.js": "2712be6b10681113179587732c17e121ccbb880d43a16a91403782d70c556c40",
+      "mirageWasmWorker-C58AhvV0.js": "932d65ff1fdc2f9916676e2a3f6abb246aa7cb98ec041880ace447d2d36a2450"
+    },
+    "after": {
+      "index-DzX4C1J_.css": "20539b55d07619de51956eddb8d8f0194e0bff1e368ab90ff19040159a406273",
+      "index-mS_p1VS3.js": "2712be6b10681113179587732c17e121ccbb880d43a16a91403782d70c556c40",
+      "mirageWasmWorker-C58AhvV0.js": "932d65ff1fdc2f9916676e2a3f6abb246aa7cb98ec041880ace447d2d36a2450"
+    }
+  },
+  "availability_gate": "MIRAGE_ONNX_NOT_VALIDATED",
+  "full_model_equivalence": "NOT_ESTABLISHED",
+  "webgpu": "NOT_RUN: CPU acceptance prerequisites unmet",
+  "hosted_ci": "See the current Draft PR checks; not represented by this local-run evidence",
+  "raw_research_logs": {
+    ".cache/mirage-resume/operator-tests-final.log": {
+      "bytes": 928,
+      "sha256": "796b583555b9f8ebeb637d647de3a4d67f714a19d117a243652d0464e4081ec4"
+    },
+    ".cache/mirage-resume/checkpoint-tests-final.log": {
+      "bytes": 1517,
+      "sha256": "46b5bc0a9a2234b732e67fd507f41218a5bacb66d9106482387d3ebed067120e"
+    },
+    ".cache/mirage-resume/acquisition-tests-final.log": {
+      "bytes": 358,
+      "sha256": "0cf18461ef057c944b8b6866f45ea874422136907d6a4f3ddc58efa5269813e5"
+    },
+    ".cache/mirage-resume/acquisition-current.log": {
+      "bytes": 504,
+      "sha256": "53034c57a7845ffafc455a374e8d054cd77122ddf5403afe90706692baa64497"
+    },
+    ".cache/mirage-resume/runtime-provenance.log": {
+      "bytes": 631,
+      "sha256": "5979ab71c1573138ceb3da17d00744551e4ad5e2c4a99f42104d5cb5e155c2e3"
+    },
+    ".cache/mirage-resume/hconvglu-fp32-pinned.log": {
+      "bytes": 1144,
+      "sha256": "2b83ee0dcdc4bbc5d7769634532ee5489651a47a52a5f2ef18cde7e3799ef822"
+    },
+    ".cache/mirage-resume/hconvglu-fp64-pinned.log": {
+      "bytes": 1144,
+      "sha256": "78d49b7e8da769503e62a5e6c061e016d4d32d6ba2d9ac34719eb53fc94e140e"
+    },
+    ".cache/mirage-resume/native-capture-2.log": {
+      "bytes": 427,
+      "sha256": "478d7bb427d2ea759b164977899e14d5cdda204e3f38c5704a01db9108d35047"
+    },
+    ".cache/mirage-resume/native-probe.log": {
+      "bytes": 560,
+      "sha256": "04e9d62ad66ccd69686a45eee7bedf9f3ba9b37cbaa3a3a457cdb390922eeece"
+    },
+    ".cache/mirage-resume/native-capture-1.log": {
+      "bytes": 1402,
+      "sha256": "7cd72e49aea7e2bfe41bf5c6f763fa589394361c435c0532f3232b7aac2488c3"
+    }
+  },
+  "independent_review": {
+    "schema_version": 1,
+    "review_kind": "Independent cumulative fixed-source code review; no external review publication",
+    "base_commit": "dc28e446a7e0fdb22aa82e9e3193cc7ab1b2bf9f",
+    "head_commit": "5795226eda397501d00c0d479506ed93b44ca08a",
+    "head_tree": "7b79c69c126f5ea67d2974c1bfad7df1937273c5",
+    "latest_main_observed": "e6bf2899fd2e9d916f3904d344171f167588b8d4",
+    "parent_pr36_head_observed": "dc28e446a7e0fdb22aa82e9e3193cc7ab1b2bf9f",
+    "verdict": "NO_BLOCKING_CODE_FINDINGS_FOR_RESEARCH_ONLY_SCOPE",
+    "blocking_findings": [],
+    "initial_followups": [
+      {
+        "id": "R1",
+        "description": "Run new stdlib acquisition metadata tests in offline CI",
+        "status": "ADDRESSED"
+      },
+      {
+        "id": "R2",
+        "description": "Add diverse deterministic nonlinear vectors without removing repeated old fixtures/failures",
+        "status": "ADDRESSED: 33 distinct integer-mixed vectors added and manifest-pinned"
+      }
+    ],
+    "reviewed_scope": [
+      "All cumulative source, tests, CI, version metadata, documentation and committed measurement reports since parent PR36",
+      "Pinned-checkpoint acquisition integrity and complete Safetensors inventory",
+      "Official-spec normalized sequency Walsh, zero-padded output-indexed bands, tanh-GELU, dense folding and explicit matrices",
+      "Source/artifact provenance and numerical failure retention",
+      "Official native library ABI capture and invalid JSON failure reporting"
+    ],
+    "independent_verification": {
+      "mirage.safetensors": {
+        "size": 216370504,
+        "sha256": "6ba97c5c1bef661c9b0c80782135682b38b4312fb33e0b645c93c10604bb16cd"
+      },
+      "mirage.cact": {
+        "size": 21611043,
+        "sha256": "4249a0f7515272ff76b9414bec17d7e7daf84b15b66c7fb4f17fce1e66f9f237"
+      },
+      "mapping_verified": 583,
+      "onnx_artifacts_checked": 112,
+      "numerical_statuses": {
+        "fp32": {
+          "PASS": 1991,
+          "FAIL": 25
+        },
+        "fp64": {
+          "PASS": 2016
+        }
+      },
+      "native_fixture_hashes_verified": 7,
+      "native_portrait_response_hash_verified": true,
+      "independent_stress_reproduction": {
+        "walsh": {
+          "status": "PASS",
+          "max_absolute_error": 9.5367431640625e-06,
+          "failed_elements": 0
+        },
+        "gate_pre": {
+          "status": "PASS",
+          "max_absolute_error": 5.340576171875e-05,
+          "failed_elements": 0
+        },
+        "gate": {
+          "status": "PASS",
+          "max_absolute_error": 3.814697265625e-05,
+          "failed_elements": 0
+        },
+        "value": {
+          "status": "PASS",
+          "max_absolute_error": 3.814697265625e-05,
+          "failed_elements": 0
+        },
+        "product": {
+          "status": "PASS",
+          "max_absolute_error": 0.00341796875,
+          "failed_elements": 0
+        },
+        "out_band": {
+          "status": "PASS",
+          "max_absolute_error": 0.02734375,
+          "failed_elements": 0
+        },
+        "output": {
+          "status": "FAIL",
+          "max_absolute_error": 0.046875,
+          "failed_elements": 9
+        }
+      }
+    },
+    "control_tests": [
+      {
+        "command": "python3 -m unittest discover -s scripts/mirage -p 'test_verify_checkpoint.py' -v",
+        "exit_code": 0,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0,
+        "log": ".cache/mirage-resume/review-5795226-checkpoint-tests.log"
+      },
+      {
+        "command": "python3 -m unittest discover -s scripts/mirage -p 'test_acquire_reference.py' -v",
+        "exit_code": 0,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "log": ".cache/mirage-resume/review-5795226-metadata-tests.log"
+      },
+      {
+        "command": ".cache/mirage-python/bin/python -m unittest discover -s scripts/mirage -p 'test_hconvglu.py' -v",
+        "exit_code": 0,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "log": ".cache/mirage-resume/review-5795226-operator-tests.log"
+      }
+    ],
+    "limitations": [
+      "The FP32 numerical experiment remains FAIL (25 of 2016 stage comparisons); operator acceptance is incomplete",
+      "FP64 diagnosis is separate and cannot validate FP32, WebGPU, or native quantization parity",
+      "No image encoder/detector/OCR ONNX model is exported; 471 of 583 checkpoint tensors are explicitly unmapped/out of scope",
+      "Native capture has six observations and one invalid-JSON FAIL; no ONNX/native boxes, masks, names or OCR equivalence is established",
+      "Native fixture reconstruction/hashes and preserved failure response were checked, but native calls were not independently repeated during this review",
+      "Research operator controls are local isolated-Python tests, not ordinary hosted npm CI",
+      "Full application offline verification and hosted CI remain the implementation agent responsibility and were not repeated by this reviewer"
+    ],
+    "production_availability_gate": "MIRAGE_ONNX_NOT_VALIDATED remains unchanged",
+    "merge_deploy_approval": false,
+    "working_tree_at_review": "clean"
+  }
+}

@@ -13,6 +13,50 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  mirage-research-controls:
+    name: Mirage research controls (synthetic, no model downloads)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up pinned Node before research dependency installation
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Validate repository contract before research dependency installation
+        run: |
+          node scripts/testing/run.mjs preflight
+          node scripts/testing/run.mjs preflight-tests
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install isolated pinned numerical tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/test-runs/mirage-research-controls
+          python -m venv .cache/mirage-ci-python
+          .cache/mirage-ci-python/bin/python -m pip install -r scripts/mirage/requirements-hconvglu.txt 2>&1 | tee .cache/test-runs/mirage-research-controls/install.log
+      - name: Run operator and encoder controls without checkpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/test-runs/mirage-research-controls
+          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_hconvglu.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/hconvglu.log
+          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_encoder_candidate.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/encoder.log
+          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_refinement.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/refinement.log
+      - name: Upload raw research control logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mirage-research-controls
+          path: .cache/test-runs/
+          include-hidden-files: true
+          retention-days: 14
+
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -29,6 +73,10 @@ jobs:
         run: node scripts/testing/run.mjs preflight
       - name: Repository preflight controls (no dependencies)
         run: node scripts/testing/run.mjs preflight-tests
+      - name: Check Mirage checkpoint tooling (synthetic, no model downloads)
+        run: |
+          python3 -m unittest discover -s scripts/mirage -p 'test_verify_checkpoint.py' -v
+          python3 -m unittest discover -s scripts/mirage -p 'test_acquire_reference.py' -v
       - name: Set up npm dependency cache
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
