@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "review_kind": "Independent fixed-commit review; no external publication",
+  "reviewed_at_utc": "2026-11-11T04:47:59.762888+00:00",
+  "base_commit": "c88520f1cc14ef4131bc42981d181081db112a09",
+  "head_commit": "cdb0d630870a02a09d8c4c70335fbd15fe285396",
+  "head_tree": "b6ffcb96ca077284c6d037b13add677242ea140b",
+  "latest_main_observed": "e6bf2899fd2e9d916f3904d344171f167588b8d4",
+  "pr_context_at_review": {
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/37",
+    "state": "open",
+    "draft": true,
+    "published_head": "c88520f1cc14ef4131bc42981d181081db112a09",
+    "published_base": "dc28e446a7e0fdb22aa82e9e3193cc7ab1b2bf9f",
+    "published_base_ref": "fix/mirage-onnx-fidelity-guard",
+    "note": "Reviewed local committed follow-up; this source commit was not yet the published PR head at inspection."
+  },
+  "verdict": "NO_BLOCKING_FINDINGS_FOR_DIAGNOSTIC_ONLY_SCOPE",
+  "blocking_findings": [],
+  "reviewed_scope": [
+    "All 18 changed files between the fixed base and head, including reference-order arithmetic, explicit preprocessing/inverse coordinates, strict geometry-only capture, bounded execution and exact-coverage aggregation, model-free controls, additive diagnostics, CI pipefail/tee, version metadata, documentation and three structured evidence reports.",
+    "Mathematical/provenance consistency and retention of numerical and historical native failures. No official equivalence, production availability, WebGPU acceptance, merge or deployment approval."
+  ],
+  "resolved_findings": [
+    {
+      "id": "RR1",
+      "description": "Require pinned completed dequantized symmetric CPU baseline provenance rather than trusting an arbitrary graph identity.",
+      "status": "ADDRESSED"
+    },
+    {
+      "id": "RR2",
+      "description": "Retain RoPE sine/cosine buffers when avoiding unused folded-matrix construction; add constructor regression control.",
+      "status": "ADDRESSED"
+    },
+    {
+      "id": "RR3",
+      "description": "Reject zero numerical coverage and contradictory phase/weight scope; numerical-only defaults cover the ten original fixtures.",
+      "status": "ADDRESSED"
+    },
+    {
+      "id": "RR4",
+      "description": "Require exact per-scope/global coverage and shared provenance; reject missing object/text geometry groups and malformed counts.",
+      "status": "ADDRESSED"
+    },
+    {
+      "id": "RR5",
+      "description": "Describe inspected aspect variants as exploratory rather than independent acceptance holdouts; pair conditional matched IoU with unmatched counts.",
+      "status": "ADDRESSED"
+    }
+  ],
+  "independent_checks": {
+    "refinement_controls": {
+      "command": ".cache/mirage-python/bin/python -m unittest discover -s scripts/mirage -p 'test_refinement.py'",
+      "exit": 0,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "log": {
+        "path": ".cache/mirage-refinement/review-controls-3-discover.log",
+        "size": 111,
+        "sha256": "0be11ebe6c68731bc90c3162dea98196b03b40b92fe6e999029da8c292d1a698"
+      }
+    },
+    "aggregate": {
+      "recomputed_from_scoped_reports": 14,
+      "exact_equality_to_committed_results": true,
+      "numerical_cases": 40,
+      "comparisons": 7920,
+      "geometry_records": 132,
+      "producer_source_and_aggregator_hashes_match_current_fixed_tree": true,
+      "full_onnx_checker": "PASS for both graphs",
+      "eager_vs_oasis": {
+        "PASS": 2640,
+        "FAIL": 0,
+        "max_absolute_error": 0.0
+      },
+      "onnx_vs_oasis": {
+        "PASS": 2473,
+        "FAIL": 167,
+        "max_absolute_error": 0.451171875
+      },
+      "onnx_vs_eager": {
+        "PASS": 2473,
+        "FAIL": 167,
+        "max_absolute_error": 0.451171875
+      },
+      "log": {
+        "path": ".cache/mirage-refinement/review-final-doc-audit.log",
+        "size": 1934,
+        "sha256": "24d903dbbc5c46b586f4c5027cb0b98bc96818f4b56816d5dcc73e068e6b8f03"
+      }
+    },
+    "actual_current_source_inference": {
+      "scope": "cact-dequantized / pixel / square_blank",
+      "command": "verify_refinement.py --numerical-only --weights cact-dequantized --rule pixel --cases square_blank (all pinned input arguments in report)",
+      "completed": true,
+      "exit": 1,
+      "status": "FAIL",
+      "provider": [
+        "CPUExecutionProvider"
+      ],
+      "eager_vs_oasis": {
+        "PASS": 66,
+        "FAIL": 0,
+        "max_absolute_error": 0.0
+      },
+      "onnx_vs_oasis": {
+        "PASS": 51,
+        "FAIL": 15,
+        "max_absolute_error": 0.1025390625
+      },
+      "onnx_vs_eager": {
+        "PASS": 51,
+        "FAIL": 15,
+        "max_absolute_error": 0.1025390625
+      },
+      "whole_case_exactly_matches_committed_aggregate": true,
+      "exported_graph_exactly_matches_aggregate": true,
+      "graph": {
+        "size": 34281503,
+        "sha256": "52d52d2918160404cd806702a270736819712025cf3c6aa8e907a06bc3cbdd07"
+      },
+      "report": {
+        "path": ".cache/mirage-refinement/review-final-onecase/validation.json",
+        "size": 106499,
+        "sha256": "80c0e5d8e35da317717047a29c8e95fb48ebd8bacf5fb199763c2b7296436847"
+      },
+      "log": {
+        "path": ".cache/mirage-refinement/review-final-onecase.log",
+        "size": 1204,
+        "sha256": "03232b99ce3f8073ccfcff6b7d1655ffc04e138ac07172933eb90231004f5346"
+      }
+    },
+    "native_geometry": {
+      "source_report_equals_committed_report": true,
+      "verified_raw_response_hashes": 22,
+      "all_cases": "OBSERVED",
+      "score_fields_present": false,
+      "scope": "GEOMETRY_ONLY_NO_SCORE_PARITY",
+      "native_regions_combined": 136,
+      "native_objects": 113,
+      "native_text_regions": 23,
+      "nearest32_combined": {
+        "candidate_regions": 169,
+        "matched": 124,
+        "unmatched_native": 12,
+        "unmatched_candidate": 45,
+        "mean_matched_bbox_iou": 0.9814974407819289
+      },
+      "nearest32_objects_only": {
+        "candidate_objects": 150,
+        "matched": 107,
+        "unmatched_native": 6,
+        "unmatched_candidate": 43
+      },
+      "native_calls_independently_repeated": false
+    },
+    "ci_pipeline_failure_controls": {
+      "success_exit": 0,
+      "assertion_failure_exit": 1,
+      "collection_error_exit": 1,
+      "stdout_matches_tee_logs": true,
+      "record": {
+        "path": ".cache/mirage-refinement/review-unittest-pipelines/results.json",
+        "size": 538,
+        "sha256": "ae3693b266af4ad2c5d54128393f26622dd43a8b24f345006c9cb98d09a11d18"
+      }
+    },
+    "implementation_execution_evidence_inspected": {
+      "research_controls_passed": 44,
+      "research_control_raw_hashes_verified": true,
+      "all14scope_report_and_log_hashes_verified": true,
+      "offline_tasks_metadata_verified": 11,
+      "unit_passed": 847,
+      "browser_passed": 33,
+      "all_recorded_tasks_state": "PASS",
+      "full_suite_independently_repeated": false,
+      "offline_artifact_directory": ".cache/test-runs/2026-11-11T04-41-55.664Z-77e10f20",
+      "execution_context": "Local precommit working tree: runner source.json records prior HEAD and dirty=true; do not label this as hosted or clean-checkout final-SHA CI."
+    },
+    "production": {
+      "src_and_public_diff_from_base": "EMPTY",
+      "version": "1.0.34 in package and canonical lock",
+      "js_css_equal_to_preserved_baseline": true,
+      "current_dist_asset_hashes_verified": true,
+      "gate": "MIRAGE_ONNX_NOT_VALIDATED remains unchanged"
+    },
+    "documentation": "Numerical totals and worst error match records; geometry table explicitly combines separately matched objects+text (136), distinguishes object-only native count113, reports unmatched regions and conditional means, preserves interruption cause as unknown, and makes no full native/browser parity claim."
+  },
+  "evidence_files": [
+    {
+      "path": "docs/mirage-refinement.md",
+      "size": 11718,
+      "sha256": "4607ab4e74668c73086b2be7571258e6b75f73d6f9b449e88949e4cf12619d8d"
+    },
+    {
+      "path": "docs/verification/mirage-refinement-results.json",
+      "size": 2750852,
+      "sha256": "3c3ff2c65358ab31f4abff836f8653ccff5a853d9568661011e5eccf9353c1c7"
+    },
+    {
+      "path": "docs/verification/mirage-refinement-native-geometry.json",
+      "size": 418060,
+      "sha256": "77e4f258f55642ac3ed51b615a6708d48bf851994e06c64f6a6d9ac81a69fd58"
+    },
+    {
+      "path": "docs/verification/mirage-refinement-execution.json",
+      "size": 35717,
+      "sha256": "8a9b14e57a45a4155bc57db6bf0fa835e773dcfe189ae277feddc478a79cb178"
+    }
+  ],
+  "limitations": [
+    "Numerical acceptance remains FAIL at unchanged atol/rtol2e-4, including167 failures per ONNX comparison label. Exact eager agreement is limited to the pinned unofficial Oasis reference and measured cases.",
+    "The22 geometry-only native observations omit scores by explicit supported API scope. Historical two full-score invalid-JSON failures remain unchanged; full native, score, names and OCR equivalence are not established.",
+    "Nearest32 probes were inspected while selecting the hypothesis, are correlated variants of one scene, and include327-pixel counterexamples. They are exploratory evidence, not independent validation.",
+    "Only452 encoder/dense-head tensors are mapped;131 original tensors and names/OCR/language-region computation remain outside scope.",
+    "No browser/WebGPU numerical or full-model acceptance was run. Native calls and full application suite were not independently repeated by this reviewer.",
+    "Hosted CI for the fixed commit is pending publication; prior published-head CI is not final-source CI."
+  ],
+  "working_tree_at_review": "clean",
+  "merge_deploy_approval": false,
+  "external_review_posted": false
+}
