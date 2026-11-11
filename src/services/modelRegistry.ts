@@ -144,9 +144,9 @@ export const MIRAGE_MODEL: ModelMetadata = {
   id: 'mirage',
   name: 'Mirage (Cactus WASM)',
   implemented: true,
-  runtime: 'Cactus WASM / Web Worker',
-  outputType: '検出物体・輪郭マスク・OCRテキスト・方向/距離',
-  description: '公式の Mirage .cact を WASM Worker で実行します。ONNX版は元モデルとの一致を未検証のため利用できません。',
+  runtime: 'Cactus WASM / Web Worker · 実験用部分ONNX',
+  outputType: '検出物体・輪郭マスク・OCRテキスト・方向/距離（実験用部分ONNXは領域候補・枠・マスクのみ）',
+  description: '公式の Mirage .cact を WASM Worker で実行します。完成版ONNXは未検証のため利用不可ですが、公式.cact復元重みによる部分ONNX（452/583テンソル・領域候補のみ）を実験用機能として試せます。',
   license: MIRAGE_MODEL_ASSET_ENTRY.license,
   licenseNote: MIRAGE_MODEL_ASSET_ENTRY.licenseNote,
   upstreamUrl: MIRAGE_MODEL_ASSET_ENTRY.upstreamUrl,
@@ -171,6 +171,22 @@ export const MIRAGE_MODEL: ModelMetadata = {
       upstreamUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].upstreamUrl,
       localUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].localUrl,
       isDefault: true,
+    },
+    {
+      id: 'mirage-onnx-exp-wasm',
+      name: 'Mirage 部分ONNX 実験用 (WASM · 34.3MB)',
+      description: '【実験用機能】公式.cact復元重みによる部分ONNX（452/583テンソル・SHA256 52d52d29）。WASMで物体領域候補・テキスト領域候補・枠・128×128マスクのみ推論（物体名・OCR文字列・最終選別なし）。',
+      fileName: MIRAGE_VARIANT_CATALOG['mirage:mirage-onnx-exp-wasm'].file,
+      upstreamUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-onnx-exp-wasm'].upstreamUrl,
+      localUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-onnx-exp-wasm'].localUrl,
+    },
+    {
+      id: 'mirage-onnx-exp-webgpu',
+      name: 'Mirage 部分ONNX 実験用 (GPU/WebGPU優先 · 34.3MB)',
+      description: '【実験用機能】公式.cact復元重みによる部分ONNX（452/583テンソル・SHA256 52d52d29）。WebGPU優先（WASMフォールバック付き）で物体領域候補・テキスト領域候補・枠・128×128マスクのみ推論。',
+      fileName: MIRAGE_VARIANT_CATALOG['mirage:mirage-onnx-exp-webgpu'].file,
+      upstreamUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-onnx-exp-webgpu'].upstreamUrl,
+      localUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-onnx-exp-webgpu'].localUrl,
     },
   ],
 };
@@ -207,9 +223,30 @@ export function getVariantMetadata(
 export function backendDescription(state: ModelState): string {
   if(state.status!=='ready')return 'バックエンド未準備';
   if(state.model==='mirage'){
-    return state.variantId==='mirage-webgpu'
-      ? 'Mirage ONNX 利用不可（元モデルとの一致未検証）'
-      : 'Cactus WebAssembly (CPU / Web Worker 非同期推論)';
+    if (state.variantId === 'mirage-webgpu') {
+      return 'Mirage ONNX 利用不可（元モデルとの一致未検証）';
+    }
+    if (
+      state.variantId === 'mirage-onnx-exp-wasm' ||
+      state.variantId === 'mirage-onnx-exp-webgpu'
+    ) {
+      const backend = state.backend;
+      const requested =
+        backend?.requestedProvider === 'webgpu'
+          ? 'WebGPU優先'
+          : backend?.requestedProvider === 'wasm'
+            ? 'WASM'
+            : backend?.requestedProvider === 'auto'
+              ? '自動(WebGPU優先)'
+              : '未報告';
+      const configured = backend?.configuredProviders.length
+        ? backend.configuredProviders
+            .map(p => (p === 'wasm' ? 'WASM' : 'WebGPU'))
+            .join(' → ')
+        : '未報告';
+      return `実験用部分ONNX 要求: ${requested}／設定: ${configured}${backend?.fallbackReason ? `／理由: ${backend.fallbackReason.slice(0, 180)}` : ''}（実行バックエンドは未計測）`;
+    }
+    return 'Cactus WebAssembly (CPU / Web Worker 非同期推論)';
   }
   if(state.model==='mediapipe'||state.model==='selfie-segmenter')return `${state.delegate} delegate 指定・初期化済み（GPU実動作は未計測）`;
   const backend=state.backend;

@@ -6,7 +6,11 @@ export type SelfieVariantId = 'general' | 'landscape';
 export type MediapipeVariantId = 'lite0' | 'lite2' | 'ssd-mobilenet-v2';
 export type YoloSegVariantId = 'yolov8n-seg' | 'yolov8s-seg';
 export type SegFormerVariantId = 'b0' | 'b1' | 'b2';
-export type MirageVariantId = 'mirage-webgpu' | 'mirage-51m';
+export type MirageVariantId =
+  | 'mirage-webgpu'
+  | 'mirage-51m'
+  | 'mirage-onnx-exp-wasm'
+  | 'mirage-onnx-exp-webgpu';
 
 export type ModelVariantId = SelfieVariantId | MediapipeVariantId | YoloSegVariantId | SegFormerVariantId | MirageVariantId;
 

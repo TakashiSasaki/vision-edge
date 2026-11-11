@@ -17,9 +17,14 @@ import type { ExtraInferenceOptions } from '../services/visionEngine';
 import { speechService } from '../services/speechService';
 import { confidenceDescription } from '../services/confidenceDescription';
 import { modelMetadata } from '../services/modelRegistry';
+import {
+  isMirageExperimentalVariant,
+  type MirageExperimentalExecutionDiagnostics,
+} from '../services/mirageExperimentalOnnxService';
 
 interface ControlPanelProps {
   activeModel: RunnableModelType;
+  activeVariant?: string;
   renderOptions: RenderOptions;
   onChangeRenderOptions: (opts: Partial<RenderOptions>) => void;
   inferenceParams?: ExtraInferenceOptions;
@@ -32,10 +37,22 @@ interface ControlPanelProps {
   onSelectObject: (obj: DetectedObject) => void;
   selectedObjectId?: string;
   isSpeaking: boolean;
+  experimentalDiagnostics?: MirageExperimentalExecutionDiagnostics | null;
+  stillImageLabel?: string | null;
+  onSelectStillImagePreset?: (
+    preset:
+      | 'camera'
+      | 'overlap_shapes'
+      | 'text_regions'
+      | 'coco_000000458054'
+      | 'coco_000000331352'
+  ) => void;
+  onUploadStillImage?: (file: File) => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
   activeModel,
+  activeVariant,
   renderOptions,
   onChangeRenderOptions,
   inferenceParams = {},
@@ -46,10 +63,16 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   detectedObjects,
   hasCurrentFrame,
   onSelectObject,
-  selectedObjectId
+  selectedObjectId,
+  experimentalDiagnostics = null,
+  stillImageLabel = null,
+  onSelectStillImagePreset,
+  onUploadStillImage,
 }) => {
   const [activeTab, setActiveTab] = useState<'detection' | 'params' | 'settings'>('detection');
   const [, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const isExperimentalMirage =
+    activeModel === 'mirage' && isMirageExperimentalVariant(activeVariant);
 
   useEffect(() => {
     setAvailableVoices(speechService.getVoices());
@@ -74,14 +97,33 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     );
   };
 
-  const confidenceThreshold = inferenceParams.confidenceThreshold ?? renderOptions.confidenceThreshold ?? 0.35;
+  const confidenceThreshold =
+    inferenceParams.confidenceThreshold ??
+    renderOptions.confidenceThreshold ??
+    (isExperimentalMirage ? 0.3 : 0.35);
   const minAreaPercent = inferenceParams.minAreaPercent ?? 0.5;
-  const maxDetections = inferenceParams.maxDetections ?? (activeModel === 'yolo-seg' ? 20 : activeModel === 'mirage' ? 15 : 10);
+  const maxDetections =
+    inferenceParams.maxDetections ??
+    (activeModel === 'yolo-seg'
+      ? 20
+      : isExperimentalMirage
+        ? 64
+        : activeModel === 'mirage'
+          ? 15
+          : 10);
   const bboxSmoothing = inferenceParams.bboxSmoothing ?? 0.20;
   const iouThreshold = inferenceParams.iouThreshold ?? 0.45;
   const maskThreshold = inferenceParams.maskThreshold ?? 0.50;
   const mirageAnalysisMode = inferenceParams.analysisMode ?? 'fast';
   const mirageIncludeOcr = inferenceParams.includeOcr ?? true;
+  const experimentalNmsIou =
+    inferenceParams.experimentalNmsIou !== undefined
+      ? inferenceParams.experimentalNmsIou
+      : null;
+  const showObjectProposals = inferenceParams.showObjectProposals ?? true;
+  const showTextProposals = inferenceParams.showTextProposals ?? true;
+  const showDiagnosticMasks = inferenceParams.showDiagnosticMasks ?? true;
+  const overlayNativeWasm = inferenceParams.overlayNativeWasm ?? false;
 
   const updateInferenceParam = <K extends keyof ExtraInferenceOptions>(key: K, value: ExtraInferenceOptions[K]) => {
     if (onChangeInferenceParams) {
@@ -144,10 +186,97 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             全画素マスクは最大スコアの分類です。softmaxスコアは正答率の保証ではありません。しきい値は一覧・ラベルに適用し、タップでは小さい領域や低スコアの画素も確認できます。面積は別表示です。
           </p>
         )}
-        {activeModel === 'mirage' && (
+        {activeModel === 'mirage' && !isExperimentalMirage && (
           <p className="text-slate-400">
             Mirage は公式 .cact を WASM Worker で実行します。検出物体・輪郭マスク・OCR・方向/距離（近/中/遠）を表示・読み上げます。
           </p>
+        )}
+        {isExperimentalMirage && (
+          <div
+            role="note"
+            aria-label="実験用部分Mirage ONNXの制限事項"
+            className="p-2.5 rounded-lg border border-amber-500/40 bg-amber-950/25 text-amber-100 space-y-1.5"
+          >
+            <div className="font-bold text-amber-300 flex items-center justify-between">
+              <span>【実験用機能】部分Mirage ONNX 領域候補推論</span>
+              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-900/60 border border-amber-600/40">
+                452/583 tensors · opset 17
+              </span>
+            </div>
+            <p className="text-[11px] text-amber-200/90 leading-relaxed">
+              公式.cactから復元した部分モデル（SHA-256: <code className="font-mono">52d52d29...</code>）です。物体名・OCR文字列・言語/領域処理・最終候補選別は未実装のため、<strong>物体領域候補・テキスト領域候補・枠・128×128診断用マスク</strong>として表示します（検証4画像で公式54領域中52件対応・余分候補80件、中間層167件の不一致あり）。
+            </p>
+            {onSelectStillImagePreset && (
+              <div className="pt-1 border-t border-amber-800/40 space-y-1.5">
+                <div className="flex items-center justify-between text-[10px] text-amber-300">
+                  <span>入力画像テスト（カメラまたは検証画像を選択）:</span>
+                  <span className="font-mono">{stillImageLabel ?? 'カメラ映像'}</span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onSelectStillImagePreset('camera')}
+                    className={`px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${
+                      !stillImageLabel
+                        ? 'bg-blue-600 border-blue-400 text-white'
+                        : 'bg-slate-900/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    カメラ映像
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSelectStillImagePreset('overlap_shapes')}
+                    className={`px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${
+                      stillImageLabel === 'overlap_shapes'
+                        ? 'bg-cyan-700 border-cyan-400 text-white'
+                        : 'bg-slate-900/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    検証: 重なり図形
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSelectStillImagePreset('text_regions')}
+                    className={`px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${
+                      stillImageLabel === 'text_regions'
+                        ? 'bg-cyan-700 border-cyan-400 text-white'
+                        : 'bg-slate-900/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    検証: テキスト領域
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSelectStillImagePreset('coco_000000458054')}
+                    className={`px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${
+                      stillImageLabel === 'coco_000000458054'
+                        ? 'bg-cyan-700 border-cyan-400 text-white'
+                        : 'bg-slate-900/80 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    検証: COCO 458054
+                  </button>
+                  {onUploadStillImage && (
+                    <label className="px-2 py-1 rounded text-[10px] font-semibold border bg-slate-900/80 border-slate-700 text-slate-300 hover:bg-slate-800 cursor-pointer">
+                      <span>画像ファイル...</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        aria-label="検証用の画像ファイルを選択"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) onUploadStillImage(file);
+                          e.currentTarget.value = '';
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Tab 1: Detection List */}
@@ -464,7 +593,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 </div>
               )}
 
-              {activeModel === 'mirage' && (
+              {activeModel === 'mirage' && !isExperimentalMirage && (
                 <>
                   {/* Fast vs Full Analysis Mode Selector */}
                   <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2">
@@ -505,7 +634,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       </button>
                     </div>
                     <p className="text-[10px] text-slate-400 leading-tight">
-                      ヘッダーの「バリアント」から WebGPU (ONNX コンバート版) と WASM (.cact 版) を切り替えられます
+                      ヘッダーの「バリアント」から公式 WASM (.cact 版) と実験用部分ONNX (WASM / GPU) を切り替えられます
                     </p>
                   </div>
 
@@ -563,6 +692,119 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       className="w-full accent-blue-500 cursor-pointer"
                     />
                   </div>
+                </>
+              )}
+
+              {isExperimentalMirage && (
+                <>
+                  {/* Candidate Post-processing / NMS Policy */}
+                  <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium text-slate-200">候補選別・NMS方針</span>
+                      <span className="font-mono text-cyan-400 font-semibold text-[11px]">
+                        {experimentalNmsIou === null ? 'NMSなし (既定)' : `Greedy NMS IoU ${experimentalNmsIou}`}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="候補選別・NMS方針">
+                      <button
+                        type="button"
+                        onClick={() => updateInferenceParam('experimentalNmsIou', null)}
+                        className={`p-2 rounded border text-left transition-colors ${
+                          experimentalNmsIou === null
+                            ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
+                            : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="text-[11px]">NMSなし（既定）</div>
+                        <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                          3×3 local peaks（52/54一致・余分80件）
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateInferenceParam('experimentalNmsIou', 0.5)}
+                        className={`p-2 rounded border text-left transition-colors ${
+                          experimentalNmsIou === 0.5
+                            ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
+                            : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="text-[11px]">Greedy NMS (IoU 0.5)</div>
+                        <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                          重複候補抑制仮説（51/54一致・余分27件）
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Proposal Layer Toggles */}
+                  <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2">
+                    <div className="font-medium text-slate-200 text-xs">部分ONNX 領域候補・マスク表示対象</div>
+                    <label className="flex items-center justify-between text-xs cursor-pointer">
+                      <span className="text-slate-300">物体領域候補を表示（最大64件・水色枠）</span>
+                      <input
+                        type="checkbox"
+                        checked={showObjectProposals}
+                        onChange={(e) => updateInferenceParam('showObjectProposals', e.target.checked)}
+                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700 cursor-pointer"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between text-xs cursor-pointer">
+                      <span className="text-slate-300">テキスト領域候補を表示（最大32件・琥珀枠）</span>
+                      <input
+                        type="checkbox"
+                        checked={showTextProposals}
+                        onChange={(e) => updateInferenceParam('showTextProposals', e.target.checked)}
+                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700 cursor-pointer"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between text-xs cursor-pointer">
+                      <span className="text-slate-300">128×128 診断用物体マスクを合成</span>
+                      <input
+                        type="checkbox"
+                        checked={showDiagnosticMasks}
+                        onChange={(e) => updateInferenceParam('showDiagnosticMasks', e.target.checked)}
+                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700 cursor-pointer"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Optional Official WASM Overlay Toggle */}
+                  <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg flex items-center justify-between gap-2">
+                    <div>
+                      <div className="font-medium text-slate-200 text-xs">公式.cact WASM結果の比較オーバーレイ</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">
+                        有効時は <code className="font-mono">[ONNX候補]</code> と <code className="font-mono">[公式WASM]</code> の出力元を明示区別して重ね表示します
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      aria-label="公式.cact WASM結果の比較オーバーレイ"
+                      checked={overlayNativeWasm}
+                      onChange={(e) => updateInferenceParam('overlayNativeWasm', e.target.checked)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700 cursor-pointer shrink-0"
+                    />
+                  </div>
+
+                  {/* Execution Diagnostics Readout */}
+                  {experimentalDiagnostics && (
+                    <div
+                      aria-label="実験用部分ONNX実行診断"
+                      className="p-3 bg-slate-950/90 border border-slate-800 rounded-lg space-y-1 font-mono text-[10px] text-slate-300"
+                    >
+                      <div className="text-cyan-400 font-sans font-bold text-[11px] mb-1">
+                        実験用部分ONNX 直近推論診断
+                      </div>
+                      <div>要求EP: {experimentalDiagnostics.requestedProvider} ／ 設定EP: {experimentalDiagnostics.configuredProviders.join(' → ')}</div>
+                      {experimentalDiagnostics.fallbackReason && (
+                        <div className="text-amber-300">フォールバック理由: {experimentalDiagnostics.fallbackReason}</div>
+                      )}
+                      <div>入力 valid_hw: [{experimentalDiagnostics.validHw[0]}, {experimentalDiagnostics.validHw[1]}] (元画像 {experimentalDiagnostics.metadata.W}×{experimentalDiagnostics.metadata.H} · ceil32)</div>
+                      <div>座標逆変換倍率: [{experimentalDiagnostics.metadata.coordinate_scale.map(v => v.toFixed(3)).join(', ')}]</div>
+                      <div>抽出候補: 物体 {experimentalDiagnostics.objectProposalCount}件 ／ テキスト {experimentalDiagnostics.textProposalCount}件{experimentalDiagnostics.nativeOverlayEnabled ? ` ／ 公式WASM ${experimentalDiagnostics.nativeOverlayCount}件` : ''}</div>
+                      <div>処理時間: 前処理 {experimentalDiagnostics.timingsMs.preprocess.toFixed(1)}ms · 推論 {experimentalDiagnostics.timingsMs.inference.toFixed(1)}ms · 後処理 {experimentalDiagnostics.timingsMs.postprocess.toFixed(1)}ms</div>
+                    </div>
+                  )}
                 </>
               )}
             </div>

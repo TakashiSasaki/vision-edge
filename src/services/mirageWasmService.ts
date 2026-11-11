@@ -27,6 +27,11 @@ export interface MirageInferExtraOptions {
   maxDetections?: number;
   analysisMode?: MirageAnalysisMode;
   includeOcr?: boolean;
+  experimentalNmsIou?: number | null;
+  showObjectProposals?: boolean;
+  showTextProposals?: boolean;
+  showDiagnosticMasks?: boolean;
+  overlayNativeWasm?: boolean;
 }
 
 export interface MirageTask {
@@ -36,7 +41,7 @@ export interface MirageTask {
     confidenceThreshold: number,
     extraOptions?: MirageInferExtraOptions
   ): Promise<DetectedObject[]>;
-  close(): void;
+  close(): void | Promise<void>;
 }
 
 export interface MirageWorkerLike {

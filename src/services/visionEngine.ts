@@ -6,6 +6,12 @@ import { getCategoryColor, getLabelInfo } from './dictionary';
 import { createYoloSegTask, type YoloSegTask, type YoloSegTaskOptions } from './yoloSegService';
 import { createSegFormerTask, type SegFormerTask, type SegFormerTaskOptions } from './segformerService';
 import { createMirageWasmTask, type MirageTask, type MirageTaskOptions } from './mirageWasmService';
+import {
+  createMirageExperimentalOnnxTask,
+  isMirageExperimentalVariant,
+  MirageExperimentalOnnxEngine,
+  type MirageExperimentalExecutionDiagnostics,
+} from './mirageExperimentalOnnxService';
 import { unknownOnnxBackend } from './onnxSession';
 import { mirageWebGpuUnavailableError } from './mirageAvailability';
 import { assertVariantAssetAvailable, getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSources, type AssetSourceRecorder, type AssetDeliverySource } from './modelAssetResolver';
@@ -22,6 +28,11 @@ export interface ExtraInferenceOptions {
   maskThreshold?: number;
   analysisMode?: MirageAnalysisMode;
   includeOcr?: boolean;
+  experimentalNmsIou?: number | null;
+  showObjectProposals?: boolean;
+  showTextProposals?: boolean;
+  showDiagnosticMasks?: boolean;
+  overlayNativeWasm?: boolean;
 }
 
 export interface VisionTaskFactory {
@@ -98,7 +109,20 @@ function createDefaultFactory(recordAssetSource: AssetSourceRecorder): VisionTas
   },
   yoloSeg: (options) => createYoloSegTask({ ...options, recordAssetSource }),
   segformer: (options) => createSegFormerTask({ ...options, recordAssetSource }),
-  mirage: (options) => createMirageWasmTask({ ...options, recordAssetSource }),
+  mirage: (options) => {
+    if (isMirageExperimentalVariant(options?.variantId)) {
+      return createMirageExperimentalOnnxTask({
+        variantId: options.variantId,
+        recordAssetSource,
+        nativeOverlayTaskFactory: () =>
+          createMirageWasmTask({
+            variantId: 'mirage-51m',
+            recordAssetSource,
+          }),
+      });
+    }
+    return createMirageWasmTask({ ...options, recordAssetSource });
+  },
   };
 }
 type ActiveTask =
@@ -699,6 +723,16 @@ export class VisionEngine {
     }
   }
 
+  public getExperimentalMirageDiagnostics(): MirageExperimentalExecutionDiagnostics | null {
+    if (
+      this.activeTask?.model === 'mirage' &&
+      this.activeTask.task instanceof MirageExperimentalOnnxEngine
+    ) {
+      return this.activeTask.task.getLastDiagnostics();
+    }
+    return null;
+  }
+
   private async detectMirageVideoFrame(
     videoElement: InferenceInput,
     confidenceThreshold: number,
@@ -725,6 +759,11 @@ export class VisionEngine {
           maxDetections: extraOptions?.maxDetections,
           analysisMode: extraOptions?.analysisMode,
           includeOcr: extraOptions?.includeOcr,
+          experimentalNmsIou: extraOptions?.experimentalNmsIou,
+          showObjectProposals: extraOptions?.showObjectProposals,
+          showTextProposals: extraOptions?.showTextProposals,
+          showDiagnosticMasks: extraOptions?.showDiagnosticMasks,
+          overlayNativeWasm: extraOptions?.overlayNativeWasm,
         });
         rawObjects = detectResult instanceof Promise ? await detectResult : detectResult;
         sdkOutcome = 'success';

@@ -231,6 +231,13 @@ export const MIRAGE_LOCAL_URL = '/api/model-cache/mirage/mirage.cact';
 export const MIRAGE_WEBGPU_LOCAL_URL =
   '/api/model-cache/mirage/mirage-webgpu.onnx';
 
+export const MIRAGE_EXPERIMENTAL_ONNX_FILE =
+  'cact-dequantized-reference-order.onnx';
+export const MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE = 34_281_503;
+export const MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256 =
+  '52d52d2918160404cd806702a270736819712025cf3c6aa8e907a06bc3cbdd07';
+export const MIRAGE_EXPERIMENTAL_ONNX_LOCAL_URL = `/api/model-cache/mirage/${MIRAGE_EXPERIMENTAL_ONNX_FILE}?sha256=${MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256}`;
+
 export const LOCAL_CACTUS_WASM_JS_URL = '/wasm/cactus/cactus.js';
 export const LOCAL_CACTUS_WASM_BINARY_URL = '/wasm/cactus/cactus.wasm';
 export const CACHE_CACTUS_WASM_JS_URL = '/api/model-cache/wasm/cactus/cactus.js';
@@ -246,6 +253,28 @@ export const MIRAGE_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = 
     license: 'Apache-2.0',
     licenseNote: 'Cactus Compute, Inc. / Apache License 2.0（ブラウザWASM・ローカル推論可）',
     isDefault: true,
+  },
+  'mirage:mirage-onnx-exp-wasm': {
+    modelId: 'mirage',
+    variantId: 'mirage-onnx-exp-wasm',
+    file: MIRAGE_EXPERIMENTAL_ONNX_FILE,
+    upstreamUrl: MIRAGE_EXPERIMENTAL_ONNX_LOCAL_URL,
+    localUrl: MIRAGE_EXPERIMENTAL_ONNX_LOCAL_URL,
+    license: 'Apache-2.0',
+    licenseNote: 'Cactus Compute, Inc. / Apache License 2.0（公式.cact復元重み・部分ONNX実験用 452/583テンソル）',
+    expectedSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
+  },
+  'mirage:mirage-onnx-exp-webgpu': {
+    modelId: 'mirage',
+    variantId: 'mirage-onnx-exp-webgpu',
+    file: MIRAGE_EXPERIMENTAL_ONNX_FILE,
+    upstreamUrl: MIRAGE_EXPERIMENTAL_ONNX_LOCAL_URL,
+    localUrl: MIRAGE_EXPERIMENTAL_ONNX_LOCAL_URL,
+    license: 'Apache-2.0',
+    licenseNote: 'Cactus Compute, Inc. / Apache License 2.0（公式.cact復元重み・部分ONNX実験用 452/583テンソル）',
+    expectedSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
   },
 };
 
@@ -487,19 +516,19 @@ export async function resolveModelAssetUrls(
 ): Promise<ResolvedAssetUrls> {
   const entry = getVariantCatalogEntry(model, variantId);
   assertVariantAssetAvailable(model, entry.variantId);
+  if (model === 'mirage') {
+    return {
+      primaryUrl: entry.localUrl,
+      fallbackUrl: entry.expectedSha256 ? null : entry.upstreamUrl,
+      source: isContainerModelCacheEnabled() ? 'container-cache' : 'external',
+    };
+  }
   if (!isContainerModelCacheEnabled()) {
     if (entry.expectedSha256) throw new ModelAssetsBlockedError(model, entry.variantId, '検証済みコンテナAPIが必要です');
     return {
       primaryUrl: entry.upstreamUrl,
       fallbackUrl: null,
       source: 'external',
-    };
-  }
-  if (model === 'mirage') {
-    return {
-      primaryUrl: entry.localUrl,
-      fallbackUrl: entry.upstreamUrl,
-      source: 'container-cache',
     };
   }
   const status = await fetchContainerCacheStatus(!!entry.expectedSha256);

@@ -22,6 +22,12 @@ import { PipelineDetails } from './PipelineDetails';
 import { clientPointToVideo } from '../services/videoCoordinates';
 import { confidenceDescription } from '../services/confidenceDescription';
 
+export interface StillImageSource {
+  id: string;
+  label: string;
+  canvas: HTMLCanvasElement;
+}
+
 interface VisionCanvasProps {
   activeModel: RunnableModelType;
   engine: VisionEngine;
@@ -37,6 +43,8 @@ interface VisionCanvasProps {
   onSelectObject: (obj: DetectedObject) => void;
   selectedObjectId?: string;
   onFrame: (frame: DetectionFrame | null) => void;
+  stillImageSource?: StillImageSource | null;
+  onClearStillImage?: () => void;
 }
 
 export const VisionCanvas: React.FC<VisionCanvasProps> = ({
@@ -53,12 +61,14 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   onCameraStop,
   onSelectObject,
   selectedObjectId,
-  onFrame
+  onFrame,
+  stillImageSource = null,
+  onClearStillImage,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const { cameraError, clearError, cameraReady, cameraRequestId } = useCameraStream(videoRef, isCameraActive, facingMode, onCameraStop);
+  const { cameraError, clearError, cameraReady, cameraRequestId } = useCameraStream(videoRef, isCameraActive && !stillImageSource, facingMode, onCameraStop);
   const [clickRipple, setClickRipple] = useState<{ x: number; y: number; label: string } | null>(null);
   const modelReady = modelState.status === 'ready' && modelState.model === activeModel;
   const requestId = modelState.requestId;
@@ -77,9 +87,9 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   const [retry, setRetry] = useState(0);
   const [stats, setStats] = useState<PerformanceSnapshot>({ inferenceFps: null, drawFps: null, processingMs: null, stalled: false });
   const [pipelineStats, setPipelineStats] = useState<PipelineSnapshotView | null>(null);
-  const latest = useRef({ onFrame, renderOptions, inferenceParams, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel });
+  const latest = useRef({ onFrame, renderOptions, inferenceParams, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel, stillImageSource });
   useLayoutEffect(() => {
-    latest.current = { onFrame, renderOptions, inferenceParams, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel };
+    latest.current = { onFrame, renderOptions, inferenceParams, ttsConfig, modelReady, requestId, cameraRequestId, isCameraActive, cameraReady, activeModel, stillImageSource };
   });
   const drawRef = useRef<(ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[], semanticMask?: HTMLCanvasElement) => void>(() => {});
 
@@ -100,7 +110,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     try { if (canvas) canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height); }
     catch { setFault('描画エラー'); }
     return () => { generationOwner.current++; };
-  }, [activeModel, requestId, isCameraActive, facingMode, cameraReady, cameraRequestId, engine, retry, threshold, inferenceParams]);
+  }, [activeModel, requestId, isCameraActive, facingMode, cameraReady, cameraRequestId, engine, retry, threshold, inferenceParams, stillImageSource]);
 
   useLayoutEffect(() => {
     if (!fault) return;
@@ -115,8 +125,96 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   }, [fault, engine]);
 
   useEffect(() => {
+    if (!stillImageSource || !modelReady || fault) return;
+    const generation = schedulerGeneration.current;
+    let cancelled = false;
+
+    const renderStillFrame = (frame: DetectionFrame | null) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const w = stillImageSource.canvas.width || 640;
+      const h = stillImageSource.canvas.height || 480;
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(stillImageSource.canvas, 0, 0, w, h);
+      if (frame) {
+        drawRef.current(ctx, w, h, frame.objects, frame.semanticMask);
+      }
+    };
+
+    // Draw the source image immediately while inference runs
+    renderStillFrame(null);
+
+    void (async () => {
+      const start = performance.now();
+      try {
+        const res = await Promise.resolve(
+          engine.detectVideoFrame(
+            stillImageSource.canvas,
+            activeModel,
+            latest.current.renderOptions.confidenceThreshold,
+            undefined,
+            latest.current.inferenceParams
+          )
+        );
+        const end = performance.now();
+        const state = engine.getState();
+        if (
+          cancelled ||
+          generation !== schedulerGeneration.current ||
+          state.status !== 'ready' ||
+          state.requestId !== requestId ||
+          state.model !== activeModel ||
+          res.status !== 'ready' ||
+          res.requestId !== requestId ||
+          res.model !== activeModel
+        ) {
+          return;
+        }
+        setInferenceError(false);
+        setStats({
+          inferenceFps: end > start ? 1000 / (end - start) : null,
+          drawFps: null,
+          processingMs: end - start,
+          stalled: false,
+        });
+        latestFrameRef.current = res;
+        drawnFrameRef.current = res;
+        renderStillFrame(res);
+        latest.current.onFrame(res);
+      } catch (cause) {
+        if (cancelled || generation !== schedulerGeneration.current) return;
+        setInferenceError(true);
+        console.warn('Still image inference failed', { cause });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [stillImageSource, activeModel, engine, modelReady, requestId, fault, retry, threshold, inferenceParams]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const frame = drawnFrameRef.current;
+    if (!stillImageSource || !canvas || !frame) return;
+    const w = stillImageSource.canvas.width || 640;
+    const h = stillImageSource.canvas.height || 480;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(stillImageSource.canvas, 0, 0, w, h);
+    drawRef.current(ctx, w, h, frame.objects, frame.semanticMask);
+  }, [stillImageSource, renderOptions, selectedObjectId, clickRipple]);
+
+  useEffect(() => {
     const video = videoRef.current;
-    if (!video || !isCameraActive || !cameraReady || !modelReady || fault) return;
+    if (stillImageSource || !video || !isCameraActive || !cameraReady || !modelReady || fault) return;
     const previous = previousScheduler.current;
     // A threshold change invalidates the attempted old result, but is not a new
     // camera/model session or an explicit retry of its already consumed image.
@@ -258,7 +356,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       clearInterval(hud);
       if (drawId !== null) cancelAnimationFrame(drawId);
     };
-  }, [isCameraActive, cameraReady, cameraRequestId, activeModel, engine, modelReady, requestId, fault, retry, threshold]);
+  }, [isCameraActive, cameraReady, cameraRequestId, activeModel, engine, modelReady, requestId, fault, retry, threshold, stillImageSource]);
 
   const drawOverlays = (
     ctx: CanvasRenderingContext2D,
@@ -380,14 +478,21 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const video = videoRef.current;
+    const canvas = canvasRef.current;
     const frame = drawnFrameRef.current;
     const state = engine.getState();
-    if (!video || video.readyState < 2 || !isCameraActive || !cameraReady || !modelReady || fault
+    const stillReady = Boolean(stillImageSource && canvas);
+    const liveReady = Boolean(video && video.readyState >= 2 && isCameraActive && cameraReady);
+    if ((!stillReady && !liveReady) || !modelReady || fault
       || !frame || frame !== latestFrameRef.current || frame.model !== activeModel || frame.requestId !== requestId
       || state.status !== 'ready' || state.model !== frame.model || state.requestId !== frame.requestId) return;
     // Read current geometry at input time, including a resize or new source size
     // that has not reached the next overlay drawing frame yet.
-    const point = clientPointToVideo(e.clientX, e.clientY, video.getBoundingClientRect(), video.videoWidth, video.videoHeight);
+    const point = stillImageSource && canvas
+      ? clientPointToVideo(e.clientX, e.clientY, canvas.getBoundingClientRect(), stillImageSource.canvas.width, stillImageSource.canvas.height)
+      : video
+        ? clientPointToVideo(e.clientX, e.clientY, video.getBoundingClientRect(), video.videoWidth, video.videoHeight)
+        : null;
     if (!point) return;
     const { x: clickX, y: clickY } = point;
 
@@ -417,7 +522,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
         playsInline
         muted
         autoPlay
-        className={`w-full h-full object-contain ${isCameraActive ? 'block' : 'hidden'}`}
+        className={`w-full h-full object-contain ${isCameraActive && !stillImageSource ? 'block' : 'hidden'}`}
       />
 
       {/* Interactive Overlay Canvas */}
@@ -428,7 +533,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       />
 
       {/* Camera Inactive Standby Screen */}
-      {!isCameraActive && (
+      {!isCameraActive && !stillImageSource && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 text-center bg-[#070b16]/95">
           <div className="w-12 h-12 rounded-xl bg-blue-950/60 border border-blue-600/30 flex items-center justify-center text-blue-400 mb-3 shadow-md">
             <Camera className="w-6 h-6" />
@@ -447,8 +552,26 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
         </div>
       )}
 
+      {/* Still Image Active Badge & Return to Camera Button */}
+      {stillImageSource && (
+        <div className="absolute top-2.5 right-2.5 z-25 flex items-center gap-1.5">
+          <span className="px-2.5 py-1.5 rounded-lg bg-cyan-950/85 border border-cyan-500/60 text-[11px] font-semibold text-cyan-200 shadow-lg">
+            静止画検証: {stillImageSource.label} ({stillImageSource.canvas.width}×{stillImageSource.canvas.height})
+          </span>
+          {onClearStillImage && (
+            <button
+              type="button"
+              onClick={onClearStillImage}
+              className="px-2.5 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-[11px] font-semibold text-slate-200 transition-colors shadow-lg"
+            >
+              カメラへ戻す
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Camera Flip Button (Top-Right Corner of video) */}
-      {isCameraActive && (
+      {isCameraActive && !stillImageSource && (
         <button
           onClick={onToggleFacingMode}
           title={facingMode === 'user' ? 'アウトカメラ（背面）に切り替え' : 'インカメラ（前面）に切り替え'}
@@ -463,11 +586,11 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
       <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none px-2.5 py-1 rounded-md bg-black/60 text-[11px]">
         <span>{modelMetadata(activeModel).name}</span>
-        <span aria-label="カメラ状態" className="ml-2">{cameraReady ? 'カメラ映像を取得しました' : isCameraActive && !cameraError ? 'カメラ準備中' : 'カメラ停止中'}</span>
-        <span aria-label="性能状態" className="ml-2">{fault ?? (modelState.status === 'error' ? 'モデルエラー' : !isCameraActive ? '停止中' : !modelReady ? 'モデル読込中' : !cameraReady ? 'カメラ準備中' : inferenceError ? '推論エラー：次の映像を待機' : stats.stalled ? '映像入力停滞' : '計測中')}</span>
-        <span aria-label="推論FPS" className="ml-2">推論: {stats.inferenceFps === null || fault || !cameraReady || !modelReady ? '未計測' : `${stats.inferenceFps.toFixed(1)} FPS`}</span>
+        <span aria-label="カメラ状態" className="ml-2">{stillImageSource ? `静止画入力 (${stillImageSource.label})` : cameraReady ? 'カメラ映像を取得しました' : isCameraActive && !cameraError ? 'カメラ準備中' : 'カメラ停止中'}</span>
+        <span aria-label="性能状態" className="ml-2">{fault ?? (modelState.status === 'error' ? 'モデルエラー' : stillImageSource ? (!modelReady ? 'モデル読込中' : inferenceError ? '推論エラー' : '静止画推論完了') : !isCameraActive ? '停止中' : !modelReady ? 'モデル読込中' : !cameraReady ? 'カメラ準備中' : inferenceError ? '推論エラー：次の映像を待機' : stats.stalled ? '映像入力停滞' : '計測中')}</span>
+        <span aria-label="推論FPS" className="ml-2">推論: {stats.inferenceFps === null || fault || (!cameraReady && !stillImageSource) || !modelReady ? '未計測' : `${stats.inferenceFps.toFixed(1)} FPS`}</span>
         <span aria-label="描画FPS" className="ml-2">描画: {stats.drawFps === null || fault || !cameraReady || !modelReady ? '未計測' : `${stats.drawFps.toFixed(1)} FPS`}</span>
-        <span aria-label="フレーム処理時間" className="ml-2">フレーム処理: {stats.processingMs === null || fault || !cameraReady || !modelReady ? '未計測' : `${stats.processingMs.toFixed(1)} ms`}</span>
+        <span aria-label="フレーム処理時間" className="ml-2">フレーム処理: {stats.processingMs === null || fault || (!cameraReady && !stillImageSource) || !modelReady ? '未計測' : `${stats.processingMs.toFixed(1)} ms`}</span>
       </div>
 
       <PipelineDetails snapshot={pipelineStats} />
@@ -475,7 +598,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       {fault && <div className="absolute bottom-10 z-30 bg-slate-900 p-2 text-xs" role="alert">{fault}：処理を停止しました。<button onClick={() => setRetry(value => value + 1)}>処理を再試行</button></div>}
 
       {/* Tap Hint (Bottom Center) */}
-      {isCameraActive && (
+      {(isCameraActive || stillImageSource) && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <span className="text-[10px] text-slate-400 bg-black/60 backdrop-blur-md border border-slate-800 px-2.5 py-0.5 rounded-full">
             物体をタップすると日本語で発話
@@ -484,7 +607,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       )}
 
       {/* Camera Error Screen */}
-      {cameraError && (
+      {cameraError && !stillImageSource && (
         <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-black/90">
           <div className="bg-slate-900 border border-rose-600/40 rounded-xl p-4 max-w-sm text-center">
             <AlertCircle className="w-6 h-6 text-rose-500 mx-auto mb-2" />

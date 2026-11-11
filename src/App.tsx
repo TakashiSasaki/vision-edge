@@ -12,13 +12,65 @@ import {
   DEFAULT_MODEL_PARAMS
 } from './types/vision';
 import { Header } from './components/Header';
-import { VisionCanvas } from './components/VisionCanvas';
+import { VisionCanvas, type StillImageSource } from './components/VisionCanvas';
 import { ControlPanel } from './components/ControlPanel';
 import { ModelComparisonTable } from './components/ModelComparisonTable';
 import { VisionEngine, type ExtraInferenceOptions } from './services/visionEngine';
 import { modelMetadata, isRunnableModel, getVariantMetadata } from './services/modelRegistry';
+import { isMirageExperimentalVariant } from './services/mirageExperimentalOnnxService';
 import { ModelStatus } from './components/ModelStatus';
 import { speechService } from './services/speechService';
+
+function drawSyntheticFixtureCanvas(
+  preset: 'overlap_shapes' | 'text_regions'
+): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  if (preset === 'overlap_shapes') {
+    canvas.width = 480;
+    canvas.height = 360;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = 'rgb(245, 245, 242)';
+      ctx.fillRect(0, 0, 480, 360);
+      ctx.fillStyle = 'rgb(215, 48, 39)';
+      ctx.fillRect(40, 50, 180, 170);
+      ctx.fillStyle = 'rgb(69, 117, 180)';
+      ctx.beginPath();
+      ctx.ellipse(240, 190, 90, 90, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgb(26, 152, 80)';
+      ctx.beginPath();
+      ctx.moveTo(270, 290);
+      ctx.lineTo(430, 290);
+      ctx.lineTo(360, 110);
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else {
+    canvas.width = 640;
+    canvas.height = 360;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = 'rgb(252, 252, 248)';
+      ctx.fillRect(0, 0, 640, 360);
+      ctx.strokeStyle = 'rgb(30, 30, 30)';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(30, 28, 580, 102);
+      ctx.fillStyle = 'rgb(10, 10, 10)';
+      ctx.font = 'bold 28px sans-serif';
+      ctx.fillText('MIRAGE OCR 123', 48, 72);
+      ctx.fillStyle = 'rgb(25, 25, 90)';
+      ctx.fillText(' FAST EDGE VLM 2026', 48, 112);
+      ctx.fillStyle = 'rgb(230, 140, 20)';
+      ctx.fillRect(70, 185, 170, 125);
+      ctx.fillStyle = 'rgb(90, 50, 140)';
+      ctx.beginPath();
+      ctx.ellipse(445, 245, 75, 65, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  return canvas;
+}
 
 export default function App({ engine: suppliedEngine, classificationEngine }: { engine?: VisionEngine; classificationEngine?: ImageClassificationEngine } = {}) {
   const [classifierMode, setClassifierMode] = useState(false);
@@ -37,12 +89,13 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
 
   const [facingMode, setFacingMode] = useState<CameraFacingMode>('user');
   const [isCameraActive, setIsCameraActive] = useState<boolean>(true);
+  const [stillImageSource, setStillImageSource] = useState<StillImageSource | null>(null);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isComparisonOpen, setIsComparisonOpen] = useState<boolean>(false);
 
   const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
   const [lastFrame, setLastFrame] = useState<DetectionFrame | null>(null);
-  const hasCurrentFrame = isCameraActive && modelState.status === 'ready'
+  const hasCurrentFrame = (isCameraActive || Boolean(stillImageSource)) && modelState.status === 'ready'
     && modelState.model === activeModel && lastFrame?.model === activeModel
     && lastFrame.requestId === modelState.requestId;
   const detectedObjects = hasCurrentFrame ? lastFrame.objects : [];
@@ -55,8 +108,13 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
   );
 
   const activeParams = modelParams[activeModel] || DEFAULT_MODEL_PARAMS[activeModel];
-  const activeRenderOptions = activeParams.render;
-  const activeInferenceParams = activeParams.inference;
+  const isExperimentalMirage = activeModel === 'mirage' && isMirageExperimentalVariant(activeVariant);
+  const activeRenderOptions: RenderOptions = isExperimentalMirage && activeParams.render.confidenceThreshold === DEFAULT_MODEL_PARAMS.mirage.render.confidenceThreshold
+    ? { ...activeParams.render, confidenceThreshold: 0.30 }
+    : activeParams.render;
+  const activeInferenceParams: ExtraInferenceOptions = isExperimentalMirage && activeParams.inference.confidenceThreshold === DEFAULT_MODEL_PARAMS.mirage.inference.confidenceThreshold
+    ? { ...activeParams.inference, confidenceThreshold: 0.30, maxDetections: 64 }
+    : activeParams.inference;
 
   const handleChangeRenderOptions = (opts: Partial<RenderOptions>) => {
     setModelParams(prev => {
@@ -94,6 +152,71 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
       [activeModel]: JSON.parse(JSON.stringify(DEFAULT_MODEL_PARAMS[activeModel]))
     }));
   };
+
+  const handleSelectStillImagePreset = useCallback(
+    async (
+      preset:
+        | 'camera'
+        | 'overlap_shapes'
+        | 'text_regions'
+        | 'coco_000000458054'
+        | 'coco_000000331352'
+    ) => {
+      if (preset === 'camera') {
+        setStillImageSource(null);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/model-cache/mirage/fixtures/${preset}.png`);
+        if (res.ok) {
+          const blob = await res.blob();
+          const bitmap = await createImageBitmap(blob);
+          const canvas = document.createElement('canvas');
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(bitmap, 0, 0);
+          bitmap.close?.();
+          setStillImageSource({
+            id: `${preset}-${Date.now()}`,
+            label: preset,
+            canvas,
+          });
+          return;
+        }
+      } catch {
+        // Fall through to deterministic synthetic canvas when fixture endpoint is unavailable
+      }
+      if (preset === 'overlap_shapes' || preset === 'text_regions') {
+        const canvas = drawSyntheticFixtureCanvas(preset);
+        setStillImageSource({
+          id: `${preset}-${Date.now()}`,
+          label: preset,
+          canvas,
+        });
+      }
+    },
+    []
+  );
+
+  const handleUploadStillImage = useCallback(async (file: File) => {
+    try {
+      const bitmap = await createImageBitmap(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(bitmap, 0, 0);
+      bitmap.close?.();
+      setStillImageSource({
+        id: `upload-${file.name}-${Date.now()}`,
+        label: file.name,
+        canvas,
+      });
+    } catch (err) {
+      console.warn('Failed to decode uploaded still image', err);
+    }
+  }, []);
 
   // Default: Voice readout is OFF (enabled: false)
   const [ttsConfig, setTTSConfig] = useState<TTSConfig>({
@@ -170,9 +293,15 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
   const handleToggleFacingMode = useCallback(() => {
     setFacingMode(prev => (prev === 'user' ? 'environment' : 'user'));
   }, []);
-  const handleCameraStart = useCallback(() => setIsCameraActive(true), []);
+  const handleCameraStart = useCallback(() => {
+    setStillImageSource(null);
+    setIsCameraActive(true);
+  }, []);
   const handleCameraStop = useCallback(() => setIsCameraActive(false), []);
-  const handleToggleCamera = useCallback(() => setIsCameraActive(previous => !previous), []);
+  const handleToggleCamera = useCallback(() => {
+    setStillImageSource(null);
+    setIsCameraActive(previous => !previous);
+  }, []);
 
   const handleFrame = useCallback((frame: DetectionFrame | null) => {
     setLastFrame(frame);
@@ -192,6 +321,10 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
   if (classifierMode) return <ImageClassificationWorkspace engine={classificationEngine} variant={classifierVariant} onVariant={setClassifierVariant}
     onSelectDetection={selectFamily} cameraActive={isCameraActive} facingMode={facingMode} onToggleFacing={handleToggleFacingMode}
     onStart={handleCameraStart} onStop={handleCameraStop} ttsConfig={ttsConfig} />;
+
+  const experimentalDiagnostics = isExperimentalMirage && hasCurrentFrame
+    ? engine.getExperimentalMirageDiagnostics()
+    : null;
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col font-sans">
@@ -231,6 +364,8 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
             onSelectObject={(obj) => setSelectedObjectId(obj.id)}
             selectedObjectId={selectedObjectId}
             onFrame={handleFrame}
+            stillImageSource={stillImageSource}
+            onClearStillImage={() => setStillImageSource(null)}
           />
         </div>
 
@@ -238,6 +373,7 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
         <div className="md:col-span-4 h-full min-h-0 min-w-0 flex flex-col overflow-hidden">
           <ControlPanel
             activeModel={activeModel}
+            activeVariant={activeVariant}
             renderOptions={activeRenderOptions}
             onChangeRenderOptions={handleChangeRenderOptions}
             inferenceParams={activeInferenceParams}
@@ -250,6 +386,10 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
             onSelectObject={(obj) => setSelectedObjectId(obj.id)}
             selectedObjectId={selectedObjectId}
             isSpeaking={isSpeaking}
+            experimentalDiagnostics={experimentalDiagnostics}
+            stillImageLabel={stillImageSource?.label ?? null}
+            onSelectStillImagePreset={handleSelectStillImagePreset}
+            onUploadStillImage={handleUploadStillImage}
           />
         </div>
       </main>

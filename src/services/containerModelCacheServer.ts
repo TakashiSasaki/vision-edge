@@ -12,6 +12,9 @@ import type { RunnableModelType } from '../types/vision.ts';
 import {
   LOCAL_MEDIAPIPE_WASM_URL,
   LOCAL_ORT_WASM_URL,
+  MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
+  MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+  MIRAGE_EXPERIMENTAL_ONNX_FILE,
   MIRAGE_UPSTREAM_URL,
   MODEL_ASSET_CATALOG,
   MODEL_VARIANT_CATALOG,
@@ -773,6 +776,176 @@ export class ContainerModelCacheManager {
             variantId: 'mirage-webgpu',
           }));
           return;
+        }
+
+        if (pathname === `/api/model-cache/mirage/${MIRAGE_EXPERIMENTAL_ONNX_FILE}`) {
+          const expectedQuery = `?sha256=${MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256}`;
+          if (new URL(rawUrl, 'http://localhost').search !== expectedQuery) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-store');
+            res.end(
+              req.method === 'HEAD'
+                ? undefined
+                : JSON.stringify({
+                    error: 'Pinned asset URL required',
+                    expectedSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
+                  })
+            );
+            return;
+          }
+
+          const candidatePaths = [
+            path.join(this.cacheDir, MIRAGE_EXPERIMENTAL_ONNX_FILE),
+            path.join(
+              this.rootDir,
+              '.cache',
+              'mirage-refinement',
+              'numerical-cact-dequantized-pixel-0-r3',
+              MIRAGE_EXPERIMENTAL_ONNX_FILE
+            ),
+          ];
+          let foundPath: string | null = null;
+          for (const candidate of candidatePaths) {
+            if (existsSync(candidate)) {
+              foundPath = candidate;
+              break;
+            }
+          }
+
+          if (!foundPath) {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-store');
+            res.end(
+              req.method === 'HEAD'
+                ? undefined
+                : JSON.stringify({
+                    status: 'unavailable',
+                    code: 'MIRAGE_EXPERIMENTAL_ONNX_MISSING',
+                    error:
+                      'Verified experimental Mirage ONNX artifact is not present in .cache. Run scripts/mirage/provision_experimental_onnx.py to reconstruct from verified mirage.cact.',
+                    model: 'mirage',
+                    file: MIRAGE_EXPERIMENTAL_ONNX_FILE,
+                    expectedSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+                    expectedSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
+                  })
+            );
+            return;
+          }
+
+          try {
+            const info = await lstat(foundPath);
+            if (
+              !info.isFile() ||
+              info.isSymbolicLink() ||
+              info.size !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE
+            ) {
+              throw new Error('Pinned model size mismatch');
+            }
+            const hash = createHash('sha256');
+            const chunks: Buffer[] = [];
+            let readBytes = 0;
+            for await (const chunk of createReadStream(foundPath)) {
+              readBytes += chunk.length;
+              if (readBytes > MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE) {
+                throw new Error('Pinned model size mismatch');
+              }
+              hash.update(chunk);
+              if (req.method !== 'HEAD') {
+                chunks.push(chunk);
+              }
+            }
+            const actualSha256 = hash.digest('hex');
+            if (
+              readBytes !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE ||
+              actualSha256 !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256
+            ) {
+              throw new Error('Pinned model SHA256 mismatch');
+            }
+            const payload =
+              req.method === 'HEAD' ? undefined : Buffer.concat(chunks);
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/octet-stream');
+            res.setHeader(
+              'Content-Length',
+              String(MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE)
+            );
+            res.setHeader('Cache-Control', 'no-store');
+            res.setHeader(
+              'X-Model-SHA256',
+              MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256
+            );
+            res.setHeader('X-Model-Source', 'container-cache');
+            res.setHeader('X-Model-Id', 'mirage');
+            res.setHeader(
+              'X-Model-Variant',
+              'cact-dequantized-reference-order'
+            );
+            res.setHeader('X-Model-License', 'Apache-2.0');
+            res.end(payload);
+            return;
+          } catch (cause) {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-store');
+            res.end(
+              req.method === 'HEAD'
+                ? undefined
+                : JSON.stringify({
+                    status: 'unavailable',
+                    code: 'MIRAGE_EXPERIMENTAL_ONNX_INTEGRITY_FAILED',
+                    error: publicCacheError(cause),
+                    model: 'mirage',
+                    file: MIRAGE_EXPERIMENTAL_ONNX_FILE,
+                    expectedSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+                    expectedSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
+                  })
+            );
+            return;
+          }
+        }
+
+        if (pathname.startsWith('/api/model-cache/mirage/fixtures/')) {
+          const filename = decodeURIComponent(
+            pathname.slice('/api/model-cache/mirage/fixtures/'.length)
+          );
+          if (!isSafeFilename(filename)) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ error: 'Invalid fixture filename' }));
+            return;
+          }
+          const fixturesDir = path.resolve(
+            this.rootDir,
+            '.cache',
+            'mirage-browser-fixtures'
+          );
+          const filePath = path.resolve(fixturesDir, filename);
+          if (!filePath.startsWith(`${fixturesDir}${path.sep}`)) {
+            res.statusCode = 403;
+            res.end();
+            return;
+          }
+          try {
+            const bytes = await readFile(filePath);
+            res.statusCode = 200;
+            res.setHeader(
+              'Content-Type',
+              filename.endsWith('.png')
+                ? 'image/png'
+                : contentTypeForFile(filename)
+            );
+            res.setHeader('Content-Length', String(bytes.byteLength));
+            res.setHeader('Cache-Control', 'no-store');
+            res.end(req.method === 'HEAD' ? undefined : bytes);
+            return;
+          } catch {
+            res.statusCode = 404;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ error: 'Fixture not found' }));
+            return;
+          }
         }
 
         if (
