@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "dataset": "COCO val2017",
+  "selection": "twelve predetermined IDs selected before any inference; eight development and four reserved-validation images",
+  "cases": [
+    {
+      "name": "coco_000000397133",
+      "image_id": 397133,
+      "split": "development",
+      "url": "https://images.cocodataset.org/val2017/000000397133.jpg",
+      "size": 200576,
+      "sha256": "09e1d25c75f7879bdaa69c327fece5cabacd53939c8c2ef9e87f1c97a2e478c4",
+      "shape": [
+        427,
+        640,
+        3
+      ],
+      "rgb_sha256": "b8748941e411bbfb0817db11aea3bb0571ee854767835bb36724bb0afdf6ed71",
+      "file": "coco_000000397133.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000037777",
+      "image_id": 37777,
+      "split": "development",
+      "url": "https://images.cocodataset.org/val2017/000000037777.jpg",
+      "size": 40833,
+      "sha256": "fe513b68ba46bc146114c469fdff52c288226073f03d73d3300d4fa739937369",
+      "shape": [
+        230,
+        352,
+        3
+      ],
+      "rgb_sha256": "cf559dd3cce76b7fc2fcf51a1a0322b1c269d57e00ec9a48e034d04e43a68df9",
+      "file": "coco_000000037777.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000252219",
+      "image_id": 252219,
+      "split": "development",
+      "url": "https://images.cocodataset.org/val2017/000000252219.jpg",
+      "size": 143225,
+      "sha256": "1cf48bddb1bcab80d9f4d18514ae438c3e4f57d18e80c4fbea9d5d22396f514a",
+      "shape": [
+        428,
+        640,
+        3
+      ],
+      "rgb_sha256": "1371ef116d3d204dec6db0cdf64eb6658e15020af25266e2901ae868b22d0f36",
+      "file": "coco_000000252219.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000087038",
+      "image_id": 87038,
+      "split": "development",
+      "url": "https://images.cocodataset.org/val2017/000000087038.jpg",
+      "size": 183303,
+      "sha256": "c6cfc7e454a432c31ac3c3a997d5f33ccebe120fc6b9465965609ce12995ede9",
+      "shape": [
+        480,
+        640,
+        3
+      ],
+      "rgb_sha256": "5d112704f32f0cb591c80937249bc620cda55279d436f5b8f31ba4f81853faa5",
+      "file": "coco_000000087038.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000174482",
+      "image_id": 174482,
+      "split": "development",
+      "url": "https://images.cocodataset.org/val2017/000000174482.jpg",
+      "size": 207538,
+      "sha256": "41fab00aad97dad3eb7d035420b8cc61ed0ca8f4f0b66a4fbc1bd0bba6f8a5b3",
+      "shape": [
+        388,
+        640,
+        3
+      ],
+      "rgb_sha256": "63b5a71f8d79ce57b5bc5d4d0a254c27127e57179823cdc6f60817312895f0bf",
+      "file": "coco_000000174482.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000403385",
+      "image_id": 403385,
+      "split": "development",
+      "url": "https://images.cocodataset.org/val2017/000000403385.jpg",
+      "size": 81462,
+      "sha256": "11632ed3fb470d62f7fe5f0445c4f10ec91225c4a820c95d1c3946af9426d4c7",
+      "shape": [
+        511,
+        640,
+        3
+      ],
+      "rgb_sha256": "4c50468aa0a65c05b1105f479b7bab235d8b9231119d865c76a720bdb7c9eaa7",
+      "file": "coco_000000403385.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000006818",
+      "image_id": 6818,
+      "split": "development",
+      "url": "https://images.cocodataset.org/val2017/000000006818.jpg",
+      "size": 77539,
+      "sha256": "99479f61ef2931ea70e161db0859e8706c6e48f13e8cb0798959f52433b01b98",
+      "shape": [
+        640,
+        427,
+        3
+      ],
+      "rgb_sha256": "b87dcfb8f07c4c2a02a57d27ace595b1308e2c0835117d5528f5935f06d6b2ec",
+      "file": "coco_000000006818.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000480985",
+      "image_id": 480985,
+      "split": "development",
+      "url": "https://images.cocodataset.org/val2017/000000480985.jpg",
+      "size": 141359,
+      "sha256": "3ac1735a37375f41662744d2f729d1c04c2b8460b8b1035f4e0c024d8d08d7eb",
+      "shape": [
+        500,
+        375,
+        3
+      ],
+      "rgb_sha256": "bd5e395f2cabb497dc2402fdb23c9b1b09e710ace10f4b03e9d834567c767df2",
+      "file": "coco_000000480985.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000458054",
+      "image_id": 458054,
+      "split": "reserved_validation",
+      "url": "https://images.cocodataset.org/val2017/000000458054.jpg",
+      "size": 190692,
+      "sha256": "b05c1e0c2219ac20707c4a47014f03d7fe149d8d3d25ff504837da48896c6bf7",
+      "shape": [
+        426,
+        640,
+        3
+      ],
+      "rgb_sha256": "c3228fea5008ae5e31d270450058adbc8d23a2058e33d786e35faa08706d0936",
+      "file": "coco_000000458054.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000331352",
+      "image_id": 331352,
+      "split": "reserved_validation",
+      "url": "https://images.cocodataset.org/val2017/000000331352.jpg",
+      "size": 90682,
+      "sha256": "8b69da4f3b8f7657105ef920d1084d657a939a763c728e2178fc6a007a1e762f",
+      "shape": [
+        500,
+        351,
+        3
+      ],
+      "rgb_sha256": "8588adbe50eea0238014bb2420a6929bb75fe999aa059102d85c19521bbcd4ab",
+      "file": "coco_000000331352.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000296649",
+      "image_id": 296649,
+      "split": "reserved_validation",
+      "url": "https://images.cocodataset.org/val2017/000000296649.jpg",
+      "size": 147015,
+      "sha256": "3cc7ef25567cdb68f5e51574c058e2764ef8ab36d4a31e9e31c423f8d78612fc",
+      "shape": [
+        427,
+        640,
+        3
+      ],
+      "rgb_sha256": "0aee7c524ae5d3525c49571fab0804e571ad81dc47e28e7c49f81f7a715b993d",
+      "file": "coco_000000296649.jpg",
+      "exif_orientation": null
+    },
+    {
+      "name": "coco_000000386912",
+      "image_id": 386912,
+      "split": "reserved_validation",
+      "url": "https://images.cocodataset.org/val2017/000000386912.jpg",
+      "size": 230157,
+      "sha256": "e4d58abb24655f12e70e056631e96915a142e1e60fb0b1f75372269bad764828",
+      "shape": [
+        480,
+        640,
+        3
+      ],
+      "rgb_sha256": "c64099fb38fbd32749a54b06f7f8885738808bbe5517f246adc17b858b054480",
+      "file": "coco_000000386912.jpg",
+      "exif_orientation": null
+    }
+  ]
+}

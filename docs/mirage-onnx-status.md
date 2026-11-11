@@ -1,5 +1,11 @@
 # Mirage ONNX fidelity and availability
 
+The latest [official-native corpus study](mirage-native-corpus.md) tests the
+partial encoder/head candidate on twelve new real source images, using a
+development-only policy selection before four reserved images. It separates
+PyTorch/ONNX numerical agreement from official-native geometry, scores and
+unsupported semantic output. Full Mirage acceptance remains unestablished.
+
 ## Current product behavior
 
 The supported Mirage variant is the original, pinned `mirage.cact` archive

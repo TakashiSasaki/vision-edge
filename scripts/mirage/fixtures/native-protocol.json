@@ -1,0 +1,60 @@
+{
+  "scope": "official native vscandidate encoder/dense heads; scores and geometry separate; no labels/OCR/full acceptance",
+  "development": [
+    "coco_000000397133",
+    "coco_000000037777",
+    "coco_000000252219",
+    "coco_000000087038",
+    "coco_000000174482",
+    "coco_000000403385",
+    "coco_000000006818",
+    "coco_000000480985"
+  ],
+  "reserved_validation": [
+    "coco_000000458054",
+    "coco_000000331352",
+    "coco_000000296649",
+    "coco_000000386912"
+  ],
+  "candidate_grid": [
+    {
+      "resize": "pixel",
+      "nms_iou": null
+    },
+    {
+      "resize": "pixel",
+      "nms_iou": 0.5
+    },
+    {
+      "resize": "nearest32",
+      "nms_iou": null
+    },
+    {
+      "resize": "nearest32",
+      "nms_iou": 0.5
+    },
+    {
+      "resize": "ceil32",
+      "nms_iou": null
+    },
+    {
+      "resize": "ceil32",
+      "nms_iou": 0.5
+    }
+  ],
+  "weight_modes": [
+    "fp32",
+    "cact-dequantized"
+  ],
+  "selection_weight_mode": "cact-dequantized",
+  "selection_metric": "microF1=2*IoU>=0.5matches/(candidate+native counts), objects+text separatelymatched thenpooled; ties meanmatchedboxIoU, thenearliergridorder",
+  "native_requests": [
+    "full-score",
+    "geometry-only"
+  ],
+  "conf": 0.3,
+  "text_conf": 0.3,
+  "mask_grid": 128,
+  "reserved_policy": "do not run candidate/native inference on reserved images until development-only policy selection is written and hashed; then evaluate selected policy and original pixel/noNMS baseline, no retuning",
+  "protocol_before_any_native_or_candidate_corpus_inference": true
+}
