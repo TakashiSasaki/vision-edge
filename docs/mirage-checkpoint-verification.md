@@ -78,3 +78,14 @@ with this tool, review live upstream metadata, inspect the actual config and eve
 tensor, and establish an independently checked operation mapping. Only then export
 and compare the encoder, starting with the exact 512-channel/65-tap HConvGLU.
 Do not enable production ONNX based on format checks or synthetic test success.
+
+The full installed offline checks completed successfully at source commit
+`1636b2047db808a5ecdafa662784d482b7b3921c`: preflight, 60 preflight controls,
+typecheck, lint, 847 unit tests, 73 foundation tests, 40 delegate tests,
+37 output tests, production build, 33 browser tests and 7 stylesheet controls
+(2 healthy, 5 expected faults). Browser tests used the already installed
+`/usr/bin/chromium`. No models were downloaded. Structured results are in
+`mirage-checkpoint-validation.json`; raw artifacts remain in the printed
+`.cache/test-runs/2026-11-11T01-58-20.641Z-58437299/` directory.
+The follow-up evidence commit changes no production or test code. Hosted CI
+and Draft PR creation remain blocked by GitHub API access.

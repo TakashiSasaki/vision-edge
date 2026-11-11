@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "source_commit": "1636b2047db808a5ecdafa662784d482b7b3921c",
+  "parent_pr": 36,
+  "parent_commit": "dc28e446a7e0fdb22aa82e9e3193cc7ab1b2bf9f",
+  "scope": "checkpoint acquisition/integrity and Safetensors inventory tooling; synthetic verification only",
+  "checkpoint_revision": "76c1e9e53381aca8fc3843c636216c96ff220122",
+  "original_weights": {
+    "status": "BLOCKED",
+    "cause": "huggingface.co proxy CONNECT HTTP 403",
+    "verified_artifacts": []
+  },
+  "live_upstream_metadata": "BLOCKED",
+  "actual_tensor_inventory": "NOT_RUN",
+  "tensor_mapping": "NOT_IMPLEMENTED",
+  "onnx_export": "NOT_IMPLEMENTED",
+  "onnx_checker": "NOT_RUN",
+  "onnx_cpu_inference": "NOT_RUN",
+  "official_native_comparison": "NOT_RUN",
+  "webgpu_comparison": "NOT_RUN",
+  "numerical_errors": null,
+  "first_divergent_operation": null,
+  "availability_gate": "MIRAGE_ONNX_NOT_VALIDATED",
+  "new_tests": {
+    "command": "python3 -m unittest discover -s scripts/mirage -p 'test_verify_checkpoint.py' -v",
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0,
+    "synthetic": true
+  },
+  "independent_review": {
+    "commit": "1636b2047db808a5ecdafa662784d482b7b3921c",
+    "R1": "CLOSED",
+    "remaining_blocking_findings": 0,
+    "scope": "acquisition/inventory only"
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "node": "v24.22.1",
+    "npm": "11.9.0"
+  },
+  "production_js_css_comparison": {
+    "status": "IDENTICAL",
+    "files": 6,
+    "reference": "local build before documentation addition"
+  },
+  "app_regressions": {
+    "artifacts": ".cache/test-runs/2026-11-11T01-58-20.641Z-58437299",
+    "preflight": "PASS",
+    "preflight_tests": 60,
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "unit_passed": 847,
+    "foundation_passed": 73,
+    "delegate_passed": 40,
+    "output_passed": 37,
+    "build": "PASS",
+    "browser_passed": 33,
+    "controls": {
+      "status": "PASS",
+      "total": 7,
+      "healthy": 2,
+      "expected_faults": 5
+    }
+  },
+  "hosted_ci": "UNVERIFIED: GitHub API unavailable",
+  "draft_pr": "BLOCKED: api.github.com Forbidden; branch pushed"
+}
