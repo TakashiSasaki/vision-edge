@@ -9,7 +9,8 @@ import { MODEL_VARIANT_CATALOG, resolveModelAssetUrls, getVariantCatalogEntry, g
 import { VisionEngine } from './visionEngine';
 const boundary = vi.hoisted(() => ({ create: vi.fn() }));
 vi.mock('onnxruntime-web', () => ({ env: { wasm: {}, logLevel: 'error' }, InferenceSession: { create: boundary.create } }));
-const entries = Object.entries(MODEL_VARIANT_CATALOG);
+// Preserve the original nine enabled variant controls; SSD has separate gated controls.
+const entries = Object.entries(MODEL_VARIANT_CATALOG).filter(([, e]) => !e.blockedReason);
 const row = (e: typeof entries[number][1], status = 'cached', error: string | null = null) => ({ id: e.modelId, variantId: e.variantId, file: e.file, localUrl: e.localUrl, upstreamUrl: e.upstreamUrl, license: e.license, status, error, size: status === 'cached' ? 2048 : null, cachedAt: status === 'cached' ? new Date().toISOString() : null });
 function statusPayload(variants = true, state = 'cached') {
     return { enabled: true, wasm: { mediapipe: { available: false }, ort: { available: false } }, models: Object.fromEntries(entries.filter(([, e]) => e.isDefault).map(([, e]) => [e.modelId, row(e, state)])), ...(variants ? { variants: Object.fromEntries(entries.map(([k, e]) => [k, row(e, state)])) } : {}) };
@@ -31,7 +32,7 @@ it('server exposes all9 variant identities and default aliases from one snapshot
     await m.prefetchAllModels();
     const s = await m.getStatusResponse();
     expect(s).toHaveProperty('variants');
-    expect(Object.keys(s.variants!)).toHaveLength(11);
+    expect(Object.keys(s.variants!)).toHaveLength(12);
     for (const [key, e] of entries) {
         expect(s).toHaveProperty(['variants', key], expect.objectContaining({ ...row(e), cachedAt: expect.any(String) }));
         if (e.isDefault)
@@ -135,7 +136,7 @@ it('restart reuses verified9 payloads; HTTP filenames, status and returned bytes
     const fetch = vi.fn(async () => { throw new Error('UNEXPECTED_FETCH'); });
     const restarted = new ContainerModelCacheManager({ cacheDir: directory, fetchImpl: fetch });
     const status = JSON.parse((await request(restarted, '/api/model-cache/status')).body.toString());
-    expect(Object.keys(status.variants)).toHaveLength(11);
+    expect(Object.keys(status.variants)).toHaveLength(12);
     for (const [index, [key, e]] of entries.entries()) {
         expect(status.variants[key]).toMatchObject({ id: e.modelId, variantId: e.variantId, file: e.file, localUrl: e.localUrl, status: 'cached' });
         const r = await request(restarted, e.localUrl);

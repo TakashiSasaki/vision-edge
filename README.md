@@ -72,6 +72,26 @@ API, the inventory reports unknown/unavailable and classification stays blocked.
 These repository hooks do not establish deployed startup or real-inference
 acceptance; those remain separate verification steps.
 
+SSD MobileNetV2 is registered but acquisition-disabled pending genuine SDK
+compatibility verification; startup does not download its weights.
+
+## SSD MobileNetV2 availability
+
+The MediaPipe Object Detector family keeps EfficientDet-Lite0 as its default,
+retains Lite2, and adds the selectable SSD MobileNetV2 variant. It reuses the
+same VIDEO detector, scheduler, boxes, labels and speech path; no new engine,
+segmentation or delegate fallback is introduced. SSD is explicitly BLOCKED
+before WASM/model I/O, cache acquisition or serving while actual SDK compatibility remains unverified. Fixed size/hash and metadata
+from an independent inspection of the user upload are recorded; this executor
+could not receive the file through the supported Library transfer. Inventory lists
+it as configured/unverified, never cached merely because a file is present.
+The official guide documents256×256/float32/COCO80; those are documentation-level
+specifications, also confirmed by the independent uploaded-file inspection; actual execution
+is still unverified. The RAW outputs are two SSD tensors, with91 label positions
+including background and gaps; no contiguous80-index remapping is assumed. The official
+project's model-inclusive Apache-2.0 statement is recorded separately from SDK
+licensing. See [SSD verification contract](docs/verification/ssd-mobilenet-v2.md).
+
 ## Requirements and setup
 
 - Node.js 24 LTS, at least 24.22.1 and below 25; `.nvmrc` and CI use 24.22.1 (security release).

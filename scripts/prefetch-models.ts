@@ -10,7 +10,9 @@ export async function prefetchModels(manager = new ContainerModelCacheManager())
   console.log(`[container-model-cache] Cache directory: ${manager.cacheDir}`);
 
   const startTime = Date.now();
-  console.log('[container-model-cache] Starting download for all registered model variants (11 variants)...');
+  const registered = Object.values(manager.getVariantsSnapshot());
+  const enabledCount = registered.filter(entry => entry.acquisitionEnabled !== false).length;
+  console.log(`[container-model-cache] Starting acquisition for ${enabledCount} enabled variants (${registered.length} registered; blocked variants stay unavailable)...`);
 
   await manager.prefetchAllModels({ concurrency: 1, prioritizeDefaults: true });
   const variants = manager.getVariantsSnapshot();

@@ -1,6 +1,6 @@
-const integrityLabels = { pinned: '固定ハッシュ一致', 'self-recorded': '取得時ハッシュ一致', invalid: '検証失敗', 'not-present': '未保存', pending: '検証待ち', unknown: '不明' };
+const integrityLabels = { pinned: '固定ハッシュ一致', 'self-recorded': '取得時ハッシュ一致', invalid: '検証失敗', 'not-present': '未保存', pending: '検証待ち', unknown: '不明', blocked: '未検証・取得無効' };
 const stateLabels = { cached: '配信準備済み', downloading: '取得中', unavailable: '未準備' };
-const families = { 'selfie-segmenter': 'Selfie Segmenter', mediapipe: 'EfficientDet', 'yolo-seg': 'YOLO', segformer: 'SegFormer', 'image-classifier': 'EfficientNet（画像分類）' };
+const families = { 'selfie-segmenter': 'Selfie Segmenter', mediapipe: 'MediaPipe Object Detector', 'yolo-seg': 'YOLO', segformer: 'SegFormer', 'image-classifier': 'EfficientNet（画像分類）' };
 const safeName = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(value);
 const safeFile = value => typeof value === 'string' && /^[a-zA-Z0-9_-][a-zA-Z0-9._-]{0,159}$/.test(value) && !value.includes('..');
 const safePath = value => typeof value === 'string' && /^\/api\/model-cache\/models\/[a-zA-Z0-9._-]+(\?sha256=[a-f0-9]{64})?$/.test(value);
@@ -12,6 +12,7 @@ function coherentState(value, cached) {
   if (value.status === 'cached' || value.size !== null || value.sha256 !== null || (value.error !== null && (typeof value.error !== 'string' || !value.error.length))) return false;
   if (value.status === 'downloading') return value.integrity === 'pending' && value.filePresent === null && value.error === null;
   if (value.status !== 'unavailable') return false;
+  if (value.integrity === 'blocked') return value.acquisitionEnabled === false && typeof value.blockedReason === 'string' && value.blockedReason.length > 0 && value.error !== null;
   if (value.integrity === 'not-present') return value.filePresent === false;
   if (value.integrity === 'invalid') return value.filePresent !== null && value.error !== null;
   return value.integrity === 'unknown' && value.filePresent === null;
@@ -22,11 +23,11 @@ export function inventorySnapshot(payload) {
   const rows = Object.entries(payload.variants).map(([key, value]) => {
     const identity = value && Object.hasOwn(families, value.id) && safeName(value.variantId) && key === `${value.id}:${value.variantId}` && safeFile(value.file);
     const shape = identity && Object.hasOwn(stateLabels, value.status) && Object.hasOwn(integrityLabels, value.integrity) && [true, false, null].includes(value.filePresent);
-    const cached = shape && value.status === 'cached' && value.filePresent === true && ['pinned', 'self-recorded'].includes(value.integrity) && Number.isSafeInteger(value.size) && value.size > 0 && typeof value.sha256 === 'string' && /^[a-f0-9]{64}$/.test(value.sha256) && value.error === null && (value.integrity !== 'pinned' || (value.sha256 === value.expectedSha256 && value.size === value.expectedSize));
+    const cached = shape && value.acquisitionEnabled !== false && value.blockedReason == null && value.status === 'cached' && value.filePresent === true && ['pinned', 'self-recorded'].includes(value.integrity) && Number.isSafeInteger(value.size) && value.size > 0 && typeof value.sha256 === 'string' && /^[a-f0-9]{64}$/.test(value.sha256) && value.error === null && (value.integrity !== 'pinned' || (value.sha256 === value.expectedSha256 && value.size === value.expectedSize));
     const valid = shape && coherentState(value, cached);
     if (!valid) invalid++;
     const path = identity ? (safePath(value.localUrl) ? value.localUrl : `/api/model-cache/models/${value.file}${value.id === 'image-classifier' && typeof value.expectedSha256 === 'string' && /^[a-f0-9]{64}$/.test(value.expectedSha256) ? `?sha256=${value.expectedSha256}` : ''}`) : '—';
-    return { family: identity ? families[value.id] : '不明なモデル', variant: identity ? value.variantId : '不明', file: identity ? value.file : '不正なファイル名（非表示）', size: cached ? `${value.size.toLocaleString('ja-JP')} bytes` : '—', presence: shape ? (value.filePresent === true ? 'あり' : value.filePresent === false ? 'なし' : '不明') : '不明', readiness: valid ? stateLabels[value.status] : '不明（不正な状態）', integrity: valid ? integrityLabels[value.integrity] : '不明', error: value?.error ? '取得・検証エラーあり（詳細は管理ログ）' : '—', cached, path, url: cached ? path : null };
+    return { family: identity ? families[value.id] : '不明なモデル', variant: identity ? value.variantId : '不明', file: identity ? value.file : '不正なファイル名（非表示）', size: cached ? `${value.size.toLocaleString('ja-JP')} bytes` : '—', presence: shape ? (value.filePresent === true ? 'あり' : value.filePresent === false ? 'なし' : '不明') : '不明', readiness: valid ? (value.integrity === 'blocked' ? 'BLOCKED（モデル未検証）' : stateLabels[value.status]) : '不明（不正な状態）', integrity: valid ? integrityLabels[value.integrity] : '不明', error: valid && value.integrity === 'blocked' ? 'モデル資産・SDK互換性などの確認待ち' : value?.error ? '取得・検証エラーあり（詳細は管理ログ）' : '—', cached, path, url: cached ? path : null };
   });
   return { rows, invalid, observedAt: payload.observedAt };
 }

@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-11-11T05:05:34.170010+00:00",
+  "review_kind": "Independent fixed-commit rereview of SSD reconciliation after Mirage PR36/37; no external publication",
+  "base_commit": "9c64cef2c5604badeab2c21ca5ebb37e5558b3df",
+  "head_commit": "929c2130bcba79c55bcf7b68095cb62ce7d8996a",
+  "head_tree": "56e6badf656bb74ef4e37347931e527d80af8393",
+  "latest_main_remote_observed": "9c64cef2c5604badeab2c21ca5ebb37e5558b3df",
+  "pr_metadata_observed": {
+    "url": "https://github.com/TakashiSasaki/vision-edge/pull/32",
+    "draft": true,
+    "head": "4a485904acdbcee8c85a2d446ab865d0f221078a",
+    "base": "479c74527a5b5e13f4f5938c6f26787e60890f14",
+    "base_ref": "main",
+    "note": "GitHub PR metadata still reflected original source; actual remote main was independently checked and equals review base. Final published-head CI context must be checked before merge."
+  },
+  "verdict": "NO_BLOCKING_CODE_FINDINGS_FOR_COMBINED_GATED_SCOPE",
+  "blocking_findings": [],
+  "reviewed_scope": [
+    "All21 changed files in fixed base..head, especially README/package+lock/public inventory/resolver/engine conflict reconciliation.",
+    "Combined SSD and Mirage gates, native WASM default, cache identity/acquisition/serving, registry, ModelStatus dual messages, count regressions, evidence preservation and version/dependency invariants."
+  ],
+  "prior_integration_requirements": [
+    {
+      "id": "SSD-I1",
+      "status": "ADDRESSED",
+      "evidence": "Mirage types/catalog/routes, special webgpu lifecycle, unconditional unavailable-error branch and mirage-51m default preserved. Mirage runtime/research source and historical numerical/native evidence unchanged."
+    },
+    {
+      "id": "SSD-I2",
+      "status": "ADDRESSED",
+      "evidence": "Inventory safePath/path/url retained with SSD blocked coherence. Current unpinned unavailable/not-present resolver handling and Mirage-specific branch retained."
+    },
+    {
+      "id": "SSD-I3",
+      "status": "ADDRESSED",
+      "evidence": "ModelStatus retains first Mirage unavailable/no-retry branch, then typed SSD blocked reason/retry; SSD and Mirage controls retained."
+    },
+    {
+      "id": "SSD-I4",
+      "status": "ADDRESSED",
+      "evidence": "Package/lock1.0.35 exceeds base1.0.34. Parsed lock excluding two root version fields equals base exactly; dependencies unchanged."
+    },
+    {
+      "id": "SSD-I5",
+      "status": "ADDRESSED",
+      "evidence": "Exact six family IDs asserted while retaining four legacy MODEL_REGISTRY engines. Prefetch asserts12 registered,9 synthetic cached,3 unavailable,11 fetches and explicit blocked SSD; strict classifier failure remains. Log derives enabled/registered counts."
+    },
+    {
+      "id": "SSD-I6",
+      "status": "LOCAL_CHECKS_AND_REVIEW_COMPLETE; FINAL_HEAD_HOSTED_CI_PENDING",
+      "evidence": "All11 offline task raw logs and metadata checked; precommit binary diff snapshot binds exactly to fixed source. CSS/nativeworker preserved. Final published-head CI/current refs remain merge prerequisite."
+    }
+  ],
+  "independent_checks": {
+    "diff_check": {
+      "command": "git diff --check 9c64cef2c5604badeab2c21ca5ebb37e5558b3df..929c2130bcba79c55bcf7b68095cb62ce7d8996a",
+      "exit": 0
+    },
+    "inventory": {
+      "passed": 5,
+      "failed": 0,
+      "log": {
+        "path": ".cache/integration-20261111/review-ssd-929c213-inventory.log",
+        "size": 134,
+        "sha256": "f73c4c2e6d97d72ac12120915576c6eb9372f9f0aad27a6073ea2caf95fecba7"
+      },
+      "scope": "Exact fixed-source module: blocked presence true/false/null retains safe path/no download URL, forged policy-blocked cached state rejected, coherent enabled pinned state retains query-bearing link. Synthetic data only."
+    },
+    "dependency_lock": "Parsed lock equals base excluding only root version fields.",
+    "production_assets": {
+      "record": {
+        "path": ".cache/integration-20261111/ssd-assets.json",
+        "size": 752,
+        "sha256": "cc5df07cea520fe6737b099eb338c7210398abcf15b62bd34e7d44d2b7c25dee"
+      },
+      "current_dist_hashes_verified": true,
+      "css_equal_to_baseline": true,
+      "native_worker_equal_to_baseline": true,
+      "app_js": "Expected SSD registry/gate/UI change."
+    },
+    "local_offline_source_binding": {
+      "source_record": {
+        "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/source.json",
+        "size": 337,
+        "sha256": "9513d8e334c71b4b8860e15ef7b56e253882fa528631c8a78adabadbd73d2916"
+      },
+      "runner_original_head": "4a485904acdbcee8c85a2d446ab865d0f221078a",
+      "runner_dirty": true,
+      "diff_sha256": "7087baf7a18559dd04cb9c46971f2058ba4c1475a97c69948cac077285deac65",
+      "binding": "SHA256(trim(git diff --binary original-run-HEAD..929c213)) exactly equals recorded diffSha256. All candidate changes were tracked. This is source-equivalent local precommit verification, not hosted clean-checkout final-SHA CI."
+    },
+    "implementation_offline_run_inspected": {
+      "directory": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc",
+      "tasks": [
+        {
+          "task": "browser",
+          "state": "PASS",
+          "exit": 0,
+          "counts": {
+            "total": 36,
+            "passed": 36,
+            "failed": 0,
+            "skipped": 0,
+            "flaky": 0
+          },
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/browser/output.log",
+            "size": 7118,
+            "sha256": "975fdd7be3ec732df87cf5d62d04a0823f6f30c4f256e8c93decf9d8e1eb4f28"
+          }
+        },
+        {
+          "task": "build",
+          "state": "PASS",
+          "exit": 0,
+          "counts": null,
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/build/output.log",
+            "size": 1374,
+            "sha256": "a682f73124525edc7f94b8161c34ef776b3ee1292cdba3454bb3375bd542487a"
+          }
+        },
+        {
+          "task": "controls",
+          "state": "PASS",
+          "exit": 0,
+          "counts": {
+            "total": 7,
+            "healthy": 2,
+            "expectedFaults": 5
+          },
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/controls/output.log",
+            "size": 624,
+            "sha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+          }
+        },
+        {
+          "task": "delegate",
+          "state": "PASS",
+          "exit": 0,
+          "counts": {
+            "total": 40,
+            "passed": 40,
+            "failed": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/delegate/output.log",
+            "size": 8345,
+            "sha256": "7d9211a1c9aaf7f02bd355845c8054b0a5c50d48631d5ec04ed98917ac0c8221"
+          }
+        },
+        {
+          "task": "foundation",
+          "state": "PASS",
+          "exit": 0,
+          "counts": {
+            "total": 73,
+            "passed": 73,
+            "failed": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/foundation/output.log",
+            "size": 12688,
+            "sha256": "9ee2921d3f93940aea9e8b91e09559d44735c92767c1c056391395e193eb0473"
+          }
+        },
+        {
+          "task": "lint",
+          "state": "PASS",
+          "exit": 0,
+          "counts": null,
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/lint/output.log",
+            "size": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "task": "output",
+          "state": "PASS",
+          "exit": 0,
+          "counts": {
+            "total": 37,
+            "passed": 37,
+            "failed": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/output/output.log",
+            "size": 7434,
+            "sha256": "54e53c28022b71a04f5a2e77954488ec0df3b795ccfc5a34057a6729fdc8d526"
+          }
+        },
+        {
+          "task": "preflight",
+          "state": "PASS",
+          "exit": 0,
+          "counts": {
+            "protected": 702,
+            "violations": 0
+          },
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/preflight/output.log",
+            "size": 83,
+            "sha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+          }
+        },
+        {
+          "task": "preflight-tests",
+          "state": "PASS",
+          "exit": 0,
+          "counts": {
+            "total": 60,
+            "passed": 60,
+            "failed": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/preflight-tests/output.log",
+            "size": 10298,
+            "sha256": "ba5b1a8d1e70a4e960a5f98a1301054a71038687d563c610cda82189b6783a74"
+          }
+        },
+        {
+          "task": "typecheck",
+          "state": "PASS",
+          "exit": 0,
+          "counts": null,
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/typecheck/output.log",
+            "size": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "task": "unit",
+          "state": "PASS",
+          "exit": 0,
+          "counts": {
+            "total": 878,
+            "passed": 878,
+            "failed": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "raw_log": {
+            "path": ".cache/test-runs/2026-11-11T04-59-43.405Z-8bb1c1dc/unit/output.log",
+            "size": 418,
+            "sha256": "f77166c903f1a819bed328ac206f9d492b9a3257d58acd5416746d0bde0e5a55"
+          }
+        }
+      ],
+      "full_suite_independently_repeated": false
+    },
+    "prior_failed_run_retained": {
+      "directory": ".cache/test-runs/2026-11-11T04-58-15.446Z-642c7fd8",
+      "unit_failures": 2,
+      "causes": "Old exact registry-family and prefetch-count expectations. New exact combined assertions preserve enabled-case coverage and strict classifier rejection."
+    }
+  },
+  "limitations": [
+    "No SSD binary download, exact-model SDK initialization, real inference or performance acceptance. SSD remains gated; user-upload pin provenance is separate from unverified official object equality.",
+    "Mirage numerical equivalence remains FAIL and native equivalence NOT_ESTABLISHED. MIRAGE_ONNX_NOT_VALIDATED remains unchanged; no browser GPU acceptance follows from this integration.",
+    "Reviewer ran bounded inventory controls and inspected completed offline raw evidence; no full-suite repeat or independent SDK/browser/model run.",
+    "PR still showed original source at inspection; final-head hosted CI and current refs must be checked after publication and before merge.",
+    "Additional untracked docs/verification/ssd-mainline-integration.json appeared during review; it is outside fixed929c213 and was not included in this source verdict."
+  ],
+  "working_tree_at_review": "Tracked source/index clean at fixed head; root agent is preparing one new untracked integration evidence document.",
+  "actions": {
+    "tracked_edits": false,
+    "checkout": false,
+    "external_post": false,
+    "merge": false,
+    "binary_download": false,
+    "full_suite_repeat": false
+  }
+}

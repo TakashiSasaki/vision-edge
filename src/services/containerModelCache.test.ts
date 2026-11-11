@@ -307,7 +307,7 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     }
   });
 
-  it('runs prefetchModels script function and returns cache counts for all 11 variants', async () => {
+  it('runs prefetchModels script function and returns counts for 11 acquisition-enabled variants and one blocked SSD', async () => {
     const fakePayload = Buffer.alloc(2048, 0x42);
     const mockFetch = vi.fn(async () => new Response(fakePayload, { status: 200 }));
     const manager = new ContainerModelCacheManager({
@@ -316,10 +316,12 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     });
 
     const result = await prefetchModels(manager);
-    expect(result.totalCount).toBe(11);
-    // 9 legacy variants accept synthetic bytes; 2 pinned image classifiers strictly require their pinned SHA256/size
+    expect(result.totalCount).toBe(12);
+    // Nine legacy variants accept synthetic bytes; two pinned classifiers reject them, and SSD remains policy-blocked.
     expect(result.cachedCount).toBe(9);
-    expect(result.unavailableCount).toBe(2);
+    expect(result.unavailableCount).toBe(3);
+    expect(mockFetch).toHaveBeenCalledTimes(11);
+    expect(manager.getVariantsSnapshot()['mediapipe:ssd-mobilenet-v2']).toMatchObject({ status: 'unavailable', integrity: 'blocked', acquisitionEnabled: false, size: null, sha256: null });
   });
 
   it('waits for container download to complete before responding when an uncached model file is accessed', async () => {
