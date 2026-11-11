@@ -49,6 +49,7 @@ jobs:
           .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_encoder_candidate.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/encoder.log
           .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_refinement.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/refinement.log
           .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_reference_diagnosis.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/reference-diagnosis.log
+          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_numerical_effects.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/numerical-effects.log
       - name: Upload raw research control logs
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
