@@ -1,0 +1,100 @@
+{
+  "scope": "Original three open PRs integrated before continuing ONNX diagnosis",
+  "owner_authorized_all_open_pr_merges": true,
+  "merges": [
+    {
+      "pr": 36,
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/36",
+      "merge": "fc7cdcd2c81fc87ec2354b0c5e162da02c47c429",
+      "tree": "98ae042ae29adb812233c682b7851c9f1699fac5",
+      "parents": [
+        "e6bf2899fd2e9d916f3904d344171f167588b8d4",
+        "dc28e446a7e0fdb22aa82e9e3193cc7ab1b2bf9f"
+      ],
+      "source": "dc28e446a7e0fdb22aa82e9e3193cc7ab1b2bf9f",
+      "tree_equals_reviewed_pr_head": true,
+      "main_push_ci": "https://github.com/TakashiSasaki/vision-edge/actions/runs/42962386597",
+      "main_push_ci_status": "SUCCESS",
+      "raw_checkout_and_counts_verified": true,
+      "raw_logs": [
+        {
+          "path": ".cache/integration-20261111/main36-job-130331710290.log",
+          "size": 26165,
+          "sha256": "217bf6d5ee1f224f84b2285326dbf9205e36d83a829d6fc6aab3ae6937a03a79"
+        },
+        {
+          "path": ".cache/integration-20261111/main36-job-130331709823.log",
+          "size": 18793,
+          "sha256": "fd5e62c7ebe7120790f630f8c6543c5613db7c329be802d0162ffd3279fba579"
+        }
+      ]
+    },
+    {
+      "pr": 37,
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/37",
+      "merge": "9c64cef2c5604badeab2c21ca5ebb37e5558b3df",
+      "tree": "b915e25b88fdbbfbaeba7a88fb36fe0221e1eb49",
+      "parents": [
+        "fc7cdcd2c81fc87ec2354b0c5e162da02c47c429",
+        "9d79499562a8238bd40ac79e187562a6b0bd9acc"
+      ],
+      "source": "9d79499562a8238bd40ac79e187562a6b0bd9acc",
+      "tree_equals_reviewed_pr_head": true,
+      "main_push_ci": "https://github.com/TakashiSasaki/vision-edge/actions/runs/42962949319",
+      "main_push_ci_status": "SUCCESS",
+      "raw_checkout_and_counts_verified": true,
+      "raw_logs": [
+        {
+          "path": ".cache/integration-20261111/main37-job-130333534287.log",
+          "size": 38554,
+          "sha256": "0b8da865ca95ae8959f7b8d2f3eb8ac5b1494404250f066d73af0d39429fd04c"
+        },
+        {
+          "path": ".cache/integration-20261111/main37-job-130333534145.log",
+          "size": 29224,
+          "sha256": "dbdead90755bdfbf2c3d5e9e15cbd68e1d40005d25dda0f3b88e3fb079d9c369"
+        },
+        {
+          "path": ".cache/integration-20261111/main37-job-130333533820.log",
+          "size": 18798,
+          "sha256": "de850e16be3053d2daf23b1300ab2fdc1e9abf498b9a3592fdfa4ab3034e7cad"
+        }
+      ]
+    },
+    {
+      "pr": 32,
+      "url": "https://github.com/TakashiSasaki/vision-edge/pull/32",
+      "merge": "d349b9fb9dbe31a3dc704b251cde4116aa6ae9d7",
+      "tree": "20b7d47480aec3cd74a5f0e4383094d571e73057",
+      "parents": [
+        "9c64cef2c5604badeab2c21ca5ebb37e5558b3df",
+        "9302f0f047d9c43fa55ca89f54f023bbc7e99e00"
+      ],
+      "source": "9302f0f047d9c43fa55ca89f54f023bbc7e99e00",
+      "tree_equals_reviewed_pr_head": true,
+      "main_push_ci": "https://github.com/TakashiSasaki/vision-edge/actions/runs/42964137963",
+      "main_push_ci_status": "SUCCESS",
+      "raw_checkout_and_counts_verified": true,
+      "raw_logs": [
+        {
+          "path": ".cache/integration-20261111/main32-job-130337305913.log",
+          "size": 38538,
+          "sha256": "2c12df59bbeec9aaa37bcc7b68393deed35bb6059359e60cb87551512b63fc75"
+        },
+        {
+          "path": ".cache/integration-20261111/main32-job-130337306074.log",
+          "size": 29145,
+          "sha256": "d41cd5ba68fadf111eb64e84ba867f9aab1e26b7b40b5c7ad58a43ce84576e26"
+        },
+        {
+          "path": ".cache/integration-20261111/main32-job-130337306222.log",
+          "size": 18787,
+          "sha256": "cda04646ed45cba7b7dc11959288b8eee5f02ce9acc7e406b9ec1f508a21c692"
+        }
+      ]
+    }
+  ],
+  "ssd_source_reconciliation": "See ssd-mainline-integration.json and ssd-mainline-review-929c213.json; preserved initial2count failures and exact878unit/36browser final checks",
+  "gates": "Mirage ONNX and SSD real-model gates retained",
+  "tags_or_manual_deployment": false
+}

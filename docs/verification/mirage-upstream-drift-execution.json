@@ -1,0 +1,287 @@
+{
+  "scope": "body_3 diagnostic only; no converter change or full/native acceptance",
+  "status": "FAIL_RETAINED",
+  "actual_executions": [
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/diagnose_reference_body.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--aggregate",
+        "docs/verification/mirage-refinement-results.json",
+        "--production-onnx",
+        ".cache/mirage-refinement/numerical-cact-dequantized-pixel-0-r3/cact-dequantized-reference-order.onnx",
+        "--output-dir",
+        ".cache/mirage-upstream-drift/cact-dequantized-2",
+        "--weights",
+        "cact-dequantized"
+      ],
+      "exit": 1,
+      "log": ".cache/mirage-upstream-drift/cact-dequantized-2.log"
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/diagnose_reference_body.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--aggregate",
+        "docs/verification/mirage-refinement-results.json",
+        "--production-onnx",
+        ".cache/mirage-refinement/numerical-fp32-pixel-0-r3/fp32-reference-order.onnx",
+        "--output-dir",
+        ".cache/mirage-upstream-drift/fp32-2",
+        "--weights",
+        "fp32"
+      ],
+      "exit": 1,
+      "log": ".cache/mirage-upstream-drift/fp32-2.log"
+    }
+  ],
+  "raw_logs": [
+    {
+      "path": ".cache/mirage-upstream-drift/fp32-2.log",
+      "size": 1426,
+      "sha256": "2d536ea2c337182965fbd231f0f003dae1f0f52f9f5b74c2827c9f1e700e8cc5"
+    },
+    {
+      "path": ".cache/mirage-upstream-drift/cact-dequantized-2.log",
+      "size": 1426,
+      "sha256": "796cec25ad8eff44820c62b773e231245e2498160bcb0ebef21dc91eb763d800"
+    }
+  ],
+  "local_stage_pass": 120,
+  "production_failed_elements": 4,
+  "identical_failure_masks_in_both_replays": true,
+  "production_metrics_equal_prior_aggregate": true,
+  "instrumentation_max_absolute_error": 3.0517578125e-05,
+  "controls": [
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_verify_checkpoint.py",
+        "-v"
+      ],
+      "exit": 0,
+      "passed": 13,
+      "raw_log": {
+        "path": ".cache/mirage-upstream-drift/controls-1/verify_checkpoint.log",
+        "size": 1517,
+        "sha256": "956cc3c161316d528ef20bf86fe6d87387a740bb24a48668ac9e2d0bb47df2c5"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_acquire_reference.py",
+        "-v"
+      ],
+      "exit": 0,
+      "passed": 2,
+      "raw_log": {
+        "path": ".cache/mirage-upstream-drift/controls-1/acquire_reference.log",
+        "size": 358,
+        "sha256": "0cf18461ef057c944b8b6866f45ea874422136907d6a4f3ddc58efa5269813e5"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_hconvglu.py",
+        "-v"
+      ],
+      "exit": 0,
+      "passed": 6,
+      "raw_log": {
+        "path": ".cache/mirage-upstream-drift/controls-1/hconvglu.log",
+        "size": 928,
+        "sha256": "851a7ee246913ef352b4b25d4476bbea81df98d2f6f07a8efbdbe825e85d903d"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_encoder_candidate.py",
+        "-v"
+      ],
+      "exit": 0,
+      "passed": 11,
+      "raw_log": {
+        "path": ".cache/mirage-upstream-drift/controls-1/encoder_candidate.log",
+        "size": 1793,
+        "sha256": "0d0979feccb358b24baac8638e94e0a96dc986762f75ab17cbae649de4888919"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_refinement.py",
+        "-v"
+      ],
+      "exit": 0,
+      "passed": 12,
+      "raw_log": {
+        "path": ".cache/mirage-upstream-drift/controls-1/refinement.log",
+        "size": 1931,
+        "sha256": "86f96ab7f5aa227889fb165a3a6fe54415974a1f398fbb3fd3bc7f93c8c55d9c"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_reference_diagnosis.py",
+        "-v"
+      ],
+      "exit": 0,
+      "passed": 2,
+      "raw_log": {
+        "path": ".cache/mirage-upstream-drift/diagnosis-controls-3.log",
+        "size": 458,
+        "sha256": "76e6d0812cce8350a3e517ca96fa99fa53283384503e02a3aee43fcdaea3a706"
+      }
+    }
+  ],
+  "controls_total": 46,
+  "sources": {
+    "scripts/mirage/diagnose_reference_body.py": {
+      "path": "scripts/mirage/diagnose_reference_body.py",
+      "size": 12606,
+      "sha256": "a074056f9d770294f7f0525de0b72dbb74802537de057a92f258c85515c94b06"
+    },
+    "scripts/mirage/test_reference_diagnosis.py": {
+      "path": "scripts/mirage/test_reference_diagnosis.py",
+      "size": 2979,
+      "sha256": "2df6cde9b84830e6769d6dbb5f8daea759993a934675ab937b27052827a8825d"
+    },
+    ".github/workflows/ci.yml": {
+      "path": ".github/workflows/ci.yml",
+      "size": 6281,
+      "sha256": "e933fd90c7f3ffebadeb3ec5f17e71ad8c3d55ba1b71ee0a056fc973e94fa6da"
+    }
+  },
+  "earlier_runs": "canonical-1 and initial exploratory probes retained, superseded by source-hardened canonical-2",
+  "silu_exploration": {
+    "status": "NOT_ADOPTED_MIXED_FAILING_RESULTS",
+    "script": {
+      "path": ".cache/mirage-upstream-drift/probe-silu-lowering.py",
+      "size": 2347,
+      "sha256": "0ff46449c1dedd6f2403d2ed3a70618327500296dc4f02d7393aae32786ea8aa"
+    },
+    "log": {
+      "path": ".cache/mirage-upstream-drift/probe-silu-lowering.log",
+      "size": 1392,
+      "sha256": "74aab74fa05cf4b50201fcec9c4a92c59c60eacd10565b9c8331c5b0d4f6d833"
+    },
+    "measurements": {
+      "path": ".cache/mirage-upstream-drift/silu-div-probe/probe.json",
+      "size": 179841,
+      "sha256": "dabca055bb6bd3fc32c406c1f76edd7d65df713627eb7fc82dce28f9fa057b7e"
+    },
+    "graphs": [
+      {
+        "path": ".cache/mirage-upstream-drift/silu-div-probe/fp32.onnx",
+        "size": 34287108,
+        "sha256": "935aa8ce651d2675602c984bfb3be0dd1b6db1e9c3936e6cf1a04f16003243c5"
+      },
+      {
+        "path": ".cache/mirage-upstream-drift/silu-div-probe/cact-dequantized.onnx",
+        "size": 34287108,
+        "sha256": "faaa1b1d86ba69568b4979dc51b80aa60e3297e3b4e77f20ff5027dc69721ae9"
+      }
+    ],
+    "counts": [
+      {
+        "weights": "fp32",
+        "name": "square_blank",
+        "baseline_failed_checkpoints": 4,
+        "div_lowering_failed_checkpoints": 5
+      },
+      {
+        "weights": "fp32",
+        "name": "small_objects",
+        "baseline_failed_checkpoints": 6,
+        "div_lowering_failed_checkpoints": 9
+      },
+      {
+        "weights": "fp32",
+        "name": "photo_square_stretched",
+        "baseline_failed_checkpoints": 3,
+        "div_lowering_failed_checkpoints": 4
+      },
+      {
+        "weights": "cact-dequantized",
+        "name": "square_blank",
+        "baseline_failed_checkpoints": 15,
+        "div_lowering_failed_checkpoints": 4
+      },
+      {
+        "weights": "cact-dequantized",
+        "name": "small_objects",
+        "baseline_failed_checkpoints": 5,
+        "div_lowering_failed_checkpoints": 6
+      },
+      {
+        "weights": "cact-dequantized",
+        "name": "photo_square_stretched",
+        "baseline_failed_checkpoints": 3,
+        "div_lowering_failed_checkpoints": 2
+      }
+    ],
+    "limits": "Six inspected examples only; exploratory script uses previously verified cached original files; not a committed converter or acceptance evidence"
+  },
+  "availability_gate": "MIRAGE_ONNX_NOT_VALIDATED",
+  "native_or_webgpu_acceptance": "NOT_RUN: full CPU/native acceptance not established"
+}
