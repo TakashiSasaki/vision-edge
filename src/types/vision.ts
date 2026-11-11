@@ -18,6 +18,8 @@ export interface ModelVariantMetadata {
   upstreamUrl: string;
   localUrl: string;
   isDefault?: boolean;
+  /** A visible variant may be unavailable until its implementation is validated. */
+  unavailableReason?: string;
 }
 
 // An immutable browser video frame is preferred when the platform supports it.

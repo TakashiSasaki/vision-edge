@@ -43,7 +43,7 @@ export function ModelComparisonTable({
 
             {/* Variant List */}
             <div className="space-y-1.5 pt-1">
-              <div className="text-[11px] font-semibold text-slate-300">利用可能なモデルサイズ・構造バリアント:</div>
+              <div className="text-[11px] font-semibold text-slate-300">モデルサイズ・構造バリアントと利用状況:</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {model.variants.map(variant => {
                   const isSelected = activeModel === model.id && activeVariant === variant.id;
@@ -51,9 +51,9 @@ export function ModelComparisonTable({
                     <button
                       key={variant.id}
                       type="button"
-                      disabled={!model.implemented}
+                      disabled={!model.implemented || Boolean(variant.unavailableReason)}
                       onClick={() => {
-                        if (isRunnableModel(model.id)) {
+                        if (isRunnableModel(model.id) && !variant.unavailableReason) {
                           onSelectModelAndVariant(model.id, variant.id);
                           onClose();
                         }

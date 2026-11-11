@@ -596,7 +596,21 @@ describe('MirageVisionAdapter & Mirage Perception Utilities', () => {
     vi.restoreAllMocks();
   });
 
-  it('converts Mirage Walsh-Hadamard HConvGLU kernels to ONNX, preserves WASM in-place archive pointer, and decodes MirageWebGpuEngine tensors', async () => {
+  it('blocks ONNX selection before creating even an injected WASM worker', async () => {
+    const { createMirageWasmTask } = await import('./mirageWasmService');
+    const workerFactory = vi.fn();
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    try {
+      await expect(createMirageWasmTask({ variantId: 'mirage-webgpu', workerFactory }))
+        .rejects.toMatchObject({ code: 'MIRAGE_ONNX_NOT_VALIDATED' });
+      expect(workerFactory).not.toHaveBeenCalled();
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('checks generic Walsh helpers, preserves WASM archive ownership, and exercises the experimental decoder with mock tensors', async () => {
     const {
       buildSequencyWalshMatrix,
       fuseHConvGluKernel,
@@ -625,9 +639,8 @@ describe('MirageVisionAdapter & Mirage Perception Utilities', () => {
     const fused = fuseHConvGluKernel(mockBandedConv, 16, 3);
     expect(fused).toHaveLength(16 * 16);
 
-    // 3. Verify buildMirageWebGpuOnnxBytes builds a valid Opset-17 ONNX ModelProto
-    const onnxBytes = buildMirageWebGpuOnnxBytes();
-    expect(onnxBytes.byteLength).toBeGreaterThan(200_000);
+    // 3. Never mistake a generated synthetic graph for a faithful Mirage export.
+    expect(() => buildMirageWebGpuOnnxBytes()).toThrow('faithful export');
 
     // 4. Verify loadMirageArchiveIntoModule keeps the .cact buffer allocated in WASM heap
     // so in-place weight mapping does not read freed memory
@@ -739,13 +752,12 @@ describe('MirageVisionAdapter & Mirage Perception Utilities', () => {
       putImageData: vi.fn(),
     } as unknown as CanvasRenderingContext2D);
 
-    const webgpuEngine = new MirageWebGpuEngine(fakeSession as never);
     const inputCanvas = document.createElement('canvas');
     inputCanvas.width = 640;
     inputCanvas.height = 480;
 
-    // 8. Test Hybrid Perception Fusion with WASM observation cache
-    webgpuEngine.fuseWasmObservations([
+    // 8. Enrichment is supplied for this exact request, without a cross-frame cache.
+    const wasmObjects = [
       {
         id: 'wasm-obj-0',
         label: 'software window',
@@ -764,7 +776,9 @@ describe('MirageVisionAdapter & Mirage Perception Utilities', () => {
         color: '#38bdf8',
         bbox: { x: 0.15, y: 0.10, width: 0.15, height: 0.08 },
       },
-    ]);
+    ];
+    const wasmTask = { detectForVideo: vi.fn(async () => wasmObjects), close: vi.fn() };
+    const webgpuEngine = new MirageWebGpuEngine(fakeSession as never, undefined, wasmTask);
 
     const detections = await webgpuEngine.detectForVideo(inputCanvas, 0.25, {
       analysisMode: 'fast',

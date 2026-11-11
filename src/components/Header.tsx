@@ -78,11 +78,18 @@ export const Header: React.FC<HeaderProps> = ({
           <select
             value={activeVariant}
             aria-label="バリアント"
-            onChange={(e) => onSelectVariant(e.target.value)}
+            onChange={(e) => {
+              const variant = currentMeta.variants.find(item => item.id === e.target.value);
+              if (variant && !('unavailableReason' in variant && variant.unavailableReason)) {
+                onSelectVariant(variant.id);
+              }
+            }}
             className="bg-transparent text-xs font-semibold text-blue-300 focus:outline-none cursor-pointer"
           >
             {currentMeta.variants.map(variant => (
-              <option key={variant.id} value={variant.id} className="bg-slate-900 text-white">
+              <option key={variant.id} value={variant.id}
+                disabled={'unavailableReason' in variant && Boolean(variant.unavailableReason)}
+                className="bg-slate-900 text-white">
                 {variant.name}
               </option>
             ))}

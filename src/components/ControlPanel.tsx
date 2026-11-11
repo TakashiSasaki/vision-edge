@@ -146,7 +146,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         )}
         {activeModel === 'mirage' && (
           <p className="text-slate-400">
-            Mirage は WebGPU コンバート版（ONNX Runtime Web）による高速推論と、公式 .cact（WASM Worker）による非同期推論に対応。検出物体・輪郭マスク・OCR・方向/距離（近/中/遠）を表示・読み上げます。
+            Mirage は公式 .cact を WASM Worker で実行します。検出物体・輪郭マスク・OCR・方向/距離（近/中/遠）を表示・読み上げます。
           </p>
         )}
 
@@ -471,7 +471,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     <div className="flex justify-between items-center text-xs">
                       <span className="font-medium text-slate-200">Mirage 解析モード</span>
                       <span className="font-mono text-emerald-400 font-semibold text-[11px]">
-                        {mirageAnalysisMode === 'fast' ? '高速モード (256/320px)' : 'フル解析 (512px)'}
+                        {mirageAnalysisMode === 'fast' ? '高速モード (320px)' : 'フル解析 (512px)'}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Mirage 解析モード">
