@@ -1,0 +1,1052 @@
+{
+  "scope": "diagnostic-only; no full native or browser GPU equivalence",
+  "base_commit": "c88520f1cc14ef4131bc42981d181081db112a09",
+  "status": "NUMERICAL_FAIL_NATIVE_NOT_ESTABLISHED",
+  "aggregate": {
+    "path": ".cache/mirage-refinement/aggregate-final.json",
+    "size": 2750852,
+    "sha256": "3c3ff2c65358ab31f4abff836f8653ccff5a853d9568661011e5eccf9353c1c7"
+  },
+  "aggregate_observed_exit": 1,
+  "native_capture": {
+    "path": ".cache/mirage-refinement/geometry-1/geometry.json",
+    "size": 418060,
+    "sha256": "77e4f258f55642ac3ed51b615a6708d48bf851994e06c64f6a6d9ac81a69fd58"
+  },
+  "native_capture_observed_exit": 0,
+  "native_capture_status": "OBSERVED_GEOMETRY_ONLY",
+  "native_capture_cases": 22,
+  "completed_scopes": [
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/numerical-cact-dequantized-nearest32-0-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "nearest32",
+        "--numerical-only",
+        "--cases",
+        "square_blank",
+        "landscape_blank",
+        "portrait_blank",
+        "small_objects",
+        "boundary_objects"
+      ],
+      "completed": true,
+      "status": "FAIL",
+      "observed_exit": 1,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/numerical-cact-dequantized-nearest32-0-r3/validation.json",
+        "size": 515371,
+        "sha256": "9f8f0bd6a68a7f8cd4a972b626d909024d692fdb8a25aed733b62de2d6258b52"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/numerical-cact-dequantized-nearest32-0-r3.log",
+        "size": 1459,
+        "sha256": "a32ea92f47b5033ab64f21ac874550645305cdb29bc2e70d1e05fc5c4b200fc0"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/numerical-cact-dequantized-nearest32-1-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "nearest32",
+        "--numerical-only",
+        "--cases",
+        "overlap_shapes",
+        "text_regions",
+        "photo_original_portrait",
+        "photo_square_stretched",
+        "photo_rotated_landscape"
+      ],
+      "completed": true,
+      "status": "FAIL",
+      "observed_exit": 1,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/numerical-cact-dequantized-nearest32-1-r3/validation.json",
+        "size": 515047,
+        "sha256": "83af76d6e5683ec33cf444836ff911857ea39561241441685f5efc5447d83384"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/numerical-cact-dequantized-nearest32-1-r3.log",
+        "size": 1481,
+        "sha256": "54cb561339e0caeafc577ff812a7d551272a433561909889a57dd7c2ead905ec"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/numerical-cact-dequantized-pixel-0-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "pixel",
+        "--numerical-only",
+        "--cases",
+        "square_blank",
+        "landscape_blank",
+        "portrait_blank",
+        "small_objects",
+        "boundary_objects"
+      ],
+      "completed": true,
+      "status": "FAIL",
+      "observed_exit": 1,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/numerical-cact-dequantized-pixel-0-r3/validation.json",
+        "size": 515327,
+        "sha256": "7023500b51c27676d254b44f18240e001985ef30ee9eb02d1a9a0294116d2ff0"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/numerical-cact-dequantized-pixel-0-r3.log",
+        "size": 1439,
+        "sha256": "379093e5496f5d5a838ac5f65bc2494fee49a490ac72861acc34796bb2ea863a"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/numerical-cact-dequantized-pixel-1-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "pixel",
+        "--numerical-only",
+        "--cases",
+        "overlap_shapes",
+        "text_regions",
+        "photo_original_portrait",
+        "photo_square_stretched",
+        "photo_rotated_landscape"
+      ],
+      "completed": true,
+      "status": "FAIL",
+      "observed_exit": 1,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/numerical-cact-dequantized-pixel-1-r3/validation.json",
+        "size": 514917,
+        "sha256": "f96a58c3ba00f2aff4dded64fe291a8d81be5250488057c7a4ebbd53847f3536"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/numerical-cact-dequantized-pixel-1-r3.log",
+        "size": 1461,
+        "sha256": "951b1e88daffcbe3b02d6a37fa75aa94654e826f1a2000e20be5850f9d096c73"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/numerical-fp32-nearest32-0-r3",
+        "--weights",
+        "fp32",
+        "--rule",
+        "nearest32",
+        "--numerical-only",
+        "--cases",
+        "square_blank",
+        "landscape_blank",
+        "portrait_blank",
+        "small_objects",
+        "boundary_objects"
+      ],
+      "completed": true,
+      "status": "FAIL",
+      "observed_exit": 1,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/numerical-fp32-nearest32-0-r3/validation.json",
+        "size": 514761,
+        "sha256": "880dcf6a26a322ffa61d54cb73486f8c139435baf69aa33f975d5a50aa2beba2"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/numerical-fp32-nearest32-0-r3.log",
+        "size": 1401,
+        "sha256": "825846964d3283f3ee435d8fb1ef45a6e621a8733ab6c4a4f300d44a9967441e"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/numerical-fp32-nearest32-1-r3",
+        "--weights",
+        "fp32",
+        "--rule",
+        "nearest32",
+        "--numerical-only",
+        "--cases",
+        "overlap_shapes",
+        "text_regions",
+        "photo_original_portrait",
+        "photo_square_stretched",
+        "photo_rotated_landscape"
+      ],
+      "completed": true,
+      "status": "FAIL",
+      "observed_exit": 1,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/numerical-fp32-nearest32-1-r3/validation.json",
+        "size": 514437,
+        "sha256": "57cfa887e4a5514330e2ebf1770154ce39139caf7623d63801307026507ad0a2"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/numerical-fp32-nearest32-1-r3.log",
+        "size": 1423,
+        "sha256": "d80b38ecb8253b07fa3161c51d0e16264d6ea71529f0f84d3501a796de9edb50"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/numerical-fp32-pixel-0-r3",
+        "--weights",
+        "fp32",
+        "--rule",
+        "pixel",
+        "--numerical-only",
+        "--cases",
+        "square_blank",
+        "landscape_blank",
+        "portrait_blank",
+        "small_objects",
+        "boundary_objects"
+      ],
+      "completed": true,
+      "status": "FAIL",
+      "observed_exit": 1,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/numerical-fp32-pixel-0-r3/validation.json",
+        "size": 514717,
+        "sha256": "97e62b6de411fefdbf672050407fdecdfc779d6f0dbfb7051431ee8b64c4977e"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/numerical-fp32-pixel-0-r3.log",
+        "size": 1381,
+        "sha256": "05e7a95f34a3265a676b2613ac34cc2c3e0ece4e32cdd97094afcc26d4588b3a"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/numerical-fp32-pixel-1-r3",
+        "--weights",
+        "fp32",
+        "--rule",
+        "pixel",
+        "--numerical-only",
+        "--cases",
+        "overlap_shapes",
+        "text_regions",
+        "photo_original_portrait",
+        "photo_square_stretched",
+        "photo_rotated_landscape"
+      ],
+      "completed": true,
+      "status": "FAIL",
+      "observed_exit": 1,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/numerical-fp32-pixel-1-r3/validation.json",
+        "size": 514489,
+        "sha256": "3fa3c0cb4532bc7499aac2eca406fb342e46f71b7c0ba428131183fcdfbf9fa0"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/numerical-fp32-pixel-1-r3.log",
+        "size": 1403,
+        "sha256": "247a02d6bdae40f9c3d2d9c4126dbf9308069308ee20baf6ca7768cec8704e23"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/geometry-cact-dequantized-ceil32-0-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "ceil32",
+        "--geometry-only",
+        "--cases",
+        "square_blank",
+        "landscape_blank",
+        "portrait_blank",
+        "small_objects",
+        "boundary_objects",
+        "overlap_shapes",
+        "text_regions",
+        "photo_original_portrait",
+        "photo_square_stretched",
+        "photo_rotated_landscape",
+        "holdout_264_portrait"
+      ],
+      "completed": true,
+      "status": "GEOMETRY_DIAGNOSTICS_ONLY",
+      "observed_exit": 0,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-ceil32-0-r3/validation.json",
+        "size": 173694,
+        "sha256": "1e854e5b12ccd311881f43e8f4aaea25042631b944a6d2c617d5059e5bbfb05c"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-ceil32-0-r3.log",
+        "size": 1251,
+        "sha256": "2e9b2d4960b2eca095026b748bcb9019f4b08ac517c9985680ed4f3fd77789a5"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/geometry-cact-dequantized-ceil32-1-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "ceil32",
+        "--geometry-only",
+        "--cases",
+        "holdout_264_landscape",
+        "holdout_272_portrait",
+        "holdout_272_landscape",
+        "holdout_280_portrait",
+        "holdout_280_landscape",
+        "holdout_321_portrait",
+        "holdout_321_landscape",
+        "holdout_327_portrait",
+        "holdout_327_landscape",
+        "holdout_400_portrait",
+        "holdout_400_landscape"
+      ],
+      "completed": true,
+      "status": "GEOMETRY_DIAGNOSTICS_ONLY",
+      "observed_exit": 0,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-ceil32-1-r3/validation.json",
+        "size": 381871,
+        "sha256": "ff76ea7a74961876d049c4dee672634fe639e8a4669998550e06d723d9fcb5f3"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-ceil32-1-r3.log",
+        "size": 1251,
+        "sha256": "76539e1a2c961ce64a73464537ffa99ad14f67b7ea7d7455d0606d6c58d23215"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/geometry-cact-dequantized-nearest32-0-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "nearest32",
+        "--geometry-only",
+        "--cases",
+        "square_blank",
+        "landscape_blank",
+        "portrait_blank",
+        "small_objects",
+        "boundary_objects",
+        "overlap_shapes",
+        "text_regions",
+        "photo_original_portrait",
+        "photo_square_stretched",
+        "photo_rotated_landscape",
+        "holdout_264_portrait"
+      ],
+      "completed": true,
+      "status": "GEOMETRY_DIAGNOSTICS_ONLY",
+      "observed_exit": 0,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-nearest32-0-r3/validation.json",
+        "size": 173667,
+        "sha256": "a0112a619db11ebd5a758e4a0dd86a21002b0d672403b828c49c48f37d0f8394"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-nearest32-0-r3.log",
+        "size": 1257,
+        "sha256": "6211f1cd5f10e438eace2e01dd11b5b1d9f0f90629232bc830f452d498785308"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/geometry-cact-dequantized-nearest32-1-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "nearest32",
+        "--geometry-only",
+        "--cases",
+        "holdout_264_landscape",
+        "holdout_272_portrait",
+        "holdout_272_landscape",
+        "holdout_280_portrait",
+        "holdout_280_landscape",
+        "holdout_321_portrait",
+        "holdout_321_landscape",
+        "holdout_327_portrait",
+        "holdout_327_landscape",
+        "holdout_400_portrait",
+        "holdout_400_landscape"
+      ],
+      "completed": true,
+      "status": "GEOMETRY_DIAGNOSTICS_ONLY",
+      "observed_exit": 0,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-nearest32-1-r3/validation.json",
+        "size": 385398,
+        "sha256": "7ff78684ce250f4ef98b574a808bcbb7d23153ed5cee627fd26b92395a5f58d1"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-nearest32-1-r3.log",
+        "size": 1257,
+        "sha256": "965802bf94acfb0d59eb50af15bb41820b79e640dc4e5bfca501a85d17d8d213"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/geometry-cact-dequantized-pixel-0-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "pixel",
+        "--geometry-only",
+        "--cases",
+        "square_blank",
+        "landscape_blank",
+        "portrait_blank",
+        "small_objects",
+        "boundary_objects",
+        "overlap_shapes",
+        "text_regions",
+        "photo_original_portrait",
+        "photo_square_stretched",
+        "photo_rotated_landscape",
+        "holdout_264_portrait"
+      ],
+      "completed": true,
+      "status": "GEOMETRY_DIAGNOSTICS_ONLY",
+      "observed_exit": 0,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-pixel-0-r3/validation.json",
+        "size": 171645,
+        "sha256": "3e3d512e82de70835343793a048456268ee4c1116bd983d1c1787232b7606c37"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-pixel-0-r3.log",
+        "size": 1249,
+        "sha256": "de33263231ddb7c56b36b7dc738d0747b22c6bc80935c2f6a8ea47c8ee862041"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "scripts/mirage/verify_refinement.py",
+        "--checkpoint",
+        ".cache/mirage-resume/mirage.safetensors",
+        "--config",
+        ".cache/mirage-resume/config.json",
+        "--cact",
+        ".cache/mirage-resume/mirage.cact",
+        "--photo",
+        ".cache/mirage-encoder/coco-231049.jpg",
+        "--oasis-reference",
+        ".cache/mirage-resume/oasis-reference.py",
+        "--geometry-report",
+        ".cache/mirage-refinement/geometry-1/geometry.json",
+        "--baseline-onnx",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/partial-encoder-and-heads.onnx",
+        "--baseline-validation",
+        ".cache/mirage-encoder/cact-dequantized-symmetric-final/validation.json",
+        "--output-dir",
+        ".cache/mirage-refinement/geometry-cact-dequantized-pixel-1-r3",
+        "--weights",
+        "cact-dequantized",
+        "--rule",
+        "pixel",
+        "--geometry-only",
+        "--cases",
+        "holdout_264_landscape",
+        "holdout_272_portrait",
+        "holdout_272_landscape",
+        "holdout_280_portrait",
+        "holdout_280_landscape",
+        "holdout_321_portrait",
+        "holdout_321_landscape",
+        "holdout_327_portrait",
+        "holdout_327_landscape",
+        "holdout_400_portrait",
+        "holdout_400_landscape"
+      ],
+      "completed": true,
+      "status": "GEOMETRY_DIAGNOSTICS_ONLY",
+      "observed_exit": 0,
+      "exit_evidence": "recorded terminal execution; numerical failure exit retained",
+      "report": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-pixel-1-r3/validation.json",
+        "size": 352085,
+        "sha256": "46ace2fd016b069ec9cf733e4d84f6c892a730709bd4842b2b312a03bdf41bbe"
+      },
+      "raw_log": {
+        "path": ".cache/mirage-refinement/geometry-cact-dequantized-pixel-1-r3.log",
+        "size": 1249,
+        "sha256": "3896b916bb81f199558dd8e0400c8ada1595d3b3a1ab9fd5d903ca93d98ebf03"
+      }
+    }
+  ],
+  "interruption": {
+    "experiment": "experiment-1",
+    "completed": false,
+    "observed_cases": 8,
+    "exec_session": 54789,
+    "exec_recovery": "Unknown process id",
+    "live_process": false,
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "cause": "NOT_ESTABLISHED; no traceback; exit code unavailable from executor",
+    "source_reports_preserved": true
+  },
+  "interruption_raw_log": {
+    "path": ".cache/mirage-refinement/experiment-1.log",
+    "size": 1511,
+    "sha256": "a0c29c9dc530c729ffd6a51e65f04845cfa0924cbf439cd97697004aded43983"
+  },
+  "unaccepted_exploration": "earlier r2 and incomplete experiment-1 are excluded from the aggregate",
+  "controls": [
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_verify_checkpoint.py",
+        "-v"
+      ],
+      "exit": 0,
+      "log": ".cache/mirage-refinement/final-controls/verify_checkpoint.log",
+      "passed": 13,
+      "failed": 0,
+      "raw_log": {
+        "path": ".cache/mirage-refinement/final-controls/verify_checkpoint.log",
+        "size": 1517,
+        "sha256": "4d09560ed33c3cc085cbe1391a3864af7dd1cdf768bd937ab829814dc299b581"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_acquire_reference.py",
+        "-v"
+      ],
+      "exit": 0,
+      "log": ".cache/mirage-refinement/final-controls/acquire_reference.log",
+      "passed": 2,
+      "failed": 0,
+      "raw_log": {
+        "path": ".cache/mirage-refinement/final-controls/acquire_reference.log",
+        "size": 358,
+        "sha256": "0cf18461ef057c944b8b6866f45ea874422136907d6a4f3ddc58efa5269813e5"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_hconvglu.py",
+        "-v"
+      ],
+      "exit": 0,
+      "log": ".cache/mirage-refinement/final-controls/hconvglu.log",
+      "passed": 6,
+      "failed": 0,
+      "raw_log": {
+        "path": ".cache/mirage-refinement/final-controls/hconvglu.log",
+        "size": 928,
+        "sha256": "82f83ef4cc095b5d4f56bee32fabcd51342ec7e59f74af57863abd5e4e1d504a"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_encoder_candidate.py",
+        "-v"
+      ],
+      "exit": 0,
+      "log": ".cache/mirage-refinement/final-controls/encoder_candidate.log",
+      "passed": 11,
+      "failed": 0,
+      "raw_log": {
+        "path": ".cache/mirage-refinement/final-controls/encoder_candidate.log",
+        "size": 1792,
+        "sha256": "4e9ed6a07450864864bd7c32e86e939ede8a0a6fd30561fa6af1c8b3762d4270"
+      }
+    },
+    {
+      "command": [
+        ".cache/mirage-python/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/mirage",
+        "-p",
+        "test_refinement.py",
+        "-v"
+      ],
+      "exit": 0,
+      "log": ".cache/mirage-refinement/final-controls/refinement.log",
+      "passed": 12,
+      "failed": 0,
+      "raw_log": {
+        "path": ".cache/mirage-refinement/final-controls/refinement.log",
+        "size": 1931,
+        "sha256": "e616daf62156361236b6d0681e881837e60c139f17d1ed1f01e885937b7773a0"
+      }
+    }
+  ],
+  "controls_total": 44,
+  "nested_ci_tee_controls": [
+    {
+      "case": "success",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "log": ".cache/mirage-refinement/review-unittest-pipelines/success.log",
+      "bytes": 153
+    },
+    {
+      "case": "failure",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "log": ".cache/mirage-refinement/review-unittest-pipelines/failure.log",
+      "bytes": 747
+    },
+    {
+      "case": "collection-error",
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "log": ".cache/mirage-refinement/review-unittest-pipelines/collection-error.log",
+      "bytes": 1075
+    }
+  ],
+  "production_assets": {
+    "baseline": {
+      "mirageWasmWorker-C58AhvV0.js": "932d65ff1fdc2f9916676e2a3f6abb246aa7cb98ec041880ace447d2d36a2450",
+      "index-DzX4C1J_.css": "20539b55d07619de51956eddb8d8f0194e0bff1e368ab90ff19040159a406273",
+      "index-mS_p1VS3.js": "2712be6b10681113179587732c17e121ccbb880d43a16a91403782d70c556c40"
+    },
+    "current": {
+      "mirageWasmWorker-C58AhvV0.js": "932d65ff1fdc2f9916676e2a3f6abb246aa7cb98ec041880ace447d2d36a2450",
+      "index-DzX4C1J_.css": "20539b55d07619de51956eddb8d8f0194e0bff1e368ab90ff19040159a406273",
+      "index-mS_p1VS3.js": "2712be6b10681113179587732c17e121ccbb880d43a16a91403782d70c556c40"
+    },
+    "equal_bytes": true
+  },
+  "hosted_ci": "PENDING: recorded separately after publishing final fixed source",
+  "independent_fixed_commit_review": "PENDING: recorded separately after source commit",
+  "availability_gate": "MIRAGE_ONNX_NOT_VALIDATED",
+  "local_offline_verification": {
+    "command": [
+      "npm",
+      "run",
+      "--silent",
+      "verify:offline"
+    ],
+    "env": {
+      "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+    },
+    "exit": 0,
+    "artifact_directory": ".cache/test-runs/2026-11-11T04-41-55.664Z-77e10f20",
+    "tasks": [
+      {
+        "task": "browser",
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 33,
+          "passed": 33,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0
+        },
+        "logSha256": "b7445142347d8f028b08e4b232aa651389707d9e6f1c7328ba88939caef005d6"
+      },
+      {
+        "task": "build",
+        "state": "PASS",
+        "exit": 0,
+        "counts": null,
+        "logSha256": "75ebfde1ab94ffc9eccabbafbf5ea6630b84dc1318a2176f1979c5036b16b564"
+      },
+      {
+        "task": "controls",
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 7,
+          "healthy": 2,
+          "expectedFaults": 5
+        },
+        "logSha256": "ec36c805a7e49503f6d91b09b2a9cecc04799f49974534d14f64e58cdc361e40"
+      },
+      {
+        "task": "delegate",
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 40,
+          "passed": 40,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "1d8a3565a57f76c441a7acd0d8068f8babddc12bcfe964675d3d9e75adf709f5"
+      },
+      {
+        "task": "foundation",
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 73,
+          "passed": 73,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "e88a63b7262e16445e98c94f8994b7893864b00cdb9b928c65efb19062312209"
+      },
+      {
+        "task": "lint",
+        "state": "PASS",
+        "exit": 0,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "task": "output",
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 37,
+          "passed": 37,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "e6ab0dfe89a018ec68bd14588975f523495f4a31d40d7e7fd7a510f4fbc75073"
+      },
+      {
+        "task": "preflight",
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "protected": 702,
+          "violations": 0
+        },
+        "logSha256": "9602d096d520869f3ab0a927e11a8aeb0d8b8de8bb6d8ae4519688b6d6ad7f1f"
+      },
+      {
+        "task": "preflight-tests",
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 60,
+          "passed": 60,
+          "failed": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "2b58f03644831ccca1084b597b896608ca54a7507144ff53554dd5635852627f"
+      },
+      {
+        "task": "typecheck",
+        "state": "PASS",
+        "exit": 0,
+        "counts": null,
+        "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "task": "unit",
+        "state": "PASS",
+        "exit": 0,
+        "counts": {
+          "total": 847,
+          "passed": 847,
+          "failed": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "logSha256": "5b7a20bd0fc81482d7dd68d00390a90266aa730fb05dae57695e6478fe3ebcc1"
+      }
+    ]
+  }
+}

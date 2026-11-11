@@ -24,7 +24,12 @@ def decode(outputs, meta):
             box = np.array([cx-width/2, cy-height/2, cx+width/2, cy+height/2]) / 64
             box[[0, 2]] = box[[0, 2]].clip(0, meta['w']/512)
             box[[1, 3]] = box[[1, 3]].clip(0, meta['h']/512)
-            scale = np.array([512/meta['r']/meta['W'], 512/meta['r']/meta['H']] * 2)
+            if 'coordinate_scale' in meta:
+                scale = np.asarray(meta['coordinate_scale'], dtype=np.float64)
+                if scale.shape != (4,) or not np.isfinite(scale).all() or not (scale > 0).all():
+                    raise ValueError('invalid explicit coordinate inverse')
+            else:
+                scale = np.array([512/meta['r']/meta['W'], 512/meta['r']/meta['H']] * 2)
             normalized = box * scale
             proposal = {'bbox': (normalized * 1000).round().astype(int).tolist(), 'score': float(heat[i, j]), 'cell': [i, j]}
             if kind == 'objects':
@@ -61,10 +66,11 @@ def polygon_mask(polygons):
     return np.asarray(canvas, dtype=bool)
 
 
-def compare_native(proposals, native):
+def compare_native(proposals, native, *, compare_scores=True):
     """Greedy one-to-one IoU matching >=0.5. No semantic or accuracy acceptance."""
     report = {'status': 'DIAGNOSTIC_NOT_PARITY_ACCEPTANCE', 'matching': 'greedy maximum box IoU >= 0.5; one-to-one, names ignored',
               'mask_grid': '128x128 original-image coordinates; native polygon union vs thresholded candidate nearest samples',
+              'score_scope': 'COMPARED' if compare_scores else 'NOT_REQUESTED_GEOMETRY_ONLY',
               'object_names_agreement': None, 'ocr_text_agreement': None, 'groups': {}}
     for kind in ('objects', 'text'):
         candidate, original = proposals[kind], native[kind]
@@ -75,7 +81,7 @@ def compare_native(proposals, native):
                 continue
             used_a.add(i); used_b.add(j)
             pair = {'candidate': i, 'native': j, 'bbox_iou': iou,
-                    'score_absolute_difference': abs(candidate[i]['score']-original[j]['score']),
+                    'score_absolute_difference': abs(candidate[i]['score']-original[j]['score']) if compare_scores else None,
                     'mask_iou': None, 'mask_status': 'NOT_AVAILABLE'}
             if kind == 'objects' and original[j].get('mask'):
                 try:

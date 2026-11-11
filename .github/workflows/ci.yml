@@ -34,15 +34,20 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install isolated pinned numerical tooling
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p .cache/test-runs/mirage-research-controls
           python -m venv .cache/mirage-ci-python
-          .cache/mirage-ci-python/bin/python -m pip install -r scripts/mirage/requirements-hconvglu.txt > .cache/test-runs/mirage-research-controls/install.log 2>&1
+          .cache/mirage-ci-python/bin/python -m pip install -r scripts/mirage/requirements-hconvglu.txt 2>&1 | tee .cache/test-runs/mirage-research-controls/install.log
       - name: Run operator and encoder controls without checkpoints
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p .cache/test-runs/mirage-research-controls
-          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_hconvglu.py' -v > .cache/test-runs/mirage-research-controls/hconvglu.log 2>&1
-          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_encoder_candidate.py' -v > .cache/test-runs/mirage-research-controls/encoder.log 2>&1
+          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_hconvglu.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/hconvglu.log
+          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_encoder_candidate.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/encoder.log
+          .cache/mirage-ci-python/bin/python -m unittest discover -s scripts/mirage -p 'test_refinement.py' -v 2>&1 | tee .cache/test-runs/mirage-research-controls/refinement.log
       - name: Upload raw research control logs
         if: ${{ always() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
