@@ -215,3 +215,27 @@ and native-resolution mask comparison. Region memory, language decoder/tokenizer
 and OCR reader remain unsupported. WebGPU remains NOT RUN because CPU/native
 acceptance has not succeeded. No model is enabled, merged or deployed by these
 research results.
+
+## Fixed-source review and regressions
+
+Implementation commit `dae5607b45b7013c19dd8e94380258de88912976` and the CI guard
+follow-up `14a1f0518113ab47e4e47ac77ccb16bd93eeae11` received independent review
+with no blocking code findings for research-candidate publication. The reviewer
+checked all 583 inventory rows, all 60 CQ expansions, all eight saved ONNX
+hashes/checkers, all raw native responses, and all report source identities.
+They reran the 32 controls, actual-photo inference and matching diagnostics, and
+the focused FP32/FP64 mixer diagnosis. This review does not accept numerical or
+native equivalence and requires retaining the availability gate.
+
+The prescribed offline application checks all passed: 702 protected-evidence
+hashes, 60 preflight controls, typecheck, lint, 847 unit tests, 73 foundation
+tests, 40 delegate controls, 37 output tests, build, 33 browser tests, and seven
+stylesheet controls (two healthy, five expected faults). Production CSS and
+both JavaScript bundles are byte-identical to the baseline with the same npm
+dependencies. The required package/lock patch version is 1.0.33.
+
+[`mirage-encoder-validation.json`](verification/mirage-encoder-validation.json)
+records raw-log identities, test counts, production asset hashes and the
+independent review. The local offline run's pre-commit dirty-tree metadata is
+preserved accurately; final hosted PR CI verifies the final committed head
+separately. Historical reports and protected evidence were not rewritten.
