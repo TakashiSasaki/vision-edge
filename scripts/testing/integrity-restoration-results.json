@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "testedWorkingTreeBase": "706f07c9dadb785fed33d92d000451904b224398",
+  "mainAncestor": "1fea494c711901cad214d31456e20762f211b2c8",
+  "restorationSource": "479c74527a5b5e13f4f5938c6f26787e60890f14",
+  "version": "1.0.16",
+  "node": "24.22.1",
+  "npm": "11.19.1",
+  "browser": "Chromium 154.0.8037.57, existing /usr/bin/chromium",
+  "localRun": "2026-10-27T00-51-54.562Z-69b13a45",
+  "tasks": {
+    "browser": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 33,
+        "passed": 33,
+        "failed": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "selection": "default"
+    },
+    "preflight": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "protected": 702,
+        "violations": 0
+      },
+      "selection": "default"
+    },
+    "unit": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 809,
+        "passed": 809,
+        "failed": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "selection": "default"
+    },
+    "preflight-tests": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 60,
+        "passed": 60,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "selection": "default"
+    },
+    "lint": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": null,
+      "selection": "default"
+    },
+    "delegate": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 40,
+        "passed": 40,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "selection": "default"
+    },
+    "output": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 37,
+        "passed": 37,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "selection": "default"
+    },
+    "controls": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 7,
+        "healthy": 2,
+        "expectedFaults": 5
+      },
+      "selection": "default"
+    },
+    "foundation": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": {
+        "total": 73,
+        "passed": 73,
+        "failed": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "selection": "default"
+    },
+    "typecheck": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": null,
+      "selection": "default"
+    },
+    "build": {
+      "exit": 0,
+      "state": "PASS",
+      "counts": null,
+      "selection": "default"
+    }
+  },
+  "protectedEvidence": {
+    "ledger": 702,
+    "restored": 48,
+    "preservedExisting": 654,
+    "beforeAfterSha256Matches": 702
+  },
+  "lock": {
+    "entriesIncludingRoot": 355,
+    "dependencyVersionChanges": 0,
+    "registry": "https://registry.npmjs.org",
+    "sha256": "d9ee288d81b3c21b6ea22ca788e2e6abab01965f8d9dbeba71ee038c25ce5108"
+  },
+  "packageSha256": "cbd30f66761bf81a3a3da09be34f2ab4cbf33315de320e55324a3d43baa4e91c",
+  "isolatedMissingLock": {
+    "exit": 0,
+    "expectedChildExit": 1,
+    "soleCause": "LOCK_MISSING_OR_INVALID",
+    "protected": 702
+  },
+  "parity": {
+    "baseline": "706f07c9dadb785fed33d92d000451904b224398",
+    "baselineVersionNormalizedTo": "1.0.16",
+    "sameLockedDependencies": true,
+    "files": 23,
+    "added": [],
+    "removed": [],
+    "changed": [],
+    "css": [
+      {
+        "file": "model-cache.css",
+        "sha256": "99a03c231b38201a076f7748832f078c3c5968640a618b45c758844878d578b5"
+      },
+      {
+        "file": "assets/index-IYzwtZbu.css",
+        "sha256": "73748b31d0eba9a6097a35e91541191d67a2ddaf7faae04c1afeca7e9394690f"
+      }
+    ]
+  },
+  "limits": [
+    "Model inference not run",
+    "Physical GPU/device and deployed acceptance not run",
+    "Hosted CI pending in PR body until terminal",
+    "Artifact ZIP contents not acquired"
+  ]
+}

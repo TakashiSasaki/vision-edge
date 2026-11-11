@@ -1,6 +1,6 @@
 import type { ModelFamilyType } from '../types/classification';
 import type { RunnableModelType } from '../types/vision';
-import { MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL, isRunnableModel } from '../services/modelRegistry';
+import { RUNNABLE_MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL, isRunnableModel } from '../services/modelRegistry';
 import { getResolvedSource } from '../services/modelAssetResolver';
 
 interface Props {
@@ -30,7 +30,7 @@ export function ModelComparisonTable({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80">
       <section role="dialog" aria-modal="true" aria-labelledby="model-specs-title" className="bg-slate-900 border border-slate-700 rounded-xl p-4 max-w-2xl max-h-[85vh] overflow-y-auto space-y-3">
         <h2 id="model-specs-title" className="text-white font-semibold">物体認識・セグメンテーションモデル仕様・バリアント／画像全体分類</h2>
-        {MODEL_REGISTRY.map(model => (
+        {RUNNABLE_MODEL_REGISTRY.map(model => (
           <div key={model.id} className="border border-slate-700 rounded-lg p-3 text-xs space-y-2">
             <div className="flex items-center justify-between">
               <div className="font-semibold text-white">
@@ -43,7 +43,7 @@ export function ModelComparisonTable({
 
             {/* Variant List */}
             <div className="space-y-1.5 pt-1">
-              <div className="text-[11px] font-semibold text-slate-300">利用可能なモデルサイズ・構造バリアント:</div>
+              <div className="text-[11px] font-semibold text-slate-300">モデルサイズ・構造バリアントと利用状況:</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {model.variants.map(variant => {
                   const isSelected = activeModel === model.id && activeVariant === variant.id;
@@ -51,9 +51,9 @@ export function ModelComparisonTable({
                     <button
                       key={variant.id}
                       type="button"
-                      disabled={!model.implemented}
+                      disabled={!model.implemented || Boolean(variant.unavailableReason)}
                       onClick={() => {
-                        if (isRunnableModel(model.id)) {
+                        if (isRunnableModel(model.id) && !variant.unavailableReason) {
                           onSelectModelAndVariant(model.id, variant.id);
                           onClose();
                         }

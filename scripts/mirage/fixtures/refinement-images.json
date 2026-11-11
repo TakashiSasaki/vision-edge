@@ -1,0 +1,178 @@
+{
+  "square_blank": {
+    "shape": [
+      512,
+      512,
+      3
+    ],
+    "rgb_sha256": "902ab44f9b6b07c34a29958b325726ba7f6d506403335cf95a2af25e0ca1ad00"
+  },
+  "landscape_blank": {
+    "shape": [
+      256,
+      512,
+      3
+    ],
+    "rgb_sha256": "c97fce784428a2e10cd6d4ef97ccc756f2e4c1b146a9b9dc5415d4e3e245b70a"
+  },
+  "portrait_blank": {
+    "shape": [
+      512,
+      256,
+      3
+    ],
+    "rgb_sha256": "c97fce784428a2e10cd6d4ef97ccc756f2e4c1b146a9b9dc5415d4e3e245b70a"
+  },
+  "small_objects": {
+    "shape": [
+      512,
+      512,
+      3
+    ],
+    "rgb_sha256": "9ac43e75c00b4b331cb8af4f6ad899a04d0eafe946344f3c6ffa6a79dd1e50d8"
+  },
+  "boundary_objects": {
+    "shape": [
+      256,
+      512,
+      3
+    ],
+    "rgb_sha256": "d25e46b5ea08ef7beea383a5a03da439794647304d017dd1e3b7083bf766189a"
+  },
+  "overlap_shapes": {
+    "shape": [
+      512,
+      512,
+      3
+    ],
+    "rgb_sha256": "32f352b43145f112fcc5b626a926ae22b882715dba02f1479e4d18d8ce8c74c9"
+  },
+  "text_regions": {
+    "shape": [
+      256,
+      512,
+      3
+    ],
+    "rgb_sha256": "0e3bef220dd089069579e24a4340a1a33caafbac1cf5f4fbb8e0e087c226af44"
+  },
+  "photo_original_portrait": {
+    "shape": [
+      512,
+      342,
+      3
+    ],
+    "rgb_sha256": "dbb207d687cb0e63667d34c939df3308c582d8bd820a578369c86e2fce529214"
+  },
+  "photo_square_stretched": {
+    "shape": [
+      512,
+      512,
+      3
+    ],
+    "rgb_sha256": "c98e1155c00e1a06e3922fbee85ea20cb35cf7f3ff3df7c5ba0a048d785a5210"
+  },
+  "photo_rotated_landscape": {
+    "shape": [
+      342,
+      512,
+      3
+    ],
+    "rgb_sha256": "70683bc3677f8bbc04d1f2d5b644eb882d6f0cdae128058020524917491947a8"
+  },
+  "holdout_264_portrait": {
+    "shape": [
+      512,
+      264,
+      3
+    ],
+    "rgb_sha256": "2c1e0a12aeb56ac988eaf519914371f435e814a078f941aa3baa67d7980a722c"
+  },
+  "holdout_264_landscape": {
+    "shape": [
+      264,
+      512,
+      3
+    ],
+    "rgb_sha256": "66630d562d46269f7aea080da078318749d9133434dcb120071febc944c0b454"
+  },
+  "holdout_272_portrait": {
+    "shape": [
+      512,
+      272,
+      3
+    ],
+    "rgb_sha256": "21b39883d0e4782d2f3892fc8da662cd75d48fbac27a6f8ea5cf6c2f5017c6ca"
+  },
+  "holdout_272_landscape": {
+    "shape": [
+      272,
+      512,
+      3
+    ],
+    "rgb_sha256": "453deff8cf96f9e13d8a9592e716b027056d7639927f0bb7613c31c41297872c"
+  },
+  "holdout_280_portrait": {
+    "shape": [
+      512,
+      280,
+      3
+    ],
+    "rgb_sha256": "0c00ec18be210e80c834913f4f69f4bb445065627c665208114e9115535d7b1d"
+  },
+  "holdout_280_landscape": {
+    "shape": [
+      280,
+      512,
+      3
+    ],
+    "rgb_sha256": "5cf23240e1c15887e1936e610152318f1a7bbda1e0e3c701db5a11840dcbe8e1"
+  },
+  "holdout_321_portrait": {
+    "shape": [
+      512,
+      321,
+      3
+    ],
+    "rgb_sha256": "a381ee3b2e05fb7feb5ce0264d0f17f7d4fba4c4db2af6b987d049717e38c7e8"
+  },
+  "holdout_321_landscape": {
+    "shape": [
+      321,
+      512,
+      3
+    ],
+    "rgb_sha256": "c9c431b4997fc95a16aee9473e08a4a1a81e379f5c054aaa5ab9000ec3e82e04"
+  },
+  "holdout_327_portrait": {
+    "shape": [
+      512,
+      327,
+      3
+    ],
+    "rgb_sha256": "32db0853c9bc86d46e461ee7019a80169dc99787e277e3aad0e45055472e3834"
+  },
+  "holdout_327_landscape": {
+    "shape": [
+      327,
+      512,
+      3
+    ],
+    "rgb_sha256": "900797e60bdd9406cbf90946064832ec18ed024e863ec92f372275e9a176425f"
+  },
+  "holdout_400_portrait": {
+    "shape": [
+      512,
+      400,
+      3
+    ],
+    "rgb_sha256": "4de615b583aa2315dd1c04a82de76b63a4eaa7f20e7bcb1d933afdfded5ee950"
+  },
+  "holdout_400_landscape": {
+    "shape": [
+      400,
+      512,
+      3
+    ],
+    "rgb_sha256": "a7ac532ac3606ce0cde0c3187def3b29bc864ac4551711e94d4b3932ca88d981"
+  }
+}

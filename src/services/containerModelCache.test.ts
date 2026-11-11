@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FilesetResolver, ImageSegmenter, ObjectDetector } from '@mediapipe/tasks-vision';
-import { ContainerModelCacheManager } from './containerModelCacheServer';
+import { ContainerModelCacheManager, containerModelCachePlugin } from './containerModelCacheServer';
+import { prefetchModels } from '../../scripts/prefetch-models';
 import {
   getResolvedSource,
   LOCAL_MEDIAPIPE_WASM_URL,
@@ -264,4 +265,212 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     expect(getResolvedSource('selfie-segmenter')).toBe('external-fallback');
     engine.dispose();
   });
+
+  it('triggers startup model prefetching in dev and preview servers via containerModelCachePlugin', async () => {
+    const fakePayload = Buffer.alloc(2048, 0x42);
+    const mockFetch = vi.fn(async () => new Response(fakePayload, { status: 200 }));
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const plugin = containerModelCachePlugin({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+      enableInPreview: true,
+    });
+
+    type MockServer = { middlewares: { use: (fn: unknown) => void } };
+    const mockDevServer: MockServer = { middlewares: { use: vi.fn() } };
+    if (typeof plugin.configureServer === 'function') {
+      (plugin.configureServer as (server: unknown) => void)(mockDevServer);
+    }
+    expect(mockDevServer.middlewares.use).toHaveBeenCalledTimes(1);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[container-model-cache] Container dev server started'));
+
+    const mockPreviewServer: MockServer = { middlewares: { use: vi.fn() } };
+    const savedTestLogDir = process.env.TEST_LOG_DIR;
+    const savedCi = process.env.CI;
+    try {
+      delete process.env.TEST_LOG_DIR;
+      delete process.env.CI;
+      if (typeof plugin.configurePreviewServer === 'function') {
+        (plugin.configurePreviewServer as (server: unknown) => void)(mockPreviewServer);
+      }
+      expect(mockPreviewServer.middlewares.use).toHaveBeenCalledTimes(1);
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[container-model-cache] Container preview server started'));
+      await vi.waitFor(() =>
+        expect(logSpy).toHaveBeenCalledWith(
+          expect.stringContaining('[container-model-cache] Startup download completed')
+        )
+      );
+    } finally {
+      if (savedTestLogDir !== undefined) process.env.TEST_LOG_DIR = savedTestLogDir;
+      if (savedCi !== undefined) process.env.CI = savedCi;
+    }
+  });
+
+  it('runs prefetchModels script function and returns counts for 11 acquisition-enabled variants and one blocked SSD', async () => {
+    const fakePayload = Buffer.alloc(2048, 0x42);
+    const mockFetch = vi.fn(async () => new Response(fakePayload, { status: 200 }));
+    const manager = new ContainerModelCacheManager({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+    });
+
+    const result = await prefetchModels(manager);
+    expect(result.totalCount).toBe(12);
+    // Nine legacy variants accept synthetic bytes; two pinned classifiers reject them, and SSD remains policy-blocked.
+    expect(result.cachedCount).toBe(9);
+    expect(result.unavailableCount).toBe(3);
+    expect(mockFetch).toHaveBeenCalledTimes(11);
+    expect(manager.getVariantsSnapshot()['mediapipe:ssd-mobilenet-v2']).toMatchObject({ status: 'unavailable', integrity: 'blocked', acquisitionEnabled: false, size: null, sha256: null });
+  });
+
+  it('waits for container download to complete before responding when an uncached model file is accessed', async () => {
+    let releaseDownload!: () => void;
+    const downloadGate = new Promise<void>(resolve => {
+      releaseDownload = resolve;
+    });
+    const fakePayload = Buffer.alloc(4096, 0x5a);
+    let downloadCompleted = false;
+    const mockFetch = vi.fn(async () => {
+      await downloadGate;
+      downloadCompleted = true;
+      return new Response(fakePayload, { status: 200 });
+    });
+
+    const manager = new ContainerModelCacheManager({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+    });
+    const middleware = manager.createMiddleware();
+
+    let responseResolved = false;
+    const responsePromise = invokeMiddleware(
+      middleware,
+      '/api/model-cache/models/yolov8n-seg.onnx'
+    ).then(res => {
+      responseResolved = true;
+      return res;
+    });
+
+    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
+    expect(downloadCompleted).toBe(false);
+    expect(responseResolved).toBe(false);
+
+    releaseDownload();
+    const res = await responsePromise;
+    expect(downloadCompleted).toBe(true);
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['x-model-source']).toBe('container-cache');
+    expect(res.body).toEqual(fakePayload);
+
+    // Even if the cached file is removed from the container later, accessing the model URL re-downloads and waits
+    await rm(manager.getVariantFilePath('yolo-seg:yolov8n-seg'), { force: true });
+    await rm(`${manager.getVariantFilePath('yolo-seg:yolov8n-seg')}.identity.json`, { force: true });
+    const redownloadRes = await invokeMiddleware(
+      middleware,
+      '/api/model-cache/models/yolov8n-seg.onnx'
+    );
+    expect(redownloadRes.statusCode).toBe(200);
+    expect(redownloadRes.body).toEqual(fakePayload);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('serves /model-cache.html with readable model file URLs for non-JS user agents without triggering downloads', async () => {
+    const mockFetch = vi.fn(async () => new Response(Buffer.alloc(2048, 0x42), { status: 200 }));
+    const manager = new ContainerModelCacheManager({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+    });
+    const middleware = manager.createMiddleware();
+
+    const headers: Record<string, string> = {};
+    let body = '';
+    const req = {
+      url: '/model-cache.html',
+      method: 'GET',
+      headers: {
+        host: 'example.run.app',
+        'x-forwarded-proto': 'https',
+      },
+    } as unknown as IncomingMessage;
+    const res = {
+      statusCode: 200,
+      setHeader(name: string, value: string) {
+        headers[name.toLowerCase()] = String(value);
+      },
+      end(chunk?: Buffer | string) {
+        body = chunk ? String(chunk) : '';
+      },
+    } as unknown as ServerResponse;
+
+    await middleware(req, res, () => {});
+    expect(res.statusCode).toBe(200);
+    expect(headers['content-type']).toContain('text/html');
+    expect(body).not.toContain('<noscript>');
+    expect(body).toContain('https://example.run.app/model-cache.html');
+    expect(body).toContain('https://example.run.app/api/model-cache/models/yolov8n-seg.onnx');
+    expect(body).toContain('https://example.run.app/api/model-cache/models/efficientnet_lite0.tflite?sha256=');
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('defers startup prefetch until after httpServer emits listening and startupDelayMs elapses, running sequentially in priority order', async () => {
+    const requestedUrls: string[] = [];
+    let activeFetches = 0;
+    let maxConcurrentFetches = 0;
+
+    const mockFetch = vi.fn(async (url: string | URL | Request) => {
+      requestedUrls.push(String(url));
+      activeFetches++;
+      maxConcurrentFetches = Math.max(maxConcurrentFetches, activeFetches);
+      await new Promise<void>(resolve => setTimeout(resolve, 2));
+      activeFetches--;
+      return new Response(Buffer.alloc(2048, 0x42), { status: 200 });
+    });
+
+    const listeners: Record<string, (() => void)[]> = {};
+    const mockHttpServer = {
+      listening: false,
+      once(event: string, fn: () => void) {
+        (listeners[event] ??= []).push(fn);
+      },
+      emit(event: string) {
+        for (const fn of listeners[event] ?? []) fn();
+      },
+    };
+
+    const plugin = containerModelCachePlugin({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+      startupDelayMs: 30,
+      startupConcurrency: 1,
+      startupYieldMs: 0,
+    });
+
+    const mockDevServer = {
+      middlewares: { use: vi.fn() },
+      httpServer: mockHttpServer,
+    };
+
+    if (typeof plugin.configureServer === 'function') {
+      (plugin.configureServer as (server: unknown) => void)(mockDevServer);
+    }
+
+    // Before httpServer is listening, no model download is started
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
+    expect(mockFetch).not.toHaveBeenCalled();
+
+    // Once httpServer starts listening, downloads begin after startupDelayMs
+    mockHttpServer.listening = true;
+    mockHttpServer.emit('listening');
+    expect(mockFetch).not.toHaveBeenCalled();
+
+    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(11), {
+      timeout: 2000,
+    });
+
+    // Startup background prefetch runs one model at a time and starts with the default selfie-segmenter model
+    expect(maxConcurrentFetches).toBe(1);
+    expect(requestedUrls[0]).toContain('selfie_segmenter.tflite');
+  });
 });
+

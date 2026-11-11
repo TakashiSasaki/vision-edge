@@ -189,7 +189,8 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
           try {
             for (const obj of [...result.objects].sort((a, b) => b.confidence - a.confidence)) {
               if (speechService.canSpeakLabel(obj.labelJa, config.cooldownSec)) {
-                speechService.speak(`${obj.labelJa}を認識しました`, obj.labelJa, config, 'auto');
+                const verb = obj.category === 'テキスト (OCR)' ? 'を読み取りました' : 'を認識しました';
+                speechService.speak(`${obj.labelJa}${verb}`, obj.labelJa, config, 'auto');
                 break;
               }
             }

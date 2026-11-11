@@ -76,16 +76,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
   const confidenceThreshold = inferenceParams.confidenceThreshold ?? renderOptions.confidenceThreshold ?? 0.35;
   const minAreaPercent = inferenceParams.minAreaPercent ?? 0.5;
-  const maxDetections = inferenceParams.maxDetections ?? (activeModel === 'yolo-seg' ? 20 : 10);
+  const maxDetections = inferenceParams.maxDetections ?? (activeModel === 'yolo-seg' ? 20 : activeModel === 'mirage' ? 15 : 10);
   const bboxSmoothing = inferenceParams.bboxSmoothing ?? 0.20;
   const iouThreshold = inferenceParams.iouThreshold ?? 0.45;
   const maskThreshold = inferenceParams.maskThreshold ?? 0.50;
+  const mirageAnalysisMode = inferenceParams.analysisMode ?? 'fast';
+  const mirageIncludeOcr = inferenceParams.includeOcr ?? true;
 
-  const updateInferenceParam = (key: keyof ExtraInferenceOptions, value: number) => {
+  const updateInferenceParam = <K extends keyof ExtraInferenceOptions>(key: K, value: ExtraInferenceOptions[K]) => {
     if (onChangeInferenceParams) {
       onChangeInferenceParams({ [key]: value });
     } else {
-      if (key === 'confidenceThreshold') {
+      if (key === 'confidenceThreshold' && typeof value === 'number') {
         onChangeRenderOptions({ confidenceThreshold: value });
       }
     }
@@ -140,6 +142,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         {activeModel === 'segformer' && (
           <p className="text-slate-400">
             全画素マスクは最大スコアの分類です。softmaxスコアは正答率の保証ではありません。しきい値は一覧・ラベルに適用し、タップでは小さい領域や低スコアの画素も確認できます。面積は別表示です。
+          </p>
+        )}
+        {activeModel === 'mirage' && (
+          <p className="text-slate-400">
+            Mirage は公式 .cact を WASM Worker で実行します。検出物体・輪郭マスク・OCR・方向/距離（近/中/遠）を表示・読み上げます。
           </p>
         )}
 
@@ -455,6 +462,108 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     一覧表示および領域ラベルから除外する極小カテゴリの最小画面割合
                   </p>
                 </div>
+              )}
+
+              {activeModel === 'mirage' && (
+                <>
+                  {/* Fast vs Full Analysis Mode Selector */}
+                  <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium text-slate-200">Mirage 解析モード</span>
+                      <span className="font-mono text-emerald-400 font-semibold text-[11px]">
+                        {mirageAnalysisMode === 'fast' ? '高速モード (320px)' : 'フル解析 (512px)'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Mirage 解析モード">
+                      <button
+                        type="button"
+                        onClick={() => updateInferenceParam('analysisMode', 'fast')}
+                        className={`p-2 rounded border text-left transition-colors ${
+                          mirageAnalysisMode === 'fast'
+                            ? 'bg-blue-950/70 border-blue-500 text-white font-semibold'
+                            : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="text-[11px]">高速モード（推奨）</div>
+                        <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                          物体・輪郭・OCR優先（WebGPU/高速）
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateInferenceParam('analysisMode', 'full')}
+                        className={`p-2 rounded border text-left transition-colors ${
+                          mirageAnalysisMode === 'full'
+                            ? 'bg-blue-950/70 border-blue-500 text-white font-semibold'
+                            : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="text-[11px]">フル解析モード</div>
+                        <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                          全項目・細部文字（512px）
+                        </div>
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 leading-tight">
+                      ヘッダーの「バリアント」から WebGPU (ONNX コンバート版) と WASM (.cact 版) を切り替えられます
+                    </p>
+                  </div>
+
+                  {/* Include OCR Toggle */}
+                  <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg flex items-center justify-between gap-2">
+                    <div>
+                      <div className="font-medium text-slate-200 text-xs">OCR テキスト領域の表示・読み上げ</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">
+                        検出物体・輪郭マスクに加えて画像内の文字領域も枠表示・音声発話
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      aria-label="OCR テキスト領域の表示・読み上げ"
+                      checked={mirageIncludeOcr}
+                      onChange={(e) => updateInferenceParam('includeOcr', e.target.checked)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700 cursor-pointer shrink-0"
+                    />
+                  </div>
+
+                  {/* Max Detections */}
+                  <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium text-slate-200">最大検出数（物体＋OCR）</span>
+                      <span className="font-mono text-emerald-400 tabular-nums font-semibold">
+                        {maxDetections} 件
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="30"
+                      step="1"
+                      value={maxDetections}
+                      onChange={(e) => updateInferenceParam('maxDetections', parseInt(e.target.value, 10))}
+                      className="w-full accent-blue-500 cursor-pointer"
+                    />
+                  </div>
+
+                  {/* NMS IoU */}
+                  <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium text-slate-200">NMS 重複除去しきい値 (IoU)</span>
+                      <span className="font-mono text-emerald-400 tabular-nums font-semibold">
+                        {Math.round(iouThreshold * 100)}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.20"
+                      max="0.85"
+                      step="0.05"
+                      value={iouThreshold}
+                      onChange={(e) => updateInferenceParam('iouThreshold', parseFloat(e.target.value))}
+                      className="w-full accent-blue-500 cursor-pointer"
+                    />
+                  </div>
+                </>
               )}
             </div>
 

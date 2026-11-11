@@ -84,6 +84,15 @@ export const COCO_LABELS_JA: Record<string, LabelTranslation> = {
   'teddy bear': { ja: 'ぬいぐるみ', category: '玩具' },
   'hair drier': { ja: 'ドライヤー', category: '家電' },
   toothbrush: { ja: '歯ブラシ', category: '日用品' },
+  'software window': { ja: 'ソフトウェア画面', category: '電子機器' },
+  sidebar: { ja: 'サイドバー', category: '電子機器' },
+  logo: { ja: 'ロゴ・アイコン', category: 'グラフィック' },
+  'text label': { ja: 'テキストラベル', category: 'テキスト (OCR)' },
+  'text block': { ja: 'テキストブロック', category: 'テキスト (OCR)' },
+  'bar chart': { ja: '棒グラフ', category: 'データ・図表' },
+  card: { ja: 'カード・パネル', category: 'グラフィック' },
+  box: { ja: 'ボックス・箱', category: '日用品' },
+  banner: { ja: 'バナー領域', category: 'グラフィック' },
 };
 
 export const ADE20K_LABELS_JA: Record<string, LabelTranslation> = {

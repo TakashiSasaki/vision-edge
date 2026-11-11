@@ -59,3 +59,56 @@ it.each([
   const s=inventorySnapshot({...base(),catalogCount:1,variants:{'image-classifier:lite0':{...row(),...override}}});
   expect(s.invalid).toBe(1);expect(s.rows[0]).toMatchObject({cached:false,size:'—',integrity:'不明',readiness:'不明（不正な状態）'});
 });
+it('renders model file hyperlinks with download paths for verified cached assets and suppresses links for unverified entries', async () => {
+  for (const id of ['refresh', 'notice', 'observed', 'cached', 'configured']) {
+    const el = document.createElement(id === 'refresh' ? 'button' : 'div');
+    el.id = id;
+    document.body.append(el);
+  }
+  const data = {
+    ...base(),
+    catalogCount: 2,
+    variants: {
+      'image-classifier:lite0': row('lite0'),
+      'image-classifier:lite2': { ...row('lite2'), status: 'unavailable', filePresent: false, size: null, sha256: null, integrity: 'not-present' },
+    },
+  };
+  const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => data });
+  mountInventory(document, fetch);
+  await vi.waitFor(() => expect(document.getElementById('notice')!.textContent).toContain('保存・検証済み 1件'));
+  const cachedLink = document.querySelector('#cached a.model-link') as HTMLAnchorElement | null;
+  expect(cachedLink).not.toBeNull();
+  expect(cachedLink?.textContent).toBe('efficientnet_lite0.tflite');
+  expect(cachedLink?.getAttribute('href')).toContain('/api/model-cache/models/efficientnet_lite0.tflite?sha256=');
+  expect(cachedLink?.getAttribute('download')).toBe('efficientnet_lite0.tflite');
+  expect(document.querySelector('#cached .cache-path')?.textContent).toContain('/api/model-cache/models/');
+  expect(document.querySelector('#configured a.model-link')).toBeNull();
+  expect(document.querySelector('#configured .cache-path')?.textContent).toContain('/api/model-cache/models/');
+});
+it('displays the current page URL and copies it to clipboard on button click', async () => {
+  for (const id of ['refresh', 'notice', 'observed', 'cached', 'configured']) {
+    const el = document.createElement(id === 'refresh' ? 'button' : 'div');
+    el.id = id;
+    document.body.append(el);
+  }
+  const pageUrl = document.createElement('code');
+  pageUrl.id = 'page-url';
+  const copyBtn = document.createElement('button');
+  copyBtn.id = 'copy-page-url';
+  const copyNotice = document.createElement('span');
+  copyNotice.id = 'copy-notice';
+  document.body.append(pageUrl, copyBtn, copyNotice);
+
+  const writeText = vi.fn().mockResolvedValue(undefined);
+  Object.assign(navigator, { clipboard: { writeText } });
+
+  const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => base() });
+  mountInventory(document, fetch);
+
+  expect(pageUrl.textContent).toBeTruthy();
+  copyBtn.click();
+  await vi.waitFor(() => expect(copyNotice.textContent).toContain('コピーしました'));
+  expect(writeText).toHaveBeenCalledWith(pageUrl.textContent);
+});
+
+

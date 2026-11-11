@@ -1,7 +1,13 @@
 import { ModelAssetsBlockedError } from '../services/modelAssetResolver';
 import type { ModelState } from '../types/vision';
+import { MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA } from '../services/mirageAvailability';
 
 export function ModelStatus({ state, onRetry }: { state: ModelState; onRetry: () => void }) {
+  if (state.status === 'error' && state.model === 'mirage' && state.variantId === 'mirage-webgpu') return (
+    <div role="alert" className="px-4 py-2 text-xs text-rose-300 bg-slate-900">
+      {MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA}
+    </div>
+  );
   if (state.status === 'error') return (
     <div role="alert" className="px-4 py-2 text-xs text-rose-300 bg-slate-900">
       <span>{state.cause instanceof ModelAssetsBlockedError ? `BLOCKED：${state.cause.reason}。取得・配信・実推論は無効です。` : state.stage === 'wasm' ? 'モデル実行環境の読み込みに失敗しました。' : 'モデルの生成に失敗しました。'}</span>

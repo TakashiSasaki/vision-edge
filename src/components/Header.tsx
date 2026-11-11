@@ -3,6 +3,7 @@ import { Camera, CameraOff, Volume2, VolumeX, Sparkles, Layers, Cpu } from 'luci
 import type { ClassificationState, ModelFamilyType } from '../types/classification';
 import type { ModelState } from '../types/vision';
 import { ALL_MODEL_REGISTRY, isRunnableModel, modelFamilyMetadata, backendDescription } from '../services/modelRegistry';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   activeModel: ModelFamilyType;
@@ -77,11 +78,18 @@ export const Header: React.FC<HeaderProps> = ({
           <select
             value={activeVariant}
             aria-label="バリアント"
-            onChange={(e) => onSelectVariant(e.target.value)}
+            onChange={(e) => {
+              const variant = currentMeta.variants.find(item => item.id === e.target.value);
+              if (variant && !('unavailableReason' in variant && variant.unavailableReason)) {
+                onSelectVariant(variant.id);
+              }
+            }}
             className="bg-transparent text-xs font-semibold text-blue-300 focus:outline-none cursor-pointer"
           >
             {currentMeta.variants.map(variant => (
-              <option key={variant.id} value={variant.id} className="bg-slate-900 text-white">
+              <option key={variant.id} value={variant.id}
+                disabled={'unavailableReason' in variant && Boolean(variant.unavailableReason)}
+                className="bg-slate-900 text-white">
                 {variant.name}
               </option>
             ))}
@@ -98,6 +106,8 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Zone 3: Actions */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 order-2 sm:order-3">
         <a href="/model-cache.html" className="text-xs text-blue-300 underline px-1 py-2" aria-label="コンテナのモデルキャッシュ一覧">キャッシュ</a>
+        <a href="/sitemap.html" className="text-xs text-blue-300 underline px-1 py-2" aria-label="サイトマップ">サイトマップ</a>
+        <PWAInstallButton />
         {/* Audio Mute/Unmute */}
         <button
           onClick={onToggleTTS}

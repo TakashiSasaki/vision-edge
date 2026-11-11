@@ -1,7 +1,14 @@
 import { IMAGE_CLASSIFIER_ASSETS } from './imageClassifierAssets';
 import type { ModelFamilyType } from '../types/classification';
 import type { ModelMetadata, ModelVariantMetadata, ModelState, RunnableModelType } from '../types/vision';
-import { MODEL_ASSET_CATALOG, MODEL_VARIANT_CATALOG } from './modelAssetResolver';
+import {
+  MIRAGE_MODEL_ASSET_ENTRY,
+  MIRAGE_VARIANT_CATALOG,
+  MIRAGE_WEBGPU_LOCAL_URL,
+  MODEL_ASSET_CATALOG,
+  MODEL_VARIANT_CATALOG,
+} from './modelAssetResolver';
+import { MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA } from './mirageAvailability';
 
 export const MODEL_REGISTRY: readonly ModelMetadata[] = [
   { id: 'selfie-segmenter', name: 'Selfie Segmenter', implemented: true,
@@ -133,8 +140,48 @@ export const MODEL_REGISTRY: readonly ModelMetadata[] = [
   },
 ];
 
+export const MIRAGE_MODEL: ModelMetadata = {
+  id: 'mirage',
+  name: 'Mirage (Cactus WASM)',
+  implemented: true,
+  runtime: 'Cactus WASM / Web Worker',
+  outputType: '検出物体・輪郭マスク・OCRテキスト・方向/距離',
+  description: '公式の Mirage .cact を WASM Worker で実行します。ONNX版は元モデルとの一致を未検証のため利用できません。',
+  license: MIRAGE_MODEL_ASSET_ENTRY.license,
+  licenseNote: MIRAGE_MODEL_ASSET_ENTRY.licenseNote,
+  upstreamUrl: MIRAGE_MODEL_ASSET_ENTRY.upstreamUrl,
+  localCachePath: MIRAGE_MODEL_ASSET_ENTRY.localUrl,
+  defaultVariantId: 'mirage-51m',
+  variants: [
+    {
+      id: 'mirage-webgpu',
+      name: 'Mirage WebGPU (ONNX・利用不可)',
+      description: MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA,
+      fileName: 'mirage-webgpu.onnx',
+      // Information only: no downloadable ONNX artifact is registered.
+      upstreamUrl: 'https://huggingface.co/Cactus-Compute/mirage',
+      localUrl: MIRAGE_WEBGPU_LOCAL_URL,
+      unavailableReason: MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA,
+    },
+    {
+      id: 'mirage-51m',
+      name: 'Mirage 51.3M (2-bit/4-bit .cact WASM · 20.6MB)',
+      description: '公式量子化アーカイブ (.cact) を Web Worker 上の CPU WebAssembly で非同期推論するフルモデル版。',
+      fileName: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].file,
+      upstreamUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].upstreamUrl,
+      localUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].localUrl,
+      isDefault: true,
+    },
+  ],
+};
+
+export const RUNNABLE_MODEL_REGISTRY: readonly ModelMetadata[] = [
+  ...MODEL_REGISTRY,
+  MIRAGE_MODEL,
+];
+
 export function isRunnableModel(id: unknown): id is RunnableModelType {
-  return MODEL_REGISTRY.some(model => model.id === id && model.implemented);
+  return RUNNABLE_MODEL_REGISTRY.some(model => model.id === id && model.implemented);
 }
 
 export function requireRunnableModel(id: unknown): asserts id is RunnableModelType {
@@ -143,7 +190,7 @@ export function requireRunnableModel(id: unknown): asserts id is RunnableModelTy
 
 export function modelMetadata(id: RunnableModelType): ModelMetadata {
   requireRunnableModel(id);
-  return MODEL_REGISTRY.find(model => model.id === id)!;
+  return RUNNABLE_MODEL_REGISTRY.find(model => model.id === id)!;
 }
 
 export function getVariantMetadata(
@@ -159,6 +206,11 @@ export function getVariantMetadata(
 
 export function backendDescription(state: ModelState): string {
   if(state.status!=='ready')return 'バックエンド未準備';
+  if(state.model==='mirage'){
+    return state.variantId==='mirage-webgpu'
+      ? 'Mirage ONNX 利用不可（元モデルとの一致未検証）'
+      : 'Cactus WebAssembly (CPU / Web Worker 非同期推論)';
+  }
   if(state.model==='mediapipe'||state.model==='selfie-segmenter')return `${state.delegate} delegate 指定・初期化済み（GPU実動作は未計測）`;
   const backend=state.backend;
   const requested=backend?.requestedProvider==='auto'?'自動(WebGPU優先)':backend?.requestedProvider==='webgpu'?'WebGPU優先':backend?.requestedProvider==='wasm'?'WASM':'未報告';
@@ -177,7 +229,7 @@ export const IMAGE_CLASSIFIER_MODEL = {
     upstreamUrl: entry.upstreamUrl, isDefault: entry.variantId === 'lite0',
   })),
 } as const;
-export const ALL_MODEL_REGISTRY = [...MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL] as const;
+export const ALL_MODEL_REGISTRY = [...RUNNABLE_MODEL_REGISTRY, IMAGE_CLASSIFIER_MODEL] as const;
 export function modelFamilyMetadata(id: ModelFamilyType) {
   const found = ALL_MODEL_REGISTRY.find(entry => entry.id === id);
   if (!found) throw new RangeError(`Unsupported model family: ${String(id)}`);

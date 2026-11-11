@@ -12,6 +12,11 @@ region mask and enclosing box, not per-person instance segmentation),
 `src/services/modelRegistry.ts` defines the names, implementation status,
 outputs and descriptions shared by the engine, selectors, model dialog and HUD.
 
+**Mirage** uses the original `.cact` model in a Cactus WASM worker. Its ONNX
+variant is unavailable until a faithful export passes reference-output checks;
+synthetic model generation and fallback are disabled. See the
+[Mirage ONNX status and validation requirements](docs/mirage-onnx-status.md).
+
 Each App owns one engine and at most one active task. Model state is separate from
 camera state: `idle`, `loading`, `ready`, or `error`. Only the selected task is
 created; duplicate pending requests share a Promise. Failures retain their WASM or
@@ -44,16 +49,31 @@ Apache-2.0 metadata, sizes and hashes are recorded in the
 [classifier cache contract](docs/verification/classifier-cache.md). Real model
 inference has not been validated by the model-free CI controls.
 
-`npm run dev` supplies the container cache API and startup prefetch for eleven enabled
-variants. The twelfth registered variant, SSD MobileNetV2, remains unavailable
-until actual SDK compatibility is verified; user-uploaded byte pins and metadata are recorded. Classifier bytes must match their fixed size and SHA-256
-on acquisition, reuse and serving; there is no unverified upstream fallback.
-An ephemeral container's cache is lost when it is destroyed. The application
-links to the static [/model-cache.html](public/model-cache.html) inventory,
-which observes status read-only without starting a download. It separates actual
-validated files from configured models. Build/preview/static hosting alone do
-not provide the API: the page reports unknown/unavailable and classification
-stays blocked. External deployment startup/support has not been established.
+`npm run dev` and ordinary `npm run preview` / `npm start` supply the container
+cache API and schedule startup prefetch for registered variants. Startup waits
+for the server to listen and uses the configured delay/concurrency. Classifier
+bytes must match their fixed size and SHA-256 on acquisition, reuse and serving;
+there is no unverified upstream fallback. An ephemeral container's cache is lost
+when it is destroyed. The static [/model-cache.html](public/model-cache.html)
+inventory itself only reads status; starting a normal server can independently
+start downloads. It separates validated files from configured models.
+
+In preview, defining `CI` or `TEST_LOG_DIR` suppresses the default cache API and
+startup prefetch. `CONTAINER_MODEL_CACHE=true` overrides that suppression, so
+ensure it is absent for model-free checks; setting it to `false` alone is not
+an off switch for ordinary preview. This suppression does not apply to the dev
+server. Use the repository test wrappers or injected-fetch cache fixtures
+rather than starting a normal server to verify documentation or npm contracts.
+See the [server hooks](src/services/containerModelCacheServer.ts) and
+[model-free cache tests](src/services/containerModelCache.test.ts).
+
+A build or pure static host supplies no cache API by itself. Without a reachable
+API, the inventory reports unknown/unavailable and classification stays blocked.
+These repository hooks do not establish deployed startup or real-inference
+acceptance; those remain separate verification steps.
+
+SSD MobileNetV2 is registered but acquisition-disabled pending genuine SDK
+compatibility verification; startup does not download its weights.
 
 ## SSD MobileNetV2 availability
 
@@ -74,7 +94,7 @@ licensing. See [SSD verification contract](docs/verification/ssd-mobilenet-v2.md
 
 ## Requirements and setup
 
-- Node.js 24 LTS, at least 24.15.0 and below 25; `.nvmrc` and CI use 24.19.0.
+- Node.js 24 LTS, at least 24.22.1 and below 25; `.nvmrc` and CI use 24.22.1 (security release).
 - npm 11; the lockfile was generated with npm 11.9.0.
 - Node.js and npm are the only supported runtime/package manager. `package-lock.json` is the sole lockfile; the unused Bun bootstrap lock has been removed.
 - A modern browser with WebAssembly and WebGL for real inference.
@@ -105,7 +125,7 @@ changing dependencies.
 | `npm test` | Run Vitest unit/component tests once and exit |
 | `npm run test:watch` | Run Vitest interactively in watch mode |
 | `npm run build` | Write production assets to `dist/` |
-| `npm run preview` | Serve an existing production build locally (default port 4173) |
+| `npm run preview` | Serve an existing production build locally (port 3000 by default; override with `PORT` or `--port`) |
 | `npm run test:e2e` | Run Playwright against production preview; build first |
 | `npm run test:e2e:controls` | Check production-smoke sensitivity using disposable healthy and faulty builds |
 | `npm run clean` | Remove `dist/` and legacy generated `server.js`, using Node filesystem APIs |
@@ -211,6 +231,11 @@ controlled races and remaining device/scheduler limits.
 
 See [PR-02 verification evidence](docs/verification/pr02.md) for state/task ownership,
 regression coverage and remaining lifecycle/measurement limits.
+
+See [Cactus Mirage Technical Reference](docs/mirage-integration.md) and
+[Mirage Evaluation Report](docs/verification/mirage-evaluation-report.md) for the
+51.3M ultra-lightweight perception model evaluation, comparative benchmarks, and
+hybrid triage edge-routing architecture.
 
 See [PR-01 verification evidence](docs/verification/pr01.md) for executed checks,
 dependency decisions, environmental limits, and known deferred issues. Real

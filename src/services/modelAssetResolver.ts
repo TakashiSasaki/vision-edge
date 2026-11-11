@@ -1,5 +1,6 @@
 import type { ClassifierAssetStatuses } from './imageClassifierAssets.ts';
 import type { RunnableModelType } from '../types/vision.ts';
+import { mirageWebGpuUnavailableError } from './mirageAvailability.ts';
 
 export type AssetDeliverySource = 'container-cache' | 'external-fallback' | 'external';
 export type AssetSourceRecorder = (assetKey: string, source: AssetDeliverySource) => void;
@@ -221,11 +222,56 @@ export const MODEL_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = {
   },
 };
 
+export type LegacyRunnableModelType = Exclude<RunnableModelType, 'mirage'>;
+
+export const MIRAGE_UPSTREAM_URL =
+  'https://huggingface.co/Cactus-Compute/mirage/resolve/76c1e9e53381aca8fc3843c636216c96ff220122/mirage.cact';
+export const MIRAGE_LOCAL_URL = '/api/model-cache/mirage/mirage.cact';
+
+export const MIRAGE_WEBGPU_LOCAL_URL =
+  '/api/model-cache/mirage/mirage-webgpu.onnx';
+
+export const LOCAL_CACTUS_WASM_JS_URL = '/wasm/cactus/cactus.js';
+export const LOCAL_CACTUS_WASM_BINARY_URL = '/wasm/cactus/cactus.wasm';
+export const CACHE_CACTUS_WASM_JS_URL = '/api/model-cache/wasm/cactus/cactus.js';
+export const CACHE_CACTUS_WASM_BINARY_URL = '/api/model-cache/wasm/cactus/cactus.wasm';
+
+export const MIRAGE_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = {
+  'mirage:mirage-51m': {
+    modelId: 'mirage',
+    variantId: 'mirage-51m',
+    file: 'mirage.cact',
+    upstreamUrl: MIRAGE_UPSTREAM_URL,
+    localUrl: MIRAGE_LOCAL_URL,
+    license: 'Apache-2.0',
+    licenseNote: 'Cactus Compute, Inc. / Apache License 2.0（ブラウザWASM・ローカル推論可）',
+    isDefault: true,
+  },
+};
+
+export const MIRAGE_MODEL_ASSET_ENTRY: ModelAssetCatalogEntry = {
+  id: 'mirage',
+  file: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].file,
+  upstreamUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].upstreamUrl,
+  localUrl: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].localUrl,
+  license: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].license,
+  licenseNote: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].licenseNote,
+};
+
 export function getVariantCatalogEntry(
   model: RunnableModelType,
   variantId?: string
 ): ModelVariantCatalogEntry {
   if (variantId !== undefined && typeof variantId !== 'string') throw new RangeError('Variant id must be a string');
+  if (model === 'mirage') {
+    if (variantId === 'mirage-webgpu') throw mirageWebGpuUnavailableError();
+    if (variantId !== undefined && variantId !== '') {
+      const key = `mirage:${variantId}`;
+      if (Object.hasOwn(MIRAGE_VARIANT_CATALOG, key)) return MIRAGE_VARIANT_CATALOG[key];
+      throw new RangeError(`Unknown model variant: ${key}`);
+    }
+    return MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'];
+  }
   if (variantId !== undefined && variantId !== '') {
     const key = `${model}:${variantId}`;
     if (Object.hasOwn(MODEL_VARIANT_CATALOG, key)) return MODEL_VARIANT_CATALOG[key];
@@ -236,7 +282,7 @@ export function getVariantCatalogEntry(
   return entry;
 }
 
-export const MODEL_ASSET_CATALOG: Record<RunnableModelType, ModelAssetCatalogEntry> = {
+export const MODEL_ASSET_CATALOG: Record<LegacyRunnableModelType, ModelAssetCatalogEntry> = {
   'selfie-segmenter': {
     id: 'selfie-segmenter',
     file: MODEL_VARIANT_CATALOG['selfie-segmenter:general'].file,
@@ -449,6 +495,13 @@ export async function resolveModelAssetUrls(
       source: 'external',
     };
   }
+  if (model === 'mirage') {
+    return {
+      primaryUrl: entry.localUrl,
+      fallbackUrl: entry.upstreamUrl,
+      source: 'container-cache',
+    };
+  }
   const status = await fetchContainerCacheStatus(!!entry.expectedSha256);
   const variantKey = `${entry.modelId}:${entry.variantId}`;
   // A present variants map is authoritative, including a missing/invalid row.
@@ -487,5 +540,6 @@ function matchesVariantStatus(value: unknown, entry: ModelVariantCatalogEntry, m
     && value.file === entry.file && value.localUrl === entry.localUrl && value.upstreamUrl === entry.upstreamUrl
     && value.license === entry.license && value.error === null
     && ((value.status === 'cached' && Number.isSafeInteger(value.size) && Number(value.size) >= 1024 && typeof value.cachedAt === 'string')
-      || (value.status === 'downloading' && value.size === null && value.cachedAt === null));
+      || (value.status === 'downloading' && value.size === null && value.cachedAt === null)
+      || (value.status === 'unavailable' && value.filePresent === false && value.integrity === 'not-present' && value.size === null && value.cachedAt === null));
 }

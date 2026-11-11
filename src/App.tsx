@@ -31,6 +31,7 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
     'mediapipe': 'lite0',
     'yolo-seg': 'yolov8n-seg',
     'segformer': 'b0',
+    'mirage': 'mirage-51m',
   });
   const activeVariant = selectedVariants[activeModel] || modelMetadata(activeModel).defaultVariantId;
 
@@ -132,6 +133,7 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
   };
 
   const handleSelectVariant = (variantId: string) => {
+    if (getVariantMetadata(activeModel, variantId).unavailableReason) return;
     if (selectedVariants[activeModel] === variantId) return;
     engine.dispose();
     setLastFrame(null);
@@ -149,6 +151,7 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
 
   const handleSelectModelAndVariant = (model: RunnableModelType, variantId: string) => {
     if (!isRunnableModel(model)) return;
+    if (getVariantMetadata(model, variantId).unavailableReason) return;
     engine.dispose();
     setLastFrame(null);
     setSelectedVariants(prev => ({ ...prev, [model]: variantId }));

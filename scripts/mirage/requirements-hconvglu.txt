@@ -1,0 +1,8 @@
+# Research environment only; never installed by npm/dev/preview/ordinary CI.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.6.0+cpu
+numpy==2.2.6
+onnx==1.17.0
+onnxruntime==1.20.1
+safetensors==0.5.3
+Pillow==11.1.0
