@@ -7,7 +7,9 @@ export type DiagnosticStage =
   | 'ort-session'
   | 'inference'
   | 'self-test'
-  | 'system';
+  | 'system'
+  | 'wasm'
+  | 'task';
 
 export interface DiagnosticLogEntry {
   id: string;
@@ -27,7 +29,15 @@ export interface DiagnosticLogEntry {
 }
 
 export interface SelfTestResult {
-  step: 'server-status' | 'asset-fetch' | 'sha256-verify' | 'ort-wasm' | 'ort-webgpu';
+  step:
+    | 'server-status'
+    | 'asset-fetch'
+    | 'sha256-verify'
+    | 'ort-wasm'
+    | 'webgpu-adapter'
+    | 'ort-webgpu'
+    | 'ort-webgpu-inference'
+    | 'ort-webgpu-parity';
   name: string;
   status: 'pending' | 'running' | 'passed' | 'failed' | 'skipped';
   durationMs?: number;
@@ -174,6 +184,14 @@ class DiagnosticLogger {
 
   public sendToServer = async (entry: DiagnosticLogEntry): Promise<void> => {
     if (typeof fetch !== 'function') return;
+    if (
+      typeof window === 'undefined' ||
+      !(
+        window as unknown as { __CONTAINER_MODEL_CACHE_ENABLED__?: boolean }
+      ).__CONTAINER_MODEL_CACHE_ENABLED__
+    ) {
+      return;
+    }
     try {
       await fetch('/api/model-cache/diagnostics/log', {
         method: 'POST',
@@ -198,13 +216,22 @@ class DiagnosticLogger {
       try {
         const adapter = await navigator.gpu.requestAdapter();
         if (adapter) {
-          const info = await adapter.requestAdapterInfo?.();
+          const typedAdapter = adapter as GPUAdapter & {
+            info?: GPUAdapterInfo;
+            isFallbackAdapter?: boolean;
+            requestAdapterInfo?: () => Promise<GPUAdapterInfo>;
+          };
+          const info =
+            typeof typedAdapter.requestAdapterInfo === 'function'
+              ? await typedAdapter.requestAdapterInfo()
+              : typedAdapter.info;
           if (info) {
             webGpuAdapterInfo = {
               vendor: info.vendor || '',
               architecture: info.architecture || '',
               device: info.device || '',
               description: info.description || '',
+              isFallbackAdapter: String(Boolean(typedAdapter.isFallbackAdapter)),
             };
           }
         }

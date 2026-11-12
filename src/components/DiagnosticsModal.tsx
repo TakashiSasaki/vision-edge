@@ -105,12 +105,27 @@ export function DiagnosticsModal({
       },
       {
         step: 'ort-wasm',
-        name: '4. ONNX Runtime WASM セッション生成テスト',
+        name: '4. ONNX Runtime WASM セッション生成 & 基準推論テスト',
+        status: 'pending',
+      },
+      {
+        step: 'webgpu-adapter',
+        name: '5. WebGPU アダプター取得テスト (navigator.gpu)',
         status: 'pending',
       },
       {
         step: 'ort-webgpu',
-        name: '5. WebGPU アダプター & セッション機能テスト',
+        name: '6. ONNX Runtime WebGPU セッション生成テスト (WASMフォールバック禁止)',
+        status: 'pending',
+      },
+      {
+        step: 'ort-webgpu-inference',
+        name: '7. WebGPU 実推論テスト (非ゼロ決定論入力)',
+        status: 'pending',
+      },
+      {
+        step: 'ort-webgpu-parity',
+        name: '8. WebGPU vs WASM 出力数値一致検証 (atol=rtol=2e-4)',
         status: 'pending',
       },
     ];
@@ -126,6 +141,15 @@ export function DiagnosticsModal({
     };
 
     let downloadedBuffer: ArrayBuffer | null = null;
+    const deterministicInput = new Float32Array(1 * 3 * 512 * 512);
+    for (let i = 0; i < deterministicInput.length; i++) {
+      deterministicInput[i] = Math.fround(((i % 251) - 125) / 127.5);
+    }
+    let wasmReferenceHeads: {
+      detections: Float32Array;
+      prototypes: Float32Array;
+      coefficients: Float32Array;
+    } | null = null;
 
     // Step 1: Server Status
     try {
@@ -210,7 +234,7 @@ export function DiagnosticsModal({
       });
     }
 
-    // Step 4: ORT WASM Session
+    // Step 4: ORT WASM Session + Reference Forward Pass
     if (downloadedBuffer) {
       try {
         updateStep(3, { status: 'running' });
@@ -223,16 +247,50 @@ export function DiagnosticsModal({
             logSeverityLevel: 3,
           }
         );
-        const ms = Math.round(performance.now() - t0);
+        const createMs = Math.round(performance.now() - t0);
         const inNames = session.inputNames;
         const outNames = session.outputNames;
-        await session.release();
-        updateStep(3, {
-          status: 'passed',
-          durationMs: ms,
-          message: `WASM セッション初期化成功 (${ms}ms, 入力: [${inNames.join(', ')}], 出力数: ${outNames.length})`,
-          details: { inputNames: inNames, outputNames: outNames },
-        });
+        const runT0 = performance.now();
+        const imgTensor = new ort.Tensor(
+          'float32',
+          deterministicInput,
+          [1, 3, 512, 512]
+        );
+        const hwTensor = new ort.Tensor(
+          'int64',
+          new BigInt64Array([BigInt(512), BigInt(512)]),
+          [2]
+        );
+        try {
+          const out = await session.run(
+            { image: imgTensor, valid_hw: hwTensor },
+            ['detections', 'prototypes', 'coefficients']
+          );
+          const runMs = Math.round(performance.now() - runT0);
+          wasmReferenceHeads = {
+            detections: new Float32Array(out.detections.data as Float32Array),
+            prototypes: new Float32Array(out.prototypes.data as Float32Array),
+            coefficients: new Float32Array(out.coefficients.data as Float32Array),
+          };
+          for (const val of Object.values(out)) {
+            (val as { dispose?: () => void })?.dispose?.();
+          }
+          updateStep(3, {
+            status: 'passed',
+            durationMs: createMs + runMs,
+            message: `WASM 初期化 (${createMs}ms) & 推論成功 (${runMs}ms, 出力数: ${outNames.length})`,
+            details: {
+              createMs,
+              runMs,
+              inputNames: inNames,
+              outputCount: outNames.length,
+            },
+          });
+        } finally {
+          imgTensor.dispose?.();
+          hwTensor.dispose?.();
+          await session.release();
+        }
       } catch (err) {
         updateStep(3, {
           status: 'failed',
@@ -246,7 +304,8 @@ export function DiagnosticsModal({
       });
     }
 
-    // Step 5: WebGPU capability
+    // Step 5: WebGPU adapter capability
+    let adapterAvailable = false;
     try {
       updateStep(4, { status: 'running' });
       if (
@@ -257,7 +316,7 @@ export function DiagnosticsModal({
         updateStep(4, {
           status: 'skipped',
           message:
-            'ブラウザに WebGPU API (navigator.gpu) がありません (WASM フォールバック動作)',
+            'ブラウザに WebGPU API (navigator.gpu) がありません',
         });
       } else {
         const t0 = performance.now();
@@ -265,7 +324,25 @@ export function DiagnosticsModal({
         if (!adapter) {
           throw new Error('WebGPU adapter request returned null');
         }
-        const info = await adapter.requestAdapterInfo?.();
+        adapterAvailable = true;
+        const typedAdapter = adapter as GPUAdapter & {
+          info?: GPUAdapterInfo;
+          isFallbackAdapter?: boolean;
+          requestAdapterInfo?: () => Promise<GPUAdapterInfo>;
+        };
+        const rawInfo =
+          typeof typedAdapter.requestAdapterInfo === 'function'
+            ? await typedAdapter.requestAdapterInfo()
+            : typedAdapter.info;
+        const info = rawInfo
+          ? {
+              vendor: rawInfo.vendor || '',
+              architecture: rawInfo.architecture || '',
+              device: rawInfo.device || '',
+              description: rawInfo.description || '',
+              isFallbackAdapter: Boolean(typedAdapter.isFallbackAdapter),
+            }
+          : undefined;
         const ms = Math.round(performance.now() - t0);
         updateStep(4, {
           status: 'passed',
@@ -279,6 +356,179 @@ export function DiagnosticsModal({
         status: 'failed',
         message: err instanceof Error ? err.message : String(err),
       });
+    }
+
+    // Steps 6, 7, 8: WebGPU Session Creation (no fallback), WebGPU Inference, and WASM Parity
+    if (!downloadedBuffer || !adapterAvailable) {
+      const skipMsg = !downloadedBuffer
+        ? 'モデルデータ未取得のためスキップ'
+        : 'WebGPU アダプター未検出のためスキップ';
+      updateStep(5, { status: 'skipped', message: skipMsg });
+      updateStep(6, { status: 'skipped', message: skipMsg });
+      updateStep(7, { status: 'skipped', message: skipMsg });
+    } else {
+      let webgpuSession: ort.InferenceSession | null = null;
+      try {
+        updateStep(5, { status: 'running' });
+        const t0 = performance.now();
+        webgpuSession = await ort.InferenceSession.create(
+          new Uint8Array(downloadedBuffer),
+          {
+            executionProviders: ['webgpu'],
+            graphOptimizationLevel: 'all',
+            logSeverityLevel: 3,
+          }
+        );
+        const createMs = Math.round(performance.now() - t0);
+        updateStep(5, {
+          status: 'passed',
+          durationMs: createMs,
+          message: `WebGPU セッション生成成功 (${createMs}ms · executionProviders: ['webgpu'])`,
+          details: {
+            createMs,
+            executionProviders: ['webgpu'],
+            inputNames: webgpuSession.inputNames,
+            outputCount: webgpuSession.outputNames.length,
+          },
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        updateStep(5, {
+          status: 'failed',
+          message: `WebGPU セッション生成失敗: ${msg}`,
+        });
+        updateStep(6, {
+          status: 'skipped',
+          message: 'WebGPU セッション生成失敗のためスキップ',
+        });
+        updateStep(7, {
+          status: 'skipped',
+          message: 'WebGPU セッション生成失敗のためスキップ',
+        });
+      }
+
+      if (webgpuSession) {
+        let webgpuHeads: {
+          detections: Float32Array;
+          prototypes: Float32Array;
+          coefficients: Float32Array;
+        } | null = null;
+        try {
+          updateStep(6, { status: 'running' });
+          const runT0 = performance.now();
+          const imgTensor = new ort.Tensor(
+            'float32',
+            deterministicInput,
+            [1, 3, 512, 512]
+          );
+          const hwTensor = new ort.Tensor(
+            'int64',
+            new BigInt64Array([BigInt(512), BigInt(512)]),
+            [2]
+          );
+          try {
+            const out = await webgpuSession.run(
+              { image: imgTensor, valid_hw: hwTensor },
+              ['detections', 'prototypes', 'coefficients']
+            );
+            const runMs = Math.round(performance.now() - runT0);
+            webgpuHeads = {
+              detections: new Float32Array(out.detections.data as Float32Array),
+              prototypes: new Float32Array(out.prototypes.data as Float32Array),
+              coefficients: new Float32Array(
+                out.coefficients.data as Float32Array
+              ),
+            };
+            for (const val of Object.values(out)) {
+              (val as { dispose?: () => void })?.dispose?.();
+            }
+            updateStep(6, {
+              status: 'passed',
+              durationMs: runMs,
+              message: `WebGPU 推論成功 (${runMs}ms · 3ヘッド出力完了)`,
+              details: {
+                runMs,
+                outputLengths: [
+                  webgpuHeads.detections.length,
+                  webgpuHeads.prototypes.length,
+                  webgpuHeads.coefficients.length,
+                ],
+              },
+            });
+          } finally {
+            imgTensor.dispose?.();
+            hwTensor.dispose?.();
+          }
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          updateStep(6, {
+            status: 'failed',
+            message: `WebGPU 推論失敗: ${msg}`,
+          });
+          updateStep(7, {
+            status: 'skipped',
+            message: 'WebGPU 推論失敗のためスキップ',
+          });
+        } finally {
+          await webgpuSession.release();
+        }
+
+        if (webgpuHeads && wasmReferenceHeads) {
+          updateStep(7, { status: 'running' });
+          const t0 = performance.now();
+          const compareHead = (a: Float32Array, b: Float32Array) => {
+            let maxAbsDiff = 0;
+            let sumAbsDiff = 0;
+            let violations = 0;
+            for (let i = 0; i < a.length; i++) {
+              const diff = Math.abs(a[i] - b[i]);
+              sumAbsDiff += diff;
+              if (diff > maxAbsDiff) maxAbsDiff = diff;
+              if (diff > 2e-4 + 2e-4 * Math.abs(b[i])) violations++;
+            }
+            return {
+              maxAbsDiff,
+              meanAbsDiff: sumAbsDiff / a.length,
+              violationsAt2e4: violations,
+              allcloseAt2e4: violations === 0,
+            };
+          };
+          const detDiff = compareHead(
+            webgpuHeads.detections,
+            wasmReferenceHeads.detections
+          );
+          const protoDiff = compareHead(
+            webgpuHeads.prototypes,
+            wasmReferenceHeads.prototypes
+          );
+          const coeffDiff = compareHead(
+            webgpuHeads.coefficients,
+            wasmReferenceHeads.coefficients
+          );
+          const allPass =
+            detDiff.allcloseAt2e4 &&
+            protoDiff.allcloseAt2e4 &&
+            coeffDiff.allcloseAt2e4;
+          const ms = Math.round(performance.now() - t0);
+          updateStep(7, {
+            status: allPass ? 'passed' : 'failed',
+            durationMs: ms,
+            message: allPass
+              ? `全3ヘッド一致 (maxAbsDiff: det=${detDiff.maxAbsDiff.toExponential(2)}, proto=${protoDiff.maxAbsDiff.toExponential(2)}, coeff=${coeffDiff.maxAbsDiff.toExponential(2)})`
+              : `許容差超過 (違反数: det=${detDiff.violationsAt2e4}, proto=${protoDiff.violationsAt2e4}, coeff=${coeffDiff.violationsAt2e4})`,
+            details: {
+              detections: detDiff,
+              prototypes: protoDiff,
+              coefficients: coeffDiff,
+            },
+          });
+        } else if (webgpuHeads && !wasmReferenceHeads) {
+          updateStep(7, {
+            status: 'skipped',
+            message: 'WASM 基準出力が未取得のため比較スキップ',
+          });
+        }
+      }
     }
 
     setSelfTestRunning(false);

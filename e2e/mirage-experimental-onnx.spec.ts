@@ -384,17 +384,31 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           const decodedNone = bridge.decodeMirageExperimentalOutputs(
             browserHeads,
             metadata,
-            { confidenceThreshold: 0.3, nmsIou: null, includeMasks: true }
+            { confidence: 0.3, nmsIou: null, includeMasks: true }
           );
           const decodedNms050 = bridge.decodeMirageExperimentalOutputs(
             browserHeads,
             metadata,
-            { confidenceThreshold: 0.3, nmsIou: 0.5, includeMasks: false }
+            { confidence: 0.3, nmsIou: 0.5, includeMasks: false }
+          );
+
+          async function sha256HexOfUint8(arr?: Uint8Array): Promise<string | null> {
+            if (!arr) return null;
+            const copy = new Uint8Array(arr.byteLength);
+            copy.set(arr);
+            const buf = await crypto.subtle.digest('SHA-256', copy.buffer);
+            return Array.from(new Uint8Array(buf))
+              .map((b) => b.toString(16).padStart(2, '0'))
+              .join('');
+          }
+
+          const browserMaskHashes = await Promise.all(
+            decodedNone.objects.map((o) => sha256HexOfUint8(o.mask))
           );
 
           const exactProposalParityNone =
-            decodedNone.objectCount === entry.decoded_default.object_count &&
-            decodedNone.textCount === entry.decoded_default.text_count &&
+            decodedNone.objects.length === entry.decoded_default.object_count &&
+            decodedNone.text.length === entry.decoded_default.text_count &&
             decodedNone.objects.every(
               (o, idx) =>
                 o.cell[0] === entry.decoded_default.objects[idx].cell[0] &&
@@ -405,7 +419,10 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
                 Math.abs(o.score - entry.decoded_default.objects[idx].score) <
                   1e-5 &&
                 o.maskActivePixels ===
-                  entry.decoded_default.objects[idx].mask_active_pixels
+                  entry.decoded_default.objects[idx].mask_active_pixels &&
+                (!entry.decoded_default.objects[idx].mask_sha256 ||
+                  browserMaskHashes[idx] ===
+                    entry.decoded_default.objects[idx].mask_sha256)
             ) &&
             decodedNone.text.every(
               (t, idx) =>
@@ -418,8 +435,8 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
             );
 
           const exactProposalParityNms050 =
-            decodedNms050.objectCount === entry.decoded_nms_0p50.object_count &&
-            decodedNms050.textCount === entry.decoded_nms_0p50.text_count &&
+            decodedNms050.objects.length === entry.decoded_nms_0p50.object_count &&
+            decodedNms050.text.length === entry.decoded_nms_0p50.text_count &&
             decodedNms050.objects.every(
               (o, idx) =>
                 o.cell[0] === entry.decoded_nms_0p50.objects[idx].cell[0] &&
@@ -471,12 +488,12 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           const canvasDecodedNone = bridge.decodeMirageExperimentalOutputs(
             canvasHeads,
             metadata,
-            { confidenceThreshold: 0.3, nmsIou: null, includeMasks: false }
+            { confidence: 0.3, nmsIou: null, includeMasks: false }
           );
           const canvasDecodedNms050 = bridge.decodeMirageExperimentalOutputs(
             canvasHeads,
             metadata,
-            { confidenceThreshold: 0.3, nmsIou: 0.5, includeMasks: false }
+            { confidence: 0.3, nmsIou: 0.5, includeMasks: false }
           );
 
           // Compare Canvas-preprocessed proposals vs Pillow-preprocessed proposals
@@ -504,10 +521,10 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
                 coefficientsDiff.allcloseAt2e4,
               exactProposalParityNone,
               exactProposalParityNms050,
-              objectCountNoNms: decodedNone.objectCount,
-              textCountNoNms: decodedNone.textCount,
-              objectCountNms050: decodedNms050.objectCount,
-              textCountNms050: decodedNms050.textCount,
+              objectCountNoNms: decodedNone.objects.length,
+              textCountNoNms: decodedNone.text.length,
+              objectCountNms050: decodedNms050.objects.length,
+              textCountNms050: decodedNms050.text.length,
             },
             canvasVsPillowPreprocess: {
               preprocessMs: Number(canvasPreprocessMs.toFixed(2)),
@@ -524,12 +541,12 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
                 ).toFixed(4)
               ),
               paddingMaxAbsValue,
-              canvasObjectCountNoNms: canvasDecodedNone.objectCount,
-              canvasTextCountNoNms: canvasDecodedNone.textCount,
-              canvasObjectCountNms050: canvasDecodedNms050.objectCount,
-              canvasTextCountNms050: canvasDecodedNms050.textCount,
+              canvasObjectCountNoNms: canvasDecodedNone.objects.length,
+              canvasTextCountNoNms: canvasDecodedNone.text.length,
+              canvasObjectCountNms050: canvasDecodedNms050.objects.length,
+              canvasTextCountNms050: canvasDecodedNms050.text.length,
               matchedPillowObjectsAtIoU085: matchedObjectsIoU085,
-              totalPillowObjectsNoNms: decodedNone.objectCount,
+              totalPillowObjectsNoNms: decodedNone.objects.length,
             },
           };
         }
@@ -748,14 +765,14 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
       page.getByText('[ONNX候補] テキスト領域候補 #1').first()
     ).toBeVisible({ timeout: 30_000 });
 
-    // 3. Run preset: coco_000000458054.png
+    // 3. Run preset: coco_000000458054.png (640x426 -> valid_hw [352, 512])
     await page.getByRole('button', { name: '検証: COCO 458054' }).click();
     await page.getByRole('button', { name: 'モデル調整' }).click();
     await expect(diagBox).toContainText(
-      '入力 valid_hw: [384, 512] (元画像 640×427 · ceil32)',
+      '入力 valid_hw: [352, 512] (元画像 640×426 · ceil32)',
       { timeout: 30_000 }
     );
-    await expect(diagBox).toContainText('抽出候補: 物体 20件 ／ テキスト 15件');
+    await expect(diagBox).toContainText('抽出候補: 物体 6件 ／ テキスト 0件');
 
     await page.screenshot({
       path: testInfo.outputPath('mirage-experimental-onnx-ui-coco.png'),

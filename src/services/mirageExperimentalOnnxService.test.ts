@@ -588,7 +588,7 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
           body = c3Data;
         }
 
-        return new Response(body, {
+        return new Response(body as unknown as BodyInit, {
           status: 206,
           headers: {
             'Content-Range': `${range}/${mockTotalSize}`,
@@ -625,7 +625,7 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
       const fullData = new Uint8Array(mockSize).fill(42);
 
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
-        return new Response(fullData, {
+        return new Response(fullData as unknown as BodyInit, {
           status: 200,
           headers: { 'Content-Length': String(mockSize) },
         });

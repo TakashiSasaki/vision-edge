@@ -87,7 +87,11 @@ export interface MirageExperimentalExecutionDiagnostics {
   variantId: MirageExperimentalVariantId;
   requestedProvider: 'wasm' | 'webgpu';
   configuredProviders: readonly ('webgpu' | 'wasm')[];
+  /** Inferred from requestedProvider and absence of fallbackReason; not a direct GPU kernel profiler measurement */
   activeProvider: 'wasm' | 'webgpu';
+  /** Direct per-node kernel execution provider attribution from ORT Web ('unmeasured' unless ORT profiling is enabled) */
+  actualKernelBackend: 'unmeasured';
+  allowWasmFallback: boolean;
   fallbackReason: string | null;
   artifactSha256: string;
   artifactSize: number;
@@ -596,7 +600,9 @@ export function convertProposalsToDetectedObjects(
   return results;
 }
 
-function getInputDimensions(input: InferenceInput): { width: number; height: number } {
+function getInputDimensions(
+  input: InferenceInput | HTMLImageElement
+): { width: number; height: number } {
   if ('videoWidth' in input) {
     return {
       width: input.videoWidth || 640,
@@ -607,6 +613,12 @@ function getInputDimensions(input: InferenceInput): { width: number; height: num
     return {
       width: input.displayWidth || 640,
       height: input.displayHeight || 480,
+    };
+  }
+  if ('naturalWidth' in input) {
+    return {
+      width: input.naturalWidth || input.width || 640,
+      height: input.naturalHeight || input.height || 480,
     };
   }
   return {
@@ -667,6 +679,7 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
   private nativeOverlayTask: MirageTask | null = null;
   private readonly nativeOverlayTaskFactory?: () => Promise<MirageTask>;
   private readonly modelBytes?: Uint8Array;
+  private readonly allowWasmFallback: boolean;
   private lastDiagnostics: MirageExperimentalExecutionDiagnostics | null = null;
   private runMutex: Promise<unknown> = Promise.resolve();
 
@@ -675,9 +688,11 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     variantId: MirageExperimentalVariantId,
     backend?: OnnxBackendInfo,
     nativeOverlayTaskFactory?: () => Promise<MirageTask>,
-    modelBytes?: Uint8Array
+    modelBytes?: Uint8Array,
+    allowWasmFallback = true
   ) {
     this.variantId = variantId;
+    this.allowWasmFallback = allowWasmFallback;
     const requestedProvider =
       variantId === 'mirage-onnx-exp-webgpu' ? 'webgpu' : 'wasm';
     this.backend =
@@ -686,7 +701,11 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
         runtime: 'onnxruntime-web',
         requestedProvider,
         configuredProviders:
-          requestedProvider === 'webgpu' ? ['webgpu', 'wasm'] : ['wasm'],
+          requestedProvider === 'webgpu'
+            ? allowWasmFallback
+              ? ['webgpu', 'wasm']
+              : ['webgpu']
+            : ['wasm'],
         fallbackReason: null,
         actualBackend: 'unmeasured',
       } satisfies OnnxBackendInfo);
@@ -709,7 +728,9 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     return next;
   }
 
-  public preprocessInput(input: InferenceInput): MiragePreprocessedInput {
+  public preprocessInput(
+    input: InferenceInput | HTMLImageElement
+  ): MiragePreprocessedInput {
     const { width: srcW, height: srcH } = getInputDimensions(input);
     const metadata = computeMirageCeil32Metadata(srcW, srcH);
     const { w, h } = metadata;
@@ -778,6 +799,7 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
             ]);
           } catch (err) {
             if (
+              this.allowWasmFallback &&
               this.backend.configuredProviders.includes('webgpu') &&
               this.modelBytes
             ) {
@@ -948,6 +970,8 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
         | 'wasm'
       )[],
       activeProvider,
+      actualKernelBackend: 'unmeasured',
+      allowWasmFallback: this.allowWasmFallback,
       fallbackReason: this.backend.fallbackReason,
       artifactSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
       artifactSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
@@ -1060,12 +1084,19 @@ export interface CreateMirageExperimentalOnnxOptions {
   variantId: MirageExperimentalVariantId;
   recordAssetSource?: AssetSourceRecorder;
   nativeOverlayTaskFactory?: () => Promise<MirageTask>;
+  /** When false and variantId is mirage-onnx-exp-webgpu, strictly requires ['webgpu'] without falling back to WASM */
+  allowWasmFallback?: boolean;
 }
 
 export async function createMirageExperimentalOnnxTask(
   options: CreateMirageExperimentalOnnxOptions
 ): Promise<MirageExperimentalOnnxEngine> {
-  const { variantId, recordAssetSource, nativeOverlayTaskFactory } = options;
+  const {
+    variantId,
+    recordAssetSource,
+    nativeOverlayTaskFactory,
+    allowWasmFallback = true,
+  } = options;
   if (!isMirageExperimentalVariant(variantId)) {
     throw new RangeError(
       `Unsupported experimental Mirage ONNX variant: ${String(variantId)}`
@@ -1073,7 +1104,7 @@ export async function createMirageExperimentalOnnxTask(
   }
 
   diagnosticLogger.log('info', 'resolve', 'mirage', variantId, 'Resolving model asset URLs', {
-    details: { variantId },
+    details: { variantId, allowWasmFallback },
   });
 
   const asset = await resolveModelAssetUrls(
@@ -1089,6 +1120,7 @@ export async function createMirageExperimentalOnnxTask(
       fallbackUrl: asset.fallbackUrl,
       source: asset.source,
       delegate,
+      allowWasmFallback,
     },
   });
 
@@ -1134,28 +1166,79 @@ export async function createMirageExperimentalOnnxTask(
   }
 
   diagnosticLogger.log('info', 'ort-session', 'mirage', variantId, 'Creating ONNX Runtime session', {
-    details: { delegate, hasVerifiedBytes: Boolean(verifiedBytes), byteLength: verifiedBytes?.byteLength },
+    details: {
+      delegate,
+      allowWasmFallback,
+      hasVerifiedBytes: Boolean(verifiedBytes),
+      byteLength: verifiedBytes?.byteLength,
+    },
   });
 
   try {
     const sessionStart = performance.now();
-    const { session, backend } = await createOrtSession(
-      verifiedBytes ?? asset.primaryUrl,
-      delegate,
-      {
-        fallbackModelUrl: asset.fallbackUrl,
-        fallbackModelBytes: verifiedBytes ? () => verifiedBytes! : undefined,
-        variantId,
-        recordAssetSource,
-        modelId: 'mirage',
-        primarySource: asset.source,
+    let session: ort.InferenceSession;
+    let backend: OnnxBackendInfo | undefined;
+
+    if (delegate === 'WebGPU' && !allowWasmFallback) {
+      if (
+        typeof navigator === 'undefined' ||
+        !('gpu' in navigator) ||
+        !navigator.gpu
+      ) {
+        throw new Error(
+          'Strict WebGPU session requested (allowWasmFallback=false), but navigator.gpu is unavailable'
+        );
       }
-    );
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) {
+        throw new Error(
+          'Strict WebGPU session requested (allowWasmFallback=false), but navigator.gpu.requestAdapter() returned null'
+        );
+      }
+      if (!verifiedBytes) {
+        throw new Error(
+          'Strict WebGPU session requires verified model bytes'
+        );
+      }
+      session = await ort.InferenceSession.create(verifiedBytes, {
+        executionProviders: ['webgpu'],
+        graphOptimizationLevel: 'all',
+        logSeverityLevel: 3,
+      });
+      recordAssetSource?.(
+        `mirage:${variantId}`,
+        asset.source
+      );
+      backend = {
+        runtime: 'onnxruntime-web',
+        requestedProvider: 'webgpu',
+        configuredProviders: ['webgpu'],
+        fallbackReason: null,
+        actualBackend: 'unmeasured',
+      };
+    } else {
+      const created = await createOrtSession(
+        verifiedBytes ?? asset.primaryUrl,
+        delegate,
+        {
+          fallbackModelUrl: asset.fallbackUrl,
+          fallbackModelBytes: verifiedBytes ? () => verifiedBytes! : undefined,
+          variantId,
+          recordAssetSource,
+          modelId: 'mirage',
+          primarySource: asset.source,
+        }
+      );
+      session = created.session;
+      backend = created.backend;
+    }
+
     const sessionMs = Math.round(performance.now() - sessionStart);
     diagnosticLogger.log('info', 'ort-session', 'mirage', variantId, 'ONNX session created successfully', {
       details: {
         backend,
         sessionMs,
+        allowWasmFallback,
         inputNames: session.inputNames,
         outputNames: session.outputNames,
       },
@@ -1166,7 +1249,8 @@ export async function createMirageExperimentalOnnxTask(
       variantId,
       backend ?? unknownOnnxBackend(),
       nativeOverlayTaskFactory,
-      verifiedBytes
+      verifiedBytes,
+      allowWasmFallback
     );
   } catch (ortErr) {
     diagnosticLogger.log('error', 'ort-session', 'mirage', variantId, 'ONNX Runtime session creation failed', {
