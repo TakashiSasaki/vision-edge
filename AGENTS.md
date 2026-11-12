@@ -33,3 +33,9 @@
 - **Command and lock synchronization:** Use `npm version patch --no-git-tag-version` (or `npm version minor|major --no-git-tag-version` ONLY when explicitly human-authorized). Commit the updated `package.json`; if `package-lock.json` exists, include npm's synchronized generated update. The lockfile is derived metadata, not another version authority; never edit its version manually. Do not generate a tag as a side effect of version changes.
 - **Branch/PR monotonicity:** Compare against the latest target `main` just before submission/merge. If the target advanced or another agent already used the intended number, rebase/reconcile and advance PATCH again, keeping the version strictly above the target. Do not overwrite another agent's changes or silently resolve version conflicts by taking an obsolete version.
 - **Git tags are human-requested only:** Never automatically create/push tags for agent code changes, merges, builds, deployments, or routine version bumps. Create an annotated `vMAJOR.MINOR.PATCH` tag only upon an explicit human request, pointing to the exact approved commit; verify that commit's `package.json` version matches the tag. Tag creation is independent of a production/release build and must not be used to imply release validation.
+
+# Container size optimization & 250MB Cloud Run publishing limit (mandatory)
+
+- **Keep container size minimal**: Do not include unnecessary files, large test caches, ML models, evaluation benchmarks, or documentation archives in the production container context. The production build must stay well below the Cloud Run 250 MB publishing limit.
+- **Strict exclusion configuration**: Always maintain `.gcloudignore` and `.dockerignore` to exclude `.cache/`, `docs/`, `e2e/`, `e2e-real-sdk/`, `scripts/mirage/`, `scripts/testing/`, `scripts/real-sdk/`, and large binary model/cache files (`*.onnx`, `*.tflite`, `*.cact`, `*.tar.gz`, `*.zip`).
+

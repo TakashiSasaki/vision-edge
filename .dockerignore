@@ -18,9 +18,22 @@ playwright-report/
 blob-report/
 e2e/
 e2e-real-sdk/
+scripts/mirage/
+scripts/testing/
+scripts/real-sdk/
+pyproject.toml
+requirements-mirage.txt
+
+*.onnx
+*.onnx.gz
+*.cact
+*.tflite
+*.zip
+*.tar.gz
 
 *.log
 .DS_Store
 Thumbs.db
 bun.lock
 bun.lockb
+

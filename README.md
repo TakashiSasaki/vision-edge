@@ -115,6 +115,15 @@ Use `npm ci` for repeatable installs. Do not use `--force` or
 `--legacy-peer-deps`. Update and commit `package-lock.json` intentionally when
 changing dependencies.
 
+### Container size optimization & Cloud Run publishing limit
+
+To keep Cloud Run service updates within the **250 MB publishing limit**, non-essential
+build artifacts, test suites (`e2e/`), verification archives (`docs/`), test caches
+(`.cache/`), development scripts (`scripts/mirage/`, `scripts/testing/`), and heavy binary
+model caches are strictly excluded via `.gcloudignore` and `.dockerignore`. All agents and
+contributors must ensure unnecessary files are kept out of the container image build context.
+
+
 ## Commands
 
 | Command | Purpose |

@@ -64,3 +64,16 @@
 - タスク着手時およびプッシュ／PR 作成前に、リモートの最新ブランチ、PR、未コミット変更を確認すること。
 - 他エージェントの正当な変更を上書きせず、分離されたブランチ（`feat/*`）で作業を進めること。
 - CI の 403 制限（モデルダウンロード禁止）をバイパスしようとしないこと。
+
+---
+
+## 5. コンテナサイズ最適化と Cloud Run 250MB パブリッシュ制限 (Mandatory Container Optimization)
+
+1. **コンテナビルドコンテキストの厳格な軽量化**
+   - AI Studio の Web アプリデプロイ (Cloud Run サービス更新) では、パブリッシュビルドサイズの上限が **250 MB** に設定されています。
+   - 上限を超えると `Failed to update Cloud Run service, your app's production build is larger than the 250 MB publishing limit` エラーでデプロイが失敗します。
+
+2. **除外対象ファイルの徹底**
+   - 不要な大容量キャッシュ (`.cache/`), 過去の検証記録・ログ (`docs/`), テストスイート (`e2e/`, `e2e-real-sdk/`), 開発用 Python / 検証スクリプト (`scripts/mirage/`, `scripts/testing/`, `scripts/real-sdk/`), 大容量モデル・バイナリ (`*.onnx`, `*.tflite`, `*.cact`, `*.zip`, `*.tar.gz`) はすべて `.gcloudignore` および `.dockerignore` で明確に除外します。
+   - リポジトリ内およびコンテナ内にはデプロイに直接関係のない余計なファイルを含めず、イメージ・ビルドサイズを最小限（数 MB 程度）に維持することを義務付けます。
+

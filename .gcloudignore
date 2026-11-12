@@ -8,13 +8,13 @@
 .vscode/
 .idea/
 
-# Exclude local dependencies (installed in build)
+# Exclude local dependencies (installed during image build)
 node_modules/
 
-# Exclude cached ML model files (165 MB+)
+# Exclude cached ML model files and local caches (165 MB+)
 .cache/
 
-# Exclude historical test/verification reports and archives (24 MB+)
+# Exclude historical test/verification reports, archives, and documentation (33 MB+)
 docs/
 
 # Exclude build output and test coverage/results
@@ -24,8 +24,23 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+
+# Exclude test suites and offline verification scripts
 e2e/
 e2e-real-sdk/
+scripts/mirage/
+scripts/testing/
+scripts/real-sdk/
+pyproject.toml
+requirements-mirage.txt
+
+# Exclude binary cache/model files and archives
+*.onnx
+*.onnx.gz
+*.cact
+*.tflite
+*.zip
+*.tar.gz
 
 # Logs and system files
 *.log
@@ -33,3 +48,4 @@ e2e-real-sdk/
 Thumbs.db
 bun.lock
 bun.lockb
+
