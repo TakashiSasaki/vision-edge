@@ -39,6 +39,8 @@ export interface MirageInferExtraOptions {
   iouThreshold?: number;
   maxDetections?: number;
   analysisMode?: MirageAnalysisMode;
+  mirageLanguage?: string;
+  maxTokens?: number;
   includeOcr?: boolean;
   experimentalNmsIou?: number | null;
   showObjectProposals?: boolean;

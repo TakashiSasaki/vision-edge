@@ -28,6 +28,7 @@ export interface ExtraInferenceOptions {
   iouThreshold?: number;
   maskThreshold?: number;
   analysisMode?: MirageAnalysisMode;
+  mirageLanguage?: string;
   includeOcr?: boolean;
   experimentalNmsIou?: number | null;
   showObjectProposals?: boolean;
@@ -771,6 +772,7 @@ export class VisionEngine {
           iouThreshold: extraOptions?.iouThreshold,
           maxDetections: extraOptions?.maxDetections,
           analysisMode: extraOptions?.analysisMode,
+          mirageLanguage: extraOptions?.mirageLanguage,
           includeOcr: extraOptions?.includeOcr,
           experimentalNmsIou: extraOptions?.experimentalNmsIou,
           showObjectProposals: extraOptions?.showObjectProposals,

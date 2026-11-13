@@ -6,6 +6,31 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { describe, expect, it, vi } from 'vitest';
 import * as ort from 'onnxruntime-web';
 import {
+  MIRAGE_CROSS_HEAD_DIM,
+  MIRAGE_CROSS_KV_HEADS,
+  MIRAGE_CROSS_V_DIM,
+  MIRAGE_DECODER_KV_HEADS,
+  MIRAGE_DECODER_LAYERS,
+  MIRAGE_FULL_ENCODER_OUTPUTS,
+  MIRAGE_MAX_M,
+  MIRAGE_MAX_SEQ,
+} from './mirageDecoderAssembly';
+import {
+  MIRAGE_CACT_CODEBOOK_LEN,
+  MIRAGE_CACT_ENTRY_COUNT,
+  MIRAGE_CACT_HEADER_BYTES,
+  MIRAGE_CACT_MAGIC,
+  MIRAGE_CACT_MIN_DATA_OFFSET,
+  MIRAGE_CHARSET_ENTRY,
+  MIRAGE_EMBEDDING_DIM,
+  MIRAGE_ENGRAM0_EMBEDDING_ENTRY,
+  MIRAGE_ENGRAM1_EMBEDDING_ENTRY,
+  MIRAGE_ENGRAM_SLOTS,
+  MIRAGE_TOKEN_EMBEDDING_ENTRY,
+  MIRAGE_VOCAB_ENTRY,
+  MirageDecoderTableReader,
+} from './mirageCactCodec';
+import {
   captureMirageSourceFrameSnapshot,
   compareMirageTensorParity,
   computeBoxIou,
@@ -1081,6 +1106,256 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
 
       await engine.close();
       vi.restoreAllMocks();
+    });
+
+    it('runs full Mirage pipeline (encoder + reader + crossKv + decoderStep), sets full diagnostics, and releases all sessions on close', async () => {
+      const ctxSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => {
+        return {
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+          clearRect: vi.fn(),
+          drawImage: vi.fn(),
+          putImageData: vi.fn(),
+          getImageData: (_x: number, _y: number, w: number, h: number) => {
+            const data = new Uint8ClampedArray(w * h * 4);
+            for (let i = 0; i < data.length; i += 4) {
+              data[i] = 120;
+              data[i + 1] = 80;
+              data[i + 2] = 40;
+              data[i + 3] = 255;
+            }
+            return { data };
+          },
+          createImageData: (w: number, h: number) => ({
+            data: new Uint8ClampedArray(w * h * 4),
+          }),
+        } as unknown as CanvasRenderingContext2D;
+      });
+
+      // Build compact self-contained .cact archive for tableReader
+      const pieces: Array<[string, number, number]> = [
+        ['<pad>', 2, 0],
+        ['</s>', 2, 0],
+        ['<s>', 2, 0],
+        ['<unk>', 1, 0],
+        ['<|en|>', 3, 0],
+        ['<|fr|>', 3, 0],
+        ['S env=indoor\n', 0, -1],
+        ['E1 chat', 0, -1],
+        ['\nT ', 0, -1],
+      ];
+      const vocabCount = pieces.length;
+      const embRows = vocabCount + 96;
+      const utf8 = new TextEncoder();
+      const hdr = new Uint8Array(24);
+      const hv = new DataView(hdr.buffer);
+      hv.setUint32(0, vocabCount, true);
+      hv.setUint32(4, 0, true);
+      hv.setUint32(8, 1, true);
+      hv.setUint32(12, 2, true);
+      hv.setUint32(16, 3, true);
+      hdr[20] = 0;
+      hdr[21] = 1;
+      const vChunks: Uint8Array[] = [hdr];
+      for (let i = 0; i < vocabCount; i++) {
+        const [txt, tp, sc] = pieces[i];
+        const enc = utf8.encode(txt);
+        const r = new Uint8Array(7 + enc.byteLength);
+        const rv = new DataView(r.buffer);
+        rv.setFloat32(0, sc, true);
+        r[4] = tp;
+        rv.setUint16(5, enc.byteLength, true);
+        r.set(enc, 7);
+        vChunks.push(r);
+      }
+      const vocabBytes = Buffer.concat(vChunks);
+      const embBytes = new Uint8Array(embRows * (256 + 8));
+      const engRows = 4 * MIRAGE_ENGRAM_SLOTS;
+      const engBytes = new Uint8Array(engRows * (32 + 2));
+      const charsetBytes = new Uint8Array(new Float32Array([79, 75]).buffer); // 'O', 'K' (lab-1 indexed)
+
+      const specs = [
+        { idx: MIRAGE_TOKEN_EMBEDDING_ENTRY, dtype: 3, shape: [embRows, MIRAGE_EMBEDDING_DIM], group: 128, bits: 4, data: embBytes },
+        { idx: MIRAGE_ENGRAM0_EMBEDDING_ENTRY, dtype: 3, shape: [engRows, 128], group: 128, bits: 2, data: engBytes },
+        { idx: MIRAGE_ENGRAM1_EMBEDDING_ENTRY, dtype: 3, shape: [engRows, 128], group: 128, bits: 2, data: engBytes },
+        { idx: MIRAGE_CHARSET_ENTRY, dtype: 2, shape: [2], group: 0, bits: 32, data: charsetBytes },
+        { idx: MIRAGE_VOCAB_ENTRY, dtype: 4, shape: [vocabBytes.byteLength], group: 0, bits: 8, data: vocabBytes },
+      ];
+      let payloadSum = 0;
+      for (const s of specs) payloadSum += s.data.byteLength;
+      const arch = new Uint8Array(MIRAGE_CACT_MIN_DATA_OFFSET + payloadSum);
+      const av = new DataView(arch.buffer);
+      av.setUint32(0, MIRAGE_CACT_MAGIC, true);
+      av.setUint32(4, MIRAGE_CACT_ENTRY_COUNT, true);
+      av.setUint32(8, MIRAGE_CACT_CODEBOOK_LEN, true);
+      av.setFloat32(192, 100_000, true);
+      const byIdx = new Map(specs.map((s) => [s.idx, s]));
+      let cur = MIRAGE_CACT_MIN_DATA_OFFSET;
+      let dirOff = MIRAGE_CACT_HEADER_BYTES + 4 * MIRAGE_CACT_CODEBOOK_LEN;
+      for (let i = 0; i < MIRAGE_CACT_ENTRY_COUNT; i++) {
+        const sp = byIdx.get(i);
+        if (!sp) {
+          arch[dirOff] = 1;
+          arch[dirOff + 1] = 1;
+        } else {
+          arch[dirOff] = sp.dtype;
+          arch[dirOff + 1] = sp.shape.length;
+          for (let d = 0; d < sp.shape.length; d++) {
+            av.setUint32(dirOff + 4 + d * 4, sp.shape[d], true);
+          }
+          av.setUint32(dirOff + 20, cur >>> 0, true);
+          av.setUint32(dirOff + 28, sp.data.byteLength >>> 0, true);
+          av.setUint32(dirOff + 36, sp.group, true);
+          av.setUint32(dirOff + 40, sp.bits, true);
+          arch.set(sp.data, cur);
+          cur += sp.data.byteLength;
+        }
+        dirOff += 44;
+      }
+      const tableReader = new MirageDecoderTableReader(arch);
+
+      const detections = new Float32Array(64 * 64 * 10).fill(-10);
+      // Cell (20, 20): strong object score + valid box
+      const objOff = (20 * 64 + 20) * 10;
+      detections[objOff + 0] = 6; // high sigmoid logit
+      detections[objOff + 1] = -6;
+      detections[objOff + 2] = 16; // object width
+      detections[objOff + 3] = 20; // object height
+      detections[objOff + 6] = 0.5; // object dx
+      detections[objOff + 7] = 0.5; // object dy
+      // Cell (10, 16): strong text score + wide horizontal box so nFrames >= 8 inside 256x256
+      const txtOff = (10 * 64 + 16) * 10;
+      detections[txtOff + 0] = -6;
+      detections[txtOff + 1] = 6;
+      detections[txtOff + 4] = 24; // text width
+      detections[txtOff + 5] = 6; // text height
+      detections[txtOff + 8] = 0.25; // text dx
+      detections[txtOff + 9] = 0.25; // text dy
+
+      const prototypes = new Float32Array(32 * 128 * 128).fill(1);
+      const coefficients = new Float32Array(32 * 64 * 64).fill(0.5);
+      const memory = new Float32Array(256 * MIRAGE_EMBEDDING_DIM);
+      const denseFeatures = new Float32Array(128 * 64 * 64);
+
+      const encoderFetchesHistory: Array<readonly string[] | undefined> = [];
+      const encoderSession = {
+        inputNames: ['image', 'valid_hw'],
+        outputNames: [...MIRAGE_FULL_ENCODER_OUTPUTS],
+        run: vi.fn(async (_feeds, fetches?: readonly string[]) => {
+          encoderFetchesHistory.push(fetches);
+          return {
+            memory: new ort.Tensor('float32', memory, [1, 256, MIRAGE_EMBEDDING_DIM]),
+            dense_features: new ort.Tensor('float32', denseFeatures, [1, 128, 64, 64]),
+            detections: new ort.Tensor('float32', detections, [1, 64, 64, 10]),
+            prototypes: new ort.Tensor('float32', prototypes, [1, 32, 128, 128]),
+            coefficients: new ort.Tensor('float32', coefficients, [1, 32, 64, 64]),
+          };
+        }),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+
+      const readerSession = {
+        run: vi.fn(async () => {
+          const data = new Float32Array(80 * 307).fill(-5);
+          for (let t = 0; t < 80; t++) data[t * 307] = 5;
+          data[0 * 307] = -5;
+          data[0 * 307 + 1] = 10; // 'O'
+          data[1 * 307] = -5;
+          data[1 * 307 + 2] = 10; // 'K'
+          return { probs: new ort.Tensor('float32', data, [1, 80, 307]) };
+        }),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+
+      const crossKvSession = {
+        run: vi.fn(async () => ({
+          ck: new ort.Tensor(
+            'float32',
+            new Float32Array(MIRAGE_DECODER_LAYERS * MIRAGE_CROSS_KV_HEADS * MIRAGE_MAX_M * MIRAGE_CROSS_HEAD_DIM),
+            [MIRAGE_DECODER_LAYERS, MIRAGE_CROSS_KV_HEADS, MIRAGE_MAX_M, MIRAGE_CROSS_HEAD_DIM]
+          ),
+          cv: new ort.Tensor(
+            'float32',
+            new Float32Array(MIRAGE_DECODER_LAYERS * MIRAGE_CROSS_KV_HEADS * MIRAGE_MAX_M * MIRAGE_CROSS_V_DIM),
+            [MIRAGE_DECODER_LAYERS, MIRAGE_CROSS_KV_HEADS, MIRAGE_MAX_M, MIRAGE_CROSS_V_DIM]
+          ),
+          cross_mask: new ort.Tensor('float32', new Float32Array(MIRAGE_MAX_M), [MIRAGE_MAX_M]),
+        })),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+
+      // Emits: 'S env=indoor\n', 'E1 chat', '<obj0>', '\nT ', '<txt0>', '</s>'
+      const seqIds = [6, 7, tableReader.vocab.refId('object', 0), 8, tableReader.vocab.refId('text', 0), 1];
+      let stepIdx = 0;
+      const decoderStepSession = {
+        run: vi.fn(async () => {
+          const logits = new Float32Array(tableReader.vocab.size).fill(-10);
+          // Step 0 consumes BOS, step 1 consumes <|fr|>, so emit seqIds starting after step 1
+          const outId = stepIdx >= 1 ? (seqIds[stepIdx - 1] ?? 1) : 1;
+          logits[outId] = 20;
+          stepIdx++;
+          return {
+            logits: new ort.Tensor('float32', logits, [tableReader.vocab.size]),
+            new_past_k: new ort.Tensor('float32', new Float32Array(MIRAGE_DECODER_LAYERS * MIRAGE_DECODER_KV_HEADS * MIRAGE_MAX_SEQ * MIRAGE_CROSS_HEAD_DIM), [MIRAGE_DECODER_LAYERS, MIRAGE_DECODER_KV_HEADS, MIRAGE_MAX_SEQ, MIRAGE_CROSS_HEAD_DIM]),
+            new_past_v: new ort.Tensor('float32', new Float32Array(MIRAGE_DECODER_LAYERS * MIRAGE_DECODER_KV_HEADS * MIRAGE_MAX_SEQ * MIRAGE_CROSS_V_DIM), [MIRAGE_DECODER_LAYERS, MIRAGE_DECODER_KV_HEADS, MIRAGE_MAX_SEQ, MIRAGE_CROSS_V_DIM]),
+            new_raw_q_hist: new ort.Tensor('float32', new Float32Array(MIRAGE_DECODER_LAYERS * 2 * 384), [MIRAGE_DECODER_LAYERS, 2, 384]),
+            new_raw_k_hist: new ort.Tensor('float32', new Float32Array(MIRAGE_DECODER_LAYERS * 2 * 96), [MIRAGE_DECODER_LAYERS, 2, 96]),
+            new_raw_v_hist: new ort.Tensor('float32', new Float32Array(MIRAGE_DECODER_LAYERS * 2 * 128), [MIRAGE_DECODER_LAYERS, 2, 128]),
+            new_eng_v_hist: new ort.Tensor('float32', new Float32Array(2 * 9 * MIRAGE_EMBEDDING_DIM), [2, 9, MIRAGE_EMBEDDING_DIM]),
+          };
+        }),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+
+      const engine = new MirageExperimentalOnnxEngine(encoderSession, 'mirage-onnx-exp-wasm');
+      engine.attachFullPipelineAssets({
+        readerSession,
+        crossKvSession,
+        decoderStepSession,
+        tableReader,
+        readerBackend: { runtime: 'onnxruntime-web', requestedProvider: 'wasm', configuredProviders: ['wasm'], fallbackReason: null, actualBackend: 'unmeasured' },
+        crossKvBackend: { runtime: 'onnxruntime-web', requestedProvider: 'wasm', configuredProviders: ['wasm'], fallbackReason: null, actualBackend: 'unmeasured' },
+        decoderStepBackend: { runtime: 'onnxruntime-web', requestedProvider: 'wasm', configuredProviders: ['wasm'], fallbackReason: null, actualBackend: 'unmeasured' },
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+
+      const detected = await engine.detectForVideo(canvas, 0.3, {
+        analysisMode: 'full',
+        mirageLanguage: 'fr',
+      });
+
+      expect(detected.some((d) => d.label === 'chat')).toBe(true);
+      expect(detected.some((d) => d.label === 'ocr:OK')).toBe(true);
+      const diag = engine.getLastDiagnostics();
+      expect(diag?.pipelineMode).toBe('full_pipeline');
+      expect(diag?.fullPipelineAssetsLoaded).toBe(true);
+      expect(diag?.decoderLanguage).toBe('fr');
+      expect(diag?.ocrLineCount).toBe(1);
+      expect(diag?.assembledObservation?.scene).toEqual({ env: 'indoor' });
+      expect(diag?.assembledObservation?.text[0]?.string).toBe('OK');
+      expect(encoderFetchesHistory[0]).toEqual([...MIRAGE_FULL_ENCODER_OUTPUTS]);
+
+      // Fast mode still stays strictly encoder_only without invoking decoder sessions
+      vi.clearAllMocks();
+      const fastDetected = await engine.detectForVideo(canvas, 0.3, { analysisMode: 'fast' });
+      expect(fastDetected.every((d) => d.labelJa.startsWith('[ONNX候補]'))).toBe(true);
+      expect(readerSession.run).not.toHaveBeenCalled();
+      expect(engine.getLastDiagnostics()?.pipelineMode).toBe('encoder_only');
+      expect(encoderFetchesHistory[1]).toEqual([
+        'detections',
+        'prototypes',
+        'coefficients',
+      ]);
+
+      await engine.close();
+      expect(readerSession.release).toHaveBeenCalledTimes(1);
+      expect(crossKvSession.release).toHaveBeenCalledTimes(1);
+      expect(decoderStepSession.release).toHaveBeenCalledTimes(1);
+      expect(encoderSession.release).toHaveBeenCalledTimes(1);
+      ctxSpy.mockRestore();
     });
   });
 });

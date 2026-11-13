@@ -1,4 +1,22 @@
 import * as ort from 'onnxruntime-web';
+import {
+  MIRAGE_FULL_PIPELINE_COMPONENTS,
+  type MirageFullPipelineComponentKey,
+} from './modelAssetResolver';
+import { MirageDecoderTableReader } from './mirageCactCodec';
+import {
+  assembleMirageObservation,
+  attachDiagnosticMasksToSemanticObjects,
+  MIRAGE_FULL_DEFAULT_MAX_OBJECTS,
+  MIRAGE_FULL_DEFAULT_MAX_TEXT,
+  MIRAGE_FULL_ENCODER_OUTPUTS,
+  readMirageTextLines,
+  runMirageCrossKv,
+  runMirageGreedyDecode,
+  toMirageRawObservation,
+  type MirageAssembledObservation,
+} from './mirageDecoderAssembly';
+import { mapMirageObservationToDetectedObjects } from './mirageVisionAdapter';
 import type {
   BoundingBox,
   DetectedObject,
@@ -65,6 +83,8 @@ export interface MirageRawHeadOutputs {
   detections: Float32Array;
   prototypes: Float32Array;
   coefficients: Float32Array;
+  memory?: Float32Array;
+  dense_features?: Float32Array;
 }
 
 export interface MirageDecodedProposal {
@@ -76,6 +96,8 @@ export interface MirageDecodedProposal {
   box: [number, number, number, number];
   /** [x1, y1, x2, y2] in [0, 1000] integer coordinates matching perception_diagnostics.py `bbox` */
   bbox: [number, number, number, number];
+  /** Normalized [x1, y1, x2, y2] on the padded 512x512 canvas (`0..w/512`, `0..h/512`) */
+  canvasBox?: [number, number, number, number];
   /** Present for object proposals: 128x128 diagnostic mask (0 or 1) matching `_mask` */
   mask?: Uint8Array;
   maskActivePixels?: number;
@@ -176,6 +198,14 @@ export interface MirageExperimentalExecutionDiagnostics {
   textProposalCount: number;
   nativeOverlayEnabled: boolean;
   nativeOverlayCount: number;
+  pipelineMode?: 'encoder_only' | 'full_pipeline';
+  fullPipelineAssetsLoaded?: boolean;
+  decoderLanguage?: string;
+  generatedTokenCount?: number;
+  decoderStepsExecuted?: number;
+  ocrLineCount?: number;
+  rawDecodedText?: string;
+  assembledObservation?: MirageAssembledObservation;
   frameAlignment?: MirageFrameAlignmentDiagnostics;
   timingsMs: {
     preprocess: number;
@@ -677,6 +707,7 @@ export function decodeMirageExperimentalOutputs(
           Math.min(1, Math.max(0, normY1)),
         ],
         bbox,
+        canvasBox: rawBox,
       };
 
       if (channel === 0 && includeMasks) {
@@ -1232,7 +1263,8 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
    * from the 64-output verified ONNX graph.
    */
   public async runRawHeads(
-    preprocessed: MiragePreprocessedInput
+    preprocessed: MiragePreprocessedInput,
+    options?: { includeDecoderFeatures?: boolean }
   ): Promise<MirageRawHeadOutputs> {
     return this.owner.use(() =>
       this.enqueueExclusive(async () => {
@@ -1254,12 +1286,19 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
         };
 
         const owned: ort.Tensor[] = [imageTensor, validHwTensor];
+        const wantDecoder =
+          options?.includeDecoderFeatures === true &&
+          (!this.rawSession.outputNames ||
+            this.rawSession.outputNames.length === 0 ||
+            (this.rawSession.outputNames.includes('memory') &&
+              this.rawSession.outputNames.includes('dense_features')));
+        const requestedOutputs = wantDecoder
+          ? [...MIRAGE_FULL_ENCODER_OUTPUTS]
+          : [...MIRAGE_EXPERIMENTAL_ONNX_FINAL_OUTPUTS];
         try {
           let results: ort.InferenceSession.OnnxValueMapType;
           try {
-            results = await this.rawSession.run(feeds, [
-              ...MIRAGE_EXPERIMENTAL_ONNX_FINAL_OUTPUTS,
-            ]);
+            results = await this.rawSession.run(feeds, requestedOutputs);
           } catch (err) {
             if (
               this.allowWasmFallback &&
@@ -1291,9 +1330,7 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
                   err instanceof Error ? err.message : String(err)
                 }`,
               };
-              results = await this.rawSession.run(feeds, [
-                ...MIRAGE_EXPERIMENTAL_ONNX_FINAL_OUTPUTS,
-              ]);
+              results = await this.rawSession.run(feeds, requestedOutputs);
             } else {
               throw new OnnxInferenceError('Mirage-Exp-ONNX', 'run', err);
             }
@@ -1322,7 +1359,22 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
           const coefficients = new Float32Array(
             coeffTensor.data as Float32Array
           );
-          return { detections, prototypes, coefficients };
+          const out: MirageRawHeadOutputs = {
+            detections,
+            prototypes,
+            coefficients,
+          };
+          if (wantDecoder) {
+            if (results?.memory?.data) {
+              out.memory = new Float32Array(results.memory.data as Float32Array);
+            }
+            if (results?.dense_features?.data) {
+              out.dense_features = new Float32Array(
+                results.dense_features.data as Float32Array
+              );
+            }
+          }
+          return out;
         } finally {
           disposeTensors(owned);
         }
@@ -1356,6 +1408,49 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     return this.nativeOverlayInitPromise;
   }
 
+  private fullPipelineAssets: MirageFullPipelineAssets | null = null;
+  private fullPipelineInitPromise: Promise<MirageFullPipelineAssets> | null = null;
+
+  public attachFullPipelineAssets(assets: MirageFullPipelineAssets): void {
+    this.fullPipelineAssets = assets;
+  }
+
+  public async ensureFullPipelineAssets(): Promise<MirageFullPipelineAssets> {
+    if (this.owner.closed) {
+      throw new Error('MirageExperimentalOnnxEngine is closed');
+    }
+    if (this.fullPipelineAssets) {
+      return this.fullPipelineAssets;
+    }
+    if (!this.fullPipelineInitPromise) {
+      const delegate: 'WebGPU' | 'WASM' =
+        this.backend.configuredProviders.includes('webgpu') ? 'WebGPU' : 'WASM';
+      this.fullPipelineInitPromise = (async () => {
+        try {
+          const loaded = await acquireMirageFullPipelineAssets({
+            variantId: this.variantId,
+            delegate,
+            allowWasmFallback: this.allowWasmFallback,
+            isCancelled: () => this.owner.closed,
+          });
+          if (this.owner.closed) {
+            await Promise.all([
+              loaded.readerSession.release?.().catch(() => undefined),
+              loaded.crossKvSession.release?.().catch(() => undefined),
+              loaded.decoderStepSession.release?.().catch(() => undefined),
+            ]);
+            throw new Error('MirageExperimentalOnnxEngine closed during full-pipeline initialization');
+          }
+          this.fullPipelineAssets = loaded;
+          return loaded;
+        } finally {
+          this.fullPipelineInitPromise = null;
+        }
+      })();
+    }
+    return this.fullPipelineInitPromise;
+  }
+
   public async detectForVideo(
     videoElement: InferenceInput,
     confidenceThreshold = 0.3,
@@ -1386,7 +1481,6 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
       this.owner.closed || this.sourceGeneration !== requestGeneration;
 
     // Synchronously capture an immutable source frame snapshot before any await
-    const preStart = performance.now();
     const snapshot =
       extraOptions?.sourceSnapshot && !extraOptions.sourceSnapshot.disposed
         ? (extraOptions.sourceSnapshot.retain() as MirageSourceFrameSnapshot)
@@ -1396,17 +1490,27 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
             requestGeneration
           );
 
+    const requestedAnalysisMode: MirageAnalysisMode =
+      extraOptions?.analysisMode ?? 'fast';
+
     try {
+      const fullAssets =
+        requestedAnalysisMode === 'full'
+          ? await this.ensureFullPipelineAssets()
+          : null;
+      if (isStale()) return [];
+
+      const preStart = performance.now();
       const preprocessed = this.preprocessInput(snapshot);
       const onnxInputPixelHash = snapshot.pixelHash;
       const preprocessMs = performance.now() - preStart;
 
       const infStart = performance.now();
-      const rawHeads = await this.runRawHeads(preprocessed);
-      const inferenceMs = performance.now() - infStart;
+      const rawHeads = await this.runRawHeads(preprocessed, {
+        includeDecoderFeatures: requestedAnalysisMode === 'full',
+      });
       if (isStale()) return [];
 
-      const postStart = performance.now();
       const effectiveConfidence = Math.max(
         0.05,
         Math.min(0.95, confidenceThreshold)
@@ -1414,33 +1518,155 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
       const nmsIou =
         extraOptions?.experimentalNmsIou !== undefined
           ? extraOptions.experimentalNmsIou
-          : null;
+          : requestedAnalysisMode === 'full'
+            ? 0.5
+            : null;
       const includeOcr = extraOptions?.includeOcr ?? true;
       const showObjects = extraOptions?.showObjectProposals ?? true;
       const showText = (extraOptions?.showTextProposals ?? true) && includeOcr;
       const showMasks = extraOptions?.showDiagnosticMasks ?? true;
       const overlayNative = extraOptions?.overlayNativeWasm ?? false;
 
-      const decoded = decodeMirageExperimentalOutputs(
-        rawHeads,
-        preprocessed.metadata,
-        {
-          confidence: effectiveConfidence,
-          nmsIou,
-          maxObjects: 64,
-          maxText: 32,
-          includeMasks: showMasks,
+      let onnxObjects: DetectedObject[] = [];
+      let decodedObjectsCount = 0;
+      let decodedTextCount = 0;
+      let decoderLanguage: string | undefined;
+      let generatedTokenCount: number | undefined;
+      let decoderStepsExecuted: number | undefined;
+      let ocrLineCount: number | undefined;
+      let rawDecodedText: string | undefined;
+      let assembledObservation: MirageAssembledObservation | undefined;
+      let inferenceMs = 0;
+      let postprocessMs = 0;
+
+      if (requestedAnalysisMode === 'full' && fullAssets) {
+        if (!rawHeads.memory || !rawHeads.dense_features) {
+          throw new OnnxInferenceError(
+            'Mirage-Exp-ONNX',
+            'output',
+            'Full Mirage pipeline requires encoder `memory` and `dense_features` outputs'
+          );
         }
-      );
 
-      const onnxObjects = convertProposalsToDetectedObjects(decoded, {
-        showObjectProposals: showObjects,
-        showTextProposals: showText,
-        showDiagnosticMasks: showMasks,
-        maxDetections: extraOptions?.maxDetections ?? 64,
-        sourceAttributionPrefix: true,
-      });
+        const decoded = decodeMirageExperimentalOutputs(
+          rawHeads,
+          preprocessed.metadata,
+          {
+            confidence: effectiveConfidence,
+            nmsIou,
+            maxObjects: MIRAGE_FULL_DEFAULT_MAX_OBJECTS,
+            maxText: MIRAGE_FULL_DEFAULT_MAX_TEXT,
+            includeMasks: showMasks,
+          }
+        );
+        decodedObjectsCount = decoded.objects.length;
+        decodedTextCount = decoded.text.length;
 
+        const ocrStrings = includeOcr
+          ? await readMirageTextLines(
+              fullAssets.readerSession,
+              snapshot.rgba,
+              snapshot.width,
+              snapshot.height,
+              decoded.text,
+              fullAssets.tableReader.charset,
+              isStale
+            )
+          : decoded.text.map(() => '');
+        if (isStale()) return [];
+
+        const crossKv = await runMirageCrossKv(
+          fullAssets.crossKvSession,
+          rawHeads.memory,
+          rawHeads.dense_features,
+          preprocessed.metadata,
+          decoded.objects,
+          decoded.text,
+          fullAssets.tableReader
+        );
+        if (isStale()) return [];
+
+        const decodeResult = await runMirageGreedyDecode(
+          fullAssets.decoderStepSession,
+          crossKv,
+          fullAssets.tableReader,
+          {
+            language: extraOptions?.mirageLanguage ?? 'en',
+            maxTokens: extraOptions?.maxTokens,
+            isStale,
+          }
+        );
+        if (isStale()) return [];
+        inferenceMs = performance.now() - infStart;
+
+        const postStart = performance.now();
+        assembledObservation = assembleMirageObservation({
+          decodedText: decodeResult.decodedText,
+          generatedTokenIds: decodeResult.generatedTokenIds,
+          language: decodeResult.language,
+          objects: decoded.objects,
+          texts: decoded.text,
+          ocrStrings,
+          includeMasks: showMasks,
+        });
+        const mapped = mapMirageObservationToDetectedObjects(
+          toMirageRawObservation(assembledObservation),
+          {
+            confidenceThreshold: 0,
+            textConfidenceThreshold: 0,
+            includeOcrAsDetections: includeOcr && showText,
+            maxDetections: extraOptions?.maxDetections ?? 64,
+            bboxFormat: 'xyxy',
+          }
+        );
+        onnxObjects = showObjects
+          ? mapped.objects
+          : mapped.objects.filter((obj) => obj.id.startsWith('mirage-ocr-'));
+
+        if (showMasks) {
+          attachDiagnosticMasksToSemanticObjects(
+            onnxObjects,
+            assembledObservation,
+            decodeResult.decodedText,
+            decoded.objects,
+            renderMirageDiagnosticMaskToCanvas
+          );
+        }
+
+        decoderLanguage = decodeResult.language;
+        generatedTokenCount = decodeResult.generatedTokenIds.length;
+        decoderStepsExecuted = decodeResult.stepsExecuted;
+        ocrLineCount = assembledObservation.text.length;
+        rawDecodedText = decodeResult.decodedText;
+        postprocessMs = performance.now() - postStart;
+      } else {
+        inferenceMs = performance.now() - infStart;
+        const postStart = performance.now();
+        const decoded = decodeMirageExperimentalOutputs(
+          rawHeads,
+          preprocessed.metadata,
+          {
+            confidence: effectiveConfidence,
+            nmsIou,
+            maxObjects: 64,
+            maxText: 32,
+            includeMasks: showMasks,
+          }
+        );
+        decodedObjectsCount = decoded.objects.length;
+        decodedTextCount = decoded.text.length;
+
+        onnxObjects = convertProposalsToDetectedObjects(decoded, {
+          showObjectProposals: showObjects,
+          showTextProposals: showText,
+          showDiagnosticMasks: showMasks,
+          maxDetections: extraOptions?.maxDetections ?? 64,
+          sourceAttributionPrefix: true,
+        });
+        postprocessMs = performance.now() - postStart;
+      }
+
+      const nativePostStart = performance.now();
       let nativeObjects: DetectedObject[] = [];
       let nativeInputPixelHash: string | null = null;
 
@@ -1454,8 +1680,7 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
               snapshot.canvas,
               effectiveConfidence,
               {
-                analysisMode:
-                  extraOptions?.analysisMode ?? ('fast' as MirageAnalysisMode),
+                analysisMode: requestedAnalysisMode,
                 includeOcr,
                 maxDetections: extraOptions?.maxDetections ?? 15,
                 sourceGeneration: requestGeneration,
@@ -1484,7 +1709,7 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
 
       if (isStale()) return [];
 
-      const postprocessMs = performance.now() - postStart;
+      postprocessMs += performance.now() - nativePostStart;
       const totalMs = performance.now() - totalStart;
 
       const requestedProvider =
@@ -1520,10 +1745,21 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
         metadata: preprocessed.metadata,
         nmsIou,
         confidenceThreshold: effectiveConfidence,
-        objectProposalCount: decoded.objects.length,
-        textProposalCount: decoded.text.length,
+        objectProposalCount: decodedObjectsCount,
+        textProposalCount: decodedTextCount,
         nativeOverlayEnabled: overlayNative,
         nativeOverlayCount: nativeObjects.length,
+        pipelineMode:
+          requestedAnalysisMode === 'full' && fullAssets
+            ? 'full_pipeline'
+            : 'encoder_only',
+        fullPipelineAssetsLoaded: Boolean(this.fullPipelineAssets),
+        decoderLanguage,
+        generatedTokenCount,
+        decoderStepsExecuted,
+        ocrLineCount,
+        rawDecodedText,
+        assembledObservation,
         frameAlignment: {
           frameId: snapshot.frameId,
           sourceGeneration: snapshot.sourceGeneration,
@@ -1568,6 +1804,16 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
       } catch {
         // Ignore cleanup errors
       }
+    }
+    const assetsToClose = this.fullPipelineAssets;
+    this.fullPipelineAssets = null;
+    this.fullPipelineInitPromise = null;
+    if (assetsToClose) {
+      await Promise.all([
+        assetsToClose.readerSession.release?.().catch(() => undefined),
+        assetsToClose.crossKvSession.release?.().catch(() => undefined),
+        assetsToClose.decoderStepSession.release?.().catch(() => undefined),
+      ]);
     }
     await this.owner.close();
   }
@@ -1736,12 +1982,198 @@ export async function probeWebGpuAdapterDiagnostics(): Promise<WebGpuAdapterDiag
   }
 }
 
+export interface MirageFullPipelineAssets {
+  readerSession: ort.InferenceSession;
+  crossKvSession: ort.InferenceSession;
+  decoderStepSession: ort.InferenceSession;
+  tableReader: MirageDecoderTableReader;
+  readerBackend: OnnxBackendInfo;
+  crossKvBackend: OnnxBackendInfo;
+  decoderStepBackend: OnnxBackendInfo;
+}
+
+async function computeSha256HexFast(bytes: Uint8Array): Promise<string> {
+  if (typeof crypto !== 'undefined' && crypto.subtle?.digest) {
+    const viewCopy = new Uint8Array(bytes.byteLength);
+    viewCopy.set(bytes);
+    const digest = await crypto.subtle.digest('SHA-256', viewCopy.buffer);
+    return Array.from(new Uint8Array(digest))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+  return sha256HexSync(bytes);
+}
+
+function renderMirageDiagnosticMaskToCanvas(
+  mask: Uint8Array,
+  colorHex: string
+): HTMLCanvasElement | undefined {
+  if (typeof document === 'undefined' || mask.length !== 128 * 128) {
+    return undefined;
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return undefined;
+  const imgData = ctx.createImageData(128, 128);
+  const out = imgData.data;
+  const clean = colorHex.replace('#', '');
+  const r = Number.parseInt(clean.slice(0, 2) || '38', 16) || 56;
+  const g = Number.parseInt(clean.slice(2, 4) || 'bd', 16) || 189;
+  const b = Number.parseInt(clean.slice(4, 6) || 'f8', 16) || 248;
+  for (let i = 0; i < 128 * 128; i++) {
+    if (mask[i] > 0) {
+      const p = i * 4;
+      out[p] = r;
+      out[p + 1] = g;
+      out[p + 2] = b;
+      out[p + 3] = 150;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+  return canvas;
+}
+
+async function fetchVerifiedMiragePipelineComponent(
+  key: MirageFullPipelineComponentKey,
+  variantId: MirageExperimentalVariantId
+): Promise<Uint8Array> {
+  const comp = MIRAGE_FULL_PIPELINE_COMPONENTS[key];
+  const url = comp.localUrl.includes('sha256=')
+    ? comp.localUrl
+    : `${comp.localUrl}?sha256=${comp.expectedSha256}`;
+  diagnosticLogger.log(
+    'info',
+    'fetch',
+    'mirage',
+    variantId,
+    `Fetching full-pipeline component ${comp.file}`,
+    { details: { key, url, expectedSize: comp.expectedSize } }
+  );
+  const buf = await fetchModelBuffer(url, {
+    expectedSize: comp.expectedSize,
+    variantId: `${variantId}:${key}`,
+    onChunk: (loaded, total) => {
+      diagnosticLogger.log(
+        'info',
+        'fetch',
+        'mirage',
+        variantId,
+        `${comp.file}: ${loaded}/${total} bytes (${Math.round((loaded / total) * 100)}%)`,
+        { details: { key, loaded, total } }
+      );
+    },
+  });
+  const bytes = new Uint8Array(buf);
+  if (bytes.byteLength !== comp.expectedSize) {
+    throw new Error(
+      `Unexpected byte length for ${comp.file}: got ${bytes.byteLength}, expected ${comp.expectedSize}`
+    );
+  }
+  const actualSha = await computeSha256HexFast(bytes);
+  if (actualSha !== comp.expectedSha256) {
+    throw new Error(
+      `SHA-256 mismatch for ${comp.file}: got ${actualSha}, expected ${comp.expectedSha256}`
+    );
+  }
+  return bytes;
+}
+
+export async function acquireMirageFullPipelineAssets(options: {
+  variantId: MirageExperimentalVariantId;
+  delegate: 'WebGPU' | 'WASM';
+  allowWasmFallback: boolean;
+  isCancelled?: () => boolean;
+}): Promise<MirageFullPipelineAssets> {
+  const { variantId, delegate, allowWasmFallback, isCancelled } = options;
+  const createdSessions: ort.InferenceSession[] = [];
+  const disposeCreated = async () => {
+    await Promise.all(
+      createdSessions.map(async (s) => {
+        try {
+          await s.release?.();
+        } catch {
+          // ignore cleanup errors
+        }
+      })
+    );
+  };
+
+  try {
+    const tableBytes = await fetchVerifiedMiragePipelineComponent(
+      'decoderTables',
+      variantId
+    );
+    if (isCancelled?.()) {
+      throw new Error('Cancelled during decoder tables download');
+    }
+    const tableReader = new MirageDecoderTableReader(tableBytes);
+
+    const createOne = async (
+      key: 'reader' | 'crossKv' | 'decoderStep'
+    ): Promise<{ session: ort.InferenceSession; backend: OnnxBackendInfo }> => {
+      const bytes = await fetchVerifiedMiragePipelineComponent(key, variantId);
+      if (isCancelled?.()) {
+        throw new Error(`Cancelled during ${key} download`);
+      }
+      if (delegate === 'WebGPU' && !allowWasmFallback) {
+        const session = await ort.InferenceSession.create(bytes, {
+          executionProviders: ['webgpu'],
+          graphOptimizationLevel: 'all',
+          logSeverityLevel: 3,
+        });
+        createdSessions.push(session);
+        return {
+          session,
+          backend: {
+            runtime: 'onnxruntime-web',
+            requestedProvider: 'webgpu',
+            configuredProviders: ['webgpu'],
+            fallbackReason: null,
+            actualBackend: 'unmeasured',
+          },
+        };
+      }
+      const created = await createOrtSession(bytes, delegate, {
+        fallbackModelBytes: () => bytes,
+        variantId: `${variantId}:${key}`,
+        modelId: 'mirage',
+      });
+      createdSessions.push(created.session);
+      return created;
+    };
+
+    const readerRes = await createOne('reader');
+    if (isCancelled?.()) throw new Error('Cancelled during reader init');
+    const crossKvRes = await createOne('crossKv');
+    if (isCancelled?.()) throw new Error('Cancelled during crossKv init');
+    const decoderStepRes = await createOne('decoderStep');
+    if (isCancelled?.()) throw new Error('Cancelled during decoderStep init');
+
+    return {
+      readerSession: readerRes.session,
+      crossKvSession: crossKvRes.session,
+      decoderStepSession: decoderStepRes.session,
+      tableReader,
+      readerBackend: readerRes.backend,
+      crossKvBackend: crossKvRes.backend,
+      decoderStepBackend: decoderStepRes.backend,
+    };
+  } catch (err) {
+    await disposeCreated();
+    throw err;
+  }
+}
+
 export interface CreateMirageExperimentalOnnxOptions {
   variantId: MirageExperimentalVariantId;
   recordAssetSource?: AssetSourceRecorder;
   nativeOverlayTaskFactory?: () => Promise<MirageTask>;
   /** When false and variantId is mirage-onnx-exp-webgpu, strictly requires ['webgpu'] without falling back to WASM */
   allowWasmFallback?: boolean;
+  /** Optional full-pipeline acquisition strategy ('lazy' defers until analysisMode === 'full'; true preloads during init; object injects sessions) */
+  fullPipeline?: boolean | 'lazy' | MirageFullPipelineAssets;
 }
 
 export async function createMirageExperimentalOnnxTask(
@@ -1908,7 +2340,7 @@ export async function createMirageExperimentalOnnxTask(
       },
     });
 
-    return new MirageExperimentalOnnxEngine(
+    const engine = new MirageExperimentalOnnxEngine(
       session,
       variantId,
       backend ?? unknownOnnxBackend(),
@@ -1917,6 +2349,12 @@ export async function createMirageExperimentalOnnxTask(
       allowWasmFallback,
       webgpuAdapter
     );
+    if (options.fullPipeline && typeof options.fullPipeline === 'object') {
+      engine.attachFullPipelineAssets(options.fullPipeline);
+    } else if (options.fullPipeline === true) {
+      await engine.ensureFullPipelineAssets();
+    }
+    return engine;
   } catch (ortErr) {
     diagnosticLogger.log('error', 'ort-session', 'mirage', variantId, 'ONNX Runtime session creation failed', {
       error: ortErr,
@@ -1929,6 +2367,8 @@ export async function createMirageExperimentalOnnxTask(
 export interface MirageExperimentalBrowserBridge {
   ort: typeof ort;
   createMirageExperimentalOnnxTask: typeof createMirageExperimentalOnnxTask;
+  acquireMirageFullPipelineAssets: typeof acquireMirageFullPipelineAssets;
+  MirageDecoderTableReader: typeof MirageDecoderTableReader;
   fetchModelBuffer: typeof fetchModelBuffer;
   verifyMirageExperimentalOnnxBytes: typeof verifyMirageExperimentalOnnxBytes;
   computeMirageCeil32Metadata: typeof computeMirageCeil32Metadata;
@@ -1952,6 +2392,8 @@ if (typeof window !== 'undefined') {
   window.__mirageExperimentalBridge = {
     ort,
     createMirageExperimentalOnnxTask,
+    acquireMirageFullPipelineAssets,
+    MirageDecoderTableReader,
     fetchModelBuffer,
     verifyMirageExperimentalOnnxBytes,
     computeMirageCeil32Metadata,
