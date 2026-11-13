@@ -1357,5 +1357,149 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
       expect(encoderSession.release).toHaveBeenCalledTimes(1);
       ctxSpy.mockRestore();
     });
+
+    it('fails loudly instead of masking black-canvas draws or pixel drift in frame provenance', async () => {
+      let drawReturnsBlackOnResize = false;
+      let wasmDrawReturnsDriftedR = false;
+      const canvasBuf = new WeakMap<HTMLCanvasElement, Uint8ClampedArray>();
+
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (
+        this: HTMLCanvasElement
+      ) {
+        return {
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+          clearRect: vi.fn(),
+          drawImage: vi.fn((src: CanvasImageSource) => {
+            const w = this.width || 64;
+            const h = this.height || 64;
+            const srcData = canvasBuf.get(src as HTMLCanvasElement);
+            const out = new Uint8ClampedArray(w * h * 4);
+            // Detect resize/consumer drawImage when drawing from the captured snapshot
+            if (srcData && drawReturnsBlackOnResize) {
+              canvasBuf.set(this, out); // All-black failure
+              return;
+            }
+            const r =
+              srcData && wasmDrawReturnsDriftedR
+                ? 222
+                : srcData
+                  ? srcData[0]
+                  : 17;
+            for (let i = 0; i < out.length; i += 4) {
+              out[i] = r;
+              out[i + 1] = 40;
+              out[i + 2] = 80;
+              out[i + 3] = 255;
+            }
+            canvasBuf.set(this, out);
+          }),
+          putImageData: vi.fn((img: { data: Uint8ClampedArray }) => {
+            canvasBuf.set(this, new Uint8ClampedArray(img.data));
+          }),
+          getImageData: (_x: number, _y: number, w: number, h: number) => {
+            const stored = canvasBuf.get(this);
+            if (stored && stored.length === w * h * 4) {
+              return { data: new Uint8ClampedArray(stored) };
+            }
+            const data = new Uint8ClampedArray(w * h * 4);
+            for (let i = 0; i < data.length; i += 4) {
+              data[i] = 17;
+              data[i + 1] = 40;
+              data[i + 2] = 80;
+              data[i + 3] = 255;
+            }
+            return { data };
+          },
+          createImageData: (w: number, h: number) => ({
+            data: new Uint8ClampedArray(w * h * 4),
+          }),
+        } as unknown as CanvasRenderingContext2D;
+      });
+
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const session = {
+        inputNames: ['image', 'valid_hw'],
+        outputNames: [...MIRAGE_EXPERIMENTAL_ONNX_FINAL_OUTPUTS],
+        run: vi.fn(async () => ({
+          detections: new ort.Tensor('float32', new Float32Array(64 * 64 * 10).fill(-10), [1, 64, 64, 10]),
+          prototypes: new ort.Tensor('float32', new Float32Array(32 * 128 * 128), [1, 32, 128, 128]),
+          coefficients: new ort.Tensor('float32', new Float32Array(32 * 64 * 64), [1, 32, 64, 64]),
+        })),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+
+      const mockWorker = {
+        onmessage: null as ((event: MessageEvent) => void) | null,
+        onerror: null as ((event: ErrorEvent) => void) | null,
+        postMessage: vi.fn((msg: MirageWorkerRequest) => {
+          if (msg.type === 'describe') {
+            queueMicrotask(() => {
+              mockWorker.onmessage?.({
+                data: {
+                  type: 'describe-result',
+                  id: msg.id,
+                  ok: true,
+                  observation: { objects: [], text: [] },
+                },
+              } as MessageEvent);
+            });
+          }
+        }),
+        terminate: vi.fn(),
+      };
+
+      const wasmEngine = new MirageWasmEngine(mockWorker);
+      const liveCanvas = document.createElement('canvas');
+      liveCanvas.width = 64;
+      liveCanvas.height = 64;
+
+      // 1. Black canvas draw failure must throw rather than resample snapshot.rgba
+      const blackSnap = captureMirageSourceFrameSnapshot(liveCanvas, 1, 1);
+      drawReturnsBlackOnResize = true;
+      const engine = new MirageExperimentalOnnxEngine(
+        session,
+        'mirage-onnx-exp-wasm',
+        undefined,
+        async () => wasmEngine
+      );
+      await expect(engine.detectForVideo(blackSnap.canvas, 0.3)).rejects.toThrow(
+        /empty pixels/
+      );
+      await expect(
+        wasmEngine.detectForVideo(blackSnap.canvas, 0.3, {
+          sourceSnapshot: blackSnap,
+        })
+      ).rejects.toThrow(/empty pixels/);
+      expect(wasmEngine.getLastConsumedSnapshotHash()).toBeNull();
+      blackSnap.release();
+
+      // 2. Native pixel drift after ONNX preprocessing must fail native overlay and mark sameSourceFrame=false
+      drawReturnsBlackOnResize = false;
+      (session.run as ReturnType<typeof vi.fn>).mockImplementationOnce(async () => {
+        wasmDrawReturnsDriftedR = true;
+        return {
+          detections: new ort.Tensor('float32', new Float32Array(64 * 64 * 10).fill(-10), [1, 64, 64, 10]),
+          prototypes: new ort.Tensor('float32', new Float32Array(32 * 128 * 128), [1, 32, 128, 128]),
+          coefficients: new ort.Tensor('float32', new Float32Array(32 * 64 * 64), [1, 32, 64, 64]),
+        };
+      });
+      const driftedResults = await engine.detectForVideo(liveCanvas, 0.3, {
+        overlayNativeWasm: true,
+      });
+      expect(driftedResults).toEqual([]);
+      const driftedDiag = engine.getLastDiagnostics();
+      expect(driftedDiag?.frameAlignment?.sameSourceFrame).toBe(false);
+      expect(driftedDiag?.frameAlignment?.nativeInputPixelHash).toBeNull();
+      expect(driftedDiag?.frameAlignment?.onnxInputPixelHash).toBe(
+        driftedDiag?.frameAlignment?.sourcePixelHash
+      );
+      expect(wasmEngine.getLastConsumedSnapshotHash()).toBeNull();
+      expect(warnSpy).toHaveBeenCalled();
+
+      await engine.close();
+      vi.restoreAllMocks();
+    });
   });
 });

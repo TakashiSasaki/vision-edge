@@ -30,6 +30,7 @@ export interface MirageSnapshotLike {
   readonly rgba: Uint8ClampedArray<ArrayBuffer>;
   readonly pixelHash: string;
   readonly rgbaSha256?: string;
+  readonly canvas?: CanvasImageSource;
   readonly disposed: boolean;
   retain(): MirageSnapshotLike;
   release(): void;
@@ -58,6 +59,7 @@ export interface MirageTask {
     confidenceThreshold: number,
     extraOptions?: MirageInferExtraOptions
   ): Promise<DetectedObject[]>;
+  getLastConsumedSnapshotHash?(): string | null;
   notifySourceChanged?(): number;
   close(): void | Promise<void>;
 }
@@ -160,29 +162,6 @@ function formatPositionTagJa(bbox: { x: number; y: number; width: number; height
         ? '中'
         : '遠';
   return `${dir}・${dist}`;
-}
-
-function resampleRgbaToRgb(
-  srcRgba: Uint8ClampedArray,
-  srcW: number,
-  srcH: number,
-  dstW: number,
-  dstH: number
-): Uint8Array {
-  const rgb = new Uint8Array(dstW * dstH * 3);
-  let dstIdx = 0;
-  for (let y = 0; y < dstH; y++) {
-    const sy = Math.min(srcH - 1, Math.floor(((y + 0.5) * srcH) / dstH));
-    const srcRow = sy * srcW * 4;
-    for (let x = 0; x < dstW; x++) {
-      const sx = Math.min(srcW - 1, Math.floor(((x + 0.5) * srcW) / dstW));
-      const p = srcRow + sx * 4;
-      rgb[dstIdx++] = srcRgba[p];
-      rgb[dstIdx++] = srcRgba[p + 1];
-      rgb[dstIdx++] = srcRgba[p + 2];
-    }
-  }
-  return rgb;
 }
 
 export class MirageWasmEngine implements MirageTask {
@@ -298,12 +277,14 @@ export class MirageWasmEngine implements MirageTask {
         throw new Error('Failed to acquire 2D canvas context for Mirage preprocessing');
       }
 
-      ctx.drawImage(input as CanvasImageSource, 0, 0, targetW, targetH);
+      this.lastConsumedSnapshotHash = null;
+      const drawSource: CanvasImageSource =
+        attachedSnapshot?.canvas ?? (input as CanvasImageSource);
+      ctx.drawImage(drawSource, 0, 0, targetW, targetH);
       const imageData = ctx.getImageData(0, 0, targetW, targetH);
       const rgba = imageData.data;
 
       if (attachedSnapshot) {
-        this.lastConsumedSnapshotHash = attachedSnapshot.pixelHash;
         let canvasHasNonZero = false;
         for (let i = 0; i < rgba.length; i += 4) {
           if (rgba[i] !== 0 || rgba[i + 1] !== 0 || rgba[i + 2] !== 0) {
@@ -312,31 +293,38 @@ export class MirageWasmEngine implements MirageTask {
           }
         }
         let snapshotHasNonZero = false;
-        if (!canvasHasNonZero) {
-          for (let i = 0; i < attachedSnapshot.rgba.length; i += 4) {
-            if (
-              attachedSnapshot.rgba[i] !== 0 ||
-              attachedSnapshot.rgba[i + 1] !== 0 ||
-              attachedSnapshot.rgba[i + 2] !== 0
-            ) {
-              snapshotHasNonZero = true;
-              break;
-            }
+        for (let i = 0; i < attachedSnapshot.rgba.length; i += 4) {
+          if (
+            attachedSnapshot.rgba[i] !== 0 ||
+            attachedSnapshot.rgba[i + 1] !== 0 ||
+            attachedSnapshot.rgba[i + 2] !== 0
+          ) {
+            snapshotHasNonZero = true;
+            break;
           }
         }
         if (!canvasHasNonZero && snapshotHasNonZero) {
-          const rgb = resampleRgbaToRgb(
-            attachedSnapshot.rgba,
-            attachedSnapshot.width,
-            attachedSnapshot.height,
-            targetW,
-            targetH
+          throw new Error(
+            'Mirage Canvas 2D drawImage produced empty pixels from a non-empty snapshot'
           );
-          return {
-            rgbBuffer: rgb.buffer as ArrayBuffer,
-            width: targetW,
-            height: targetH,
-          };
+        }
+        if (targetW === attachedSnapshot.width && targetH === attachedSnapshot.height) {
+          for (let i = 0; i < rgba.length; i += 4) {
+            if (
+              rgba[i + 3] === 255 &&
+              attachedSnapshot.rgba[i + 3] === 255 &&
+              (rgba[i] !== attachedSnapshot.rgba[i] ||
+                rgba[i + 1] !== attachedSnapshot.rgba[i + 1] ||
+                rgba[i + 2] !== attachedSnapshot.rgba[i + 2])
+            ) {
+              throw new Error(
+                'Mirage Canvas 2D drawImage pixels diverged from captured snapshot RGBA'
+              );
+            }
+          }
+        }
+        if (!attachedSnapshot.canvas || drawSource === attachedSnapshot.canvas) {
+          this.lastConsumedSnapshotHash = attachedSnapshot.pixelHash;
         }
       }
 

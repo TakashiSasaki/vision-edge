@@ -7,9 +7,11 @@ import { MirageDecoderTableReader } from './mirageCactCodec';
 import {
   assembleMirageObservation,
   attachDiagnosticMasksToSemanticObjects,
+  buildCrossKvInputArrays,
   MIRAGE_FULL_DEFAULT_MAX_OBJECTS,
   MIRAGE_FULL_DEFAULT_MAX_TEXT,
   MIRAGE_FULL_ENCODER_OUTPUTS,
+  parseMirageDecodedText,
   readMirageTextLines,
   runMirageCrossKv,
   runMirageGreedyDecode,
@@ -77,6 +79,7 @@ export interface MiragePreprocessedInput {
   image: Float32Array;
   valid_hw: [number, number];
   metadata: MirageCeil32PreprocessMetadata;
+  sourcePixelHash?: string;
 }
 
 export interface MirageRawHeadOutputs {
@@ -940,34 +943,6 @@ function isSnapshotObject(
   );
 }
 
-function resampleSnapshotRgba(
-  srcRgba: Uint8ClampedArray<ArrayBuffer>,
-  srcW: number,
-  srcH: number,
-  dstW: number,
-  dstH: number
-): Uint8ClampedArray<ArrayBuffer> {
-  if (srcW === dstW && srcH === dstH) {
-    return srcRgba;
-  }
-  const out = new Uint8ClampedArray(dstW * dstH * 4);
-  for (let y = 0; y < dstH; y++) {
-    const sy = Math.min(srcH - 1, Math.floor(((y + 0.5) * srcH) / dstH));
-    const srcRow = sy * srcW * 4;
-    const dstRow = y * dstW * 4;
-    for (let x = 0; x < dstW; x++) {
-      const sx = Math.min(srcW - 1, Math.floor(((x + 0.5) * srcW) / dstW));
-      const sp = srcRow + sx * 4;
-      const dp = dstRow + x * 4;
-      out[dp] = srcRgba[sp];
-      out[dp + 1] = srcRgba[sp + 1];
-      out[dp + 2] = srcRgba[sp + 2];
-      out[dp + 3] = srcRgba[sp + 3];
-    }
-  }
-  return out;
-}
-
 /**
  * Captures source pixels synchronously before any `await`, returning a reference-counted
  * immutable `MirageSourceFrameSnapshot` with its own isolated offscreen `HTMLCanvasElement`.
@@ -1208,14 +1183,16 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
 
       const drawSource = isSnapshotObject(input)
         ? input.canvas
-        : (input as CanvasImageSource);
+        : snapshot
+          ? snapshot.canvas
+          : (input as CanvasImageSource);
 
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(drawSource, 0, 0, w, h);
       const imageData = ctx.getImageData(0, 0, w, h);
-      let pixels: Uint8ClampedArray<ArrayBuffer> = imageData.data;
+      const pixels: Uint8ClampedArray<ArrayBuffer> = imageData.data;
 
       if (snapshot) {
         let canvasHasNonZero = false;
@@ -1226,30 +1203,46 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
           }
         }
         let snapshotHasNonZero = false;
-        if (!canvasHasNonZero) {
-          for (let i = 0; i < snapshot.rgba.length; i += 4) {
-            if (
-              snapshot.rgba[i] !== 0 ||
-              snapshot.rgba[i + 1] !== 0 ||
-              snapshot.rgba[i + 2] !== 0
-            ) {
-              snapshotHasNonZero = true;
-              break;
-            }
+        for (let i = 0; i < snapshot.rgba.length; i += 4) {
+          if (
+            snapshot.rgba[i] !== 0 ||
+            snapshot.rgba[i + 1] !== 0 ||
+            snapshot.rgba[i + 2] !== 0
+          ) {
+            snapshotHasNonZero = true;
+            break;
           }
         }
         if (!canvasHasNonZero && snapshotHasNonZero) {
-          pixels = resampleSnapshotRgba(
-            snapshot.rgba,
-            snapshot.width,
-            snapshot.height,
-            w,
-            h
+          throw new OnnxInferenceError(
+            'Mirage-Exp-ONNX',
+            'input',
+            'Canvas 2D drawImage produced empty pixels from a non-empty Mirage frame snapshot'
           );
+        }
+        if (w === snapshot.width && h === snapshot.height) {
+          for (let i = 0; i < pixels.length; i += 4) {
+            if (
+              pixels[i + 3] === 255 &&
+              snapshot.rgba[i + 3] === 255 &&
+              (pixels[i] !== snapshot.rgba[i] ||
+                pixels[i + 1] !== snapshot.rgba[i + 1] ||
+                pixels[i + 2] !== snapshot.rgba[i + 2])
+            ) {
+              throw new OnnxInferenceError(
+                'Mirage-Exp-ONNX',
+                'input',
+                'Canvas 2D drawImage pixels diverged from captured Mirage frame snapshot'
+              );
+            }
+          }
         }
       }
 
-      return packResizedPixelsToMirageTensor(pixels, 4, metadata);
+      const packed = packResizedPixelsToMirageTensor(pixels, 4, metadata);
+      return snapshot
+        ? { ...packed, sourcePixelHash: snapshot.pixelHash }
+        : packed;
     } finally {
       if (snapshot) {
         snapshot.release();
@@ -1502,7 +1495,8 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
 
       const preStart = performance.now();
       const preprocessed = this.preprocessInput(snapshot);
-      const onnxInputPixelHash = snapshot.pixelHash;
+      const onnxInputPixelHash =
+        preprocessed.sourcePixelHash ?? 'UNVERIFIED_ONNX_INPUT';
       const preprocessMs = performance.now() - preStart;
 
       const infStart = performance.now();
@@ -1669,13 +1663,13 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
       const nativePostStart = performance.now();
       let nativeObjects: DetectedObject[] = [];
       let nativeInputPixelHash: string | null = null;
+      let nativeOverlaySucceeded = false;
 
       if (overlayNative && !isStale() && this.nativeOverlayTaskFactory) {
         snapshot.retain();
         try {
           const overlayTask = await this.ensureNativeOverlayTask();
           if (!isStale() && overlayTask) {
-            nativeInputPixelHash = snapshot.pixelHash;
             const rawNative = await overlayTask.detectForVideo(
               snapshot.canvas,
               effectiveConfidence,
@@ -1688,6 +1682,12 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
               }
             );
             if (isStale()) return [];
+            const reportedNativeHash = overlayTask.getLastConsumedSnapshotHash?.();
+            nativeInputPixelHash =
+              typeof overlayTask.getLastConsumedSnapshotHash === 'function'
+                ? (reportedNativeHash ?? 'UNVERIFIED_NATIVE_INPUT')
+                : snapshot.pixelHash;
+            nativeOverlaySucceeded = true;
             nativeObjects = rawNative.map((obj, idx) => ({
               ...obj,
               id: `mirage-native-overlay-${idx}-${obj.id}`,
@@ -1722,8 +1722,8 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
       const sameSourceSnapshot =
         onnxInputPixelHash === snapshot.pixelHash &&
         (!overlayNative ||
-          nativeInputPixelHash === null ||
-          nativeInputPixelHash === snapshot.pixelHash);
+          !this.nativeOverlayTaskFactory ||
+          (nativeOverlaySucceeded && nativeInputPixelHash === snapshot.pixelHash));
 
       this.lastDiagnostics = {
         variantId: this.variantId,
@@ -2369,6 +2369,12 @@ export interface MirageExperimentalBrowserBridge {
   createMirageExperimentalOnnxTask: typeof createMirageExperimentalOnnxTask;
   acquireMirageFullPipelineAssets: typeof acquireMirageFullPipelineAssets;
   MirageDecoderTableReader: typeof MirageDecoderTableReader;
+  buildCrossKvInputArrays: typeof buildCrossKvInputArrays;
+  runMirageCrossKv: typeof runMirageCrossKv;
+  runMirageGreedyDecode: typeof runMirageGreedyDecode;
+  readMirageTextLines: typeof readMirageTextLines;
+  parseMirageDecodedText: typeof parseMirageDecodedText;
+  assembleMirageObservation: typeof assembleMirageObservation;
   fetchModelBuffer: typeof fetchModelBuffer;
   verifyMirageExperimentalOnnxBytes: typeof verifyMirageExperimentalOnnxBytes;
   computeMirageCeil32Metadata: typeof computeMirageCeil32Metadata;
@@ -2394,6 +2400,12 @@ if (typeof window !== 'undefined') {
     createMirageExperimentalOnnxTask,
     acquireMirageFullPipelineAssets,
     MirageDecoderTableReader,
+    buildCrossKvInputArrays,
+    runMirageCrossKv,
+    runMirageGreedyDecode,
+    readMirageTextLines,
+    parseMirageDecodedText,
+    assembleMirageObservation,
     fetchModelBuffer,
     verifyMirageExperimentalOnnxBytes,
     computeMirageCeil32Metadata,

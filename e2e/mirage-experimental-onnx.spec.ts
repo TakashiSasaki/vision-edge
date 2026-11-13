@@ -1073,5 +1073,518 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
       sameSourceFrame: true,
     });
   });
+
+  test('verifies full 4-graph Mirage browser WASM parity (Reader OCR, CrossKV, step0 logits, autoregressive tokens, assembly) and strict WebGPU probe', async ({
+    context,
+    page,
+  }, testInfo) => {
+    test.setTimeout(360_000);
+    const fullRefPath = path.resolve(
+      WORKSPACE_ROOT,
+      '.cache/mirage-browser-fixtures/full_pipeline_reference.json'
+    );
+    const cactPath = path.resolve(
+      WORKSPACE_ROOT,
+      '.cache/container-models/mirage.cact'
+    );
+    const hasAllArtifacts =
+      existsSync(ONNX_ARTIFACT_PATH) &&
+      existsSync(FIXTURE_MANIFEST_PATH) &&
+      existsSync(fullRefPath) &&
+      existsSync(cactPath);
+
+    if (process.env.REQUIRE_MIRAGE_REAL_MODEL === '1') {
+      expect(
+        hasAllArtifacts,
+        `Expected ONNX, fixtures, full_pipeline_reference.json, and mirage.cact under ${WORKSPACE_ROOT}/.cache`
+      ).toBe(true);
+    } else if (!hasAllArtifacts) {
+      test.skip(true, 'Real Mirage ONNX/CACT/full-pipeline reference artifacts not present locally');
+    }
+
+    await routeLocalModelCache(context);
+    await page.goto('/');
+
+    interface RefLangEntry {
+      generatedTokenIds: number[];
+      decodedText: string;
+      step0LogitsFile: string;
+      step0LogitsSha256: string;
+    }
+
+    interface RefCaseEntry {
+      confidence: number;
+      nmsIou: number;
+      objectCount: number;
+      textCount: number;
+      ocrLines: string[];
+      ckFile: string;
+      cvFile: string;
+      languages: Record<'en' | 'fr' | 'es', RefLangEntry>;
+    }
+
+    interface FullRefManifest {
+      schemaVersion: number;
+      cases: Record<string, RefCaseEntry>;
+    }
+
+    const report = await page.evaluate(async () => {
+      const bridge = window.__mirageExperimentalBridge;
+      if (!bridge) {
+        throw new Error('Mirage experimental bridge missing on window');
+      }
+      bridge.cancelInFlightMirageWasmInit?.();
+      bridge.ort.env.logLevel = 'error';
+      bridge.ort.env.wasm.numThreads = 1;
+      bridge.ort.env.wasm.wasmPaths = `${window.location.origin}/api/model-cache/wasm/ort/`;
+
+      const [manifestRes, fullRefRes] = await Promise.all([
+        fetch('/api/model-cache/mirage/fixtures/manifest.json'),
+        fetch('/api/model-cache/mirage/fixtures/full_pipeline_reference.json'),
+      ]);
+      if (!manifestRes.ok || !fullRefRes.ok) {
+        throw new Error(
+          `Failed to load fixture manifests: ${manifestRes.status}, ${fullRefRes.status}`
+        );
+      }
+      const manifest = (await manifestRes.json()) as {
+        cases: Record<
+          string,
+          {
+            png_file: string;
+            input_tensor_file: string;
+            valid_hw: [number, number];
+            metadata: { W: number; H: number };
+          }
+        >;
+      };
+      const fullRef = (await fullRefRes.json()) as FullRefManifest;
+
+      async function fetchFloat32(filename: string): Promise<Float32Array> {
+        const res = await fetch(`/api/model-cache/mirage/fixtures/${filename}`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch ${filename}: HTTP ${res.status}`);
+        }
+        return new Float32Array(await res.arrayBuffer());
+      }
+
+      async function loadPngElement(filename: string): Promise<HTMLImageElement> {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Failed to load ${filename}`));
+          img.src = `/api/model-cache/mirage/fixtures/${filename}`;
+        });
+      }
+
+      function extractNativeRgba(img: HTMLImageElement, w: number, h: number): Uint8ClampedArray {
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        if (!ctx) throw new Error('2D context unavailable');
+        ctx.drawImage(img, 0, 0, w, h);
+        return ctx.getImageData(0, 0, w, h).data;
+      }
+
+      const fullAcquireStart = performance.now();
+      const fullAssets = await bridge.acquireMirageFullPipelineAssets({
+        variantId: 'mirage-onnx-exp-wasm',
+        delegate: 'WASM',
+        allowWasmFallback: true,
+      });
+      const fullAcquireMs = performance.now() - fullAcquireStart;
+
+      const wasmTask = await bridge.createMirageExperimentalOnnxTask({
+        variantId: 'mirage-onnx-exp-wasm',
+        fullPipeline: fullAssets,
+      });
+
+      const fullDecodeMatrix: Record<string, ReadonlyArray<'en' | 'fr' | 'es'>> = {
+        text_regions: ['en', 'fr', 'es'],
+        overlap_shapes: ['fr'],
+        coco_000000331352: ['en', 'fr'],
+        coco_000000458054: ['en'],
+      };
+
+      interface LangReport {
+        step0LogitsAllcloseAt2e4: boolean;
+        step0LogitsMaxAbsDiff: number;
+        step0LogitsViolationsAt2e4: number;
+        step0LogitsCosineSimilarity: number;
+        fullSequenceTested: boolean;
+        tokenIdsExactMatch: boolean | null;
+        decodedTextExactMatch: boolean | null;
+        generatedTokenCount: number;
+        stepsExecuted: number;
+        decodeMs: number;
+        assembledObjectCount?: number;
+        assembledRegionCount?: number;
+        assembledTextCount?: number;
+        assembledRelationCount?: number;
+      }
+
+      const caseReports: Record<
+        string,
+        {
+          objectCount: number;
+          textCount: number;
+          ocrLinesActual: string[];
+          ocrLinesExpected: string[];
+          ocrExactMatch: boolean;
+          ckAllcloseAt2e4: boolean;
+          cvAllcloseAt2e4: boolean;
+          ckMaxAbsDiff: number;
+          cvMaxAbsDiff: number;
+          cvViolationsAt2e4: number;
+          cvLength: number;
+          cvViolationRate: number;
+          cvCosineSimilarity: number;
+          languages: Record<string, LangReport>;
+        }
+      > = {};
+
+      for (const caseName of Object.keys(fullRef.cases)) {
+        const refCase = fullRef.cases[caseName];
+        const fixtEntry = manifest.cases[caseName];
+        const metadata = bridge.computeMirageCeil32Metadata(
+          fixtEntry.metadata.W,
+          fixtEntry.metadata.H
+        );
+        const image = await fetchFloat32(fixtEntry.input_tensor_file);
+        const rawHeads = await wasmTask.runRawHeads(
+          { image, valid_hw: fixtEntry.valid_hw, metadata },
+          { includeDecoderFeatures: true }
+        );
+        if (!rawHeads.memory || !rawHeads.dense_features) {
+          throw new Error(`Encoder omitted memory/dense_features for ${caseName}`);
+        }
+
+        const decoded = bridge.decodeMirageExperimentalOutputs(rawHeads, metadata, {
+          confidence: 0.3,
+          nmsIou: 0.5,
+          maxObjects: 20,
+          maxText: 20,
+          includeMasks: true,
+        });
+
+        const imgEl = await loadPngElement(fixtEntry.png_file);
+        const nativeRgba = extractNativeRgba(imgEl, fixtEntry.metadata.W, fixtEntry.metadata.H);
+        const ocrLinesActual = await bridge.readMirageTextLines(
+          fullAssets.readerSession,
+          nativeRgba,
+          fixtEntry.metadata.W,
+          fixtEntry.metadata.H,
+          decoded.text,
+          fullAssets.tableReader.charset
+        );
+
+        const crossKv = await bridge.runMirageCrossKv(
+          fullAssets.crossKvSession,
+          rawHeads.memory,
+          rawHeads.dense_features,
+          metadata,
+          decoded.objects,
+          decoded.text,
+          fullAssets.tableReader
+        );
+        const [refCk, refCv] = await Promise.all([
+          fetchFloat32(refCase.ckFile),
+          fetchFloat32(refCase.cvFile),
+        ]);
+        const ckParity = bridge.compareMirageTensorParity(crossKv.crossK, refCk, 2e-4, 2e-4, 1e-4);
+        const cvParity = bridge.compareMirageTensorParity(crossKv.crossV, refCv, 2e-4, 2e-4, 1e-4);
+
+        const fullLangs = fullDecodeMatrix[caseName] ?? [];
+        const langReports: Record<string, LangReport> = {};
+
+        for (const lang of ['en', 'fr', 'es'] as const) {
+          const refLang = refCase.languages[lang];
+          const runFull = fullLangs.includes(lang);
+          const decodeStart = performance.now();
+          const decRes = await bridge.runMirageGreedyDecode(
+            fullAssets.decoderStepSession,
+            crossKv,
+            fullAssets.tableReader,
+            {
+              language: lang,
+              maxTokens: runFull ? 128 : 0,
+              captureStep0Logits: true,
+            }
+          );
+          const decodeMs = performance.now() - decodeStart;
+          if (!decRes.step0Logits) {
+            throw new Error(`Missing step0Logits on ${caseName}/${lang}`);
+          }
+          const refStep0 = await fetchFloat32(refLang.step0LogitsFile);
+          const step0Parity = bridge.compareMirageTensorParity(
+            decRes.step0Logits,
+            refStep0,
+            2e-4,
+            2e-4,
+            1e-4
+          );
+
+          let tokenIdsExactMatch: boolean | null = null;
+          let decodedTextExactMatch: boolean | null = null;
+          let assembledCounts:
+            | {
+                assembledObjectCount: number;
+                assembledRegionCount: number;
+                assembledTextCount: number;
+                assembledRelationCount: number;
+              }
+            | undefined;
+
+          if (runFull) {
+            tokenIdsExactMatch =
+              decRes.generatedTokenIds.length === refLang.generatedTokenIds.length &&
+              decRes.generatedTokenIds.every((id, idx) => id === refLang.generatedTokenIds[idx]);
+            decodedTextExactMatch = decRes.decodedText === refLang.decodedText;
+            const obs = bridge.assembleMirageObservation({
+              decodedText: decRes.decodedText,
+              generatedTokenIds: decRes.generatedTokenIds,
+              language: lang,
+              objects: decoded.objects,
+              texts: decoded.text,
+              ocrStrings: ocrLinesActual,
+              includeMasks: true,
+            });
+            assembledCounts = {
+              assembledObjectCount: obs.objects.length,
+              assembledRegionCount: obs.regions.length,
+              assembledTextCount: obs.text.length,
+              assembledRelationCount: obs.relations.length,
+            };
+          }
+
+          langReports[lang] = {
+            step0LogitsAllcloseAt2e4: step0Parity.allcloseAt2e4,
+            step0LogitsMaxAbsDiff: Number(step0Parity.maxAbsDiff.toExponential(3)),
+            step0LogitsViolationsAt2e4: step0Parity.violationsAt2e4,
+            step0LogitsCosineSimilarity: step0Parity.cosineSimilarity,
+            fullSequenceTested: runFull,
+            tokenIdsExactMatch,
+            decodedTextExactMatch,
+            generatedTokenCount: decRes.generatedTokenIds.length,
+            stepsExecuted: decRes.stepsExecuted,
+            decodeMs: Number(decodeMs.toFixed(1)),
+            ...assembledCounts,
+          };
+        }
+
+        caseReports[caseName] = {
+          objectCount: decoded.objects.length,
+          textCount: decoded.text.length,
+          ocrLinesActual,
+          ocrLinesExpected: refCase.ocrLines,
+          ocrExactMatch:
+            ocrLinesActual.length === refCase.ocrLines.length &&
+            ocrLinesActual.every((s, idx) => s === refCase.ocrLines[idx]),
+          ckAllcloseAt2e4: ckParity.allcloseAt2e4,
+          cvAllcloseAt2e4: cvParity.allcloseAt2e4,
+          ckMaxAbsDiff: Number(ckParity.maxAbsDiff.toExponential(3)),
+          cvMaxAbsDiff: Number(cvParity.maxAbsDiff.toExponential(3)),
+          cvViolationsAt2e4: cvParity.violationsAt2e4,
+          cvLength: cvParity.length,
+          cvViolationRate: Number((cvParity.violationsAt2e4 / cvParity.length).toExponential(3)),
+          cvCosineSimilarity: cvParity.cosineSimilarity,
+          languages: langReports,
+        };
+      }
+
+      // End-to-end detectForVideo in 'full' analysisMode with Canvas2D image input
+      const img331352 = await loadPngElement(manifest.cases.coco_000000331352.png_file);
+      const canvas331352 = document.createElement('canvas');
+      canvas331352.width = manifest.cases.coco_000000331352.metadata.W;
+      canvas331352.height = manifest.cases.coco_000000331352.metadata.H;
+      const ctx331352 = canvas331352.getContext('2d');
+      if (!ctx331352) throw new Error('Failed to create 2D context for canvas331352');
+      ctx331352.drawImage(img331352, 0, 0, canvas331352.width, canvas331352.height);
+      const e2eDetections = await wasmTask.detectForVideo(canvas331352, 0.3, {
+        analysisMode: 'full',
+        experimentalNmsIou: 0.5,
+        mirageLanguage: 'fr',
+        maxTokens: 48,
+      });
+      const e2eDiag = wasmTask.getLastDiagnostics();
+      await wasmTask.close();
+
+      // Strict 4-session WebGPU probe (no fallback to WASM)
+      const webgpuAdapter = await bridge.probeWebGpuAdapterDiagnostics();
+      let strictWebGpuStatus: string;
+      let strictWebGpuError: string | null = null;
+      let strictWebGpuEncoderCreated = false;
+      let strictWebGpuFullAssetsCreated = false;
+      try {
+        const gpuTask = await bridge.createMirageExperimentalOnnxTask({
+          variantId: 'mirage-onnx-exp-webgpu',
+          allowWasmFallback: false,
+          fullPipeline: false,
+        });
+        strictWebGpuEncoderCreated = true;
+        try {
+          const gpuFull = await bridge.acquireMirageFullPipelineAssets({
+            variantId: 'mirage-onnx-exp-webgpu',
+            delegate: 'WebGPU',
+            allowWasmFallback: false,
+          });
+          strictWebGpuFullAssetsCreated = true;
+          await gpuFull.readerSession.release?.().catch(() => undefined);
+          await gpuFull.crossKvSession.release?.().catch(() => undefined);
+          await gpuFull.decoderStepSession.release?.().catch(() => undefined);
+          strictWebGpuStatus = webgpuAdapter.isSoftwareAdapter
+            ? 'PASSED_SOFTWARE_ADAPTER'
+            : 'PASSED_HARDWARE_WEBGPU';
+        } finally {
+          await gpuTask.close();
+        }
+      } catch (err) {
+        strictWebGpuError = err instanceof Error ? err.message : String(err);
+        strictWebGpuStatus =
+          strictWebGpuEncoderCreated && !strictWebGpuFullAssetsCreated
+            ? 'BLOCKED_FULL_PIPELINE_SESSIONS'
+            : 'BLOCKED';
+      }
+
+      return {
+        fullAcquireMs: Number(fullAcquireMs.toFixed(1)),
+        vocabSize: fullAssets.tableReader.vocab.size,
+        charsetLength: fullAssets.tableReader.charset.length,
+        backends: {
+          reader: fullAssets.readerBackend,
+          crossKv: fullAssets.crossKvBackend,
+          decoderStep: fullAssets.decoderStepBackend,
+        },
+        cases: caseReports,
+        detectForVideoE2e: {
+          detectionCount: e2eDetections.length,
+          firstLabel: e2eDetections[0]?.label ?? '',
+          hasNativeAttribution: e2eDetections.some((d) => d.label.includes('[公式WASM]')),
+          pipelineMode: e2eDiag?.pipelineMode ?? null,
+          fullPipelineAssetsLoaded: e2eDiag?.fullPipelineAssetsLoaded ?? false,
+          decoderLanguage: e2eDiag?.decoderLanguage ?? null,
+          generatedTokenCount: e2eDiag?.generatedTokenCount ?? 0,
+          ocrLineCount: e2eDiag?.ocrLineCount ?? 0,
+          hasAssembledObservation: Boolean(e2eDiag?.assembledObservation),
+        },
+        strictWebGpu4SessionProbe: {
+          status: strictWebGpuStatus,
+          hardwareWebGpuStatus:
+            webgpuAdapter.adapterAvailable && !webgpuAdapter.isSoftwareAdapter
+              ? strictWebGpuStatus
+              : 'BLOCKED',
+          adapter: webgpuAdapter,
+          encoderCreated: strictWebGpuEncoderCreated,
+          fullAssetsCreated: strictWebGpuFullAssetsCreated,
+          error: strictWebGpuError,
+        },
+      };
+    });
+
+    writeFileSync(
+      testInfo.outputPath('mirage-full-pipeline-browser.json'),
+      JSON.stringify(report, null, 2) + '\n',
+      'utf8'
+    );
+    await testInfo.attach('mirage-full-pipeline-browser.json', {
+      path: testInfo.outputPath('mirage-full-pipeline-browser.json'),
+      contentType: 'application/json',
+    });
+
+    for (const [caseName, cReport] of Object.entries(report.cases)) {
+      expect(cReport.ckAllcloseAt2e4, `${caseName} ck parity`).toBe(true);
+      // cross_attn/v_proj is unnormalized (values up to ~280); WASM vs CPU matmul and encoder deltas leave <0.1% elements above 2e-4
+      expect(cReport.cvCosineSimilarity, `${caseName} cv cosine similarity`).toBeGreaterThanOrEqual(0.999999);
+      expect(cReport.cvViolationRate, `${caseName} cv 2e-4 violation rate`).toBeLessThanOrEqual(0.001);
+      expect(cReport.cvMaxAbsDiff, `${caseName} cv maxAbsDiff`).toBeLessThanOrEqual(0.1);
+      expect(cReport.ocrExactMatch, `${caseName} Reader OCR match`).toBe(true);
+      for (const [lang, lReport] of Object.entries(cReport.languages)) {
+        expect(
+          lReport.step0LogitsAllcloseAt2e4,
+          `${caseName}/${lang} step0 logits parity (maxAbsDiff=${lReport.step0LogitsMaxAbsDiff}, viol=${lReport.step0LogitsViolationsAt2e4})`
+        ).toBe(true);
+        if (lReport.fullSequenceTested) {
+          expect(lReport.tokenIdsExactMatch, `${caseName}/${lang} token IDs`).toBe(true);
+          expect(lReport.decodedTextExactMatch, `${caseName}/${lang} decodedText`).toBe(true);
+        }
+      }
+    }
+
+    expect(report.detectForVideoE2e.pipelineMode).toBe('full_pipeline');
+    expect(report.detectForVideoE2e.fullPipelineAssetsLoaded).toBe(true);
+    expect(report.detectForVideoE2e.decoderLanguage).toBe('fr');
+    expect(report.detectForVideoE2e.generatedTokenCount).toBe(48);
+    expect(report.detectForVideoE2e.ocrLineCount).toBeGreaterThanOrEqual(1);
+    expect(report.detectForVideoE2e.hasNativeAttribution).toBe(false);
+    expect(report.detectForVideoE2e.detectionCount).toBeGreaterThan(0);
+    expect(report.detectForVideoE2e.hasAssembledObservation).toBe(true);
+  });
+
+  test('switches experimental Mirage UI from fast proposal mode to full 4-graph inference and changes decoder language', async ({
+    context,
+    page,
+  }) => {
+    test.setTimeout(300_000);
+    const fullRefPath = path.resolve(
+      WORKSPACE_ROOT,
+      '.cache/mirage-browser-fixtures/full_pipeline_reference.json'
+    );
+    const cactPath = path.resolve(
+      WORKSPACE_ROOT,
+      '.cache/container-models/mirage.cact'
+    );
+    const hasAllArtifacts =
+      existsSync(ONNX_ARTIFACT_PATH) &&
+      existsSync(FIXTURE_MANIFEST_PATH) &&
+      existsSync(fullRefPath) &&
+      existsSync(cactPath);
+
+    if (process.env.REQUIRE_MIRAGE_REAL_MODEL === '1') {
+      expect(hasAllArtifacts).toBe(true);
+    } else if (!hasAllArtifacts) {
+      test.skip(true, 'Real Mirage full-pipeline artifacts not present locally');
+    }
+
+    await routeLocalModelCache(context);
+    await page.goto('/');
+
+    const header = page.getByRole('banner');
+    await header.getByRole('combobox', { name: 'モデル', exact: true }).selectOption('mirage');
+    const variantSelect = header.getByRole('combobox', { name: 'バリアント', exact: true });
+    await variantSelect.selectOption('mirage-onnx-exp-wasm');
+
+    await expect(page.getByRole('status')).toContainText('モデル準備完了', {
+      timeout: 60_000,
+    });
+
+    await page.getByRole('button', { name: '検証: テキスト領域' }).click();
+    await expect(
+      page.getByText('[ONNX候補] 物体領域候補 #1').first()
+    ).toBeVisible({ timeout: 30_000 });
+
+    await page.getByRole('button', { name: 'モデル調整' }).click();
+    const pipelineGroup = page.getByRole('group', { name: 'ONNX パイプライン構成' });
+    await pipelineGroup.getByRole('button', { name: /フル推論（OCR・命名）/ }).click();
+
+    const diagBox = page.getByLabel('実験用部分ONNX実行診断');
+    await expect(diagBox).toContainText('実験用 Mirage ONNX フル推論 診断', {
+      timeout: 180_000,
+    });
+    await expect(diagBox).toContainText('full_pipeline (Encoder+Reader+CrossKV+Decoder)');
+    await expect(diagBox).toContainText(/デコーダ: 言語 en · [1-9]\d*トークン/, {
+      timeout: 60_000,
+    });
+
+    const langSelect = page.getByLabel('Mirage 出力言語');
+    await langSelect.selectOption('fr');
+    await expect(diagBox).toContainText(/デコーダ: 言語 fr · [1-9]\d*トークン/, {
+      timeout: 180_000,
+    });
+
+    await page.getByRole('button', { name: /^認識物体/ }).click();
+    await expect(page.getByText(/認識結果 \(\d+件\)/)).toBeVisible();
+    await expect(page.getByText('[公式WASM]')).toHaveCount(0);
+  });
 });
 

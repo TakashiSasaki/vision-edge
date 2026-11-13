@@ -238,7 +238,36 @@ export function extractReaderCropPlan(
   }
 
   const U = Math.max(1, Math.round((MIRAGE_READER_STRIP_H * cw) / ch));
-  // Bilinear resize of [ix0..ix1) x [iy0..iy1) -> [U, 48] RGB Float32
+  // Separable H-then-V bilinear resize with uint8 rounding per pass (matching Pillow BILINEAR)
+  const hResized = new Uint8Array(ch * U * 3);
+  const sx0Arr = new Int32Array(U);
+  const sx1Arr = new Int32Array(U);
+  const wxArr = new Float32Array(U);
+  for (let dx = 0; dx < U; dx++) {
+    const sxFloat = Math.max(
+      0,
+      Math.min(cw - 1, ((dx + 0.5) * cw) / U - 0.5)
+    );
+    const sx0 = Math.floor(sxFloat);
+    sx0Arr[dx] = sx0;
+    sx1Arr[dx] = Math.min(cw - 1, sx0 + 1);
+    wxArr[dx] = sxFloat - sx0;
+  }
+  for (let y = 0; y < ch; y++) {
+    const srcRowBase = ((iy0 + y) * srcW + ix0) * 4;
+    const dstRowBase = y * U * 3;
+    for (let dx = 0; dx < U; dx++) {
+      const p0 = srcRowBase + sx0Arr[dx] * 4;
+      const p1 = srcRowBase + sx1Arr[dx] * 4;
+      const wx = wxArr[dx];
+      const w0x = 1 - wx;
+      const out = dstRowBase + dx * 3;
+      for (let c = 0; c < 3; c++) {
+        hResized[out + c] = Math.round(rgba[p0 + c] * w0x + rgba[p1 + c] * wx);
+      }
+    }
+  }
+
   const stripRgb = new Float32Array(MIRAGE_READER_STRIP_H * U * 3);
   for (let dy = 0; dy < MIRAGE_READER_STRIP_H; dy++) {
     const syFloat = Math.max(
@@ -249,27 +278,17 @@ export function extractReaderCropPlan(
     const sy1 = Math.min(ch - 1, sy0 + 1);
     const wy = syFloat - sy0;
     const w0y = 1 - wy;
-
+    const row0Base = sy0 * U * 3;
+    const row1Base = sy1 * U * 3;
+    const dstRowBase = dy * U * 3;
     for (let dx = 0; dx < U; dx++) {
-      const sxFloat = Math.max(
-        0,
-        Math.min(cw - 1, ((dx + 0.5) * cw) / U - 0.5)
-      );
-      const sx0 = Math.floor(sxFloat);
-      const sx1 = Math.min(cw - 1, sx0 + 1);
-      const wx = sxFloat - sx0;
-      const w0x = 1 - wx;
-
-      const p00 = ((iy0 + sy0) * srcW + (ix0 + sx0)) * 4;
-      const p01 = ((iy0 + sy0) * srcW + (ix0 + sx1)) * 4;
-      const p10 = ((iy0 + sy1) * srcW + (ix0 + sx0)) * 4;
-      const p11 = ((iy0 + sy1) * srcW + (ix0 + sx1)) * 4;
-
-      const dstBase = (dy * U + dx) * 3;
+      const i0 = row0Base + dx * 3;
+      const i1 = row1Base + dx * 3;
+      const out = dstRowBase + dx * 3;
       for (let c = 0; c < 3; c++) {
-        const top = rgba[p00 + c] * w0x + rgba[p01 + c] * wx;
-        const bot = rgba[p10 + c] * w0x + rgba[p11 + c] * wx;
-        stripRgb[dstBase + c] = top * w0y + bot * wy;
+        stripRgb[out + c] = Math.round(
+          hResized[i0 + c] * w0y + hResized[i1 + c] * wy
+        );
       }
     }
   }
@@ -640,6 +659,8 @@ export interface MirageGreedyDecodeOptions {
   language?: string;
   maxTokens?: number;
   isStale?: () => boolean;
+  /** Captures step-0 decoder logits (`logits` right after `[bos, <|lang|>]`) for numerical parity checks */
+  captureStep0Logits?: boolean;
 }
 
 export interface MirageGreedyDecodeResult {
@@ -647,6 +668,7 @@ export interface MirageGreedyDecodeResult {
   generatedTokenIds: number[];
   decodedText: string;
   stepsExecuted: number;
+  step0Logits?: Float32Array;
 }
 
 /**
@@ -853,6 +875,9 @@ export async function runMirageGreedyDecode(
     };
   }
   let logits = await stepOne(langId, 1);
+  const step0Logits = options.captureStep0Logits
+    ? new Float32Array(logits)
+    : undefined;
 
   for (let genIdx = 0; genIdx < maxTokens; genIdx++) {
     if (options.isStale?.()) {
@@ -886,6 +911,7 @@ export async function runMirageGreedyDecode(
     generatedTokenIds: generated,
     decodedText: vocab.decode(generated),
     stepsExecuted,
+    ...(step0Logits ? { step0Logits } : {}),
   };
 }
 
