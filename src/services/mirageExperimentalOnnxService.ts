@@ -11,7 +11,12 @@ import {
   resolveModelAssetUrls,
   type AssetSourceRecorder,
 } from './modelAssetResolver';
-import type { MirageInferExtraOptions, MirageTask } from './mirageWasmService';
+import {
+  cancelInFlightMirageWasmInit,
+  type MirageInferExtraOptions,
+  type MirageSnapshotLike,
+  type MirageTask,
+} from './mirageWasmService';
 import {
   createOrtSession,
   disposeTensors,
@@ -83,6 +88,71 @@ export interface MirageDecodedPerceptionResult {
   text: MirageDecodedProposal[];
 }
 
+export interface MirageSourceFrameSnapshot extends MirageSnapshotLike {
+  readonly frameId: number;
+  readonly sourceGeneration: number;
+  readonly width: number;
+  readonly height: number;
+  readonly rgba: Uint8ClampedArray;
+  readonly pixelHash: string;
+  readonly rgbaSha256: string;
+  readonly canvas: HTMLCanvasElement;
+  readonly refCount: number;
+  readonly disposed: boolean;
+  retain(): MirageSourceFrameSnapshot;
+  release(): void;
+}
+
+export interface MirageFrameAlignmentDiagnostics {
+  frameId: number;
+  sourceGeneration: number;
+  sourceWidth: number;
+  sourceHeight: number;
+  sourcePixelHash: string;
+  onnxInputPixelHash: string;
+  nativeInputPixelHash: string | null;
+  sameSourceSnapshot: boolean;
+  onnxFrameId: number;
+  nativeFrameId: number | null;
+  onnxSourceGeneration: number;
+  nativeSourceGeneration: number | null;
+  onnxRgbaSha256: string;
+  nativeRgbaSha256: string | null;
+  sameSourceFrame: boolean;
+}
+
+export interface WebGpuAdapterDiagnostics {
+  available: boolean;
+  navigatorGpuPresent: boolean;
+  adapterAvailable: boolean;
+  vendor: string;
+  architecture: string;
+  device: string;
+  description: string;
+  isFallbackAdapter: boolean;
+  isSoftwareAdapter: boolean;
+  error: string | null;
+}
+
+export interface MirageTensorParityMetrics {
+  length: number;
+  allFinite: boolean;
+  actualFinite: boolean;
+  expectedFinite: boolean;
+  maxAbsDiff: number;
+  meanAbsDiff: number;
+  rmsDiff: number;
+  maxRelDiff: number;
+  nearZeroEpsilon: number;
+  atol: number;
+  rtol: number;
+  withinAtolRtol: boolean;
+  allcloseAt2e4: boolean;
+  violationCount: number;
+  violationsAt2e4: number;
+  cosineSimilarity: number;
+}
+
 export interface MirageExperimentalExecutionDiagnostics {
   variantId: MirageExperimentalVariantId;
   requestedProvider: 'wasm' | 'webgpu';
@@ -93,6 +163,7 @@ export interface MirageExperimentalExecutionDiagnostics {
   actualKernelBackend: 'unmeasured';
   allowWasmFallback: boolean;
   fallbackReason: string | null;
+  webgpuAdapter?: WebGpuAdapterDiagnostics | null;
   artifactSha256: string;
   artifactSize: number;
   opset: number;
@@ -105,11 +176,203 @@ export interface MirageExperimentalExecutionDiagnostics {
   textProposalCount: number;
   nativeOverlayEnabled: boolean;
   nativeOverlayCount: number;
+  frameAlignment?: MirageFrameAlignmentDiagnostics;
   timingsMs: {
     preprocess: number;
     inference: number;
     postprocess: number;
     total: number;
+  };
+}
+
+const SHA256_K = new Uint32Array([
+  0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+  0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+  0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+  0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+  0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+  0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+  0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+  0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+]);
+
+/**
+ * Synchronous FIPS 180-4 SHA-256 hex digest for frame provenance hashing before async boundaries.
+ */
+export function sha256HexSync(data: Uint8Array | Uint8ClampedArray): string {
+  const len = data.byteLength;
+  const bitLenHi = Math.floor((len * 8) / 0x100000000);
+  const bitLenLo = (len * 8) >>> 0;
+  const paddedLen = ((len + 9 + 63) >> 6) << 6;
+  const padded = new Uint8Array(paddedLen);
+  padded.set(data);
+  padded[len] = 0x80;
+  const view = new DataView(padded.buffer);
+  view.setUint32(paddedLen - 8, bitLenHi, false);
+  view.setUint32(paddedLen - 4, bitLenLo, false);
+
+  let h0 = 0x6a09e667;
+  let h1 = 0xbb67ae85;
+  let h2 = 0x3c6ef372;
+  let h3 = 0xa54ff53a;
+  let h4 = 0x510e527f;
+  let h5 = 0x9b05688c;
+  let h6 = 0x1f83d9ab;
+  let h7 = 0x5be0cd19;
+
+  const w = new Uint32Array(64);
+  for (let offset = 0; offset < paddedLen; offset += 64) {
+    for (let i = 0; i < 16; i++) {
+      w[i] = view.getUint32(offset + i * 4, false);
+    }
+    for (let i = 16; i < 64; i++) {
+      const v15 = w[i - 15];
+      const s0 = ((v15 >>> 7) | (v15 << 25)) ^ ((v15 >>> 18) | (v15 << 14)) ^ (v15 >>> 3);
+      const v2 = w[i - 2];
+      const s1 = ((v2 >>> 17) | (v2 << 15)) ^ ((v2 >>> 19) | (v2 << 13)) ^ (v2 >>> 10);
+      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;
+    }
+
+    let a = h0;
+    let b = h1;
+    let c = h2;
+    let d = h3;
+    let e = h4;
+    let f = h5;
+    let g = h6;
+    let h = h7;
+
+    for (let i = 0; i < 64; i++) {
+      const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+      const ch = (e & f) ^ (~e & g);
+      const temp1 = (h + S1 + ch + SHA256_K[i] + w[i]) >>> 0;
+      const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (S0 + maj) >>> 0;
+
+      h = g;
+      g = f;
+      f = e;
+      e = (d + temp1) >>> 0;
+      d = c;
+      c = b;
+      b = a;
+      a = (temp1 + temp2) >>> 0;
+    }
+
+    h0 = (h0 + a) >>> 0;
+    h1 = (h1 + b) >>> 0;
+    h2 = (h2 + c) >>> 0;
+    h3 = (h3 + d) >>> 0;
+    h4 = (h4 + e) >>> 0;
+    h5 = (h5 + f) >>> 0;
+    h6 = (h6 + g) >>> 0;
+    h7 = (h7 + h) >>> 0;
+  }
+
+  return [h0, h1, h2, h3, h4, h5, h6, h7]
+    .map((v) => v.toString(16).padStart(8, '0'))
+    .join('');
+}
+
+/**
+ * Compares two Float32Array head tensors with explicit near-zero relative-error policy
+ * (`denom = max(|expected|, nearZeroEpsilon)`), finite-value checks, RMS, and `atol`/`rtol` verification.
+ */
+export function compareMirageTensorParity(
+  actual: Float32Array,
+  expected: Float32Array,
+  optionsOrAtol:
+    | {
+        atol?: number;
+        rtol?: number;
+        nearZeroEpsilon?: number;
+      }
+    | number = {},
+  rtolArg?: number,
+  nearZeroFloorArg?: number
+): MirageTensorParityMetrics {
+  const opts =
+    typeof optionsOrAtol === 'number'
+      ? {
+          atol: optionsOrAtol,
+          rtol: rtolArg ?? 2e-4,
+          nearZeroEpsilon: nearZeroFloorArg ?? 1e-6,
+        }
+      : optionsOrAtol;
+  const atol = opts.atol ?? 2e-4;
+  const rtol = opts.rtol ?? 2e-4;
+  const nearZeroEpsilon = opts.nearZeroEpsilon ?? 1e-6;
+  const n = Math.min(actual.length, expected.length);
+
+  let actualFinite = true;
+  let expectedFinite = true;
+  let maxAbsDiff = 0;
+  let sumAbsDiff = 0;
+  let sumSqDiff = 0;
+  let maxRelDiff = 0;
+  let violationCount =
+    actual.length === expected.length
+      ? 0
+      : Math.abs(actual.length - expected.length);
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < n; i++) {
+    const a = actual[i];
+    const b = expected[i];
+    const aFin = Number.isFinite(a);
+    const bFin = Number.isFinite(b);
+    if (!aFin) actualFinite = false;
+    if (!bFin) expectedFinite = false;
+    if (!aFin || !bFin) {
+      violationCount++;
+      continue;
+    }
+    const diff = Math.abs(a - b);
+    if (diff > maxAbsDiff) maxAbsDiff = diff;
+    sumAbsDiff += diff;
+    sumSqDiff += diff * diff;
+
+    const denom = Math.max(Math.abs(b), nearZeroEpsilon);
+    const rel = diff / denom;
+    if (rel > maxRelDiff) maxRelDiff = rel;
+
+    if (diff > atol + rtol * Math.abs(b)) {
+      violationCount++;
+    }
+
+    dot += a * b;
+    normA += a * a;
+    normB += b * b;
+  }
+
+  const allFinite =
+    actualFinite && expectedFinite && actual.length === expected.length;
+  const meanAbsDiff = n > 0 ? sumAbsDiff / n : 0;
+  const rmsDiff = n > 0 ? Math.sqrt(sumSqDiff / n) : 0;
+  const cosineSimilarity =
+    normA > 0 && normB > 0 ? dot / (Math.sqrt(normA) * Math.sqrt(normB)) : 0;
+  const withinAtolRtol = allFinite && violationCount === 0;
+
+  return {
+    length: n,
+    allFinite,
+    actualFinite,
+    expectedFinite,
+    maxAbsDiff,
+    meanAbsDiff,
+    rmsDiff,
+    maxRelDiff,
+    nearZeroEpsilon,
+    atol,
+    rtol,
+    withinAtolRtol,
+    allcloseAt2e4: withinAtolRtol,
+    violationCount,
+    violationsAt2e4: violationCount,
+    cosineSimilarity,
   };
 }
 
@@ -601,8 +864,14 @@ export function convertProposalsToDetectedObjects(
 }
 
 function getInputDimensions(
-  input: InferenceInput | HTMLImageElement
+  input: InferenceInput | HTMLImageElement | MirageSourceFrameSnapshot
 ): { width: number; height: number } {
+  if ('frameId' in input && 'rgba' in input) {
+    return {
+      width: input.width || 640,
+      height: input.height || 480,
+    };
+  }
   if ('videoWidth' in input) {
     return {
       width: input.videoWidth || 640,
@@ -625,6 +894,131 @@ function getInputDimensions(
     width: input.width || 640,
     height: input.height || 480,
   };
+}
+
+function isSnapshotObject(
+  input: unknown
+): input is MirageSourceFrameSnapshot {
+  return (
+    Boolean(input) &&
+    typeof input === 'object' &&
+    'frameId' in (input as Record<string, unknown>) &&
+    'rgba' in (input as Record<string, unknown>) &&
+    'pixelHash' in (input as Record<string, unknown>) &&
+    typeof (input as MirageSourceFrameSnapshot).retain === 'function'
+  );
+}
+
+function resampleSnapshotRgba(
+  srcRgba: Uint8ClampedArray,
+  srcW: number,
+  srcH: number,
+  dstW: number,
+  dstH: number
+): Uint8ClampedArray {
+  if (srcW === dstW && srcH === dstH) {
+    return srcRgba;
+  }
+  const out = new Uint8ClampedArray(dstW * dstH * 4);
+  for (let y = 0; y < dstH; y++) {
+    const sy = Math.min(srcH - 1, Math.floor(((y + 0.5) * srcH) / dstH));
+    const srcRow = sy * srcW * 4;
+    const dstRow = y * dstW * 4;
+    for (let x = 0; x < dstW; x++) {
+      const sx = Math.min(srcW - 1, Math.floor(((x + 0.5) * srcW) / dstW));
+      const sp = srcRow + sx * 4;
+      const dp = dstRow + x * 4;
+      out[dp] = srcRgba[sp];
+      out[dp + 1] = srcRgba[sp + 1];
+      out[dp + 2] = srcRgba[sp + 2];
+      out[dp + 3] = srcRgba[sp + 3];
+    }
+  }
+  return out;
+}
+
+/**
+ * Captures source pixels synchronously before any `await`, returning a reference-counted
+ * immutable `MirageSourceFrameSnapshot` with its own isolated offscreen `HTMLCanvasElement`.
+ */
+export function captureMirageSourceFrameSnapshot(
+  input: InferenceInput | HTMLImageElement,
+  frameId: number,
+  sourceGeneration: number
+): MirageSourceFrameSnapshot {
+  const existing = (input as { __mirageSnapshot?: MirageSourceFrameSnapshot })
+    .__mirageSnapshot;
+  if (existing && !existing.disposed) {
+    return existing.retain();
+  }
+
+  const { width: srcW, height: srcH } = getInputDimensions(input);
+  const canvas = document.createElement('canvas');
+  canvas.width = srcW;
+  canvas.height = srcH;
+  const ctx = canvas.getContext('2d', {
+    willReadFrequently: true,
+  });
+  if (!ctx) {
+    throw new OnnxInferenceError(
+      'Mirage-Exp-ONNX',
+      'input',
+      'Failed to acquire 2D canvas context for Mirage frame snapshot capture'
+    );
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.clearRect(0, 0, srcW, srcH);
+  ctx.drawImage(input as CanvasImageSource, 0, 0, srcW, srcH);
+  const rawData = ctx.getImageData(0, 0, srcW, srcH).data;
+  const rgba = new Uint8ClampedArray(rawData.length);
+  rgba.set(rawData);
+  const pixelHash = sha256HexSync(rgba);
+
+  let refCount = 1;
+  let disposed = false;
+
+  const snapshot: MirageSourceFrameSnapshot = {
+    frameId,
+    sourceGeneration,
+    width: srcW,
+    height: srcH,
+    rgba,
+    pixelHash,
+    rgbaSha256: pixelHash,
+    canvas,
+    get refCount() {
+      return refCount;
+    },
+    get disposed() {
+      return disposed;
+    },
+    retain(): MirageSourceFrameSnapshot {
+      if (disposed) {
+        throw new Error(
+          `Cannot retain disposed MirageSourceFrameSnapshot (frameId=${frameId})`
+        );
+      }
+      refCount++;
+      return snapshot;
+    },
+    release(): void {
+      if (disposed || refCount <= 0) return;
+      refCount--;
+      if (refCount === 0) {
+        disposed = true;
+        delete (canvas as { __mirageSnapshot?: MirageSourceFrameSnapshot })
+          .__mirageSnapshot;
+        canvas.width = 0;
+        canvas.height = 0;
+      }
+    },
+  };
+
+  (canvas as { __mirageSnapshot?: MirageSourceFrameSnapshot }).__mirageSnapshot =
+    snapshot;
+  return snapshot;
 }
 
 export interface MirageExperimentalInferOptions extends MirageInferExtraOptions {
@@ -672,16 +1066,19 @@ export async function verifyMirageExperimentalOnnxBytes(
 export class MirageExperimentalOnnxEngine implements MirageTask {
   public backend: OnnxBackendInfo;
   public readonly variantId: MirageExperimentalVariantId;
+  public readonly webgpuAdapter: WebGpuAdapterDiagnostics | null;
   private rawSession: ort.InferenceSession;
   private owner: OnnxSessionOwner;
-  private resizeCanvas: HTMLCanvasElement | null = null;
-  private resizeCtx: CanvasRenderingContext2D | null = null;
   private nativeOverlayTask: MirageTask | null = null;
+  private nativeOverlayInitPromise: Promise<MirageTask> | null = null;
   private readonly nativeOverlayTaskFactory?: () => Promise<MirageTask>;
   private readonly modelBytes?: Uint8Array;
   private readonly allowWasmFallback: boolean;
   private lastDiagnostics: MirageExperimentalExecutionDiagnostics | null = null;
   private runMutex: Promise<unknown> = Promise.resolve();
+  private nextFrameId = 0;
+  private sourceGeneration = 1;
+  private lastSourceElement: InferenceInput | null = null;
 
   constructor(
     session: ort.InferenceSession,
@@ -689,10 +1086,12 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     backend?: OnnxBackendInfo,
     nativeOverlayTaskFactory?: () => Promise<MirageTask>,
     modelBytes?: Uint8Array,
-    allowWasmFallback = true
+    allowWasmFallback = true,
+    webgpuAdapter: WebGpuAdapterDiagnostics | null = null
   ) {
     this.variantId = variantId;
     this.allowWasmFallback = allowWasmFallback;
+    this.webgpuAdapter = webgpuAdapter;
     const requestedProvider =
       variantId === 'mirage-onnx-exp-webgpu' ? 'webgpu' : 'wasm';
     this.backend =
@@ -719,6 +1118,16 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     return this.lastDiagnostics;
   }
 
+  public notifySourceChanged(): number {
+    this.lastSourceElement = null;
+    this.nativeOverlayTask?.notifySourceChanged?.();
+    return ++this.sourceGeneration;
+  }
+
+  public getSourceGeneration(): number {
+    return this.sourceGeneration;
+  }
+
   private enqueueExclusive<T>(fn: () => Promise<T>): Promise<T> {
     const next = this.runMutex.then(fn, fn);
     this.runMutex = next.then(
@@ -729,38 +1138,92 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
   }
 
   public preprocessInput(
-    input: InferenceInput | HTMLImageElement
+    input: InferenceInput | HTMLImageElement | MirageSourceFrameSnapshot
   ): MiragePreprocessedInput {
-    const { width: srcW, height: srcH } = getInputDimensions(input);
-    const metadata = computeMirageCeil32Metadata(srcW, srcH);
-    const { w, h } = metadata;
+    const snapshot = isSnapshotObject(input)
+      ? input
+      : (input as { __mirageSnapshot?: MirageSourceFrameSnapshot })
+          .__mirageSnapshot;
 
-    if (!this.resizeCanvas) {
-      this.resizeCanvas = document.createElement('canvas');
-      this.resizeCtx = this.resizeCanvas.getContext('2d', {
+    if (snapshot) {
+      if (snapshot.disposed) {
+        throw new OnnxInferenceError(
+          'Mirage-Exp-ONNX',
+          'input',
+          'Cannot preprocess a disposed MirageSourceFrameSnapshot'
+        );
+      }
+      snapshot.retain();
+    }
+
+    try {
+      const { width: srcW, height: srcH } = getInputDimensions(input);
+      const metadata = computeMirageCeil32Metadata(srcW, srcH);
+      const { w, h } = metadata;
+
+      const resizeCanvas = document.createElement('canvas');
+      resizeCanvas.width = w;
+      resizeCanvas.height = h;
+      const ctx = resizeCanvas.getContext('2d', {
         willReadFrequently: true,
       });
-    }
-    if (this.resizeCanvas.width !== w || this.resizeCanvas.height !== h) {
-      this.resizeCanvas.width = w;
-      this.resizeCanvas.height = h;
-    }
+      if (!ctx) {
+        throw new OnnxInferenceError(
+          'Mirage-Exp-ONNX',
+          'input',
+          'Failed to acquire 2D canvas context for Mirage ceil32 preprocessing'
+        );
+      }
 
-    const ctx = this.resizeCtx;
-    if (!ctx) {
-      throw new OnnxInferenceError(
-        'Mirage-Exp-ONNX',
-        'input',
-        'Failed to acquire 2D canvas context for Mirage ceil32 preprocessing'
-      );
-    }
+      const drawSource = isSnapshotObject(input)
+        ? input.canvas
+        : (input as CanvasImageSource);
 
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(input as CanvasImageSource, 0, 0, w, h);
-    const imageData = ctx.getImageData(0, 0, w, h);
-    return packResizedPixelsToMirageTensor(imageData.data, 4, metadata);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(drawSource, 0, 0, w, h);
+      const imageData = ctx.getImageData(0, 0, w, h);
+      let pixels = imageData.data;
+
+      if (snapshot) {
+        let canvasHasNonZero = false;
+        for (let i = 0; i < pixels.length; i += 4) {
+          if (pixels[i] !== 0 || pixels[i + 1] !== 0 || pixels[i + 2] !== 0) {
+            canvasHasNonZero = true;
+            break;
+          }
+        }
+        let snapshotHasNonZero = false;
+        if (!canvasHasNonZero) {
+          for (let i = 0; i < snapshot.rgba.length; i += 4) {
+            if (
+              snapshot.rgba[i] !== 0 ||
+              snapshot.rgba[i + 1] !== 0 ||
+              snapshot.rgba[i + 2] !== 0
+            ) {
+              snapshotHasNonZero = true;
+              break;
+            }
+          }
+        }
+        if (!canvasHasNonZero && snapshotHasNonZero) {
+          pixels = resampleSnapshotRgba(
+            snapshot.rgba,
+            snapshot.width,
+            snapshot.height,
+            w,
+            h
+          );
+        }
+      }
+
+      return packResizedPixelsToMirageTensor(pixels, 4, metadata);
+    } finally {
+      if (snapshot) {
+        snapshot.release();
+      }
+    }
   }
 
   /**
@@ -867,6 +1330,32 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     );
   }
 
+  private async ensureNativeOverlayTask(): Promise<MirageTask | null> {
+    if (this.owner.closed || !this.nativeOverlayTaskFactory) return null;
+    if (this.nativeOverlayTask) return this.nativeOverlayTask;
+    if (!this.nativeOverlayInitPromise) {
+      const factory = this.nativeOverlayTaskFactory;
+      this.nativeOverlayInitPromise = (async () => {
+        try {
+          const created = await factory();
+          if (this.owner.closed) {
+            try {
+              await Promise.resolve(created.close());
+            } catch {
+              // Ignore cleanup error after close
+            }
+            throw new Error('MirageExperimentalOnnxEngine closed during native overlay initialization');
+          }
+          this.nativeOverlayTask = created;
+          return created;
+        } finally {
+          this.nativeOverlayInitPromise = null;
+        }
+      })();
+    }
+    return this.nativeOverlayInitPromise;
+  }
+
   public async detectForVideo(
     videoElement: InferenceInput,
     confidenceThreshold = 0.3,
@@ -875,137 +1364,210 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     if (this.owner.closed) return [];
     const totalStart = performance.now();
 
-    const preStart = performance.now();
-    const preprocessed = this.preprocessInput(videoElement);
-    const preprocessMs = performance.now() - preStart;
+    if (
+      this.lastSourceElement !== null &&
+      this.lastSourceElement !== videoElement &&
+      extraOptions?.sourceGeneration === undefined
+    ) {
+      this.sourceGeneration++;
+    }
+    this.lastSourceElement = videoElement;
 
-    const infStart = performance.now();
-    const rawHeads = await this.runRawHeads(preprocessed);
-    const inferenceMs = performance.now() - infStart;
-    if (this.owner.closed) return [];
-
-    const postStart = performance.now();
-    const effectiveConfidence = Math.max(
-      0.05,
-      Math.min(0.95, confidenceThreshold)
-    );
-    const nmsIou =
-      extraOptions?.experimentalNmsIou !== undefined
-        ? extraOptions.experimentalNmsIou
-        : null;
-    const includeOcr = extraOptions?.includeOcr ?? true;
-    const showObjects = extraOptions?.showObjectProposals ?? true;
-    const showText = (extraOptions?.showTextProposals ?? true) && includeOcr;
-    const showMasks = extraOptions?.showDiagnosticMasks ?? true;
-    const overlayNative = extraOptions?.overlayNativeWasm ?? false;
-
-    const decoded = decodeMirageExperimentalOutputs(
-      rawHeads,
-      preprocessed.metadata,
-      {
-        confidence: effectiveConfidence,
-        nmsIou,
-        maxObjects: 64,
-        maxText: 32,
-        includeMasks: showMasks,
-      }
-    );
-
-    const onnxObjects = convertProposalsToDetectedObjects(decoded, {
-      showObjectProposals: showObjects,
-      showTextProposals: showText,
-      showDiagnosticMasks: showMasks,
-      maxDetections: extraOptions?.maxDetections ?? 64,
-      sourceAttributionPrefix: true,
-    });
-
-    let nativeObjects: DetectedObject[] = [];
-    if (overlayNative && !this.owner.closed && this.nativeOverlayTaskFactory) {
-      try {
-        if (!this.nativeOverlayTask) {
-          this.nativeOverlayTask = await this.nativeOverlayTaskFactory();
-        }
-        if (!this.owner.closed && this.nativeOverlayTask) {
-          const rawNative = await this.nativeOverlayTask.detectForVideo(
-            videoElement,
-            effectiveConfidence,
-            {
-              analysisMode:
-                extraOptions?.analysisMode ?? ('fast' as MirageAnalysisMode),
-              includeOcr,
-              maxDetections: extraOptions?.maxDetections ?? 15,
-            }
-          );
-          nativeObjects = rawNative.map((obj, idx) => ({
-            ...obj,
-            id: `mirage-native-overlay-${idx}-${obj.id}`,
-            labelJa: `[公式WASM] ${obj.labelJa}`,
-            category: `${obj.category} (公式WASM)`,
-            color: obj.category === 'テキスト (OCR)' ? '#34d399' : '#10b981',
-          }));
-        }
-      } catch (err) {
-        console.warn(
-          'Optional native WASM overlay failed during experimental ONNX run',
-          err
-        );
-      }
+    if (
+      extraOptions?.sourceGeneration !== undefined &&
+      extraOptions.sourceGeneration !== this.sourceGeneration
+    ) {
+      this.sourceGeneration = extraOptions.sourceGeneration;
     }
 
-    const postprocessMs = performance.now() - postStart;
-    const totalMs = performance.now() - totalStart;
+    const requestGeneration = this.sourceGeneration;
+    const frameId = ++this.nextFrameId;
+    const isStale = () =>
+      this.owner.closed || this.sourceGeneration !== requestGeneration;
 
-    const requestedProvider =
-      this.variantId === 'mirage-onnx-exp-webgpu' ? 'webgpu' : 'wasm';
-    const activeProvider: 'wasm' | 'webgpu' =
-      requestedProvider === 'webgpu' && !this.backend.fallbackReason
-        ? 'webgpu'
-        : 'wasm';
+    // Synchronously capture an immutable source frame snapshot before any await
+    const preStart = performance.now();
+    const snapshot =
+      extraOptions?.sourceSnapshot && !extraOptions.sourceSnapshot.disposed
+        ? (extraOptions.sourceSnapshot.retain() as MirageSourceFrameSnapshot)
+        : captureMirageSourceFrameSnapshot(
+            videoElement,
+            frameId,
+            requestGeneration
+          );
 
-    this.lastDiagnostics = {
-      variantId: this.variantId,
-      requestedProvider,
-      configuredProviders: this.backend.configuredProviders as readonly (
-        | 'webgpu'
-        | 'wasm'
-      )[],
-      activeProvider,
-      actualKernelBackend: 'unmeasured',
-      allowWasmFallback: this.allowWasmFallback,
-      fallbackReason: this.backend.fallbackReason,
-      artifactSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
-      artifactSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
-      opset: MIRAGE_EXPERIMENTAL_ONNX_OPSET,
-      tensorCoverage: `${MIRAGE_EXPERIMENTAL_ONNX_TENSOR_COUNT}/${MIRAGE_TOTAL_CHECKPOINT_TENSOR_COUNT}`,
-      validHw: preprocessed.valid_hw,
-      metadata: preprocessed.metadata,
-      nmsIou,
-      confidenceThreshold: effectiveConfidence,
-      objectProposalCount: decoded.objects.length,
-      textProposalCount: decoded.text.length,
-      nativeOverlayEnabled: overlayNative,
-      nativeOverlayCount: nativeObjects.length,
-      timingsMs: {
-        preprocess: preprocessMs,
-        inference: inferenceMs,
-        postprocess: postprocessMs,
-        total: totalMs,
-      },
-    };
+    try {
+      const preprocessed = this.preprocessInput(snapshot);
+      const onnxInputPixelHash = snapshot.pixelHash;
+      const preprocessMs = performance.now() - preStart;
 
-    return [...onnxObjects, ...nativeObjects];
+      const infStart = performance.now();
+      const rawHeads = await this.runRawHeads(preprocessed);
+      const inferenceMs = performance.now() - infStart;
+      if (isStale()) return [];
+
+      const postStart = performance.now();
+      const effectiveConfidence = Math.max(
+        0.05,
+        Math.min(0.95, confidenceThreshold)
+      );
+      const nmsIou =
+        extraOptions?.experimentalNmsIou !== undefined
+          ? extraOptions.experimentalNmsIou
+          : null;
+      const includeOcr = extraOptions?.includeOcr ?? true;
+      const showObjects = extraOptions?.showObjectProposals ?? true;
+      const showText = (extraOptions?.showTextProposals ?? true) && includeOcr;
+      const showMasks = extraOptions?.showDiagnosticMasks ?? true;
+      const overlayNative = extraOptions?.overlayNativeWasm ?? false;
+
+      const decoded = decodeMirageExperimentalOutputs(
+        rawHeads,
+        preprocessed.metadata,
+        {
+          confidence: effectiveConfidence,
+          nmsIou,
+          maxObjects: 64,
+          maxText: 32,
+          includeMasks: showMasks,
+        }
+      );
+
+      const onnxObjects = convertProposalsToDetectedObjects(decoded, {
+        showObjectProposals: showObjects,
+        showTextProposals: showText,
+        showDiagnosticMasks: showMasks,
+        maxDetections: extraOptions?.maxDetections ?? 64,
+        sourceAttributionPrefix: true,
+      });
+
+      let nativeObjects: DetectedObject[] = [];
+      let nativeInputPixelHash: string | null = null;
+
+      if (overlayNative && !isStale() && this.nativeOverlayTaskFactory) {
+        snapshot.retain();
+        try {
+          const overlayTask = await this.ensureNativeOverlayTask();
+          if (!isStale() && overlayTask) {
+            nativeInputPixelHash = snapshot.pixelHash;
+            const rawNative = await overlayTask.detectForVideo(
+              snapshot.canvas,
+              effectiveConfidence,
+              {
+                analysisMode:
+                  extraOptions?.analysisMode ?? ('fast' as MirageAnalysisMode),
+                includeOcr,
+                maxDetections: extraOptions?.maxDetections ?? 15,
+                sourceGeneration: requestGeneration,
+                sourceSnapshot: snapshot,
+              }
+            );
+            if (isStale()) return [];
+            nativeObjects = rawNative.map((obj, idx) => ({
+              ...obj,
+              id: `mirage-native-overlay-${idx}-${obj.id}`,
+              labelJa: `[公式WASM] ${obj.labelJa}`,
+              category: `${obj.category} (公式WASM)`,
+              color: obj.category === 'テキスト (OCR)' ? '#34d399' : '#10b981',
+            }));
+          }
+        } catch (err) {
+          if (isStale()) return [];
+          console.warn(
+            'Optional native WASM overlay failed during experimental ONNX run',
+            err
+          );
+        } finally {
+          snapshot.release();
+        }
+      }
+
+      if (isStale()) return [];
+
+      const postprocessMs = performance.now() - postStart;
+      const totalMs = performance.now() - totalStart;
+
+      const requestedProvider =
+        this.variantId === 'mirage-onnx-exp-webgpu' ? 'webgpu' : 'wasm';
+      const activeProvider: 'wasm' | 'webgpu' =
+        requestedProvider === 'webgpu' && !this.backend.fallbackReason
+          ? 'webgpu'
+          : 'wasm';
+
+      const sameSourceSnapshot =
+        onnxInputPixelHash === snapshot.pixelHash &&
+        (!overlayNative ||
+          nativeInputPixelHash === null ||
+          nativeInputPixelHash === snapshot.pixelHash);
+
+      this.lastDiagnostics = {
+        variantId: this.variantId,
+        requestedProvider,
+        configuredProviders: this.backend.configuredProviders as readonly (
+          | 'webgpu'
+          | 'wasm'
+        )[],
+        activeProvider,
+        actualKernelBackend: 'unmeasured',
+        allowWasmFallback: this.allowWasmFallback,
+        fallbackReason: this.backend.fallbackReason,
+        webgpuAdapter: this.webgpuAdapter,
+        artifactSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
+        artifactSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+        opset: MIRAGE_EXPERIMENTAL_ONNX_OPSET,
+        tensorCoverage: `${MIRAGE_EXPERIMENTAL_ONNX_TENSOR_COUNT}/${MIRAGE_TOTAL_CHECKPOINT_TENSOR_COUNT}`,
+        validHw: preprocessed.valid_hw,
+        metadata: preprocessed.metadata,
+        nmsIou,
+        confidenceThreshold: effectiveConfidence,
+        objectProposalCount: decoded.objects.length,
+        textProposalCount: decoded.text.length,
+        nativeOverlayEnabled: overlayNative,
+        nativeOverlayCount: nativeObjects.length,
+        frameAlignment: {
+          frameId: snapshot.frameId,
+          sourceGeneration: snapshot.sourceGeneration,
+          sourceWidth: snapshot.width,
+          sourceHeight: snapshot.height,
+          sourcePixelHash: snapshot.pixelHash,
+          onnxInputPixelHash,
+          nativeInputPixelHash,
+          sameSourceSnapshot,
+          onnxFrameId: snapshot.frameId,
+          nativeFrameId: nativeInputPixelHash ? snapshot.frameId : null,
+          onnxSourceGeneration: snapshot.sourceGeneration,
+          nativeSourceGeneration: nativeInputPixelHash
+            ? snapshot.sourceGeneration
+            : null,
+          onnxRgbaSha256: onnxInputPixelHash,
+          nativeRgbaSha256: nativeInputPixelHash,
+          sameSourceFrame: sameSourceSnapshot,
+        },
+        timingsMs: {
+          preprocess: preprocessMs,
+          inference: inferenceMs,
+          postprocess: postprocessMs,
+          total: totalMs,
+        },
+      };
+
+      return [...onnxObjects, ...nativeObjects];
+    } finally {
+      snapshot.release();
+    }
   }
 
   public async close(): Promise<void> {
-    this.resizeCanvas = null;
-    this.resizeCtx = null;
+    this.sourceGeneration++;
+    this.lastSourceElement = null;
     if (this.nativeOverlayTask) {
+      const taskToClose = this.nativeOverlayTask;
+      this.nativeOverlayTask = null;
       try {
-        this.nativeOverlayTask.close();
+        await Promise.resolve(taskToClose.close());
       } catch {
         // Ignore cleanup errors
       }
-      this.nativeOverlayTask = null;
     }
     await this.owner.close();
   }
@@ -1080,6 +1642,100 @@ export async function fetchModelBuffer(
   return await response.arrayBuffer();
 }
 
+export async function probeWebGpuAdapterDiagnostics(): Promise<WebGpuAdapterDiagnostics> {
+  if (
+    typeof navigator === 'undefined' ||
+    !('gpu' in navigator) ||
+    !navigator.gpu
+  ) {
+    return {
+      available: false,
+      navigatorGpuPresent: false,
+      adapterAvailable: false,
+      vendor: '',
+      architecture: '',
+      device: '',
+      description: '',
+      isFallbackAdapter: false,
+      isSoftwareAdapter: false,
+      error: 'navigator.gpu is not present in this runtime',
+    };
+  }
+  try {
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) {
+      return {
+        available: false,
+        navigatorGpuPresent: true,
+        adapterAvailable: false,
+        vendor: '',
+        architecture: '',
+        device: '',
+        description: '',
+        isFallbackAdapter: false,
+        isSoftwareAdapter: false,
+        error: 'navigator.gpu.requestAdapter() returned null',
+      };
+    }
+    const rawAdapter = adapter as unknown as {
+      info?: {
+        vendor?: string;
+        architecture?: string;
+        device?: string;
+        description?: string;
+      };
+      isFallbackAdapter?: boolean;
+      requestAdapterInfo?: () => Promise<{
+        vendor?: string;
+        architecture?: string;
+        device?: string;
+        description?: string;
+      }>;
+    };
+    const info =
+      rawAdapter.info ??
+      (typeof rawAdapter.requestAdapterInfo === 'function'
+        ? await rawAdapter.requestAdapterInfo().catch(() => undefined)
+        : undefined);
+    const vendor = String(info?.vendor ?? '');
+    const architecture = String(info?.architecture ?? '');
+    const device = String(info?.device ?? '');
+    const description = String(info?.description ?? '');
+    const isFallbackAdapter = Boolean(rawAdapter.isFallbackAdapter);
+    const combined = `${vendor} ${architecture} ${device} ${description}`;
+    const isSoftwareAdapter =
+      isFallbackAdapter ||
+      /swiftshader|llvmpipe|lavapipe|software|warp|basic render/i.test(
+        combined
+      );
+    return {
+      available: true,
+      navigatorGpuPresent: true,
+      adapterAvailable: true,
+      vendor,
+      architecture,
+      device,
+      description,
+      isFallbackAdapter,
+      isSoftwareAdapter,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      available: false,
+      navigatorGpuPresent: true,
+      adapterAvailable: false,
+      vendor: '',
+      architecture: '',
+      device: '',
+      description: '',
+      isFallbackAdapter: false,
+      isSoftwareAdapter: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
 export interface CreateMirageExperimentalOnnxOptions {
   variantId: MirageExperimentalVariantId;
   recordAssetSource?: AssetSourceRecorder;
@@ -1103,6 +1759,8 @@ export async function createMirageExperimentalOnnxTask(
     );
   }
 
+  cancelInFlightMirageWasmInit();
+
   diagnosticLogger.log('info', 'resolve', 'mirage', variantId, 'Resolving model asset URLs', {
     details: { variantId, allowWasmFallback },
   });
@@ -1123,6 +1781,26 @@ export async function createMirageExperimentalOnnxTask(
       allowWasmFallback,
     },
   });
+
+  const webgpuAdapter =
+    delegate === 'WebGPU' ? await probeWebGpuAdapterDiagnostics() : null;
+
+  if (delegate === 'WebGPU' && !allowWasmFallback) {
+    if (
+      typeof navigator === 'undefined' ||
+      !('gpu' in navigator) ||
+      !navigator.gpu
+    ) {
+      throw new Error(
+        'Strict WebGPU session requested (allowWasmFallback=false), but navigator.gpu is unavailable'
+      );
+    }
+    if (!webgpuAdapter?.available) {
+      throw new Error(
+        'Strict WebGPU session requested (allowWasmFallback=false), but navigator.gpu.requestAdapter() returned null'
+      );
+    }
+  }
 
   let verifiedBytes: Uint8Array | undefined;
   if (typeof fetch === 'function') {
@@ -1180,21 +1858,6 @@ export async function createMirageExperimentalOnnxTask(
     let backend: OnnxBackendInfo | undefined;
 
     if (delegate === 'WebGPU' && !allowWasmFallback) {
-      if (
-        typeof navigator === 'undefined' ||
-        !('gpu' in navigator) ||
-        !navigator.gpu
-      ) {
-        throw new Error(
-          'Strict WebGPU session requested (allowWasmFallback=false), but navigator.gpu is unavailable'
-        );
-      }
-      const adapter = await navigator.gpu.requestAdapter();
-      if (!adapter) {
-        throw new Error(
-          'Strict WebGPU session requested (allowWasmFallback=false), but navigator.gpu.requestAdapter() returned null'
-        );
-      }
       if (!verifiedBytes) {
         throw new Error(
           'Strict WebGPU session requires verified model bytes'
@@ -1237,6 +1900,7 @@ export async function createMirageExperimentalOnnxTask(
     diagnosticLogger.log('info', 'ort-session', 'mirage', variantId, 'ONNX session created successfully', {
       details: {
         backend,
+        webgpuAdapter,
         sessionMs,
         allowWasmFallback,
         inputNames: session.inputNames,
@@ -1250,7 +1914,8 @@ export async function createMirageExperimentalOnnxTask(
       backend ?? unknownOnnxBackend(),
       nativeOverlayTaskFactory,
       verifiedBytes,
-      allowWasmFallback
+      allowWasmFallback,
+      webgpuAdapter
     );
   } catch (ortErr) {
     diagnosticLogger.log('error', 'ort-session', 'mirage', variantId, 'ONNX Runtime session creation failed', {
@@ -1270,6 +1935,11 @@ export interface MirageExperimentalBrowserBridge {
   packResizedPixelsToMirageTensor: typeof packResizedPixelsToMirageTensor;
   decodeMirageExperimentalOutputs: typeof decodeMirageExperimentalOutputs;
   convertProposalsToDetectedObjects: typeof convertProposalsToDetectedObjects;
+  compareMirageTensorParity: typeof compareMirageTensorParity;
+  probeWebGpuAdapterDiagnostics: typeof probeWebGpuAdapterDiagnostics;
+  captureMirageSourceFrameSnapshot: typeof captureMirageSourceFrameSnapshot;
+  sha256HexSync: typeof sha256HexSync;
+  cancelInFlightMirageWasmInit: typeof cancelInFlightMirageWasmInit;
 }
 
 declare global {
@@ -1288,6 +1958,13 @@ if (typeof window !== 'undefined') {
     packResizedPixelsToMirageTensor,
     decodeMirageExperimentalOutputs,
     convertProposalsToDetectedObjects,
+    compareMirageTensorParity,
+    probeWebGpuAdapterDiagnostics,
+    captureMirageSourceFrameSnapshot,
+    sha256HexSync,
+    cancelInFlightMirageWasmInit,
   };
 }
+
+
 

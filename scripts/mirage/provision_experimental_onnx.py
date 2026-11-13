@@ -13,17 +13,11 @@ import urllib.request
 from pathlib import Path
 
 import numpy as np
-import onnx
 import onnxruntime as ort
-import torch
 
-from archive_encoder_weights import decode_cq
 from corpus_fixtures import cases as corpus_cases_manifest, verify_image
 from corpus_postprocessing import decode_policy
-from encoder_candidate import output_names, required_shapes, validate_weights
 from encoder_fixtures import PHOTO_SHA256, PHOTO_URL, image_identity
-from encoder_reference_order import ReferenceOrderEncoder
-from oasis_candidate_reference import OASIS_SHA256
 from perception_diagnostics import compare_native, decode
 from refinement_inputs import images as refinement_images, preprocess
 from verify_checkpoint import ARTIFACTS, REVISION, identity, verify
@@ -102,6 +96,10 @@ def ensure_verified_corpus_image(name: str, cache_dir: Path = DEFAULT_CORPUS_CAC
 
 
 def load_archive_weights_from_mapping(cact_path: Path, mapping_path: Path):
+    import torch
+    from archive_encoder_weights import decode_cq
+    from encoder_candidate import required_shapes, validate_weights
+
     native_id = verify(cact_path, ARTIFACTS['mirage.cact'])
     data = cact_path.read_bytes()
     fields = struct.unpack_from('<48I', data)
@@ -143,6 +141,12 @@ def ensure_verified_onnx(
         raise FileNotFoundError(
             f'Required cached archive not found at {cact_path}; cannot reconstruct verified ONNX.'
         )
+
+    import onnx
+    import torch
+    from encoder_candidate import output_names
+    from encoder_reference_order import ReferenceOrderEncoder
+    from oasis_candidate_reference import OASIS_SHA256
 
     archive_weights, native_id = load_archive_weights_from_mapping(cact_path, mapping_path)
     torch.set_num_threads(2)

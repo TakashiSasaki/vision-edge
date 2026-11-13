@@ -169,6 +169,7 @@ export class VisionEngine {
     this.maskImageData = null;
     this.acceptedInspector=null;
     if(this.activeTask?.model==='segformer')this.activeTask.task.clearResult?.();
+    if(this.activeTask?.model==='mirage')this.activeTask.task.notifySourceChanged?.();
   }
   // A new camera session must not inherit temporal detections from another scene.
   // Keep the ready model task and its initialization generation intact.
@@ -776,6 +777,7 @@ export class VisionEngine {
           showTextProposals: extraOptions?.showTextProposals,
           showDiagnosticMasks: extraOptions?.showDiagnosticMasks,
           overlayNativeWasm: extraOptions?.overlayNativeWasm,
+          sourceGeneration: outputGeneration,
         });
         rawObjects = detectResult instanceof Promise ? await detectResult : detectResult;
         sdkOutcome = 'success';

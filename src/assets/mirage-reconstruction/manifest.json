@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "description": "Packaged runtime reconstruction metadata and UI still-image presets for the partial Mirage ONNX model (cact-dequantized-reference-order.onnx). Keeps deployed container independent of excluded docs/, scripts/mirage/, and developer caches.",
+  "sourceArchive": {
+    "file": "mirage.cact",
+    "upstreamUrl": "https://huggingface.co/Cactus-Compute/mirage/resolve/76c1e9e53381aca8fc3843c636216c96ff220122/mirage.cact",
+    "expectedSize": 21611043,
+    "expectedSha256": "4249a0f7515272ff76b9414bec17d7e7daf84b15b66c7fb4f17fce1e66f9f237"
+  },
+  "reconstructedOutput": {
+    "file": "cact-dequantized-reference-order.onnx",
+    "expectedSize": 34281503,
+    "expectedSha256": "52d52d2918160404cd806702a270736819712025cf3c6aa8e907a06bc3cbdd07"
+  },
+  "assets": {
+    "mirage-encoder-archive-mapping.json": {
+      "originPath": "docs/verification/mirage-encoder-archive-mapping.json",
+      "size": 95347,
+      "sha256": "b520189ac608d27279243494c6ac3cbde40edf1519c6d5a4d5c4d9c2f0a12892"
+    },
+    "cact_onnx_skeleton.bin.gz": {
+      "originPath": "scripts/mirage/cact_onnx_skeleton.bin.gz",
+      "size": 124958,
+      "sha256": "0e9f92e01fe5142805f7168063cad3ec183c88b58d5957ccb703ba0a442393eb"
+    },
+    "cact_onnx_placements.json": {
+      "originPath": "scripts/mirage/cact_onnx_placements.json",
+      "size": 68826,
+      "sha256": "04f56475718c14ac0120fa54c85ef0dca4ebc70eb6f2a812e2bf7232fedfc95c"
+    },
+    "presets/coco_000000458054.png": {
+      "originPath": "scripts/mirage/presets/coco_000000458054.png",
+      "size": 528235,
+      "sha256": "abd78592955395e589c8522d3090c69db0f7299229f99d60adb0488955ee83c3"
+    },
+    "presets/overlap_shapes.png": {
+      "originPath": "scripts/mirage/presets/overlap_shapes.png",
+      "size": 2620,
+      "sha256": "5ebb322f08ea23220d06609d47baadecf5cfd195859eed4cc1f5d74980f49477"
+    },
+    "presets/text_regions.png": {
+      "originPath": "scripts/mirage/presets/text_regions.png",
+      "size": 1072,
+      "sha256": "45eeab0e08191d582f651e158f609bf50c4f8a6b4078cfd9be0e7b0a2eea1618"
+    }
+  }
+}

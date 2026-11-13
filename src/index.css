@@ -13,6 +13,7 @@
 @source not "../pyproject.toml";
 @source not "../requirements-mirage.txt";
 @source not "../public/wasm";
+@source not "./assets/mirage-reconstruction";
 
 html, body, #root {
   height: 100%;

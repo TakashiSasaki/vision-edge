@@ -21,7 +21,8 @@ const FIXTURE_MANIFEST_PATH = path.resolve(
 function runCacheMiddleware(
   middleware: ReturnType<ContainerModelCacheManager['createMiddleware']>,
   urlPath: string,
-  method: string
+  method: string,
+  requestHeaders: Record<string, string> = {}
 ): Promise<{
   handled: boolean;
   status: number;
@@ -34,7 +35,10 @@ function runCacheMiddleware(
     const req = {
       url: urlPath,
       method,
-      headers: { host: '127.0.0.1:4173' },
+      headers: {
+        host: '127.0.0.1:4173',
+        ...(requestHeaders.range ? { range: requestHeaders.range } : {}),
+      },
     } as unknown as IncomingMessage;
     const rawRes = {
       statusCode: 200,
@@ -85,7 +89,8 @@ async function routeLocalModelCache(context: BrowserContext) {
       const result = await runCacheMiddleware(
         middleware,
         reqUrl.pathname + reqUrl.search,
-        route.request().method()
+        route.request().method(),
+        route.request().headers()
       );
       if (result.handled) {
         return route.fulfill({
@@ -118,16 +123,45 @@ async function routeLocalModelCache(context: BrowserContext) {
 }
 
 test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
+  test.describe.configure({ mode: 'serial' });
   test.setTimeout(240_000);
 
-  test('verifies SHA-256, WASM vs WebGPU execution providers, identical-input tensor parity (atol=rtol=2e-4), and Canvas vs Pillow preprocessing across 8 cases', async ({
+  let part1Report: {
+    schemaVersion: number;
+    recordedAt: string;
+    userAgent: string;
+    artifact: Record<string, unknown>;
+    executionProviders: {
+      wasm: Record<string, unknown>;
+      webgpu: Record<string, unknown>;
+    };
+    cases: Record<string, {
+      sourceDimensions: [number, number];
+      validHw: [number, number];
+      coordinateScale: [number, number, number, number];
+      identicalInputParity: Record<string, unknown>;
+    }>;
+  } | null = null;
+
+  test('verifies SHA-256, WASM vs WebGPU execution providers, and identical-input tensor parity (atol=rtol=2e-4) across 8 cases', async ({
     context,
     page,
   }, testInfo) => {
-    test.skip(
-      !existsSync(ONNX_ARTIFACT_PATH) || !existsSync(FIXTURE_MANIFEST_PATH),
-      'Requires local verified cact-dequantized-reference-order.onnx and .cache/mirage-browser-fixtures/manifest.json'
-    );
+    if (process.env.REQUIRE_MIRAGE_REAL_MODEL === '1') {
+      expect(
+        existsSync(ONNX_ARTIFACT_PATH),
+        `Expected reconstructed ONNX at ${ONNX_ARTIFACT_PATH}`
+      ).toBe(true);
+      expect(
+        existsSync(FIXTURE_MANIFEST_PATH),
+        `Expected fixture manifest at ${FIXTURE_MANIFEST_PATH}`
+      ).toBe(true);
+    } else {
+      test.skip(
+        !existsSync(ONNX_ARTIFACT_PATH) || !existsSync(FIXTURE_MANIFEST_PATH),
+        'Requires local verified cact-dequantized-reference-order.onnx and .cache/mirage-browser-fixtures/manifest.json'
+      );
+    }
 
     await routeLocalModelCache(context);
     await page.goto('/');
@@ -139,6 +173,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         if (!bridge) {
           throw new Error('window.__mirageExperimentalBridge is not registered');
         }
+        bridge.cancelInFlightMirageWasmInit?.();
 
         // 1. Fetch and verify the ONNX artifact in browser WebCrypto
         const onnxUrl = `/api/model-cache/mirage/cact-dequantized-reference-order.onnx?sha256=${expectedSha256}`;
@@ -147,7 +182,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         if (!onnxRes.ok) {
           throw new Error(`Failed to fetch ONNX artifact: HTTP ${onnxRes.status}`);
         }
-        const onnxBuffer = await onnxRes.arrayBuffer();
+        let onnxBuffer: ArrayBuffer | null = await onnxRes.arrayBuffer();
         const onnxFetchMs = performance.now() - onnxFetchStart;
         const verified = await bridge.verifyMirageExperimentalOnnxBytes(onnxBuffer);
 
@@ -163,8 +198,8 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         const manifest = await manifestRes.json();
 
         // 3. Probe WebGPU availability & direct WebGPU EP behavior on the 64-output graph
-        const navGpu = (navigator as unknown as { gpu?: { requestAdapter?: () => Promise<unknown> } }).gpu;
-        let webgpuAdapterAvailable = false;
+        const adapterDiagnostics = await bridge.probeWebGpuAdapterDiagnostics();
+        const webgpuAdapterAvailable = adapterDiagnostics.adapterAvailable;
         const webgpuDirectSessionOutcome: {
           attempted: boolean;
           sessionCreated: boolean;
@@ -180,15 +215,6 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           runMs: null,
           error: null,
         };
-
-        if (navGpu && typeof navGpu.requestAdapter === 'function') {
-          try {
-            const adapter = await navGpu.requestAdapter();
-            webgpuAdapterAvailable = !!adapter;
-          } catch {
-            webgpuAdapterAvailable = false;
-          }
-        }
 
         // Ensure ort.env.wasm.wasmPaths points to the local container cache BEFORE any session creation
         bridge.ort.env.logLevel = 'error';
@@ -245,6 +271,31 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           webgpuDirectSessionOutcome.error = `WebGPU session create failed: ${
             createErr instanceof Error ? createErr.message : String(createErr)
           }`;
+        } finally {
+          onnxBuffer = null;
+        }
+
+        // Test strict task creation (allowWasmFallback: false)
+        const strictWebGpuTaskOutcome: {
+          status: 'PASSED' | 'PASSED_SOFTWARE_ADAPTER' | 'BLOCKED';
+          error: string | null;
+        } = {
+          status: 'BLOCKED',
+          error: null,
+        };
+        try {
+          const strictTask = await bridge.createMirageExperimentalOnnxTask({
+            variantId: 'mirage-onnx-exp-webgpu',
+            allowWasmFallback: false,
+          });
+          strictWebGpuTaskOutcome.status = adapterDiagnostics.isSoftwareAdapter
+            ? 'PASSED_SOFTWARE_ADAPTER'
+            : 'PASSED';
+          await strictTask.close();
+        } catch (strictErr) {
+          strictWebGpuTaskOutcome.status = 'BLOCKED';
+          strictWebGpuTaskOutcome.error =
+            strictErr instanceof Error ? strictErr.message : String(strictErr);
         }
 
         // 4. Test mirage-onnx-exp-webgpu via application task factory (with configured fallback observation)
@@ -265,7 +316,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         const webgpuWarmupMs = performance.now() - webgpuWarmupStart;
         await webgpuTask.close();
 
-        // 5. Initialize mirage-onnx-exp-wasm and run all 8 benchmark cases
+        // 5. Initialize mirage-onnx-exp-wasm and run all 8 identical-input benchmark cases
         const wasmTaskStart = performance.now();
         const wasmTask = await bridge.createMirageExperimentalOnnxTask({
           variantId: 'mirage-onnx-exp-wasm',
@@ -279,49 +330,13 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           atol = 2e-4,
           rtol = 2e-4
         ) {
-          if (actual.length !== expected.length) {
-            throw new Error(
-              `Tensor length mismatch: ${actual.length} vs ${expected.length}`
-            );
-          }
-          let maxAbsDiff = 0;
-          let sumAbsDiff = 0;
-          let maxRelDiff = 0;
-          let violationsAt2e4 = 0;
-          for (let i = 0; i < actual.length; i++) {
-            const a = actual[i];
-            const b = expected[i];
-            const diff = Math.abs(a - b);
-            sumAbsDiff += diff;
-            if (diff > maxAbsDiff) maxAbsDiff = diff;
-            const denom = Math.max(Math.abs(b), 1e-12);
-            const rel = diff / denom;
-            if (rel > maxRelDiff) maxRelDiff = rel;
-            if (diff > atol + rtol * Math.abs(b)) {
-              violationsAt2e4++;
-            }
-          }
-          return {
-            length: actual.length,
-            maxAbsDiff,
-            meanAbsDiff: sumAbsDiff / actual.length,
-            maxRelDiff,
-            violationsAt2e4,
-            allcloseAt2e4: violationsAt2e4 === 0,
-          };
-        }
-
-        function boxIou(a: number[], b: number[]): number {
-          const ix1 = Math.max(a[0], b[0]);
-          const iy1 = Math.max(a[1], b[1]);
-          const ix2 = Math.min(a[2], b[2]);
-          const iy2 = Math.min(a[3], b[3]);
-          const iw = Math.max(0, ix2 - ix1);
-          const ih = Math.max(0, iy2 - iy1);
-          const inter = iw * ih;
-          const areaA = Math.max(0, a[2] - a[0]) * Math.max(0, a[3] - a[1]);
-          const areaB = Math.max(0, b[2] - b[0]) * Math.max(0, b[3] - b[1]);
-          return inter / Math.max(areaA + areaB - inter, 1e-9);
+          return bridge.compareMirageTensorParity(
+            actual,
+            expected,
+            atol,
+            rtol,
+            1e-6
+          );
         }
 
         async function fetchFloat32(filename: string): Promise<Float32Array> {
@@ -332,16 +347,12 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           return new Float32Array(await r.arrayBuffer());
         }
 
-        async function loadPngElement(filename: string): Promise<HTMLImageElement> {
-          return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error(`Failed to load ${filename}`));
-            img.src = `/api/model-cache/mirage/fixtures/${filename}`;
-          });
-        }
-
-        const caseReports: Record<string, unknown> = {};
+        const caseReports: Record<string, {
+          sourceDimensions: [number, number];
+          validHw: [number, number];
+          coordinateScale: [number, number, number, number];
+          identicalInputParity: Record<string, unknown>;
+        }> = {};
         const caseNames = Object.keys(manifest.cases);
 
         for (const caseName of caseNames) {
@@ -446,66 +457,6 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
                 )
             );
 
-          // Part B: Browser Canvas 2D Bilinear Preprocessing from PNG vs Python Pillow Bilinear
-          const imgEl = await loadPngElement(`${caseName}.png`);
-          const preStart = performance.now();
-          const canvasPreprocessed = wasmTask.preprocessInput(imgEl);
-          const canvasPreprocessMs = performance.now() - preStart;
-
-          const validH = metadata.h;
-          const validW = metadata.w;
-          let validRegionMaxAbsDiff = 0;
-          let validRegionSumAbsDiff = 0;
-          let validRegionDiffCountOver1e4 = 0;
-          let validElements = 0;
-          let paddingMaxAbsValue = 0;
-
-          for (let c = 0; c < 3; c++) {
-            const planeOffset = c * 512 * 512;
-            for (let y = 0; y < 512; y++) {
-              const rowOffset = planeOffset + y * 512;
-              for (let x = 0; x < 512; x++) {
-                const idx = rowOffset + x;
-                const canvasVal = canvasPreprocessed.image[idx];
-                const pillowVal = refImage[idx];
-                if (y < validH && x < validW) {
-                  validElements++;
-                  const diff = Math.abs(canvasVal - pillowVal);
-                  validRegionSumAbsDiff += diff;
-                  if (diff > validRegionMaxAbsDiff) validRegionMaxAbsDiff = diff;
-                  if (diff > 1e-4) validRegionDiffCountOver1e4++;
-                } else {
-                  const absPad = Math.abs(canvasVal);
-                  if (absPad > paddingMaxAbsValue) paddingMaxAbsValue = absPad;
-                }
-              }
-            }
-          }
-
-          const canvasInfStart = performance.now();
-          const canvasHeads = await wasmTask.runRawHeads(canvasPreprocessed);
-          const canvasInferenceMs = performance.now() - canvasInfStart;
-          const canvasDecodedNone = bridge.decodeMirageExperimentalOutputs(
-            canvasHeads,
-            metadata,
-            { confidence: 0.3, nmsIou: null, includeMasks: false }
-          );
-          const canvasDecodedNms050 = bridge.decodeMirageExperimentalOutputs(
-            canvasHeads,
-            metadata,
-            { confidence: 0.3, nmsIou: 0.5, includeMasks: false }
-          );
-
-          // Compare Canvas-preprocessed proposals vs Pillow-preprocessed proposals
-          let matchedObjectsIoU085 = 0;
-          for (const refObj of decodedNone.objects) {
-            const bestIou = canvasDecodedNone.objects.reduce(
-              (best, cand) => Math.max(best, boxIou(refObj.bbox, cand.bbox)),
-              0
-            );
-            if (bestIou >= 0.85) matchedObjectsIoU085++;
-          }
-
           caseReports[caseName] = {
             sourceDimensions: [entry.metadata.W, entry.metadata.H],
             validHw: entry.valid_hw,
@@ -525,28 +476,6 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
               textCountNoNms: decodedNone.text.length,
               objectCountNms050: decodedNms050.objects.length,
               textCountNms050: decodedNms050.text.length,
-            },
-            canvasVsPillowPreprocess: {
-              preprocessMs: Number(canvasPreprocessMs.toFixed(2)),
-              inferenceMs: Number(canvasInferenceMs.toFixed(2)),
-              resizeOccurred:
-                entry.metadata.W !== metadata.w || entry.metadata.H !== metadata.h,
-              validRegionMaxAbsDiff: Number(validRegionMaxAbsDiff.toFixed(6)),
-              validRegionMeanAbsDiff: Number(
-                (validRegionSumAbsDiff / Math.max(1, validElements)).toFixed(6)
-              ),
-              validRegionDiffRatio: Number(
-                (
-                  validRegionDiffCountOver1e4 / Math.max(1, validElements)
-                ).toFixed(4)
-              ),
-              paddingMaxAbsValue,
-              canvasObjectCountNoNms: canvasDecodedNone.objects.length,
-              canvasTextCountNoNms: canvasDecodedNone.text.length,
-              canvasObjectCountNms050: canvasDecodedNms050.objects.length,
-              canvasTextCountNms050: canvasDecodedNms050.text.length,
-              matchedPillowObjectsAtIoU085: matchedObjectsIoU085,
-              totalPillowObjectsNoNms: decodedNone.objects.length,
             },
           };
         }
@@ -573,9 +502,11 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
             },
             webgpu: {
               variantId: 'mirage-onnx-exp-webgpu',
-              navigatorGpuPresent: !!navGpu,
+              navigatorGpuPresent: adapterDiagnostics.navigatorGpuPresent,
               webgpuAdapterAvailable,
+              adapterDiagnostics,
               directWebGpuSession: webgpuDirectSessionOutcome,
+              strictWebGpuTask: strictWebGpuTaskOutcome,
               applicationTaskInitMs: Number(webgpuTaskInitMs.toFixed(2)),
               applicationWarmupInferenceMs: Number(webgpuWarmupMs.toFixed(2)),
               applicationWarmupOutputLengths: [
@@ -595,26 +526,14 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
       }
     );
 
-    // Save structured JSON report to test output directory
-    const outputReportPath = testInfo.outputPath(
-      'mirage-browser-onnx-results.json'
-    );
+    await page.goto('about:blank');
+
+    part1Report = browserReport;
     writeFileSync(
-      outputReportPath,
+      testInfo.outputPath('mirage-browser-onnx-identical-results.json'),
       JSON.stringify(browserReport, null, 2) + '\n',
       'utf8'
     );
-    if (process.env.WRITE_MIRAGE_BROWSER_REPORT === '1') {
-      const docsReportPath = path.resolve(
-        WORKSPACE_ROOT,
-        'docs/verification/mirage-browser-onnx-results.json'
-      );
-      writeFileSync(
-        docsReportPath,
-        JSON.stringify(browserReport, null, 2) + '\n',
-        'utf8'
-      );
-    }
 
     // Assertions on artifact verification
     expect(browserReport.artifact.matchesExpectedSize).toBe(true);
@@ -625,14 +544,17 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     );
 
     // Assertions on WASM and WebGPU EP reporting
-    expect(browserReport.executionProviders.wasm.backend.requestedProvider).toBe(
-      'wasm'
-    );
     expect(
-      browserReport.executionProviders.wasm.backend.configuredProviders
+      (browserReport.executionProviders.wasm.backend as { requestedProvider: string })
+        .requestedProvider
+    ).toBe('wasm');
+    expect(
+      (browserReport.executionProviders.wasm.backend as { configuredProviders: string[] })
+        .configuredProviders
     ).toEqual(['wasm']);
     expect(
-      browserReport.executionProviders.webgpu.backend.requestedProvider
+      (browserReport.executionProviders.webgpu.backend as { requestedProvider: string })
+        .requestedProvider
     ).toBe('webgpu');
     expect(
       browserReport.executionProviders.webgpu.applicationWarmupOutputLengths
@@ -646,11 +568,6 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           allThreeHeadsAllcloseAt2e4: boolean;
           exactProposalParityNone: boolean;
           exactProposalParityNms050: boolean;
-        };
-        canvasVsPillowPreprocess: {
-          resizeOccurred: boolean;
-          validRegionMaxAbsDiff: number;
-          paddingMaxAbsValue: number;
         };
       }
     >;
@@ -668,6 +585,245 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         report.identicalInputParity.exactProposalParityNms050,
         `${caseName}: browser decoded proposals (nms=0.5) match Python 100%`
       ).toBe(true);
+    }
+  });
+
+  test('verifies Canvas 2D vs Pillow ceil32 preprocessing, zero padding, and browser WASM inference parity across 8 cases', async ({
+    context,
+    page,
+  }, testInfo) => {
+    if (process.env.REQUIRE_MIRAGE_REAL_MODEL === '1') {
+      expect(
+        existsSync(ONNX_ARTIFACT_PATH),
+        `Expected reconstructed ONNX at ${ONNX_ARTIFACT_PATH}`
+      ).toBe(true);
+      expect(
+        existsSync(FIXTURE_MANIFEST_PATH),
+        `Expected fixture manifest at ${FIXTURE_MANIFEST_PATH}`
+      ).toBe(true);
+    } else {
+      test.skip(
+        !existsSync(ONNX_ARTIFACT_PATH) || !existsSync(FIXTURE_MANIFEST_PATH),
+        'Requires local verified cact-dequantized-reference-order.onnx and .cache/mirage-browser-fixtures/manifest.json'
+      );
+    }
+
+    await routeLocalModelCache(context);
+    await page.goto('/');
+    await expect(page.getByRole('banner').getByText('VisionStudio AI')).toBeVisible();
+
+    const preprocessReport = await page.evaluate(async () => {
+      const bridge = window.__mirageExperimentalBridge;
+      if (!bridge) {
+        throw new Error('window.__mirageExperimentalBridge is not registered');
+      }
+      bridge.cancelInFlightMirageWasmInit?.();
+
+      bridge.ort.env.logLevel = 'error';
+      bridge.ort.env.wasm.numThreads = 1;
+      bridge.ort.env.wasm.wasmPaths = `${window.location.origin}/api/model-cache/wasm/ort/`;
+
+      const manifestRes = await fetch(
+        '/api/model-cache/mirage/fixtures/manifest.json'
+      );
+      if (!manifestRes.ok) {
+        throw new Error(
+          `Failed to fetch fixture manifest: HTTP ${manifestRes.status}`
+        );
+      }
+      const manifest = await manifestRes.json();
+
+      const wasmTask = await bridge.createMirageExperimentalOnnxTask({
+        variantId: 'mirage-onnx-exp-wasm',
+      });
+
+      function boxIou(a: number[], b: number[]): number {
+        const ix1 = Math.max(a[0], b[0]);
+        const iy1 = Math.max(a[1], b[1]);
+        const ix2 = Math.min(a[2], b[2]);
+        const iy2 = Math.min(a[3], b[3]);
+        const iw = Math.max(0, ix2 - ix1);
+        const ih = Math.max(0, iy2 - iy1);
+        const inter = iw * ih;
+        const areaA = Math.max(0, a[2] - a[0]) * Math.max(0, a[3] - a[1]);
+        const areaB = Math.max(0, b[2] - b[0]) * Math.max(0, b[3] - b[1]);
+        return inter / Math.max(areaA + areaB - inter, 1e-9);
+      }
+
+      async function fetchFloat32(filename: string): Promise<Float32Array> {
+        const r = await fetch(`/api/model-cache/mirage/fixtures/${filename}`);
+        if (!r.ok) {
+          throw new Error(`Failed to fetch ${filename}: HTTP ${r.status}`);
+        }
+        return new Float32Array(await r.arrayBuffer());
+      }
+
+      async function loadPngElement(filename: string): Promise<HTMLImageElement> {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Failed to load ${filename}`));
+          img.src = `/api/model-cache/mirage/fixtures/${filename}`;
+        });
+      }
+
+      const caseReports: Record<string, {
+        sourceDimensions: [number, number];
+        validHw: [number, number];
+        coordinateScale: [number, number, number, number];
+        canvasVsPillowPreprocess: {
+          preprocessMs: number;
+          inferenceMs: number;
+          resizeOccurred: boolean;
+          validRegionMaxAbsDiff: number;
+          validRegionMeanAbsDiff: number;
+          validRegionDiffRatio: number;
+          paddingMaxAbsValue: number;
+          canvasObjectCountNoNms: number;
+          canvasTextCountNoNms: number;
+          canvasObjectCountNms050: number;
+          canvasTextCountNms050: number;
+          matchedPillowObjectsAtIoU085: number;
+          totalPillowObjectsNoNms: number;
+        };
+      }> = {};
+
+      for (const caseName of Object.keys(manifest.cases)) {
+        const entry = manifest.cases[caseName];
+        const refImage = await fetchFloat32(`${caseName}.image.f32.bin`);
+        const metadata = bridge.computeMirageCeil32Metadata(
+          entry.metadata.W,
+          entry.metadata.H
+        );
+
+        const imgEl = await loadPngElement(`${caseName}.png`);
+        const preStart = performance.now();
+        const canvasPreprocessed = wasmTask.preprocessInput(imgEl);
+        const canvasPreprocessMs = performance.now() - preStart;
+
+        const validH = metadata.h;
+        const validW = metadata.w;
+        let validRegionMaxAbsDiff = 0;
+        let validRegionSumAbsDiff = 0;
+        let validRegionDiffCountOver1e4 = 0;
+        let validElements = 0;
+        let paddingMaxAbsValue = 0;
+
+        for (let c = 0; c < 3; c++) {
+          const planeOffset = c * 512 * 512;
+          for (let y = 0; y < 512; y++) {
+            const rowOffset = planeOffset + y * 512;
+            for (let x = 0; x < 512; x++) {
+              const idx = rowOffset + x;
+              const canvasVal = canvasPreprocessed.image[idx];
+              const pillowVal = refImage[idx];
+              if (y < validH && x < validW) {
+                validElements++;
+                const diff = Math.abs(canvasVal - pillowVal);
+                validRegionSumAbsDiff += diff;
+                if (diff > validRegionMaxAbsDiff) validRegionMaxAbsDiff = diff;
+                if (diff > 1e-4) validRegionDiffCountOver1e4++;
+              } else {
+                const absPad = Math.abs(canvasVal);
+                if (absPad > paddingMaxAbsValue) paddingMaxAbsValue = absPad;
+              }
+            }
+          }
+        }
+
+        const canvasInfStart = performance.now();
+        const canvasHeads = await wasmTask.runRawHeads(canvasPreprocessed);
+        const canvasInferenceMs = performance.now() - canvasInfStart;
+        const canvasDecodedNone = bridge.decodeMirageExperimentalOutputs(
+          canvasHeads,
+          metadata,
+          { confidence: 0.3, nmsIou: null, includeMasks: false }
+        );
+        const canvasDecodedNms050 = bridge.decodeMirageExperimentalOutputs(
+          canvasHeads,
+          metadata,
+          { confidence: 0.3, nmsIou: 0.5, includeMasks: false }
+        );
+
+        let matchedObjectsIoU085 = 0;
+        for (const refObj of entry.decoded_default.objects as Array<{ bbox: number[] }>) {
+          const bestIou = canvasDecodedNone.objects.reduce(
+            (best, cand) => Math.max(best, boxIou(refObj.bbox, cand.bbox)),
+            0
+          );
+          if (bestIou >= 0.85) matchedObjectsIoU085++;
+        }
+
+        caseReports[caseName] = {
+          sourceDimensions: [entry.metadata.W, entry.metadata.H],
+          validHw: entry.valid_hw,
+          coordinateScale: metadata.coordinate_scale,
+          canvasVsPillowPreprocess: {
+            preprocessMs: Number(canvasPreprocessMs.toFixed(2)),
+            inferenceMs: Number(canvasInferenceMs.toFixed(2)),
+            resizeOccurred:
+              entry.metadata.W !== metadata.w || entry.metadata.H !== metadata.h,
+            validRegionMaxAbsDiff: Number(validRegionMaxAbsDiff.toFixed(6)),
+            validRegionMeanAbsDiff: Number(
+              (validRegionSumAbsDiff / Math.max(1, validElements)).toFixed(6)
+            ),
+            validRegionDiffRatio: Number(
+              (
+                validRegionDiffCountOver1e4 / Math.max(1, validElements)
+              ).toFixed(4)
+            ),
+            paddingMaxAbsValue,
+            canvasObjectCountNoNms: canvasDecodedNone.objects.length,
+            canvasTextCountNoNms: canvasDecodedNone.text.length,
+            canvasObjectCountNms050: canvasDecodedNms050.objects.length,
+            canvasTextCountNms050: canvasDecodedNms050.text.length,
+            matchedPillowObjectsAtIoU085: matchedObjectsIoU085,
+            totalPillowObjectsNoNms: entry.decoded_default.object_count,
+          },
+        };
+      }
+
+      await wasmTask.close();
+      return caseReports;
+    });
+
+    await page.goto('about:blank');
+
+    const mergedCases: Record<string, unknown> = {};
+    for (const [caseName, preEntry] of Object.entries(preprocessReport)) {
+      const part1Case = part1Report?.cases?.[caseName];
+      mergedCases[caseName] = {
+        ...(part1Case ?? preEntry),
+        canvasVsPillowPreprocess: preEntry.canvasVsPillowPreprocess,
+      };
+    }
+
+    const mergedReport = part1Report
+      ? { ...part1Report, cases: mergedCases }
+      : { schemaVersion: 1, recordedAt: new Date().toISOString(), cases: mergedCases };
+
+    const outputReportPath = testInfo.outputPath(
+      'mirage-browser-onnx-results.json'
+    );
+    writeFileSync(
+      outputReportPath,
+      JSON.stringify(mergedReport, null, 2) + '\n',
+      'utf8'
+    );
+    if (process.env.WRITE_MIRAGE_BROWSER_REPORT === '1') {
+      const docsReportPath = path.resolve(
+        WORKSPACE_ROOT,
+        'docs/verification/mirage-browser-onnx-results.json'
+      );
+      writeFileSync(
+        docsReportPath,
+        JSON.stringify(mergedReport, null, 2) + '\n',
+        'utf8'
+      );
+    }
+
+    expect(Object.keys(preprocessReport)).toHaveLength(8);
+    for (const [caseName, report] of Object.entries(preprocessReport)) {
       expect(
         report.canvasVsPillowPreprocess.paddingMaxAbsValue,
         `${caseName}: zero padding outside valid_hw`
@@ -675,11 +831,11 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     }
 
     // For 512x512 native inputs (no resize), Canvas 2D and Pillow RGB pixels must be identical
-    expect(cases.overlap_shapes.canvasVsPillowPreprocess.resizeOccurred).toBe(
-      false
-    );
     expect(
-      cases.overlap_shapes.canvasVsPillowPreprocess.validRegionMaxAbsDiff
+      preprocessReport.overlap_shapes.canvasVsPillowPreprocess.resizeOccurred
+    ).toBe(false);
+    expect(
+      preprocessReport.overlap_shapes.canvasVsPillowPreprocess.validRegionMaxAbsDiff
     ).toBeLessThanOrEqual(1e-6);
   });
 
@@ -687,10 +843,21 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     context,
     page,
   }, testInfo) => {
-    test.skip(
-      !existsSync(ONNX_ARTIFACT_PATH) || !existsSync(FIXTURE_MANIFEST_PATH),
-      'Requires local verified cact-dequantized-reference-order.onnx and .cache/mirage-browser-fixtures/manifest.json'
-    );
+    if (process.env.REQUIRE_MIRAGE_REAL_MODEL === '1') {
+      expect(
+        existsSync(ONNX_ARTIFACT_PATH),
+        `Expected reconstructed ONNX at ${ONNX_ARTIFACT_PATH}`
+      ).toBe(true);
+      expect(
+        existsSync(FIXTURE_MANIFEST_PATH),
+        `Expected fixture manifest at ${FIXTURE_MANIFEST_PATH}`
+      ).toBe(true);
+    } else {
+      test.skip(
+        !existsSync(ONNX_ARTIFACT_PATH) || !existsSync(FIXTURE_MANIFEST_PATH),
+        'Requires local verified cact-dequantized-reference-order.onnx and .cache/mirage-browser-fixtures/manifest.json'
+      );
+    }
 
     await routeLocalModelCache(context);
     await page.goto('/');
@@ -737,32 +904,36 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     await expect(
       page.getByText('[ONNX候補] 物体領域候補 #1').first()
     ).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText('認識結果 (6件)')).toBeVisible();
+    await expect(page.getByText('認識結果 (4件)')).toBeVisible();
 
     // Switch to モデル調整 tab to inspect live diagnostics and test NMS policy buttons
     await page.getByRole('button', { name: 'モデル調整' }).click();
     const diagBox = page.getByLabel('実験用部分ONNX実行診断');
     await expect(diagBox).toContainText('要求EP: wasm ／ 設定EP: wasm');
-    await expect(diagBox).toContainText('抽出候補: 物体 6件 ／ テキスト 0件');
+    await expect(diagBox).toContainText('抽出候補: 物体 4件 ／ テキスト 0件');
 
-    // Toggle NMS to Greedy NMS (IoU 0.5) -> 6 overlapping candidates reduce to 2
+    // Toggle NMS to Greedy NMS (IoU 0.5) -> 4 overlapping candidates reduce to 3
     await page.getByRole('button', { name: /Greedy NMS \(IoU 0\.5\)/ }).click();
-    await expect(diagBox).toContainText('抽出候補: 物体 2件 ／ テキスト 0件', {
+    await expect(diagBox).toContainText('抽出候補: 物体 3件 ／ テキスト 0件', {
       timeout: 30_000,
     });
     await page.getByRole('button', { name: /NMSなし（既定）/ }).click();
-    await expect(diagBox).toContainText('抽出候補: 物体 6件 ／ テキスト 0件', {
+    await expect(diagBox).toContainText('抽出候補: 物体 4件 ／ テキスト 0件', {
       timeout: 30_000,
     });
 
     // 2. Run preset: text_regions.png
     await page.getByRole('button', { name: '検証: テキスト領域' }).click();
-    await expect(diagBox).toContainText('抽出候補: 物体 3件 ／ テキスト 1件', {
+    await expect(diagBox).toContainText(
+      '入力 valid_hw: [256, 512] (元画像 512×256 · ceil32)',
+      { timeout: 30_000 }
+    );
+    await expect(diagBox).toContainText('抽出候補: 物体 2件 ／ テキスト 0件', {
       timeout: 30_000,
     });
     await page.getByRole('button', { name: /認識物体/ }).click();
     await expect(
-      page.getByText('[ONNX候補] テキスト領域候補 #1').first()
+      page.getByText('[ONNX候補] 物体領域候補 #1').first()
     ).toBeVisible({ timeout: 30_000 });
 
     // 3. Run preset: coco_000000458054.png (640x426 -> valid_hw [352, 512])
@@ -772,7 +943,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
       '入力 valid_hw: [352, 512] (元画像 640×426 · ceil32)',
       { timeout: 30_000 }
     );
-    await expect(diagBox).toContainText('抽出候補: 物体 6件 ／ テキスト 0件');
+    await expect(diagBox).toContainText('抽出候補: 物体 17件 ／ テキスト 0件');
 
     await page.screenshot({
       path: testInfo.outputPath('mirage-experimental-onnx-ui-coco.png'),
@@ -787,5 +958,115 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     await expect(diagBox).toContainText('要求EP: webgpu', {
       timeout: 30_000,
     });
+    await page.goto('about:blank');
+  });
+
+  test('verifies R3 same-frame source snapshot and live stream isolation in browser', async ({
+    context,
+    page,
+  }) => {
+    if (process.env.REQUIRE_MIRAGE_REAL_MODEL === '1') {
+      expect(
+        existsSync(ONNX_ARTIFACT_PATH),
+        `Expected reconstructed ONNX at ${ONNX_ARTIFACT_PATH}`
+      ).toBe(true);
+    } else {
+      test.skip(
+        !existsSync(ONNX_ARTIFACT_PATH),
+        'Requires local verified cact-dequantized-reference-order.onnx'
+      );
+    }
+
+    await routeLocalModelCache(context);
+    await page.goto('/');
+    await expect(page.getByRole('banner').getByText('VisionStudio AI')).toBeVisible();
+
+    const sameFrameAlignment = await page.evaluate(async () => {
+      const bridge = window.__mirageExperimentalBridge;
+      if (!bridge) {
+        throw new Error('window.__mirageExperimentalBridge is not registered');
+      }
+      bridge.cancelInFlightMirageWasmInit?.();
+      bridge.ort.env.logLevel = 'error';
+      bridge.ort.env.wasm.numThreads = 1;
+      bridge.ort.env.wasm.wasmPaths = `${window.location.origin}/api/model-cache/wasm/ort/`;
+
+      let sameFrameNativeReceivedSha256: string | null = null;
+      const alignmentTask = await bridge.createMirageExperimentalOnnxTask({
+        variantId: 'mirage-onnx-exp-wasm',
+        nativeOverlayTaskFactory: async () => ({
+          detectForVideo: async (
+            _input: unknown,
+            _threshold: number,
+            extra?: {
+              sourceSnapshot?: { rgba: Uint8ClampedArray; rgbaSha256: string };
+            }
+          ) => {
+            sameFrameNativeReceivedSha256 =
+              extra?.sourceSnapshot?.rgbaSha256 ?? null;
+            return [
+              {
+                id: 'native-align-1',
+                label: 'overlap',
+                labelJa: '重なり図形',
+                category: '図形',
+                confidence: 0.9,
+                bbox: { x: 0.1, y: 0.1, width: 0.5, height: 0.5 },
+                color: '#10b981',
+              },
+            ];
+          },
+          close: () => {},
+        }),
+      });
+      const liveStreamCanvas = document.createElement('canvas');
+      liveStreamCanvas.width = 128;
+      liveStreamCanvas.height = 128;
+      const liveStreamCtx = liveStreamCanvas.getContext('2d')!;
+      liveStreamCtx.fillStyle = 'rgb(25, 100, 200)';
+      liveStreamCtx.fillRect(0, 0, 128, 128);
+      const frame1Rgba = liveStreamCtx.getImageData(0, 0, 128, 128).data;
+      const frame1ExpectedSha256 = bridge.sha256HexSync(frame1Rgba);
+
+      const alignmentPromise = alignmentTask.detectForVideo(
+        liveStreamCanvas,
+        0.3,
+        { overlayNativeWasm: true, sourceGeneration: 19 }
+      );
+      // Immediately mutate the live canvas to Frame 2 while ONNX inference is running
+      liveStreamCtx.fillStyle = 'rgb(250, 10, 10)';
+      liveStreamCtx.fillRect(0, 0, 128, 128);
+      const frame2Rgba = liveStreamCtx.getImageData(0, 0, 128, 128).data;
+      const frame2Sha256 = bridge.sha256HexSync(frame2Rgba);
+
+      await alignmentPromise;
+      const diagnostics =
+        alignmentTask.getLastDiagnostics()?.frameAlignment ?? null;
+      await alignmentTask.close();
+
+      return {
+        frame1ExpectedSha256,
+        frame2Sha256,
+        nativeReceivedSha256: sameFrameNativeReceivedSha256,
+        diagnostics,
+      };
+    });
+
+    await page.goto('about:blank');
+
+    expect(sameFrameAlignment.frame1ExpectedSha256).not.toBe(
+      sameFrameAlignment.frame2Sha256
+    );
+    expect(sameFrameAlignment.nativeReceivedSha256).toBe(
+      sameFrameAlignment.frame1ExpectedSha256
+    );
+    expect(sameFrameAlignment.diagnostics).toMatchObject({
+      onnxSourceGeneration: 19,
+      nativeSourceGeneration: 19,
+      onnxRgbaSha256: sameFrameAlignment.frame1ExpectedSha256,
+      nativeRgbaSha256: sameFrameAlignment.frame1ExpectedSha256,
+      sameSourceFrame: true,
+    });
   });
 });
+

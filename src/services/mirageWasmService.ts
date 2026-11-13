@@ -22,6 +22,18 @@ import type {
 } from './mirageWasmWorker';
 import { mirageWebGpuUnavailableError } from './mirageAvailability';
 
+export interface MirageSnapshotLike {
+  readonly frameId: number;
+  readonly sourceGeneration: number;
+  readonly width: number;
+  readonly height: number;
+  readonly rgba: Uint8ClampedArray;
+  readonly pixelHash: string;
+  readonly disposed: boolean;
+  retain(): MirageSnapshotLike;
+  release(): void;
+}
+
 export interface MirageInferExtraOptions {
   iouThreshold?: number;
   maxDetections?: number;
@@ -32,6 +44,8 @@ export interface MirageInferExtraOptions {
   showTextProposals?: boolean;
   showDiagnosticMasks?: boolean;
   overlayNativeWasm?: boolean;
+  sourceGeneration?: number;
+  sourceSnapshot?: MirageSnapshotLike;
 }
 
 export interface MirageTask {
@@ -41,6 +55,7 @@ export interface MirageTask {
     confidenceThreshold: number,
     extraOptions?: MirageInferExtraOptions
   ): Promise<DetectedObject[]>;
+  notifySourceChanged?(): number;
   close(): void | Promise<void>;
 }
 
@@ -144,6 +159,29 @@ function formatPositionTagJa(bbox: { x: number; y: number; width: number; height
   return `${dir}・${dist}`;
 }
 
+function resampleRgbaToRgb(
+  srcRgba: Uint8ClampedArray,
+  srcW: number,
+  srcH: number,
+  dstW: number,
+  dstH: number
+): Uint8Array {
+  const rgb = new Uint8Array(dstW * dstH * 3);
+  let dstIdx = 0;
+  for (let y = 0; y < dstH; y++) {
+    const sy = Math.min(srcH - 1, Math.floor(((y + 0.5) * srcH) / dstH));
+    const srcRow = sy * srcW * 4;
+    for (let x = 0; x < dstW; x++) {
+      const sx = Math.min(srcW - 1, Math.floor(((x + 0.5) * srcW) / dstW));
+      const p = srcRow + sx * 4;
+      rgb[dstIdx++] = srcRgba[p];
+      rgb[dstIdx++] = srcRgba[p + 1];
+      rgb[dstIdx++] = srcRgba[p + 2];
+    }
+  }
+  return rgb;
+}
+
 export class MirageWasmEngine implements MirageTask {
   public readonly backend: OnnxBackendInfo = {
     runtime: 'onnxruntime-web',
@@ -154,9 +192,9 @@ export class MirageWasmEngine implements MirageTask {
   };
 
   private readonly worker: MirageWorkerLike;
-  private offscreenCanvas: HTMLCanvasElement | null = null;
-  private offscreenCtx: CanvasRenderingContext2D | null = null;
   private nextRequestId = 1;
+  private sourceGeneration = 1;
+  private lastConsumedSnapshotHash: string | null = null;
   private readonly pendingRequests = new Map<
     number,
     {
@@ -191,6 +229,14 @@ export class MirageWasmEngine implements MirageTask {
     };
   }
 
+  public notifySourceChanged(): number {
+    return ++this.sourceGeneration;
+  }
+
+  public getLastConsumedSnapshotHash(): string | null {
+    return this.lastConsumedSnapshotHash;
+  }
+
   public async initializeWorker(
     jsUrl: string,
     wasmUrl: string,
@@ -217,49 +263,99 @@ export class MirageWasmEngine implements MirageTask {
 
   private extractPackedRgb(
     input: InferenceInput,
-    maxDim: number
+    maxDim: number,
+    explicitSnapshot?: MirageSnapshotLike
   ): { rgbBuffer: ArrayBuffer; width: number; height: number } {
-    const { width: srcW, height: srcH } = getInputDimensions(input);
-    const scale = Math.min(1, maxDim / Math.max(srcW, srcH, 1));
-    const targetW = Math.max(32, Math.round(srcW * scale));
-    const targetH = Math.max(32, Math.round(srcH * scale));
+    const attachedSnapshot =
+      explicitSnapshot ??
+      (input as { __mirageSnapshot?: MirageSnapshotLike }).__mirageSnapshot;
 
-    if (!this.offscreenCanvas) {
-      this.offscreenCanvas = document.createElement('canvas');
-      this.offscreenCtx = this.offscreenCanvas.getContext('2d', {
+    if (attachedSnapshot) {
+      if (attachedSnapshot.disposed) {
+        throw new Error('Cannot extract RGB from a disposed Mirage frame snapshot');
+      }
+      attachedSnapshot.retain();
+    }
+
+    try {
+      const { width: srcW, height: srcH } = attachedSnapshot
+        ? { width: attachedSnapshot.width, height: attachedSnapshot.height }
+        : getInputDimensions(input);
+      const scale = Math.min(1, maxDim / Math.max(srcW, srcH, 1));
+      const targetW = Math.max(32, Math.round(srcW * scale));
+      const targetH = Math.max(32, Math.round(srcH * scale));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d', {
         willReadFrequently: true,
       });
-    }
-    if (
-      this.offscreenCanvas.width !== targetW ||
-      this.offscreenCanvas.height !== targetH
-    ) {
-      this.offscreenCanvas.width = targetW;
-      this.offscreenCanvas.height = targetH;
-    }
+      if (!ctx) {
+        throw new Error('Failed to acquire 2D canvas context for Mirage preprocessing');
+      }
 
-    const ctx = this.offscreenCtx;
-    if (!ctx) {
-      throw new Error('Failed to acquire 2D canvas context for Mirage preprocessing');
+      ctx.drawImage(input as CanvasImageSource, 0, 0, targetW, targetH);
+      const imageData = ctx.getImageData(0, 0, targetW, targetH);
+      const rgba = imageData.data;
+
+      if (attachedSnapshot) {
+        this.lastConsumedSnapshotHash = attachedSnapshot.pixelHash;
+        let canvasHasNonZero = false;
+        for (let i = 0; i < rgba.length; i += 4) {
+          if (rgba[i] !== 0 || rgba[i + 1] !== 0 || rgba[i + 2] !== 0) {
+            canvasHasNonZero = true;
+            break;
+          }
+        }
+        let snapshotHasNonZero = false;
+        if (!canvasHasNonZero) {
+          for (let i = 0; i < attachedSnapshot.rgba.length; i += 4) {
+            if (
+              attachedSnapshot.rgba[i] !== 0 ||
+              attachedSnapshot.rgba[i + 1] !== 0 ||
+              attachedSnapshot.rgba[i + 2] !== 0
+            ) {
+              snapshotHasNonZero = true;
+              break;
+            }
+          }
+        }
+        if (!canvasHasNonZero && snapshotHasNonZero) {
+          const rgb = resampleRgbaToRgb(
+            attachedSnapshot.rgba,
+            attachedSnapshot.width,
+            attachedSnapshot.height,
+            targetW,
+            targetH
+          );
+          return {
+            rgbBuffer: rgb.buffer as ArrayBuffer,
+            width: targetW,
+            height: targetH,
+          };
+        }
+      }
+
+      const pixelCount = targetW * targetH;
+      const rgb = new Uint8Array(pixelCount * 3);
+
+      for (let i = 0, j = 0; i < rgba.length; i += 4, j += 3) {
+        rgb[j] = rgba[i];
+        rgb[j + 1] = rgba[i + 1];
+        rgb[j + 2] = rgba[i + 2];
+      }
+
+      return {
+        rgbBuffer: rgb.buffer,
+        width: targetW,
+        height: targetH,
+      };
+    } finally {
+      if (attachedSnapshot) {
+        attachedSnapshot.release();
+      }
     }
-
-    ctx.drawImage(input as CanvasImageSource, 0, 0, targetW, targetH);
-    const imageData = ctx.getImageData(0, 0, targetW, targetH);
-    const rgba = imageData.data;
-    const pixelCount = targetW * targetH;
-    const rgb = new Uint8Array(pixelCount * 3);
-
-    for (let i = 0, j = 0; i < rgba.length; i += 4, j += 3) {
-      rgb[j] = rgba[i];
-      rgb[j + 1] = rgba[i + 1];
-      rgb[j + 2] = rgba[i + 2];
-    }
-
-    return {
-      rgbBuffer: rgb.buffer,
-      width: targetW,
-      height: targetH,
-    };
   }
 
   public async detectForVideo(
@@ -268,6 +364,10 @@ export class MirageWasmEngine implements MirageTask {
     extraOptions?: MirageInferExtraOptions
   ): Promise<DetectedObject[]> {
     if (this.closed) return [];
+    const expectedGen = extraOptions?.sourceGeneration ?? this.sourceGeneration;
+    if (extraOptions?.sourceGeneration !== undefined) {
+      this.sourceGeneration = extraOptions.sourceGeneration;
+    }
     this.inFlight++;
     try {
       const { describeOptions, maxDim, includeOcr } = buildMirageDescribeOptions(
@@ -276,9 +376,10 @@ export class MirageWasmEngine implements MirageTask {
       );
       const { rgbBuffer, width, height } = this.extractPackedRgb(
         videoElement,
-        maxDim
+        maxDim,
+        extraOptions?.sourceSnapshot
       );
-      if (this.closed) return [];
+      if (this.closed || this.sourceGeneration !== expectedGen) return [];
 
       const id = this.nextRequestId++;
       const optionsJson = JSON.stringify(describeOptions);
@@ -297,7 +398,11 @@ export class MirageWasmEngine implements MirageTask {
         );
       });
 
-      if (this.closed || response.type !== 'describe-result') {
+      if (
+        this.closed ||
+        this.sourceGeneration !== expectedGen ||
+        response.type !== 'describe-result'
+      ) {
         return [];
       }
 
@@ -356,9 +461,19 @@ export class MirageWasmEngine implements MirageTask {
 
   public close(): void {
     this.closed = true;
-    this.offscreenCanvas = null;
-    this.offscreenCtx = null;
+    this.sourceGeneration++;
     this.terminateIfIdle();
+  }
+}
+
+
+let inFlightBrowserInitEngine: MirageWasmEngine | null = null;
+
+export function cancelInFlightMirageWasmInit(): void {
+  if (inFlightBrowserInitEngine) {
+    const engine = inFlightBrowserInitEngine;
+    inFlightBrowserInitEngine = null;
+    engine.close();
   }
 }
 
@@ -394,10 +509,18 @@ export async function createMirageWasmTask(
     ? resolveAbsolute(asset.fallbackUrl)
     : null;
 
+  const isDefaultBrowserWorker = !options.workerFactory;
+  if (isDefaultBrowserWorker) {
+    cancelInFlightMirageWasmInit();
+  }
+
   const worker = options.workerFactory
     ? options.workerFactory()
     : createDefaultBrowserWorker();
   const engine = new MirageWasmEngine(worker);
+  if (isDefaultBrowserWorker) {
+    inFlightBrowserInitEngine = engine;
+  }
 
   try {
     const sourceUsed = await engine.initializeWorker(
@@ -414,5 +537,10 @@ export async function createMirageWasmTask(
   } catch (err) {
     engine.close();
     throw err;
+  } finally {
+    if (inFlightBrowserInitEngine === engine) {
+      inFlightBrowserInitEngine = null;
+    }
   }
 }
+

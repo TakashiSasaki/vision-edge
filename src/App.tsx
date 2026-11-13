@@ -1,7 +1,7 @@
 import { ImageClassificationWorkspace } from './components/ImageClassificationWorkspace';
 import type { ImageClassificationEngine } from './services/imageClassificationEngine';
 import type { ImageClassifierVariantId, ModelFamilyType } from './types/classification';
-import React, { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from 'react';
 import {
   DetectionFrame,
   CameraFacingMode,
@@ -115,12 +115,20 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
 
   const activeParams = modelParams[activeModel] || DEFAULT_MODEL_PARAMS[activeModel];
   const isExperimentalMirage = activeModel === 'mirage' && isMirageExperimentalVariant(activeVariant);
-  const activeRenderOptions: RenderOptions = isExperimentalMirage && activeParams.render.confidenceThreshold === DEFAULT_MODEL_PARAMS.mirage.render.confidenceThreshold
-    ? { ...activeParams.render, confidenceThreshold: 0.30 }
-    : activeParams.render;
-  const activeInferenceParams: ExtraInferenceOptions = isExperimentalMirage && activeParams.inference.confidenceThreshold === DEFAULT_MODEL_PARAMS.mirage.inference.confidenceThreshold
-    ? { ...activeParams.inference, confidenceThreshold: 0.30, maxDetections: 64 }
-    : activeParams.inference;
+  const activeRenderOptions: RenderOptions = useMemo(
+    () =>
+      isExperimentalMirage && activeParams.render.confidenceThreshold === DEFAULT_MODEL_PARAMS.mirage.render.confidenceThreshold
+        ? { ...activeParams.render, confidenceThreshold: 0.30 }
+        : activeParams.render,
+    [isExperimentalMirage, activeParams.render]
+  );
+  const activeInferenceParams: ExtraInferenceOptions = useMemo(
+    () =>
+      isExperimentalMirage && activeParams.inference.confidenceThreshold === DEFAULT_MODEL_PARAMS.mirage.inference.confidenceThreshold
+        ? { ...activeParams.inference, confidenceThreshold: 0.30, maxDetections: 64 }
+        : activeParams.inference,
+    [isExperimentalMirage, activeParams.inference]
+  );
 
   const handleChangeRenderOptions = (opts: Partial<RenderOptions>) => {
     setModelParams(prev => {

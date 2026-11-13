@@ -6,9 +6,12 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { describe, expect, it, vi } from 'vitest';
 import * as ort from 'onnxruntime-web';
 import {
+  captureMirageSourceFrameSnapshot,
+  compareMirageTensorParity,
   computeBoxIou,
   computeMirageCeil32Metadata,
   convertProposalsToDetectedObjects,
+  createMirageExperimentalOnnxTask,
   decodeMirageExperimentalOutputs,
   MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
   MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
@@ -17,9 +20,22 @@ import {
   MirageExperimentalOnnxEngine,
   fetchModelBuffer,
   packResizedPixelsToMirageTensor,
+  probeWebGpuAdapterDiagnostics,
+  sha256HexSync,
   verifyMirageExperimentalOnnxBytes,
   type MirageCeil32PreprocessMetadata,
+  type MirageSourceFrameSnapshot,
 } from './mirageExperimentalOnnxService';
+import {
+  ensureReconstructedMirageOnnxFile,
+  hasMirageReconstructionAssets,
+  MIRAGE_CACT_EXPECTED_SHA256,
+  MIRAGE_CACT_EXPECTED_SIZE,
+  MIRAGE_PACKAGE_ROOT,
+  MIRAGE_RECONSTRUCTION_ASSETS_PIN,
+  resolveMirageReconstructionAssetPaths,
+} from './mirageOnnxReconstructor';
+import { MirageWasmEngine } from './mirageWasmService';
 import { ContainerModelCacheManager } from './containerModelCacheServer';
 import {
   getVariantCatalogEntry,
@@ -177,9 +193,10 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
     }
   });
 
-  it.skipIf(!existsSync(MANIFEST_PATH))(
+  it.skipIf(process.env.REQUIRE_MIRAGE_REAL_MODEL !== '1' && !existsSync(MANIFEST_PATH))(
     'matches Python perception_diagnostics.py decode and corpus_postprocessing.py decode_policy across all 8 verified fixtures',
     () => {
+      expect(existsSync(MANIFEST_PATH)).toBe(true);
       const manifest = JSON.parse(
         readFileSync(MANIFEST_PATH, 'utf8')
       ) as BrowserFixtureManifest;
@@ -639,6 +656,432 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
       expect(buffer.byteLength).toBe(mockSize);
 
       fetchSpy.mockRestore();
+    });
+  });
+
+  describe('R1/R0 Runtime Reconstruction & Staged Packaging', () => {
+    it('resolves runtime reconstruction assets independent of process.cwd() and without docs/ or scripts/mirage/', async () => {
+      const originalCwd = process.cwd();
+      const isolatedStageDir = mkdtempSync(path.join(tmpdir(), 'mirage-staged-runtime-'));
+      const foreignCwdDir = mkdtempSync(path.join(tmpdir(), 'mirage-foreign-cwd-'));
+      try {
+        // 1. Default MIRAGE_PACKAGE_ROOT resolution works even when process.cwd() is a foreign empty directory
+        process.chdir(foreignCwdDir);
+        expect(hasMirageReconstructionAssets()).toBe(true);
+        const defaultPaths = resolveMirageReconstructionAssetPaths();
+        expect(defaultPaths.assetsDir.startsWith(MIRAGE_PACKAGE_ROOT)).toBe(true);
+        expect(existsSync(defaultPaths.mappingPath)).toBe(true);
+        expect(existsSync(defaultPaths.skeletonGzPath)).toBe(true);
+        expect(existsSync(defaultPaths.placementsPath)).toBe(true);
+
+        // 2. Build a clean staged directory containing ONLY src/assets/mirage-reconstruction (no docs/, no scripts/mirage/, no .cache/)
+        const stagedAssetsDir = path.join(isolatedStageDir, 'src', 'assets', 'mirage-reconstruction');
+        const stagedPresetsDir = path.join(stagedAssetsDir, 'presets');
+        mkdirSync(stagedPresetsDir, { recursive: true });
+        for (const pin of Object.values(MIRAGE_RECONSTRUCTION_ASSETS_PIN)) {
+          const srcFile = path.join(defaultPaths.assetsDir, pin.file);
+          const bytes = readFileSync(srcFile);
+          expect(bytes.byteLength).toBe(pin.size);
+          expect(createHash('sha256').update(bytes).digest('hex')).toBe(pin.sha256);
+          writeFileSync(path.join(stagedAssetsDir, pin.file), bytes);
+        }
+        for (const presetName of ['coco_000000458054.png', 'overlap_shapes.png', 'text_regions.png']) {
+          writeFileSync(
+            path.join(stagedPresetsDir, presetName),
+            readFileSync(path.join(defaultPaths.presetsDir, presetName))
+          );
+        }
+        expect(existsSync(path.join(isolatedStageDir, 'docs'))).toBe(false);
+        expect(existsSync(path.join(isolatedStageDir, 'scripts'))).toBe(false);
+        expect(hasMirageReconstructionAssets(isolatedStageDir)).toBe(true);
+
+        // 3. Presets are served from the staged runtime directory without .cache/mirage-browser-fixtures
+        const stagedCacheDir = path.join(isolatedStageDir, 'writable-cache');
+        const stagedManager = new ContainerModelCacheManager({
+          rootDir: isolatedStageDir,
+          cacheDir: stagedCacheDir,
+          autoPrefetchOnStart: false,
+        });
+        const mw = stagedManager.createMiddleware();
+        const presetRes = await invokeMiddleware(
+          mw,
+          '/api/model-cache/mirage/fixtures/overlap_shapes.png'
+        );
+        expect(presetRes.status).toBe(200);
+        expect(presetRes.headers['content-type']).toBe('image/png');
+        expect(presetRes.body.byteLength).toBe(2620);
+
+        // 4. If verified mirage.cact is available locally, verify full reconstruction and corrupted ONNX replacement in the isolated stage
+        const localCactPath = path.join(originalCwd, '.cache', 'container-models', 'mirage.cact');
+        if (existsSync(localCactPath)) {
+          const cactBytes = readFileSync(localCactPath);
+          expect(cactBytes.byteLength).toBe(MIRAGE_CACT_EXPECTED_SIZE);
+          expect(createHash('sha256').update(cactBytes).digest('hex')).toBe(MIRAGE_CACT_EXPECTED_SHA256);
+
+          mkdirSync(stagedCacheDir, { recursive: true });
+          writeFileSync(path.join(stagedCacheDir, 'mirage.cact'), cactBytes);
+          // Seed a corrupted ONNX file to verify automatic replacement
+          const targetOnnxPath = path.join(stagedCacheDir, MIRAGE_EXPERIMENTAL_ONNX_FILE);
+          writeFileSync(targetOnnxPath, Buffer.from('corrupted-onnx-payload'));
+
+          const headRes = await invokeMiddleware(
+            mw,
+            MIRAGE_EXPERIMENTAL_ONNX_LOCAL_URL,
+            'HEAD'
+          );
+          expect(headRes.status).toBe(200);
+          expect(headRes.headers['content-length']).toBe(
+            String(MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE)
+          );
+          expect(headRes.headers['x-model-sha256']).toBe(
+            MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256
+          );
+
+          const reconstructedBytes = readFileSync(targetOnnxPath);
+          expect(reconstructedBytes.byteLength).toBe(MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE);
+          expect(createHash('sha256').update(reconstructedBytes).digest('hex')).toBe(
+            MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256
+          );
+        }
+      } finally {
+        process.chdir(originalCwd);
+        rmSync(isolatedStageDir, { recursive: true, force: true });
+        rmSync(foreignCwdDir, { recursive: true, force: true });
+      }
+    });
+
+    it('rejects tampered reconstruction assets or tampered mirage.cact before writing target ONNX', () => {
+      const tempRoot = mkdtempSync(path.join(tmpdir(), 'mirage-tampered-reconstruct-'));
+      try {
+        const targetOnnx = path.join(tempRoot, MIRAGE_EXPERIMENTAL_ONNX_FILE);
+        expect(() =>
+          ensureReconstructedMirageOnnxFile(targetOnnx, Buffer.alloc(1024, 0xaa))
+        ).toThrow(/mirage\.cact byte length mismatch/);
+        expect(existsSync(targetOnnx)).toBe(false);
+      } finally {
+        rmSync(tempRoot, { recursive: true, force: true });
+      }
+    });
+  });
+
+  describe('R2 Tensor Parity Metrics & Strict WebGPU Execution Mode', () => {
+    it('computes maxAbsDiff, meanAbsDiff, rmsDiff, maxRelDiff (floor 1e-6), withinAtolRtol(2e-4), cosineSimilarity, and finite checks', () => {
+      const expected = new Float32Array([0.0, 1e-8, 0.5, -1.25]);
+      const actualPass = new Float32Array([1e-5, 1e-8 + 5e-5, 0.5 + 1e-4, -1.25 - 1e-4]);
+      const passMetrics = compareMirageTensorParity(actualPass, expected, 2e-4, 2e-4, 1e-6);
+      expect(passMetrics.withinAtolRtol).toBe(true);
+      expect(passMetrics.allcloseAt2e4).toBe(true);
+      expect(passMetrics.violationsAt2e4).toBe(0);
+      expect(passMetrics.actualFinite).toBe(true);
+      expect(passMetrics.expectedFinite).toBe(true);
+      expect(passMetrics.rmsDiff).toBeGreaterThan(0);
+      expect(passMetrics.cosineSimilarity).toBeGreaterThan(0.999999);
+
+      const actualFail = new Float32Array([0.0, 1e-8, 0.5 + 1e-3, -1.25]);
+      const failMetrics = compareMirageTensorParity(actualFail, expected, 2e-4, 2e-4, 1e-6);
+      expect(failMetrics.withinAtolRtol).toBe(false);
+      expect(failMetrics.violationsAt2e4).toBe(1);
+
+      const actualNan = new Float32Array([Number.NaN, 0, 0, 0]);
+      const nanMetrics = compareMirageTensorParity(actualNan, expected, 2e-4, 2e-4, 1e-6);
+      expect(nanMetrics.actualFinite).toBe(false);
+      expect(nanMetrics.withinAtolRtol).toBe(false);
+    });
+
+    it('enforces strict WebGPU execution without silent WASM fallback when allowWasmFallback is false', async () => {
+      const dummyOnnxBytes = new Uint8Array(64);
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+        return new Response(dummyOnnxBytes, {
+          status: 200,
+          headers: { 'Content-Length': String(dummyOnnxBytes.byteLength) },
+        });
+      });
+
+      const adapterDiag = await probeWebGpuAdapterDiagnostics();
+      expect(typeof adapterDiag.navigatorGpuPresent).toBe('boolean');
+
+      await expect(
+        createMirageExperimentalOnnxTask({
+          variantId: 'mirage-onnx-exp-webgpu',
+          allowWasmFallback: false,
+        })
+      ).rejects.toThrow();
+
+      vi.restoreAllMocks();
+    });
+  });
+
+  describe('R3 Same-Frame Snapshot & Lifecycle Ownership', () => {
+    it('captures an immutable source frame before await so ONNX and native WASM overlay process the exact same frame even when live video advances', async () => {
+      const detections = new Float32Array(64 * 64 * 10).fill(-10);
+      const prototypes = new Float32Array(32 * 128 * 128).fill(0);
+      const coefficients = new Float32Array(32 * 64 * 64).fill(0);
+      detections[(10 * 64 + 10) * 10 + 0] = 3.0;
+      detections[(10 * 64 + 10) * 10 + 2] = 16;
+      detections[(10 * 64 + 10) * 10 + 3] = 16;
+
+      let currentLivePixelR = 17; // Frame 1 pixel R=17
+      const canvasPixelMap = new WeakMap<HTMLCanvasElement, Uint8ClampedArray>();
+
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (
+        this: HTMLCanvasElement
+      ) {
+        return {
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+          clearRect: vi.fn(),
+          drawImage: vi.fn((source: CanvasImageSource) => {
+            const w = this.width || 64;
+            const h = this.height || 64;
+            const srcBuf = canvasPixelMap.get(source as HTMLCanvasElement);
+            const dstBuf = new Uint8ClampedArray(w * h * 4);
+            const rVal = srcBuf ? srcBuf[0] : currentLivePixelR;
+            for (let i = 0; i < dstBuf.length; i += 4) {
+              dstBuf[i] = rVal;
+              dstBuf[i + 1] = 40;
+              dstBuf[i + 2] = 80;
+              dstBuf[i + 3] = 255;
+            }
+            canvasPixelMap.set(this, dstBuf);
+          }),
+          putImageData: vi.fn((imgData: { data: Uint8ClampedArray }) => {
+            canvasPixelMap.set(this, new Uint8ClampedArray(imgData.data));
+          }),
+          getImageData: (_x: number, _y: number, w: number, h: number) => {
+            const stored = canvasPixelMap.get(this);
+            if (stored && stored.length === w * h * 4) {
+              return { data: new Uint8ClampedArray(stored) };
+            }
+            const data = new Uint8ClampedArray(w * h * 4);
+            for (let i = 0; i < data.length; i += 4) {
+              data[i] = currentLivePixelR;
+              data[i + 1] = 40;
+              data[i + 2] = 80;
+              data[i + 3] = 255;
+            }
+            return { data };
+          },
+          createImageData: (w: number, h: number) => ({
+            data: new Uint8ClampedArray(w * h * 4),
+          }),
+        } as unknown as CanvasRenderingContext2D;
+      });
+
+      let resolveOnnxRun!: (v: Record<string, ort.Tensor>) => void;
+      const slowSession = {
+        inputNames: ['image', 'valid_hw'],
+        outputNames: [...MIRAGE_EXPERIMENTAL_ONNX_FINAL_OUTPUTS],
+        run: vi.fn(
+          () =>
+            new Promise<Record<string, ort.Tensor>>((r) => {
+              resolveOnnxRun = r;
+            })
+        ),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+
+      let capturedNativeSnapshot: MirageSourceFrameSnapshot | undefined;
+      let capturedNativeGeneration: number | undefined;
+      const mockCactusDescribe = vi.fn((rgbBytes: Uint8Array) => {
+        // Verify MirageWasmEngine resampled from Frame 1 (R=17), NOT Frame 2 (R=222)
+        expect(rgbBytes[0]).toBe(17);
+      });
+
+      const mockWorker = {
+        onmessage: null as ((event: MessageEvent) => void) | null,
+        onerror: null as ((event: ErrorEvent) => void) | null,
+        postMessage: vi.fn(
+          (msg: { type: string; id: number; rgbBuffer: ArrayBuffer }) => {
+            if (msg.type === 'describe') {
+              const rgbBytes = new Uint8Array(msg.rgbBuffer);
+              mockCactusDescribe(rgbBytes);
+              queueMicrotask(() => {
+                mockWorker.onmessage?.({
+                  data: {
+                    type: 'describe-result',
+                    id: msg.id,
+                    ok: true,
+                    observation: {
+                      objects: [
+                        {
+                          label: 'chair',
+                          score: 0.88,
+                          bbox: [100, 100, 300, 300],
+                        },
+                      ],
+                      text: [],
+                    },
+                  },
+                } as MessageEvent);
+              });
+            }
+          }
+        ),
+        terminate: vi.fn(),
+      };
+
+      const realNativeEngine = new MirageWasmEngine(mockWorker);
+      const origDetectForVideo =
+        realNativeEngine.detectForVideo.bind(realNativeEngine);
+      const nativeDetectSpy = vi
+        .spyOn(realNativeEngine, 'detectForVideo')
+        .mockImplementation(async (input, threshold, extra) => {
+          capturedNativeSnapshot = extra?.sourceSnapshot as
+            | MirageSourceFrameSnapshot
+            | undefined;
+          capturedNativeGeneration = extra?.sourceGeneration;
+          return origDetectForVideo(input, threshold, extra);
+        });
+
+      const engine = new MirageExperimentalOnnxEngine(
+        slowSession,
+        'mirage-onnx-exp-wasm',
+        undefined,
+        async () => realNativeEngine
+      );
+
+      const liveVideoCanvas = document.createElement('canvas');
+      liveVideoCanvas.width = 64;
+      liveVideoCanvas.height = 64;
+
+      // Start inference on Frame 1 (R=17)
+      const pendingInference = engine.detectForVideo(liveVideoCanvas, 0.3, {
+        overlayNativeWasm: true,
+        sourceGeneration: 7,
+      });
+
+      // Advance live video to Frame 2 (R=222) while ONNX is still awaiting session.run()
+      currentLivePixelR = 222;
+      await vi.waitFor(() => expect(slowSession.run).toHaveBeenCalledTimes(1));
+
+      resolveOnnxRun({
+        detections: new ort.Tensor('float32', detections, [1, 64, 64, 10]),
+        prototypes: new ort.Tensor('float32', prototypes, [1, 32, 128, 128]),
+        coefficients: new ort.Tensor('float32', coefficients, [1, 32, 64, 64]),
+      });
+
+      const results = await pendingInference;
+      expect(results).toHaveLength(2);
+      expect(nativeDetectSpy).toHaveBeenCalledTimes(1);
+      expect(mockCactusDescribe).toHaveBeenCalledTimes(1);
+      expect(capturedNativeSnapshot).toBeDefined();
+      expect(capturedNativeSnapshot!.rgba[0]).toBe(17);
+      expect(capturedNativeGeneration).toBe(7);
+      // Snapshot must be released after both ONNX and native overlay finish
+      expect(capturedNativeSnapshot!.refCount).toBe(0);
+      expect(capturedNativeSnapshot!.disposed).toBe(true);
+
+      const diag = engine.getLastDiagnostics();
+      expect(diag?.frameAlignment).toBeDefined();
+      expect(diag?.frameAlignment?.sameSourceFrame).toBe(true);
+      expect(diag?.frameAlignment?.onnxFrameId).toBe(diag?.frameAlignment?.nativeFrameId);
+      expect(diag?.frameAlignment?.onnxRgbaSha256).toBe(diag?.frameAlignment?.nativeRgbaSha256);
+      expect(diag?.frameAlignment?.onnxSourceGeneration).toBe(7);
+      expect(diag?.frameAlignment?.nativeSourceGeneration).toBe(7);
+
+      await engine.close();
+      vi.restoreAllMocks();
+    });
+
+    it('isolates overlapping snapshots and prevents stale native overlay execution after source change or engine close', async () => {
+      let currentPixelR = 50;
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (
+        this: HTMLCanvasElement
+      ) {
+        return {
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+          clearRect: vi.fn(),
+          drawImage: vi.fn(),
+          putImageData: vi.fn(),
+          getImageData: (_x: number, _y: number, w: number, h: number) => {
+            const data = new Uint8ClampedArray(w * h * 4);
+            for (let i = 0; i < data.length; i += 4) {
+              data[i] = currentPixelR;
+              data[i + 3] = 255;
+            }
+            return { data };
+          },
+          createImageData: (w: number, h: number) => ({
+            data: new Uint8ClampedArray(w * h * 4),
+          }),
+        } as unknown as CanvasRenderingContext2D;
+      });
+
+      const liveCanvas = document.createElement('canvas');
+      liveCanvas.width = 32;
+      liveCanvas.height = 32;
+
+      // Capture two overlapping snapshots on different frames
+      const snap1 = captureMirageSourceFrameSnapshot(liveCanvas, 1, 1);
+      currentPixelR = 99;
+      const snap2 = captureMirageSourceFrameSnapshot(liveCanvas, 2, 1);
+
+      expect(snap1.frameId).toBe(1);
+      expect(snap2.frameId).toBe(2);
+      expect(snap1.rgba[0]).toBe(50);
+      expect(snap2.rgba[0]).toBe(99);
+      expect(snap1.rgbaSha256).not.toBe(snap2.rgbaSha256);
+      expect(snap1.rgbaSha256).toBe(sha256HexSync(snap1.rgba));
+
+      snap1.retain();
+      expect(snap1.refCount).toBe(2);
+      snap1.release();
+      expect(snap1.disposed).toBe(false);
+      snap1.release();
+      expect(snap1.disposed).toBe(true);
+      // Idempotent second release on zero refCount must not throw or go negative
+      snap1.release();
+      expect(snap1.refCount).toBe(0);
+      expect(snap2.disposed).toBe(false);
+      snap2.release();
+      expect(snap2.disposed).toBe(true);
+
+      // Verify notifySourceChanged cancels in-flight inference before native overlay runs
+      let resolveOnnx!: (v: Record<string, ort.Tensor>) => void;
+      const slowSession = {
+        inputNames: ['image', 'valid_hw'],
+        outputNames: [...MIRAGE_EXPERIMENTAL_ONNX_FINAL_OUTPUTS],
+        run: vi.fn(
+          () =>
+            new Promise<Record<string, ort.Tensor>>((r) => {
+              resolveOnnx = r;
+            })
+        ),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+
+      const nativeDetect = vi.fn(async () => []);
+      const nativeClose = vi.fn();
+      const engine = new MirageExperimentalOnnxEngine(
+        slowSession,
+        'mirage-onnx-exp-wasm',
+        undefined,
+        async () => ({
+          detectForVideo: nativeDetect,
+          close: nativeClose,
+        })
+      );
+
+      const inFlight = engine.detectForVideo(liveCanvas, 0.3, {
+        overlayNativeWasm: true,
+      });
+      // Switch camera / source while ONNX is still running
+      await vi.waitFor(() => expect(slowSession.run).toHaveBeenCalledTimes(1));
+      engine.notifySourceChanged();
+
+      resolveOnnx({
+        detections: new ort.Tensor('float32', new Float32Array(64 * 64 * 10), [1, 64, 64, 10]),
+        prototypes: new ort.Tensor('float32', new Float32Array(32 * 128 * 128), [1, 32, 128, 128]),
+        coefficients: new ort.Tensor('float32', new Float32Array(32 * 64 * 64), [1, 32, 64, 64]),
+      });
+
+      const cancelledResult = await inFlight;
+      expect(cancelledResult).toEqual([]);
+      expect(nativeDetect).not.toHaveBeenCalled();
+
+      await engine.close();
+      vi.restoreAllMocks();
     });
   });
 });

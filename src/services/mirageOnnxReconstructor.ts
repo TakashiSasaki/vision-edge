@@ -1,6 +1,7 @@
-import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { createHash, randomUUID } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import {
   MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
@@ -10,6 +11,99 @@ import {
 export const MIRAGE_CACT_EXPECTED_SIZE = 21_611_043;
 export const MIRAGE_CACT_EXPECTED_SHA256 =
   '4249a0f7515272ff76b9414bec17d7e7daf84b15b66c7fb4f17fce1e66f9f237';
+
+export function getMirageCactExpectedPin(): { size: number; sha256: string } {
+  return {
+    size: MIRAGE_CACT_EXPECTED_SIZE,
+    sha256: MIRAGE_CACT_EXPECTED_SHA256,
+  };
+}
+
+function resolveMiragePackageRoot(): string {
+  const meta = import.meta as unknown as { dirname?: string; url?: string };
+  if (typeof meta.dirname === 'string' && meta.dirname.length > 0) {
+    return path.resolve(meta.dirname, '../..');
+  }
+  if (typeof meta.url === 'string' && meta.url.startsWith('file://')) {
+    return path.resolve(path.dirname(fileURLToPath(meta.url)), '../..');
+  }
+  if (typeof meta.url === 'string' && meta.url.startsWith('/')) {
+    return path.resolve(path.dirname(meta.url), '../..');
+  }
+  return process.cwd();
+}
+
+export const MIRAGE_PACKAGE_ROOT = resolveMiragePackageRoot();
+export const MIRAGE_RECONSTRUCTION_REL_DIR = path.join('src', 'assets', 'mirage-reconstruction');
+
+export const MIRAGE_RECONSTRUCTION_ASSETS_PIN = {
+  mapping: {
+    file: 'mirage-encoder-archive-mapping.json',
+    size: 95_347,
+    sha256: 'b520189ac608d27279243494c6ac3cbde40edf1519c6d5a4d5c4d9c2f0a12892',
+  },
+  skeletonGz: {
+    file: 'cact_onnx_skeleton.bin.gz',
+    size: 124_958,
+    sha256: '0e9f92e01fe5142805f7168063cad3ec183c88b58d5957ccb703ba0a442393eb',
+  },
+  placements: {
+    file: 'cact_onnx_placements.json',
+    size: 68_826,
+    sha256: '04f56475718c14ac0120fa54c85ef0dca4ebc70eb6f2a812e2bf7232fedfc95c',
+  },
+} as const;
+
+export interface MirageReconstructionAssetPaths {
+  assetsDir: string;
+  mappingPath: string;
+  skeletonGzPath: string;
+  placementsPath: string;
+  presetsDir: string;
+}
+
+export function resolveMirageReconstructionAssetPaths(
+  rootDir: string = MIRAGE_PACKAGE_ROOT
+): MirageReconstructionAssetPaths {
+  const assetsDir = path.resolve(rootDir, MIRAGE_RECONSTRUCTION_REL_DIR);
+  return {
+    assetsDir,
+    mappingPath: path.join(assetsDir, MIRAGE_RECONSTRUCTION_ASSETS_PIN.mapping.file),
+    skeletonGzPath: path.join(assetsDir, MIRAGE_RECONSTRUCTION_ASSETS_PIN.skeletonGz.file),
+    placementsPath: path.join(assetsDir, MIRAGE_RECONSTRUCTION_ASSETS_PIN.placements.file),
+    presetsDir: path.join(assetsDir, 'presets'),
+  };
+}
+
+export function hasMirageReconstructionAssets(
+  rootDir: string = MIRAGE_PACKAGE_ROOT
+): boolean {
+  const paths = resolveMirageReconstructionAssetPaths(rootDir);
+  return (
+    existsSync(paths.mappingPath) &&
+    existsSync(paths.skeletonGzPath) &&
+    existsSync(paths.placementsPath)
+  );
+}
+
+function readVerifiedAssetFile(
+  filePath: string,
+  expected: { file: string; size: number; sha256: string }
+): Buffer {
+  const bytes = readFileSync(filePath);
+  if (bytes.byteLength !== expected.size) {
+    throw new Error(
+      `Reconstruction asset ${expected.file} size mismatch: expected ${expected.size}, got ${bytes.byteLength}`
+    );
+  }
+  const actualSha256 = createHash('sha256').update(bytes).digest('hex');
+  if (actualSha256 !== expected.sha256) {
+    throw new Error(
+      `Reconstruction asset ${expected.file} SHA-256 mismatch: expected ${expected.sha256}, got ${actualSha256}`
+    );
+  }
+  return bytes;
+}
 
 interface ArchiveMappingEntry {
   index: number;
@@ -176,11 +270,11 @@ function permute3201(src: Float32Array, shape: number[]): Float32Array {
 /**
  * Reconstructs the verified `cact-dequantized-reference-order.onnx` (`34,281,503` bytes,
  * SHA-256 `52d52d2918160404cd806702a270736819712025cf3c6aa8e907a06bc3cbdd07`) in pure Node.js
- * directly from the verified `mirage.cact` archive and the repository's mapping/skeleton files.
+ * directly from the verified `mirage.cact` archive and the packaged runtime reconstruction assets.
  */
 export function reconstructVerifiedMirageOnnxBytes(
   cactBytes: Buffer,
-  rootDir = process.cwd()
+  rootDir: string = MIRAGE_PACKAGE_ROOT
 ): Buffer {
   if (cactBytes.byteLength !== MIRAGE_CACT_EXPECTED_SIZE) {
     throw new Error(
@@ -206,26 +300,29 @@ export function reconstructVerifiedMirageOnnxBytes(
     codebook[i] = cactBytes.readFloatLE(196 + i * 4);
   }
 
-  const mappingPath = path.resolve(
-    rootDir,
-    'docs/verification/mirage-encoder-archive-mapping.json'
+  const { mappingPath, skeletonGzPath, placementsPath } =
+    resolveMirageReconstructionAssetPaths(rootDir);
+
+  const mappingBytes = readVerifiedAssetFile(
+    mappingPath,
+    MIRAGE_RECONSTRUCTION_ASSETS_PIN.mapping
   );
-  const skeletonGzPath = path.resolve(
-    rootDir,
-    'scripts/mirage/cact_onnx_skeleton.bin.gz'
+  const placementsBytes = readVerifiedAssetFile(
+    placementsPath,
+    MIRAGE_RECONSTRUCTION_ASSETS_PIN.placements
   );
-  const placementsPath = path.resolve(
-    rootDir,
-    'scripts/mirage/cact_onnx_placements.json'
+  const skeletonGzBytes = readVerifiedAssetFile(
+    skeletonGzPath,
+    MIRAGE_RECONSTRUCTION_ASSETS_PIN.skeletonGz
   );
 
   const mappingRows = JSON.parse(
-    readFileSync(mappingPath, 'utf8')
+    mappingBytes.toString('utf8')
   ) as ArchiveMappingRow[];
   const placements = JSON.parse(
-    readFileSync(placementsPath, 'utf8')
+    placementsBytes.toString('utf8')
   ) as OnnxPlacement[];
-  const onnxBuffer = gunzipSync(readFileSync(skeletonGzPath));
+  const onnxBuffer = gunzipSync(skeletonGzBytes);
 
   if (onnxBuffer.byteLength !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE) {
     throw new Error(
@@ -311,6 +408,11 @@ export function reconstructVerifiedMirageOnnxBytes(
     srcBytes.copy(onnxBuffer, placement.offset);
   }
 
+  if (onnxBuffer.byteLength !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE) {
+    throw new Error(
+      `Reconstructed ONNX size mismatch: expected ${MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE}, got ${onnxBuffer.byteLength}`
+    );
+  }
   const actualSha256 = createHash('sha256').update(onnxBuffer).digest('hex');
   if (actualSha256 !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256) {
     throw new Error(
@@ -324,20 +426,34 @@ export function reconstructVerifiedMirageOnnxBytes(
 export function ensureReconstructedMirageOnnxFile(
   targetPath: string,
   cactBytes: Buffer,
-  rootDir = process.cwd()
+  rootDir: string = MIRAGE_PACKAGE_ROOT
 ): Buffer {
   const onnxBuffer = reconstructVerifiedMirageOnnxBytes(cactBytes, rootDir);
   mkdirSync(path.dirname(targetPath), { recursive: true });
-  const tempPath = `${targetPath}.tmp-${process.pid}-${Date.now()}`;
-  writeFileSync(tempPath, onnxBuffer);
-  renameSync(tempPath, targetPath);
+  const tempPath = `${targetPath}.part-${randomUUID()}`;
+  try {
+    writeFileSync(tempPath, onnxBuffer);
+    renameSync(tempPath, targetPath);
+  } catch (err) {
+    try {
+      rmSync(tempPath, { force: true });
+    } catch {
+      // Ignore cleanup error
+    }
+    throw err;
+  }
+  const tempGz = `${targetPath}.gz.part-${randomUUID()}`;
   try {
     const gzBytes = gzipSync(onnxBuffer, { level: 9 });
-    const tempGz = `${targetPath}.gz.tmp-${process.pid}-${Date.now()}`;
     writeFileSync(tempGz, gzBytes);
     renameSync(tempGz, `${targetPath}.gz`);
   } catch {
-    // Non-critical compression fallback
+    try {
+      rmSync(tempGz, { force: true });
+    } catch {
+      // Non-critical compression fallback
+    }
   }
   return onnxBuffer;
 }
+

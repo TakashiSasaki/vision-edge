@@ -1,9 +1,10 @@
 import { IMAGE_CLASSIFIER_ASSETS } from './classifierAssetManifest.ts';
 import { classifierAssetStatuses } from './imageClassifierAssets.ts';
 import { Buffer } from 'node:buffer';
-import { existsSync, createReadStream } from 'node:fs';
+import { accessSync, constants as fsConstants, existsSync, createReadStream, mkdirSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, open, readFile, rename, rm, lstat, type FileHandle, writeFile, copyFile } from 'node:fs/promises';
+import { mkdir, open, readFile, readdir, rename, rm, lstat, type FileHandle, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { gzipSync } from 'node:zlib';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
@@ -29,7 +30,13 @@ import {
   getVariantCatalogEntry,
 } from './modelAssetResolver.ts';
 import { MIRAGE_WEBGPU_UNAVAILABLE_CODE, MIRAGE_WEBGPU_UNAVAILABLE_REASON } from './mirageAvailability.ts';
-import { ensureReconstructedMirageOnnxFile } from './mirageOnnxReconstructor.ts';
+import {
+  ensureReconstructedMirageOnnxFile,
+  getMirageCactExpectedPin,
+  hasMirageReconstructionAssets,
+  MIRAGE_PACKAGE_ROOT,
+  resolveMirageReconstructionAssetPaths,
+} from './mirageOnnxReconstructor.ts';
 
 type CacheCatalogEntry = Omit<ModelVariantCatalogEntry, 'modelId'> & {
   modelId: CacheAssetModelId; expectedSize?: number; expectedSha256?: string;
@@ -72,10 +79,60 @@ function publicCacheError(cause: unknown): string {
 const MIN_VALID_MODEL_BYTES = 1024;
 const PREFETCH_TIMEOUT_MS = 45_000;
 const MAX_MODEL_BYTES = 512 * 1024 * 1024;
+const DEFAULT_MAX_CACHE_BYTES = 384 * 1024 * 1024;
+
+function resolveWritableCacheDir(preferredDir: string): string {
+  try {
+    mkdirSync(preferredDir, { recursive: true });
+    accessSync(preferredDir, fsConstants.W_OK);
+    return preferredDir;
+  } catch {
+    const suffix = createHash('sha256').update(preferredDir).digest('hex').slice(0, 12);
+    const fallback = path.join(tmpdir(), `vision-edge-model-cache-${suffix}`);
+    mkdirSync(fallback, { recursive: true });
+    return fallback;
+  }
+}
+
+function waitForRequestDisconnect(req: IncomingMessage, res: ServerResponse): {
+  promise: Promise<'disconnected'>;
+  cleanup: () => void;
+  isDisconnected: () => boolean;
+} {
+  let disconnected = Boolean(req.destroyed || res.destroyed || res.writableEnded);
+  let onDisconnect: (() => void) | null = null;
+  const promise = new Promise<'disconnected'>(resolve => {
+    if (disconnected) {
+      resolve('disconnected');
+      return;
+    }
+    onDisconnect = () => {
+      disconnected = true;
+      resolve('disconnected');
+    };
+    req.once?.('aborted', onDisconnect);
+    req.once?.('close', onDisconnect);
+    res.once?.('close', onDisconnect);
+  });
+  const cleanup = () => {
+    if (onDisconnect) {
+      req.removeListener?.('aborted', onDisconnect);
+      req.removeListener?.('close', onDisconnect);
+      res.removeListener?.('close', onDisconnect);
+      onDisconnect = null;
+    }
+  };
+  return {
+    promise,
+    cleanup,
+    isDisconnected: () => disconnected || Boolean(req.destroyed || res.destroyed || res.writableEnded),
+  };
+}
 
 export interface ContainerModelCacheOptions {
   rootDir?: string;
   cacheDir?: string;
+  maxCacheBytes?: number;
   fetchImpl?: typeof fetch;
   autoPrefetchOnStart?: boolean;
   enableInPreview?: boolean;
@@ -136,16 +193,40 @@ function getRequestOrigin(req: IncomingMessage): string | null {
 export class ContainerModelCacheManager {
   public readonly rootDir: string;
   public readonly cacheDir: string;
+  public readonly maxCacheBytes: number;
   private readonly fetchImpl: typeof fetch;
   private readonly variantStates = new Map<string, ContainerModelStatusEntry>();
   private readonly variantInflight = new Map<string, Promise<ContainerModelStatusEntry>>();
+  private mirageCactInflight: Promise<string> | null = null;
+  private mirageOnnxInflight: Promise<string> | null = null;
+  private readonly activeFileReaders = new Map<string, number>();
+  private readonly fileLastAccessed = new Map<string, number>();
+  private accessSequence = 0;
   private readonly diagnosticLogs: unknown[] = [];
   private readonly verifiedOnnxHashes = new Map<string, string>();
 
   constructor(options: ContainerModelCacheOptions = {}) {
-    this.rootDir = options.rootDir ?? process.cwd();
+    this.rootDir = options.rootDir ?? MIRAGE_PACKAGE_ROOT;
+    const envCacheDir =
+      options.rootDir === undefined &&
+      options.cacheDir === undefined &&
+      process.env.MODEL_CACHE_DIR?.trim()
+        ? process.env.MODEL_CACHE_DIR.trim()
+        : undefined;
+    const preferredCacheDir =
+      options.cacheDir ??
+      envCacheDir ??
+      path.join(this.rootDir, '.cache', 'container-models');
     this.cacheDir =
-      options.cacheDir ?? path.join(this.rootDir, '.cache', 'container-models');
+      options.cacheDir !== undefined
+        ? preferredCacheDir
+        : resolveWritableCacheDir(preferredCacheDir);
+    const envMaxBytes = Number(process.env.MODEL_CACHE_MAX_BYTES);
+    this.maxCacheBytes =
+      options.maxCacheBytes ??
+      (Number.isFinite(envMaxBytes) && envMaxBytes > 0
+        ? envMaxBytes
+        : DEFAULT_MAX_CACHE_BYTES);
     this.fetchImpl = options.fetchImpl ?? globalThis.fetch;
 
     for (const key of Object.keys(CACHE_CATALOG)) {
@@ -167,6 +248,129 @@ export class ContainerModelCacheManager {
       };
       this.variantStates.set(key, statusEntry);
     }
+  }
+
+  public retainCacheFile(filePath: string): void {
+    const resolved = path.resolve(filePath);
+    this.activeFileReaders.set(resolved, (this.activeFileReaders.get(resolved) ?? 0) + 1);
+    this.touchCacheFile(resolved);
+  }
+
+  public releaseCacheFile(filePath: string): void {
+    const resolved = path.resolve(filePath);
+    const count = this.activeFileReaders.get(resolved) ?? 0;
+    if (count <= 1) {
+      this.activeFileReaders.delete(resolved);
+    } else {
+      this.activeFileReaders.set(resolved, count - 1);
+    }
+  }
+
+  public isCacheFileInUse(filePath: string): boolean {
+    const resolved = path.resolve(filePath);
+    return (this.activeFileReaders.get(resolved) ?? 0) > 0;
+  }
+
+  private touchCacheFile(filePath: string): void {
+    this.fileLastAccessed.set(path.resolve(filePath), ++this.accessSequence);
+  }
+
+  public async enforceCacheQuota(
+    incomingBytes = 0,
+    protectedPaths: Iterable<string> = []
+  ): Promise<string[]> {
+    if (!Number.isFinite(this.maxCacheBytes) || this.maxCacheBytes <= 0) {
+      return [];
+    }
+    const protectedSet = new Set(Array.from(protectedPaths, p => path.resolve(p)));
+    let entries: string[];
+    try {
+      entries = await readdir(this.cacheDir);
+    } catch {
+      return [];
+    }
+
+    interface CacheCandidate {
+      name: string;
+      fullPath: string;
+      size: number;
+      order: number;
+    }
+
+    const candidates: CacheCandidate[] = [];
+    let totalBytes = 0;
+
+    for (const name of entries) {
+      if (
+        name.includes('.part-') ||
+        name.includes('.tmp-') ||
+        name.endsWith('.identity.json') ||
+        name.endsWith('.gz')
+      ) {
+        continue;
+      }
+      const fullPath = path.resolve(this.cacheDir, name);
+      try {
+        const info = await lstat(fullPath);
+        if (!info.isFile() || info.isSymbolicLink()) continue;
+        let bundleSize = info.size;
+        try {
+          const gzInfo = await lstat(`${fullPath}.gz`);
+          if (gzInfo.isFile()) bundleSize += gzInfo.size;
+        } catch {
+          // No gz companion
+        }
+        totalBytes += bundleSize;
+        const order = this.fileLastAccessed.get(fullPath) ?? Math.floor(info.mtimeMs);
+        candidates.push({ name, fullPath, size: bundleSize, order });
+      } catch {
+        // Ignore vanished entry
+      }
+    }
+
+    if (totalBytes + incomingBytes <= this.maxCacheBytes) {
+      return [];
+    }
+
+    candidates.sort((a, b) => a.order - b.order);
+    const evicted: string[] = [];
+
+    for (const candidate of candidates) {
+      if (totalBytes + incomingBytes <= this.maxCacheBytes) break;
+      if (protectedSet.has(candidate.fullPath)) continue;
+      if (
+        this.isCacheFileInUse(candidate.fullPath) ||
+        this.isCacheFileInUse(`${candidate.fullPath}.gz`)
+      ) {
+        continue;
+      }
+      await Promise.allSettled([
+        rm(candidate.fullPath, { force: true }),
+        rm(`${candidate.fullPath}.identity.json`, { force: true }),
+        rm(`${candidate.fullPath}.gz`, { force: true }),
+      ]);
+      this.fileLastAccessed.delete(candidate.fullPath);
+      totalBytes = Math.max(0, totalBytes - candidate.size);
+      evicted.push(candidate.name);
+
+      const variantKey = this.findVariantKeyByFilename(candidate.name);
+      if (variantKey && !this.variantInflight.has(variantKey)) {
+        const current = this.variantStates.get(variantKey);
+        if (current) {
+          this.variantStates.set(variantKey, {
+            ...current,
+            status: 'unavailable',
+            size: null,
+            sha256: null,
+            filePresent: false,
+            integrity: 'not-present',
+            cachedAt: null,
+          });
+        }
+      }
+    }
+
+    return evicted;
   }
 
   public getModelFilePath(modelId: RunnableModelType): string {
@@ -248,9 +452,14 @@ export class ContainerModelCacheManager {
     if (entry.expectedSize !== undefined && info.size !== entry.expectedSize) throw new Error('Pinned model size mismatch');
     const record = await this.readIdentity(key, info.size);
     const hash = createHash('sha256'), chunks: Buffer[] = []; let size = 0;
-    for await (const chunk of createReadStream(filename)) {
-      size += chunk.length; if (size > (entry.expectedSize ?? MAX_MODEL_BYTES)) throw new Error('cache file exceeds size limit');
-      hash.update(chunk); if (collect) chunks.push(chunk);
+    this.retainCacheFile(filename);
+    try {
+      for await (const chunk of createReadStream(filename)) {
+        size += chunk.length; if (size > (entry.expectedSize ?? MAX_MODEL_BYTES)) throw new Error('cache file exceeds size limit');
+        hash.update(chunk); if (collect) chunks.push(chunk);
+      }
+    } finally {
+      this.releaseCacheFile(filename);
     }
     const sha256 = hash.digest('hex');
     if (size !== info.size || sha256 !== record.sha256) throw new Error('cache byte hash mismatch');
@@ -372,9 +581,11 @@ export class ContainerModelCacheManager {
           } else {
             await writeFile(tempPath, Buffer.concat(headChunks));
           }
+          await this.enforceCacheQuota(size, [targetPath]);
           await writeFile(metadataTemp, JSON.stringify({ schemaVersion: 1, modelId: entry.modelId, variantId: entry.variantId, file: entry.file, localUrl: entry.localUrl, upstreamUrl: entry.upstreamUrl, size, sha256 }));
           await rename(tempPath, targetPath);
           await rename(metadataTemp, metadataPath);
+          this.touchCacheFile(targetPath);
 
           const cachedState: ContainerModelStatusEntry = {
             ...current,
@@ -412,6 +623,273 @@ export class ContainerModelCacheManager {
 
     this.variantInflight.set(key, task);
     return task;
+  }
+
+  private async verifyCachedMirageCact(filePath: string): Promise<boolean> {
+    const pin = getMirageCactExpectedPin();
+    try {
+      const info = await lstat(filePath);
+      if (!info.isFile() || info.isSymbolicLink() || info.size !== pin.size) {
+        return false;
+      }
+      const hash = createHash('sha256');
+      let size = 0;
+      this.retainCacheFile(filePath);
+      try {
+        for await (const chunk of createReadStream(filePath)) {
+          size += chunk.length;
+          if (size > pin.size) return false;
+          hash.update(chunk);
+        }
+      } finally {
+        this.releaseCacheFile(filePath);
+      }
+      if (size !== pin.size) return false;
+      return hash.digest('hex') === pin.sha256;
+    } catch {
+      return false;
+    }
+  }
+
+  public async acquireMirageCact(): Promise<string> {
+    const targetPath = path.join(this.cacheDir, 'mirage.cact');
+    if (await this.verifyCachedMirageCact(targetPath)) {
+      this.touchCacheFile(targetPath);
+      return targetPath;
+    }
+
+    if (this.mirageCactInflight) {
+      return this.mirageCactInflight;
+    }
+
+    const task = (async (): Promise<string> => {
+      if (await this.verifyCachedMirageCact(targetPath)) {
+        this.touchCacheFile(targetPath);
+        return targetPath;
+      }
+      const pin = getMirageCactExpectedPin();
+      const minBytes = Math.min(MIN_VALID_MODEL_BYTES, pin.size);
+      const controller = new AbortController();
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      let rejectDeadline!: (err: Error) => void;
+      const deadline = new Promise<never>((_, reject) => {
+        rejectDeadline = reject;
+      });
+      const resetTimer = () => {
+        if (timer !== undefined) clearTimeout(timer);
+        timer = setTimeout(() => {
+          controller.abort();
+          rejectDeadline(new Error('Model cache acquisition timeout'));
+        }, PREFETCH_TIMEOUT_MS);
+      };
+      resetTimer();
+
+      const tempPath = `${targetPath}.part-${randomUUID()}`;
+      try {
+        await mkdir(this.cacheDir, { recursive: true });
+        const response = await Promise.race([
+          this.fetchImpl(MIRAGE_UPSTREAM_URL, {
+            method: 'GET',
+            redirect: 'follow',
+            signal: controller.signal,
+          }),
+          deadline,
+        ]);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const advertised = Number(response.headers.get('Content-Length'));
+        if (Number.isFinite(advertised) && advertised > MAX_MODEL_BYTES) {
+          throw new Error('Model exceeds cache size limit');
+        }
+        if (response.headers.has('Content-Length') && advertised !== pin.size) {
+          throw new Error('Pinned model size mismatch');
+        }
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error('Empty model response body');
+        }
+
+        const hash = createHash('sha256');
+        let headChunks: Uint8Array[] = [];
+        let fh: FileHandle | undefined;
+        let size = 0;
+        try {
+          while (true) {
+            const { done, value } = await Promise.race([reader.read(), deadline]);
+            if (done) break;
+            resetTimer();
+            size += value.byteLength;
+            if (size > pin.size || size > MAX_MODEL_BYTES) {
+              controller.abort();
+              void reader.cancel().catch(() => {});
+              throw new Error('Model exceeds cache size limit');
+            }
+            hash.update(value);
+            if (!fh) {
+              headChunks.push(value);
+              if (size >= minBytes) {
+                fh = await open(tempPath, 'w');
+                for (const c of headChunks) await fh.write(c);
+                headChunks = [];
+              }
+            } else {
+              await fh.write(value);
+            }
+          }
+          if (size < minBytes) {
+            throw new Error(`Downloaded payload too small (${size} bytes)`);
+          }
+          if (size !== pin.size) {
+            throw new Error('Pinned model size mismatch');
+          }
+          const sha256 = hash.digest('hex');
+          if (sha256 !== pin.sha256) {
+            throw new Error('Pinned model SHA256 mismatch');
+          }
+          if (fh) {
+            await fh.close();
+            fh = undefined;
+          } else {
+            await writeFile(tempPath, Buffer.concat(headChunks));
+          }
+          await this.enforceCacheQuota(size, [targetPath]);
+          await rename(tempPath, targetPath);
+          this.touchCacheFile(targetPath);
+          return targetPath;
+        } finally {
+          if (fh) {
+            await fh.close().catch(() => {});
+            fh = undefined;
+          }
+          void reader.cancel().catch(() => {});
+          reader.releaseLock();
+        }
+      } catch (err) {
+        controller.abort();
+        await rm(tempPath, { force: true }).catch(() => {});
+        throw err;
+      } finally {
+        if (timer !== undefined) clearTimeout(timer);
+        this.mirageCactInflight = null;
+      }
+    })();
+
+    this.mirageCactInflight = task;
+    return task;
+  }
+
+  private async verifyExperimentalOnnxCandidate(filePath: string): Promise<void> {
+    const info = await lstat(filePath);
+    if (
+      !info.isFile() ||
+      info.isSymbolicLink() ||
+      info.size !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE
+    ) {
+      throw new Error('Pinned model size mismatch');
+    }
+    const cacheKey = `${filePath}:${info.mtimeMs}:${info.size}`;
+    if (!this.verifiedOnnxHashes.has(cacheKey)) {
+      const hash = createHash('sha256');
+      let size = 0;
+      this.retainCacheFile(filePath);
+      try {
+        for await (const chunk of createReadStream(filePath)) {
+          size += chunk.length;
+          hash.update(chunk);
+        }
+      } finally {
+        this.releaseCacheFile(filePath);
+      }
+      const actualSha256 = hash.digest('hex');
+      if (
+        size !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE ||
+        actualSha256 !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256
+      ) {
+        throw new Error('Pinned model SHA256 mismatch');
+      }
+      this.verifiedOnnxHashes.set(cacheKey, actualSha256);
+    }
+  }
+
+  public async ensureExperimentalMirageOnnx(): Promise<
+    | { status: 'ready'; filePath: string }
+    | { status: 'missing' }
+    | { status: 'integrity-failed'; cause: unknown }
+  > {
+    const containerTarget = path.join(this.cacheDir, MIRAGE_EXPERIMENTAL_ONNX_FILE);
+    const refinementTarget = path.join(
+      this.rootDir,
+      '.cache',
+      'mirage-refinement',
+      'numerical-cact-dequantized-pixel-0-r3',
+      MIRAGE_EXPERIMENTAL_ONNX_FILE
+    );
+    const candidates = [containerTarget, refinementTarget];
+
+    let hadCorruptedCandidate = false;
+    let firstIntegrityError: unknown = null;
+
+    for (const candidate of candidates) {
+      if (existsSync(candidate)) {
+        try {
+          await this.verifyExperimentalOnnxCandidate(candidate);
+          this.touchCacheFile(candidate);
+          return { status: 'ready', filePath: candidate };
+        } catch (err) {
+          hadCorruptedCandidate = true;
+          if (!firstIntegrityError) firstIntegrityError = err;
+        }
+      }
+    }
+
+    if (!hasMirageReconstructionAssets(this.rootDir)) {
+      if (hadCorruptedCandidate) {
+        return { status: 'integrity-failed', cause: firstIntegrityError };
+      }
+      return { status: 'missing' };
+    }
+
+    if (!this.mirageOnnxInflight) {
+      const reconstructTask = (async (): Promise<string> => {
+        try {
+          const cactPath = await this.acquireMirageCact();
+          this.retainCacheFile(cactPath);
+          let cactBytes: Buffer;
+          try {
+            cactBytes = await readFile(cactPath);
+          } finally {
+            this.releaseCacheFile(cactPath);
+          }
+          await mkdir(this.cacheDir, { recursive: true });
+          await this.enforceCacheQuota(MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE, [
+            cactPath,
+            containerTarget,
+          ]);
+          ensureReconstructedMirageOnnxFile(
+            containerTarget,
+            cactBytes,
+            this.rootDir
+          );
+          await this.verifyExperimentalOnnxCandidate(containerTarget);
+          this.touchCacheFile(containerTarget);
+          return containerTarget;
+        } finally {
+          this.mirageOnnxInflight = null;
+        }
+      })();
+      this.mirageOnnxInflight = reconstructTask;
+    }
+
+    try {
+      const reconstructedPath = await this.mirageOnnxInflight;
+      return { status: 'ready', filePath: reconstructedPath };
+    } catch (reconstructErr) {
+      if (hadCorruptedCandidate) {
+        return { status: 'integrity-failed', cause: firstIntegrityError ?? reconstructErr };
+      }
+      return { status: 'missing' };
+    }
   }
 
   public async prefetchModel(modelId: RunnableModelType): Promise<ContainerModelStatusEntry> {
@@ -635,6 +1113,12 @@ export class ContainerModelCacheManager {
             res.end(JSON.stringify({ error: 'Method Not Allowed' }));
             return;
           }
+          if (typeof req.on !== 'function') {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ ok: true }));
+            return;
+          }
           const chunks: Buffer[] = [];
           req.on('data', chunk => chunks.push(Buffer.from(chunk)));
           req.on('end', () => {
@@ -704,14 +1188,34 @@ export class ContainerModelCacheManager {
             res.statusCode = 400; res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.end(JSON.stringify({ error: 'Pinned asset URL required' })); return;
           }
-          const inflight = this.variantInflight.get(variantKey);
-          let state = inflight
-            ? await inflight
-            : await this.syncVariantDiskState(variantKey);
-          if (this.variantInflight.has(variantKey)) {
-            state = await this.variantInflight.get(variantKey)!;
-          } else if (state.status !== 'cached' && state.error === null) {
-            state = await this.prefetchVariant(variantKey);
+
+          const disconnect = waitForRequestDisconnect(req, res);
+          let state: ContainerModelStatusEntry;
+          try {
+            const inflight = this.variantInflight.get(variantKey);
+            const firstWait = inflight
+              ? Promise.race([inflight, disconnect.promise])
+              : Promise.race([this.syncVariantDiskState(variantKey), disconnect.promise]);
+            const firstResult = await firstWait;
+            if (firstResult === 'disconnected' || disconnect.isDisconnected()) return;
+            state = firstResult;
+            if (this.variantInflight.has(variantKey)) {
+              const secondResult = await Promise.race([
+                this.variantInflight.get(variantKey)!,
+                disconnect.promise,
+              ]);
+              if (secondResult === 'disconnected' || disconnect.isDisconnected()) return;
+              state = secondResult;
+            } else if (state.status !== 'cached' && state.error === null) {
+              const fetchResult = await Promise.race([
+                this.prefetchVariant(variantKey),
+                disconnect.promise,
+              ]);
+              if (fetchResult === 'disconnected' || disconnect.isDisconnected()) return;
+              state = fetchResult;
+            }
+          } finally {
+            disconnect.cleanup();
           }
 
           if (state.status !== 'cached') {
@@ -736,6 +1240,7 @@ export class ContainerModelCacheManager {
             res.statusCode = 503; res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.end(JSON.stringify({ error: entry.expectedSha256 ? 'Pinned cached model invalid; no upstream fallback permitted' : 'Cached model identity changed; use requested upstream', model: entry.modelId, variantId: entry.variantId, upstreamUrl: entry.upstreamUrl })); return;
           }
+          this.touchCacheFile(this.getVariantFilePath(variantKey));
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/octet-stream');
           res.setHeader('Content-Length', String(bytes.byteLength));
@@ -754,36 +1259,23 @@ export class ContainerModelCacheManager {
         }
 
         if (pathname === '/api/model-cache/mirage/mirage.cact') {
-          const candidatePaths = [
-            path.join(this.cacheDir, 'mirage.cact'),
-            '/root/.cache/cactus/models/mirage/76c1e9e53381aca8fc3843c636216c96ff220122/mirage.cact',
-          ];
+          const disconnect = waitForRequestDisconnect(req, res);
           let foundPath: string | null = null;
-          for (const candidate of candidatePaths) {
-            if (existsSync(candidate)) {
-              foundPath = candidate;
-              break;
-            }
+          let failureReason: string | null = null;
+          try {
+            const result = await Promise.race([
+              this.acquireMirageCact(),
+              disconnect.promise,
+            ]);
+            if (result === 'disconnected' || disconnect.isDisconnected()) return;
+            foundPath = result;
+          } catch (cause) {
+            if (disconnect.isDisconnected()) return;
+            failureReason = publicCacheError(cause);
+          } finally {
+            disconnect.cleanup();
           }
-          if (!foundPath) {
-            try {
-              await mkdir(this.cacheDir, { recursive: true });
-              const upstreamRes = await this.fetchImpl(MIRAGE_UPSTREAM_URL, {
-                method: 'GET',
-                redirect: 'follow',
-              });
-              if (upstreamRes.ok) {
-                const buf = Buffer.from(await upstreamRes.arrayBuffer());
-                if (buf.byteLength >= MIN_VALID_MODEL_BYTES) {
-                  const target = path.join(this.cacheDir, 'mirage.cact');
-                  await writeFile(target, buf);
-                  foundPath = target;
-                }
-              }
-            } catch {
-              // Fall through to 503 if upstream fetch fails
-            }
-          }
+
           if (!foundPath) {
             res.statusCode = 503;
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -793,15 +1285,25 @@ export class ContainerModelCacheManager {
                 model: 'mirage',
                 variantId: 'mirage-51m',
                 upstreamUrl: MIRAGE_UPSTREAM_URL,
+                ...(failureReason ? { reason: failureReason } : {}),
               })
             );
             return;
           }
-          const bytes = await readFile(foundPath);
+
+          this.retainCacheFile(foundPath);
+          let bytes: Buffer;
+          try {
+            bytes = await readFile(foundPath);
+          } finally {
+            this.releaseCacheFile(foundPath);
+          }
+          const pin = getMirageCactExpectedPin();
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/octet-stream');
           res.setHeader('Content-Length', String(bytes.byteLength));
           res.setHeader('Cache-Control', 'public, max-age=3600');
+          res.setHeader('X-Model-SHA256', pin.sha256);
           res.setHeader('X-Model-Source', 'container-cache');
           res.setHeader('X-Model-Id', 'mirage');
           res.setHeader('X-Model-Variant', 'mirage-51m');
@@ -843,100 +1345,20 @@ export class ContainerModelCacheManager {
             return;
           }
 
-          const refinementTarget = path.join(
-            this.rootDir,
-            '.cache',
-            'mirage-refinement',
-            'numerical-cact-dequantized-pixel-0-r3',
-            MIRAGE_EXPERIMENTAL_ONNX_FILE
-          );
-          const candidatePaths = [
-            path.join(this.cacheDir, MIRAGE_EXPERIMENTAL_ONNX_FILE),
-            refinementTarget,
-          ];
-          let foundPath: string | null = null;
-          for (const candidate of candidatePaths) {
-            if (existsSync(candidate)) {
-              foundPath = candidate;
-              break;
-            }
+          const disconnect = waitForRequestDisconnect(req, res);
+          let resolved: Awaited<ReturnType<ContainerModelCacheManager['ensureExperimentalMirageOnnx']>>;
+          try {
+            const raceResult = await Promise.race([
+              this.ensureExperimentalMirageOnnx(),
+              disconnect.promise,
+            ]);
+            if (raceResult === 'disconnected' || disconnect.isDisconnected()) return;
+            resolved = raceResult;
+          } finally {
+            disconnect.cleanup();
           }
 
-          if (!foundPath) {
-            const skeletonPath = path.join(
-              this.rootDir,
-              'scripts',
-              'mirage',
-              'cact_onnx_skeleton.bin.gz'
-            );
-            if (existsSync(skeletonPath)) {
-              const cactCandidates = [
-                path.join(this.cacheDir, 'mirage.cact'),
-                '/root/.cache/cactus/models/mirage/76c1e9e53381aca8fc3843c636216c96ff220122/mirage.cact',
-              ];
-              let cactPath: string | null = null;
-              for (const candidate of cactCandidates) {
-                if (existsSync(candidate)) {
-                  cactPath = candidate;
-                  break;
-                }
-              }
-              if (!cactPath) {
-                try {
-                  await mkdir(this.cacheDir, { recursive: true });
-                  const upstreamRes = await this.fetchImpl(MIRAGE_UPSTREAM_URL, {
-                    method: 'GET',
-                    redirect: 'follow',
-                  });
-                  if (upstreamRes.ok) {
-                    const buf = Buffer.from(await upstreamRes.arrayBuffer());
-                    if (buf.byteLength >= MIN_VALID_MODEL_BYTES) {
-                      const target = path.join(this.cacheDir, 'mirage.cact');
-                      await writeFile(target, buf);
-                      cactPath = target;
-                    }
-                  }
-                } catch {
-                  // Ignore fetch failure; handled below if cactPath remains null
-                }
-              }
-              if (cactPath) {
-                try {
-                  const cactBytes = await readFile(cactPath);
-                  ensureReconstructedMirageOnnxFile(
-                    refinementTarget,
-                    cactBytes,
-                    this.rootDir
-                  );
-                  foundPath = refinementTarget;
-                  try {
-                    await mkdir(this.cacheDir, { recursive: true });
-                    const containerTargetPath = path.join(
-                      this.cacheDir,
-                      MIRAGE_EXPERIMENTAL_ONNX_FILE
-                    );
-                    if (!existsSync(containerTargetPath)) {
-                      await copyFile(refinementTarget, containerTargetPath);
-                    }
-                    const refinementGz = `${refinementTarget}.gz`;
-                    const containerGz = `${containerTargetPath}.gz`;
-                    if (existsSync(refinementGz) && !existsSync(containerGz)) {
-                      await copyFile(refinementGz, containerGz);
-                    }
-                  } catch {
-                    // Non-critical cache mirror
-                  }
-                } catch (reconstructErr) {
-                  console.warn(
-                    '[container-model-cache] Failed to reconstruct experimental Mirage ONNX from mirage.cact:',
-                    reconstructErr
-                  );
-                }
-              }
-            }
-          }
-
-          if (!foundPath) {
+          if (resolved.status === 'missing') {
             res.statusCode = 503;
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.setHeader('Cache-Control', 'no-store');
@@ -957,31 +1379,34 @@ export class ContainerModelCacheManager {
             return;
           }
 
-          try {
-            const info = await lstat(foundPath);
-            if (
-              !info.isFile() ||
-              info.isSymbolicLink() ||
-              info.size !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE
-            ) {
-              throw new Error('Pinned model size mismatch');
-            }
+          if (resolved.status === 'integrity-failed') {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-store');
+            res.end(
+              req.method === 'HEAD'
+                ? undefined
+                : JSON.stringify({
+                    status: 'unavailable',
+                    code: 'MIRAGE_EXPERIMENTAL_ONNX_INTEGRITY_FAILED',
+                    error: publicCacheError(resolved.cause),
+                    model: 'mirage',
+                    file: MIRAGE_EXPERIMENTAL_ONNX_FILE,
+                    expectedSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+                    expectedSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
+                  })
+            );
+            return;
+          }
 
-            const cacheKey = `${foundPath}:${info.mtimeMs}:${info.size}`;
-            if (!this.verifiedOnnxHashes.has(cacheKey)) {
-              const hash = createHash('sha256');
-              for await (const chunk of createReadStream(foundPath)) {
-                hash.update(chunk);
-              }
-              const actualSha256 = hash.digest('hex');
-              if (actualSha256 !== MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256) {
-                throw new Error('Pinned model SHA256 mismatch');
-              }
-              this.verifiedOnnxHashes.set(cacheKey, actualSha256);
-            }
+          const foundPath = resolved.filePath;
+
+          try {
+            await this.verifyExperimentalOnnxCandidate(foundPath);
+            const info = await lstat(foundPath);
 
             res.setHeader('Accept-Ranges', 'bytes');
-            const rangeHeader = req.headers.range;
+            const rangeHeader = req.headers?.range;
             if (rangeHeader && typeof rangeHeader === 'string' && rangeHeader.startsWith('bytes=')) {
               const parts = rangeHeader.slice('bytes='.length).trim().split('-');
               const start = parseInt(parts[0], 10);
@@ -1013,8 +1438,28 @@ export class ContainerModelCacheManager {
                 return;
               }
 
+              this.retainCacheFile(foundPath);
+              if (typeof res.on !== 'function' || typeof res.write !== 'function') {
+                try {
+                  const fullBytes = await readFile(foundPath);
+                  res.end(fullBytes.subarray(start, end + 1));
+                } finally {
+                  this.releaseCacheFile(foundPath);
+                }
+                return;
+              }
+              let released = false;
+              const releaseOnce = () => {
+                if (!released) {
+                  released = true;
+                  this.releaseCacheFile(foundPath);
+                }
+              };
               const rangeStream = createReadStream(foundPath, { start, end });
+              rangeStream.on('close', releaseOnce);
+              rangeStream.on('end', releaseOnce);
               rangeStream.on('error', (err) => {
+                releaseOnce();
                 if (!res.headersSent) {
                   res.statusCode = 500;
                   res.end();
@@ -1022,11 +1467,12 @@ export class ContainerModelCacheManager {
                   res.destroy(err);
                 }
               });
+              res.once?.('close', releaseOnce);
               rangeStream.pipe(res);
               return;
             }
 
-            const acceptEncoding = String(req.headers['accept-encoding'] || '');
+            const acceptEncoding = String(req.headers?.['accept-encoding'] || '');
             const clientAcceptsGzip = acceptEncoding.includes('gzip');
             const gzPath = `${foundPath}.gz`;
 
@@ -1036,18 +1482,30 @@ export class ContainerModelCacheManager {
 
             if (clientAcceptsGzip) {
               if (existsSync(gzPath)) {
-                filePathToServe = gzPath;
-                serveGzip = true;
                 const gzStat = await lstat(gzPath);
-                serveLength = gzStat.size;
+                if (gzStat.isFile() && !gzStat.isSymbolicLink() && gzStat.size > 0) {
+                  filePathToServe = gzPath;
+                  serveGzip = true;
+                  serveLength = gzStat.size;
+                }
               } else {
+                const tempGz = `${gzPath}.part-${randomUUID()}`;
                 try {
-                  const gzBytes = gzipSync(await readFile(foundPath), { level: 9 });
-                  await writeFile(gzPath, gzBytes);
+                  this.retainCacheFile(foundPath);
+                  let rawBytes: Buffer;
+                  try {
+                    rawBytes = await readFile(foundPath);
+                  } finally {
+                    this.releaseCacheFile(foundPath);
+                  }
+                  const gzBytes = gzipSync(rawBytes, { level: 9 });
+                  await writeFile(tempGz, gzBytes);
+                  await rename(tempGz, gzPath);
                   filePathToServe = gzPath;
                   serveGzip = true;
                   serveLength = gzBytes.byteLength;
                 } catch {
+                  await rm(tempGz, { force: true }).catch(() => {});
                   // Fall back to uncompressed
                 }
               }
@@ -1082,8 +1540,28 @@ export class ContainerModelCacheManager {
               return;
             }
 
+            this.retainCacheFile(filePathToServe);
+            if (typeof res.on !== 'function' || typeof res.write !== 'function') {
+              try {
+                const payload = await readFile(filePathToServe);
+                res.end(payload);
+              } finally {
+                this.releaseCacheFile(filePathToServe);
+              }
+              return;
+            }
+            let released = false;
+            const releaseOnce = () => {
+              if (!released) {
+                released = true;
+                this.releaseCacheFile(filePathToServe);
+              }
+            };
             const stream = createReadStream(filePathToServe);
+            stream.on('close', releaseOnce);
+            stream.on('end', releaseOnce);
             stream.on('error', (streamErr) => {
+              releaseOnce();
               console.error(
                 '[container-model-cache] Error streaming experimental ONNX:',
                 streamErr
@@ -1096,6 +1574,7 @@ export class ContainerModelCacheManager {
                 res.destroy(streamErr);
               }
             });
+            res.once?.('close', releaseOnce);
             stream.pipe(res);
             return;
           } catch (cause) {
@@ -1138,17 +1617,20 @@ export class ContainerModelCacheManager {
             '.cache',
             'mirage-browser-fixtures'
           );
-          const presetsDir = path.resolve(
+          const packagedPresetsDir = resolveMirageReconstructionAssetPaths(this.rootDir).presetsDir;
+          const legacyPresetsDir = path.resolve(
             this.rootDir,
             'scripts',
             'mirage',
             'presets'
           );
           const primaryPath = path.resolve(fixturesDir, filename);
-          const fallbackPath = path.resolve(presetsDir, filename);
+          const packagedPresetPath = path.resolve(packagedPresetsDir, filename);
+          const legacyPresetPath = path.resolve(legacyPresetsDir, filename);
           if (
             !primaryPath.startsWith(`${fixturesDir}${path.sep}`) ||
-            !fallbackPath.startsWith(`${presetsDir}${path.sep}`)
+            !packagedPresetPath.startsWith(`${packagedPresetsDir}${path.sep}`) ||
+            !legacyPresetPath.startsWith(`${legacyPresetsDir}${path.sep}`)
           ) {
             res.statusCode = 403;
             res.end();
@@ -1156,7 +1638,9 @@ export class ContainerModelCacheManager {
           }
           const targetPath = existsSync(primaryPath)
             ? primaryPath
-            : fallbackPath;
+            : existsSync(packagedPresetPath)
+              ? packagedPresetPath
+              : legacyPresetPath;
           try {
             const bytes = await readFile(targetPath);
             res.statusCode = 200;
@@ -1177,6 +1661,7 @@ export class ContainerModelCacheManager {
             return;
           }
         }
+
 
         if (
           pathname.startsWith('/api/model-cache/wasm/mediapipe/') ||
