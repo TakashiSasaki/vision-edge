@@ -36,6 +36,7 @@ import {
   resolveMirageReconstructionAssetPaths,
 } from './mirageOnnxReconstructor';
 import { MirageWasmEngine } from './mirageWasmService';
+import type { MirageWorkerRequest } from './mirageWasmWorker';
 import { ContainerModelCacheManager } from './containerModelCacheServer';
 import {
   getVariantCatalogEntry,
@@ -890,9 +891,8 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
       const mockWorker = {
         onmessage: null as ((event: MessageEvent) => void) | null,
         onerror: null as ((event: ErrorEvent) => void) | null,
-        postMessage: vi.fn(
-          (msg: { type: string; id: number; rgbBuffer: ArrayBuffer }) => {
-            if (msg.type === 'describe') {
+        postMessage: vi.fn((msg: MirageWorkerRequest) => {
+          if (msg.type === 'describe') {
               const rgbBytes = new Uint8Array(msg.rgbBuffer);
               mockCactusDescribe(rgbBytes);
               queueMicrotask(() => {
@@ -914,9 +914,8 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
                   },
                 } as MessageEvent);
               });
-            }
           }
-        ),
+        }),
         terminate: vi.fn(),
       };
 

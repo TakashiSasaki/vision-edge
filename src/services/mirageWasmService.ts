@@ -27,8 +27,9 @@ export interface MirageSnapshotLike {
   readonly sourceGeneration: number;
   readonly width: number;
   readonly height: number;
-  readonly rgba: Uint8ClampedArray;
+  readonly rgba: Uint8ClampedArray<ArrayBuffer>;
   readonly pixelHash: string;
+  readonly rgbaSha256?: string;
   readonly disposed: boolean;
   retain(): MirageSnapshotLike;
   release(): void;

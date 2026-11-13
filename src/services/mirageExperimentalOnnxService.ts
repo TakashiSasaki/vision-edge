@@ -93,7 +93,7 @@ export interface MirageSourceFrameSnapshot extends MirageSnapshotLike {
   readonly sourceGeneration: number;
   readonly width: number;
   readonly height: number;
-  readonly rgba: Uint8ClampedArray;
+  readonly rgba: Uint8ClampedArray<ArrayBuffer>;
   readonly pixelHash: string;
   readonly rgbaSha256: string;
   readonly canvas: HTMLCanvasElement;
@@ -910,12 +910,12 @@ function isSnapshotObject(
 }
 
 function resampleSnapshotRgba(
-  srcRgba: Uint8ClampedArray,
+  srcRgba: Uint8ClampedArray<ArrayBuffer>,
   srcW: number,
   srcH: number,
   dstW: number,
   dstH: number
-): Uint8ClampedArray {
+): Uint8ClampedArray<ArrayBuffer> {
   if (srcW === dstW && srcH === dstH) {
     return srcRgba;
   }
@@ -1184,7 +1184,7 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(drawSource, 0, 0, w, h);
       const imageData = ctx.getImageData(0, 0, w, h);
-      let pixels = imageData.data;
+      let pixels: Uint8ClampedArray<ArrayBuffer> = imageData.data;
 
       if (snapshot) {
         let canvasHasNonZero = false;

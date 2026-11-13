@@ -6,7 +6,29 @@ import { ContainerModelCacheManager } from '../src/services/containerModelCacheS
 import {
   MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
   MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+  type MirageTensorParityMetrics,
 } from '../src/services/mirageExperimentalOnnxService';
+import type { MirageInferExtraOptions } from '../src/services/mirageWasmService';
+import type { OnnxBackendInfo } from '../src/types/vision';
+
+interface IdenticalInputCaseReport {
+  sourceDimensions: [number, number];
+  validHw: [number, number];
+  coordinateScale: [number, number, number, number];
+  identicalInputParity: {
+    inferenceMs: number;
+    detections: MirageTensorParityMetrics;
+    prototypes: MirageTensorParityMetrics;
+    coefficients: MirageTensorParityMetrics;
+    allThreeHeadsAllcloseAt2e4: boolean;
+    exactProposalParityNone: boolean;
+    exactProposalParityNms050: boolean;
+    objectCountNoNms: number;
+    textCountNoNms: number;
+    objectCountNms050: number;
+    textCountNms050: number;
+  };
+}
 
 const WORKSPACE_ROOT = process.cwd();
 const ONNX_ARTIFACT_PATH = path.resolve(
@@ -132,15 +154,18 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     userAgent: string;
     artifact: Record<string, unknown>;
     executionProviders: {
-      wasm: Record<string, unknown>;
-      webgpu: Record<string, unknown>;
+      wasm: {
+        variantId: string;
+        sessionCreateMs: number;
+        backend: OnnxBackendInfo;
+      };
+      webgpu: {
+        backend: OnnxBackendInfo;
+        applicationWarmupOutputLengths: number[];
+        [key: string]: unknown;
+      };
     };
-    cases: Record<string, {
-      sourceDimensions: [number, number];
-      validHw: [number, number];
-      coordinateScale: [number, number, number, number];
-      identicalInputParity: Record<string, unknown>;
-    }>;
+    cases: Record<string, IdenticalInputCaseReport>;
   } | null = null;
 
   test('verifies SHA-256, WASM vs WebGPU execution providers, and identical-input tensor parity (atol=rtol=2e-4) across 8 cases', async ({
@@ -173,7 +198,8 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         if (!bridge) {
           throw new Error('window.__mirageExperimentalBridge is not registered');
         }
-        bridge.cancelInFlightMirageWasmInit?.();
+        const activeBridge = bridge;
+        activeBridge.cancelInFlightMirageWasmInit?.();
 
         // 1. Fetch and verify the ONNX artifact in browser WebCrypto
         const onnxUrl = `/api/model-cache/mirage/cact-dequantized-reference-order.onnx?sha256=${expectedSha256}`;
@@ -182,7 +208,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         if (!onnxRes.ok) {
           throw new Error(`Failed to fetch ONNX artifact: HTTP ${onnxRes.status}`);
         }
-        let onnxBuffer: ArrayBuffer | null = await onnxRes.arrayBuffer();
+        const onnxBuffer = await onnxRes.arrayBuffer();
         const onnxFetchMs = performance.now() - onnxFetchStart;
         const verified = await bridge.verifyMirageExperimentalOnnxBytes(onnxBuffer);
 
@@ -271,8 +297,6 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           webgpuDirectSessionOutcome.error = `WebGPU session create failed: ${
             createErr instanceof Error ? createErr.message : String(createErr)
           }`;
-        } finally {
-          onnxBuffer = null;
         }
 
         // Test strict task creation (allowWasmFallback: false)
@@ -330,7 +354,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           atol = 2e-4,
           rtol = 2e-4
         ) {
-          return bridge.compareMirageTensorParity(
+          return activeBridge.compareMirageTensorParity(
             actual,
             expected,
             atol,
@@ -347,12 +371,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           return new Float32Array(await r.arrayBuffer());
         }
 
-        const caseReports: Record<string, {
-          sourceDimensions: [number, number];
-          validHw: [number, number];
-          coordinateScale: [number, number, number, number];
-          identicalInputParity: Record<string, unknown>;
-        }> = {};
+        const caseReports: Record<string, IdenticalInputCaseReport> = {};
         const caseNames = Object.keys(manifest.cases);
 
         for (const caseName of caseNames) {
@@ -545,32 +564,20 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
 
     // Assertions on WASM and WebGPU EP reporting
     expect(
-      (browserReport.executionProviders.wasm.backend as { requestedProvider: string })
-        .requestedProvider
+      browserReport.executionProviders.wasm.backend.requestedProvider
     ).toBe('wasm');
     expect(
-      (browserReport.executionProviders.wasm.backend as { configuredProviders: string[] })
-        .configuredProviders
+      browserReport.executionProviders.wasm.backend.configuredProviders
     ).toEqual(['wasm']);
     expect(
-      (browserReport.executionProviders.webgpu.backend as { requestedProvider: string })
-        .requestedProvider
+      browserReport.executionProviders.webgpu.backend.requestedProvider
     ).toBe('webgpu');
     expect(
       browserReport.executionProviders.webgpu.applicationWarmupOutputLengths
     ).toEqual([64 * 64 * 10, 32 * 128 * 128, 32 * 64 * 64]);
 
     // Assertions on all 8 benchmark cases in real browser WASM
-    const cases = browserReport.cases as Record<
-      string,
-      {
-        identicalInputParity: {
-          allThreeHeadsAllcloseAt2e4: boolean;
-          exactProposalParityNone: boolean;
-          exactProposalParityNms050: boolean;
-        };
-      }
-    >;
+    const cases = browserReport.cases;
     expect(Object.keys(cases)).toHaveLength(8);
     for (const [caseName, report] of Object.entries(cases)) {
       expect(
@@ -998,9 +1005,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           detectForVideo: async (
             _input: unknown,
             _threshold: number,
-            extra?: {
-              sourceSnapshot?: { rgba: Uint8ClampedArray; rgbaSha256: string };
-            }
+            extra?: MirageInferExtraOptions
           ) => {
             sameFrameNativeReceivedSha256 =
               extra?.sourceSnapshot?.rgbaSha256 ?? null;
