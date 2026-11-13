@@ -1,0 +1,53 @@
+{
+  "reader": {
+    "onnxFile": "mirage-reader.onnx",
+    "expectedSize": 7880013,
+    "expectedSha256": "79b39a53ae24cd6904eabb94814ec5ad8ee171d23800e9c56a637dc1e0c6d34b",
+    "skeletonFile": "mirage_reader_skeleton.bin.gz",
+    "skeletonSize": 14693,
+    "skeletonSha256": "2cd018ecfd98b15256fc428df1ee5fc59c6c89ec08307295b12907b70c04e51d",
+    "placementsFile": "mirage_reader_placements.json",
+    "placementsSize": 14052,
+    "placementsSha256": "0fc3004ef4cc44625592ec80a9137510358b5073b6269b2b74b088f781a98ef3",
+    "onnxBytes": 7880013,
+    "onnxSha256": "79b39a53ae24cd6904eabb94814ec5ad8ee171d23800e9c56a637dc1e0c6d34b",
+    "placedCount": 46,
+    "placedBytes": 7840588,
+    "unplacedLargeFloatTensors": [],
+    "targetTensorCoverage": "30/30"
+  },
+  "crossKv": {
+    "onnxFile": "mirage-cross-kv.onnx",
+    "expectedSize": 16668140,
+    "expectedSha256": "7978dfc75e3e0584ca44379d402b8e671e0e10d10c2eb337400b999338ef9c3e",
+    "skeletonFile": "mirage_cross_kv_skeleton.bin.gz",
+    "skeletonSize": 187130,
+    "skeletonSha256": "116c7349d970a129beef859c701ebf24c011f8e68f87c2610620fdf710fb2346",
+    "placementsFile": "mirage_cross_kv_placements.json",
+    "placementsSize": 8773,
+    "placementsSha256": "0285d6af9aebc00d49c8c44daaee351fe7342ced862bd99e28d7d5cfe5c33c07",
+    "onnxBytes": 16668140,
+    "onnxSha256": "7978dfc75e3e0584ca44379d402b8e671e0e10d10c2eb337400b999338ef9c3e",
+    "placedCount": 28,
+    "placedBytes": 16125444,
+    "unplacedLargeFloatTensors": [],
+    "targetTensorCoverage": "7/7"
+  },
+  "decoderStep": {
+    "onnxFile": "mirage-decoder-step.onnx",
+    "expectedSize": 73637843,
+    "expectedSha256": "4249e1f404a318e80bb18cc95960d6de81dad13587455680e5321e018dc079f6",
+    "skeletonFile": "mirage_decoder_step_skeleton.bin.gz",
+    "skeletonSize": 138840,
+    "skeletonSha256": "c68591eebea7c2e400e8a066b3778ae794239609bf52d1d1770cd0fa97941863",
+    "placementsFile": "mirage_decoder_step_placements.json",
+    "placementsSize": 123684,
+    "placementsSha256": "ea3c1313d49916c0c790975656ab5a5af3c9d5b98b542a939b9612c1b87b7930",
+    "onnxBytes": 73637843,
+    "onnxSha256": "4249e1f404a318e80bb18cc95960d6de81dad13587455680e5321e018dc079f6",
+    "placedCount": 405,
+    "placedBytes": 73202076,
+    "unplacedLargeFloatTensors": [],
+    "targetTensorCoverage": "51/51"
+  }
+}

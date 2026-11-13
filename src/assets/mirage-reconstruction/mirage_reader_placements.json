@@ -1,0 +1,886 @@
+[
+  {
+    "tensor": "reader/pw_0/kernel",
+    "layer": null,
+    "onnxName": "pw_0",
+    "entry": 777,
+    "entryMode": "cq_T",
+    "entryShape": [
+      64,
+      32
+    ],
+    "transform": "id",
+    "offset": 38030,
+    "length": 8192,
+    "shape": [
+      32,
+      64
+    ]
+  },
+  {
+    "tensor": "reader/pw_1/kernel",
+    "layer": null,
+    "onnxName": "pw_1",
+    "entry": 780,
+    "entryMode": "cq_T",
+    "entryShape": [
+      128,
+      64
+    ],
+    "transform": "id",
+    "offset": 46243,
+    "length": 32768,
+    "shape": [
+      64,
+      128
+    ]
+  },
+  {
+    "tensor": "reader/pw_2/kernel",
+    "layer": null,
+    "onnxName": "pw_2",
+    "entry": 783,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      128
+    ],
+    "transform": "id",
+    "offset": 79033,
+    "length": 196608,
+    "shape": [
+      128,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/up_0/kernel",
+    "layer": null,
+    "onnxName": "up_0",
+    "entry": 787,
+    "entryMode": "cq_T",
+    "entryShape": [
+      768,
+      384
+    ],
+    "transform": "id",
+    "offset": 275663,
+    "length": 1179648,
+    "shape": [
+      384,
+      768
+    ]
+  },
+  {
+    "tensor": "reader/down_0/kernel",
+    "layer": null,
+    "onnxName": "down_0",
+    "entry": 788,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      384
+    ],
+    "transform": "id",
+    "offset": 1455335,
+    "length": 589824,
+    "shape": [
+      384,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/up_1/kernel",
+    "layer": null,
+    "onnxName": "up_1",
+    "entry": 791,
+    "entryMode": "cq_T",
+    "entryShape": [
+      768,
+      384
+    ],
+    "transform": "id",
+    "offset": 2045181,
+    "length": 1179648,
+    "shape": [
+      384,
+      768
+    ]
+  },
+  {
+    "tensor": "reader/down_1/kernel",
+    "layer": null,
+    "onnxName": "down_1",
+    "entry": 792,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      384
+    ],
+    "transform": "id",
+    "offset": 3224853,
+    "length": 589824,
+    "shape": [
+      384,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/up_2/kernel",
+    "layer": null,
+    "onnxName": "up_2",
+    "entry": 795,
+    "entryMode": "cq_T",
+    "entryShape": [
+      768,
+      384
+    ],
+    "transform": "id",
+    "offset": 3814699,
+    "length": 1179648,
+    "shape": [
+      384,
+      768
+    ]
+  },
+  {
+    "tensor": "reader/down_2/kernel",
+    "layer": null,
+    "onnxName": "down_2",
+    "entry": 796,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      384
+    ],
+    "transform": "id",
+    "offset": 4994371,
+    "length": 589824,
+    "shape": [
+      384,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/up_3/kernel",
+    "layer": null,
+    "onnxName": "up_3",
+    "entry": 799,
+    "entryMode": "cq_T",
+    "entryShape": [
+      768,
+      384
+    ],
+    "transform": "id",
+    "offset": 5584217,
+    "length": 1179648,
+    "shape": [
+      384,
+      768
+    ]
+  },
+  {
+    "tensor": "reader/down_3/kernel",
+    "layer": null,
+    "onnxName": "down_3",
+    "entry": 800,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      384
+    ],
+    "transform": "id",
+    "offset": 6763889,
+    "length": 589824,
+    "shape": [
+      384,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/out/kernel",
+    "layer": null,
+    "onnxName": "out_kernel",
+    "entry": 802,
+    "entryMode": "cq_T",
+    "entryShape": [
+      307,
+      384
+    ],
+    "transform": "id",
+    "offset": 7353741,
+    "length": 471552,
+    "shape": [
+      384,
+      307
+    ]
+  },
+  {
+    "tensor": "reader/out/bias",
+    "layer": null,
+    "onnxName": "out_bias",
+    "entry": 803,
+    "entryMode": "fp32",
+    "entryShape": [
+      307
+    ],
+    "transform": "id",
+    "offset": 7825314,
+    "length": 1228,
+    "shape": [
+      307
+    ]
+  },
+  {
+    "tensor": "reader/w0",
+    "layer": null,
+    "onnxName": "onnx::Conv_911",
+    "entry": 774,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      3,
+      3,
+      32
+    ],
+    "transform": "perm3201",
+    "offset": 7826574,
+    "length": 3456,
+    "shape": [
+      32,
+      3,
+      3,
+      3
+    ]
+  },
+  {
+    "tensor": "reader/stage_norm_0/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_918",
+    "entry": 775,
+    "entryMode": "fp16",
+    "entryShape": [
+      32
+    ],
+    "transform": "plus1",
+    "offset": 7830061,
+    "length": 128,
+    "shape": [
+      32
+    ]
+  },
+  {
+    "tensor": "reader/dw_0",
+    "layer": null,
+    "onnxName": "onnx::Conv_919",
+    "entry": 776,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      3,
+      1,
+      32
+    ],
+    "transform": "perm3201",
+    "offset": 7830221,
+    "length": 1152,
+    "shape": [
+      32,
+      1,
+      3,
+      3
+    ]
+  },
+  {
+    "tensor": "reader/stage_norm_1/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_926",
+    "entry": 778,
+    "entryMode": "fp16",
+    "entryShape": [
+      64
+    ],
+    "transform": "plus1",
+    "offset": 7831404,
+    "length": 256,
+    "shape": [
+      64
+    ]
+  },
+  {
+    "tensor": "reader/dw_1",
+    "layer": null,
+    "onnxName": "onnx::Conv_927",
+    "entry": 779,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      3,
+      1,
+      64
+    ],
+    "transform": "perm3201",
+    "offset": 7831692,
+    "length": 2304,
+    "shape": [
+      64,
+      1,
+      3,
+      3
+    ]
+  },
+  {
+    "tensor": "reader/stage_norm_2/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_934",
+    "entry": 781,
+    "entryMode": "fp16",
+    "entryShape": [
+      128
+    ],
+    "transform": "plus1",
+    "offset": 7834028,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "reader/dw_2",
+    "layer": null,
+    "onnxName": "onnx::Conv_935",
+    "entry": 782,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      3,
+      1,
+      128
+    ],
+    "transform": "perm3201",
+    "offset": 7834573,
+    "length": 4608,
+    "shape": [
+      128,
+      1,
+      3,
+      3
+    ]
+  },
+  {
+    "tensor": "reader/stage_norm_3/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_942",
+    "entry": 784,
+    "entryMode": "fp16",
+    "entryShape": [
+      384
+    ],
+    "transform": "plus1",
+    "offset": 7839213,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "reader/norm_0/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_944",
+    "entry": 785,
+    "entryMode": "fp16",
+    "entryShape": [
+      384
+    ],
+    "transform": "plus1",
+    "offset": 7840779,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_0",
+    "layer": null,
+    "onnxName": "onnx::Mul_959",
+    "entry": 786,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 0,
+    "offset": 7842345,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_0",
+    "layer": null,
+    "onnxName": "onnx::Mul_969",
+    "entry": 786,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 1,
+    "offset": 7843911,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_0",
+    "layer": null,
+    "onnxName": "onnx::Mul_979",
+    "entry": 786,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 2,
+    "offset": 7845477,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_0",
+    "layer": null,
+    "onnxName": "onnx::Mul_989",
+    "entry": 786,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 3,
+    "offset": 7847043,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_0",
+    "layer": null,
+    "onnxName": "onnx::Mul_999",
+    "entry": 786,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 4,
+    "offset": 7848609,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/norm_1/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_1009",
+    "entry": 789,
+    "entryMode": "fp16",
+    "entryShape": [
+      384
+    ],
+    "transform": "plus1",
+    "offset": 7850176,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_1",
+    "layer": null,
+    "onnxName": "onnx::Mul_1024",
+    "entry": 790,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 0,
+    "offset": 7851743,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_1",
+    "layer": null,
+    "onnxName": "onnx::Mul_1034",
+    "entry": 790,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 1,
+    "offset": 7853310,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_1",
+    "layer": null,
+    "onnxName": "onnx::Mul_1044",
+    "entry": 790,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 2,
+    "offset": 7854877,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_1",
+    "layer": null,
+    "onnxName": "onnx::Mul_1054",
+    "entry": 790,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 3,
+    "offset": 7856444,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_1",
+    "layer": null,
+    "onnxName": "onnx::Mul_1064",
+    "entry": 790,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 4,
+    "offset": 7858011,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/norm_2/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_1074",
+    "entry": 793,
+    "entryMode": "fp16",
+    "entryShape": [
+      384
+    ],
+    "transform": "plus1",
+    "offset": 7859578,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_2",
+    "layer": null,
+    "onnxName": "onnx::Mul_1089",
+    "entry": 794,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 0,
+    "offset": 7861145,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_2",
+    "layer": null,
+    "onnxName": "onnx::Mul_1099",
+    "entry": 794,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 1,
+    "offset": 7862712,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_2",
+    "layer": null,
+    "onnxName": "onnx::Mul_1109",
+    "entry": 794,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 2,
+    "offset": 7864279,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_2",
+    "layer": null,
+    "onnxName": "onnx::Mul_1119",
+    "entry": 794,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 3,
+    "offset": 7865846,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_2",
+    "layer": null,
+    "onnxName": "onnx::Mul_1129",
+    "entry": 794,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 4,
+    "offset": 7867413,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/norm_3/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_1139",
+    "entry": 797,
+    "entryMode": "fp16",
+    "entryShape": [
+      384
+    ],
+    "transform": "plus1",
+    "offset": 7868980,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_3",
+    "layer": null,
+    "onnxName": "onnx::Mul_1154",
+    "entry": 798,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 0,
+    "offset": 7870547,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_3",
+    "layer": null,
+    "onnxName": "onnx::Mul_1164",
+    "entry": 798,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 1,
+    "offset": 7872114,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_3",
+    "layer": null,
+    "onnxName": "onnx::Mul_1174",
+    "entry": 798,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 2,
+    "offset": 7873681,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_3",
+    "layer": null,
+    "onnxName": "onnx::Mul_1184",
+    "entry": 798,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 3,
+    "offset": 7875248,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/mix_3",
+    "layer": null,
+    "onnxName": "onnx::Mul_1194",
+    "entry": 798,
+    "entryMode": "fp16",
+    "entryShape": [
+      1,
+      5,
+      1,
+      384
+    ],
+    "transform": "mix_row",
+    "row": 4,
+    "offset": 7876815,
+    "length": 1536,
+    "shape": [
+      1,
+      384
+    ]
+  },
+  {
+    "tensor": "reader/final_norm/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_1204",
+    "entry": 801,
+    "entryMode": "fp16",
+    "entryShape": [
+      384
+    ],
+    "transform": "plus1",
+    "offset": 7878382,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  }
+]
