@@ -4,9 +4,33 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import {
+  decodeCqMatrix,
+  decodeFp16Entry,
+  decodeFp32Entry,
+  extractDecoderTablesCactBytes,
+  getFp16ToFp32Table,
+  MIRAGE_DECODER_TABLES_EXPECTED_SHA256,
+  MIRAGE_DECODER_TABLES_EXPECTED_SIZE,
+  MIRAGE_DECODER_TABLES_FILE,
+  parseMirageCactDirectory,
+  permute3201,
+  resolvePlacementWeight,
+  type MiragePlacementRecord,
+} from './mirageCactCodec.ts';
+import {
+  MIRAGE_CROSS_KV_ONNX_EXPECTED_SHA256,
+  MIRAGE_CROSS_KV_ONNX_EXPECTED_SIZE,
+  MIRAGE_CROSS_KV_ONNX_FILE,
+  MIRAGE_DECODER_STEP_ONNX_EXPECTED_SHA256,
+  MIRAGE_DECODER_STEP_ONNX_EXPECTED_SIZE,
+  MIRAGE_DECODER_STEP_ONNX_FILE,
   MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
   MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
-} from './mirageExperimentalOnnxService';
+  MIRAGE_READER_ONNX_EXPECTED_SHA256,
+  MIRAGE_READER_ONNX_EXPECTED_SIZE,
+  MIRAGE_READER_ONNX_FILE,
+  type MirageFullPipelineComponentKey,
+} from './modelAssetResolver.ts';
 
 export const MIRAGE_CACT_EXPECTED_SIZE = 21_611_043;
 export const MIRAGE_CACT_EXPECTED_SHA256 =
@@ -86,6 +110,97 @@ export function hasMirageReconstructionAssets(
   );
 }
 
+export interface MirageFullOnnxComponentPin {
+  key: Exclude<MirageFullPipelineComponentKey, 'decoderTables'>;
+  onnxFile: string;
+  expectedSize: number;
+  expectedSha256: string;
+  skeletonFile: string;
+  skeletonSize: number;
+  skeletonSha256: string;
+  placementsFile: string;
+  placementsSize: number;
+  placementsSha256: string;
+}
+
+export interface MirageDecoderTablesPin {
+  key: 'decoderTables';
+  file: string;
+  expectedSize: number;
+  expectedSha256: string;
+}
+
+export const MIRAGE_FULL_PIPELINE_PIN: {
+  reader: MirageFullOnnxComponentPin;
+  crossKv: MirageFullOnnxComponentPin;
+  decoderStep: MirageFullOnnxComponentPin;
+  decoderTables: MirageDecoderTablesPin;
+} = {
+  reader: {
+    key: 'reader',
+    onnxFile: MIRAGE_READER_ONNX_FILE,
+    expectedSize: MIRAGE_READER_ONNX_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_READER_ONNX_EXPECTED_SHA256,
+    skeletonFile: 'mirage_reader_skeleton.bin.gz',
+    skeletonSize: 14_693,
+    skeletonSha256:
+      '2cd018ecfd98b15256fc428df1ee5fc59c6c89ec08307295b12907b70c04e51d',
+    placementsFile: 'mirage_reader_placements.json',
+    placementsSize: 14_052,
+    placementsSha256:
+      '0fc3004ef4cc44625592ec80a9137510358b5073b6269b2b74b088f781a98ef3',
+  },
+  crossKv: {
+    key: 'crossKv',
+    onnxFile: MIRAGE_CROSS_KV_ONNX_FILE,
+    expectedSize: MIRAGE_CROSS_KV_ONNX_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_CROSS_KV_ONNX_EXPECTED_SHA256,
+    skeletonFile: 'mirage_cross_kv_skeleton.bin.gz',
+    skeletonSize: 187_130,
+    skeletonSha256:
+      '116c7349d970a129beef859c701ebf24c011f8e68f87c2610620fdf710fb2346',
+    placementsFile: 'mirage_cross_kv_placements.json',
+    placementsSize: 8_773,
+    placementsSha256:
+      '0285d6af9aebc00d49c8c44daaee351fe7342ced862bd99e28d7d5cfe5c33c07',
+  },
+  decoderStep: {
+    key: 'decoderStep',
+    onnxFile: MIRAGE_DECODER_STEP_ONNX_FILE,
+    expectedSize: MIRAGE_DECODER_STEP_ONNX_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_DECODER_STEP_ONNX_EXPECTED_SHA256,
+    skeletonFile: 'mirage_decoder_step_skeleton.bin.gz',
+    skeletonSize: 138_840,
+    skeletonSha256:
+      'c68591eebea7c2e400e8a066b3778ae794239609bf52d1d1770cd0fa97941863',
+    placementsFile: 'mirage_decoder_step_placements.json',
+    placementsSize: 123_684,
+    placementsSha256:
+      'ea3c1313d49916c0c790975656ab5a5af3c9d5b98b542a939b9612c1b87b7930',
+  },
+  decoderTables: {
+    key: 'decoderTables',
+    file: MIRAGE_DECODER_TABLES_FILE,
+    expectedSize: MIRAGE_DECODER_TABLES_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_DECODER_TABLES_EXPECTED_SHA256,
+  },
+} as const;
+
+export function hasMirageFullComponentAssets(
+  componentKey: MirageFullPipelineComponentKey,
+  rootDir: string = MIRAGE_PACKAGE_ROOT
+): boolean {
+  if (componentKey === 'decoderTables') {
+    return true;
+  }
+  const pin = MIRAGE_FULL_PIPELINE_PIN[componentKey];
+  const assetsDir = path.resolve(rootDir, MIRAGE_RECONSTRUCTION_REL_DIR);
+  return (
+    existsSync(path.join(assetsDir, pin.skeletonFile)) &&
+    existsSync(path.join(assetsDir, pin.placementsFile))
+  );
+}
+
 function readVerifiedAssetFile(
   filePath: string,
   expected: { file: string; size: number; sha256: string }
@@ -128,154 +243,10 @@ interface OnnxPlacement {
   shape: number[];
 }
 
-/**
- * Exact IEEE-754 binary16 (uint16) to binary32 (float32) conversion table,
- * precomputed once for all 65,536 16-bit bit patterns.
- */
-let fp16ToFp32Table: Float32Array | null = null;
-
-function getFp16ToFp32Table(): Float32Array {
-  if (fp16ToFp32Table) return fp16ToFp32Table;
-  const table = new Float32Array(65536);
-  const u32 = new Uint32Array(table.buffer);
-  for (let h = 0; h < 65536; h++) {
-    const sign = (h & 0x8000) << 16;
-    const exp = (h >> 10) & 0x1f;
-    const mant = h & 0x03ff;
-    if (exp === 0) {
-      if (mant === 0) {
-        u32[h] = sign;
-      } else {
-        let m = mant;
-        let e = -14;
-        while ((m & 0x0400) === 0) {
-          m <<= 1;
-          e--;
-        }
-        m &= 0x03ff;
-        u32[h] = sign | ((e + 127) << 23) | (m << 13);
-      }
-    } else if (exp === 31) {
-      u32[h] = sign | 0x7f800000 | (mant << 13);
-    } else {
-      u32[h] = sign | ((exp - 15 + 127) << 23) | (mant << 13);
-    }
-  }
-  fp16ToFp32Table = table;
-  return table;
-}
-
-/**
- * Decodes a Cactus CQ (2-bit Walsh-Hadamard codebook quantized) matrix and
- * returns its transposed Float32Array `decode_cq(...).T.copy()`, matching
- * `scripts/mirage/archive_encoder_weights.py` bit-for-bit.
- */
-function decodeCqTransposed(
-  cactBytes: Buffer,
-  byteOffset: number,
-  byteLength: number,
-  entryShape: number[],
-  group: number,
-  bits: number,
-  codebook: Float64Array,
-  fp16Table: Float32Array
-): Float32Array {
-  if (entryShape.length !== 2) {
-    throw new Error(`Expected 2D CQ entry shape, got [${entryShape.join(', ')}]`);
-  }
-  const rows = entryShape[0];
-  const cols = entryShape[1];
-  if (group !== 128 || bits !== 2 || cols % group !== 0) {
-    throw new Error(`Unsupported CQ format: group=${group}, bits=${bits}, cols=${cols}`);
-  }
-  const count = rows * cols;
-  const indexBytes = (count * bits) / 8;
-  const normCount = count / group;
-  if (byteLength !== indexBytes + 2 * normCount) {
-    throw new Error(
-      `CQ byte count mismatch: expected ${indexBytes + 2 * normCount}, got ${byteLength}`
-    );
-  }
-
-  const invSqrt128 = 1.0 / Math.sqrt(128);
-  const groupsPerRow = cols / group;
-  // Output is transposed: shape is [cols, rows]
-  const outTransposed = new Float32Array(cols * rows);
-  const block = new Float64Array(128);
-  const temp = new Float64Array(128);
-
-  let packedIdx = byteOffset;
-  let normByteIdx = byteOffset + indexBytes;
-
-  for (let r = 0; r < rows; r++) {
-    for (let g = 0; g < groupsPerRow; g++) {
-      const u16Norm =
-        cactBytes[normByteIdx] | (cactBytes[normByteIdx + 1] << 8);
-      normByteIdx += 2;
-      const norm = fp16Table[u16Norm];
-
-      // Unpack 128 2-bit codes from 32 bytes
-      for (let b = 0; b < 32; b++) {
-        const byteVal = cactBytes[packedIdx++];
-        const base = b * 4;
-        block[base] = codebook[byteVal & 3] * norm;
-        block[base + 1] = codebook[(byteVal >> 2) & 3] * norm;
-        block[base + 2] = codebook[(byteVal >> 4) & 3] * norm;
-        block[base + 3] = codebook[(byteVal >> 6) & 3] * norm;
-      }
-
-      // In-place 128-point natural Walsh-Hadamard transform in Float64
-      for (let width = 1; width < 128; width <<= 1) {
-        const stride = width << 1;
-        for (let start = 0; start < 128; start += stride) {
-          for (let k = 0; k < width; k++) {
-            const a = block[start + k];
-            const c = block[start + width + k];
-            temp[start + k] = a + c;
-            temp[start + width + k] = a - c;
-          }
-        }
-        block.set(temp);
-      }
-
-      const colBase = g * 128;
-      for (let k = 0; k < 128; k++) {
-        const val = Math.fround(block[k] * invSqrt128);
-        // Write transposed at (colBase + k, r) -> index (colBase + k) * rows + r
-        outTransposed[(colBase + k) * rows + r] = val;
-      }
-    }
-  }
-
-  return outTransposed;
-}
-
-function permute3201(src: Float32Array, shape: number[]): Float32Array {
-  const [d0, d1, d2, d3] = shape;
-  const dst = new Float32Array(src.length);
-  let dstIdx = 0;
-  for (let i3 = 0; i3 < d3; i3++) {
-    for (let i2 = 0; i2 < d2; i2++) {
-      for (let i0 = 0; i0 < d0; i0++) {
-        for (let i1 = 0; i1 < d1; i1++) {
-          const srcIdx = ((i0 * d1 + i1) * d2 + i2) * d3 + i3;
-          dst[dstIdx++] = src[srcIdx];
-        }
-      }
-    }
-  }
-  return dst;
-}
-
-/**
- * Reconstructs the verified `cact-dequantized-reference-order.onnx` (`34,281,503` bytes,
- * SHA-256 `52d52d2918160404cd806702a270736819712025cf3c6aa8e907a06bc3cbdd07`) in pure Node.js
- * directly from the verified `mirage.cact` archive and the packaged runtime reconstruction assets.
- */
-export function reconstructVerifiedMirageOnnxBytes(
-  cactBytes: Buffer,
-  rootDir: string = MIRAGE_PACKAGE_ROOT
-): Buffer {
+function verifyMirageCactArchiveBytes(cactBytes: Buffer): {
+  codebook: Float64Array;
+  entries: ReturnType<typeof parseMirageCactDirectory>['entries'];
+} {
   if (cactBytes.byteLength !== MIRAGE_CACT_EXPECTED_SIZE) {
     throw new Error(
       `mirage.cact byte length mismatch: expected ${MIRAGE_CACT_EXPECTED_SIZE}, got ${cactBytes.byteLength}`
@@ -287,18 +258,48 @@ export function reconstructVerifiedMirageOnnxBytes(
       `mirage.cact SHA-256 mismatch: expected ${MIRAGE_CACT_EXPECTED_SHA256}, got ${cactSha256}`
     );
   }
+  const parsed = parseMirageCactDirectory(cactBytes);
+  return { codebook: parsed.codebook, entries: parsed.entries };
+}
 
-  const magic = cactBytes.readUInt32LE(0);
-  const numEntries = cactBytes.readUInt32LE(4);
-  const codebookCount = cactBytes.readUInt32LE(8);
-  if (magic !== 0x05e12a84 || numEntries !== 806 || codebookCount !== 28) {
-    throw new Error('Unexpected mirage.cact archive header');
+function writeVerifiedArtifactWithGzip(targetPath: string, payload: Buffer): void {
+  mkdirSync(path.dirname(targetPath), { recursive: true });
+  const tempPath = `${targetPath}.part-${randomUUID()}`;
+  try {
+    writeFileSync(tempPath, payload);
+    renameSync(tempPath, targetPath);
+  } catch (err) {
+    try {
+      rmSync(tempPath, { force: true });
+    } catch {
+      // Ignore cleanup error
+    }
+    throw err;
   }
+  const tempGz = `${targetPath}.gz.part-${randomUUID()}`;
+  try {
+    const gzBytes = gzipSync(payload, { level: 9 });
+    writeFileSync(tempGz, gzBytes);
+    renameSync(tempGz, `${targetPath}.gz`);
+  } catch {
+    try {
+      rmSync(tempGz, { force: true });
+    } catch {
+      // Non-critical compression fallback
+    }
+  }
+}
 
-  const codebook = new Float64Array(28);
-  for (let i = 0; i < 28; i++) {
-    codebook[i] = cactBytes.readFloatLE(196 + i * 4);
-  }
+/**
+ * Reconstructs the verified `cact-dequantized-reference-order.onnx` (`34,281,503` bytes,
+ * SHA-256 `52d52d2918160404cd806702a270736819712025cf3c6aa8e907a06bc3cbdd07`) in pure Node.js
+ * directly from the verified `mirage.cact` archive and the packaged runtime reconstruction assets.
+ */
+export function reconstructVerifiedMirageOnnxBytes(
+  cactBytes: Buffer,
+  rootDir: string = MIRAGE_PACKAGE_ROOT
+): Buffer {
+  const { codebook } = verifyMirageCactArchiveBytes(cactBytes);
 
   const { mappingPath, skeletonGzPath, placementsPath } =
     resolveMirageReconstructionAssetPaths(rootDir);
@@ -335,40 +336,27 @@ export function reconstructVerifiedMirageOnnxBytes(
 
   for (const row of mappingRows) {
     const { name, entry } = row;
-    const { offset, bytes, dtype, shape, group, bits } = entry;
-    if (dtype === 3) {
+    const descriptor = {
+      dtype: entry.dtype,
+      shape: entry.shape,
+      offset: entry.offset,
+      nbytes: entry.bytes,
+      group: entry.group,
+      bits: entry.bits,
+    };
+    if (entry.dtype === 3) {
       decodedWeights.set(
         name,
-        decodeCqTransposed(
-          cactBytes,
-          offset,
-          bytes,
-          shape,
-          group,
-          bits,
-          codebook,
-          fp16Table
-        )
+        decodeCqMatrix(cactBytes, descriptor, codebook, fp16Table, {
+          transpose: true,
+        })
       );
-    } else if (dtype === 1) {
-      const count = bytes >> 1;
-      const arr = new Float32Array(count);
-      for (let i = 0; i < count; i++) {
-        const u16 =
-          cactBytes[offset + (i << 1)] |
-          (cactBytes[offset + (i << 1) + 1] << 8);
-        arr[i] = fp16Table[u16];
-      }
-      decodedWeights.set(name, arr);
-    } else if (dtype === 2) {
-      const count = bytes >> 2;
-      const arr = new Float32Array(count);
-      for (let i = 0; i < count; i++) {
-        arr[i] = cactBytes.readFloatLE(offset + (i << 2));
-      }
-      decodedWeights.set(name, arr);
+    } else if (entry.dtype === 1) {
+      decodedWeights.set(name, decodeFp16Entry(cactBytes, descriptor, fp16Table));
+    } else if (entry.dtype === 2) {
+      decodedWeights.set(name, decodeFp32Entry(cactBytes, descriptor));
     } else {
-      throw new Error(`Unsupported archive dtype ${dtype} for ${name}`);
+      throw new Error(`Unsupported archive dtype ${entry.dtype} for ${name}`);
     }
   }
 
@@ -429,31 +417,125 @@ export function ensureReconstructedMirageOnnxFile(
   rootDir: string = MIRAGE_PACKAGE_ROOT
 ): Buffer {
   const onnxBuffer = reconstructVerifiedMirageOnnxBytes(cactBytes, rootDir);
-  mkdirSync(path.dirname(targetPath), { recursive: true });
-  const tempPath = `${targetPath}.part-${randomUUID()}`;
-  try {
-    writeFileSync(tempPath, onnxBuffer);
-    renameSync(tempPath, targetPath);
-  } catch (err) {
-    try {
-      rmSync(tempPath, { force: true });
-    } catch {
-      // Ignore cleanup error
-    }
-    throw err;
+  writeVerifiedArtifactWithGzip(targetPath, onnxBuffer);
+  return onnxBuffer;
+}
+
+/**
+ * Extracts and SHA-256-verifies the compact `7,350,719`-byte `mirage-decoder-tables.cact`
+ * asset containing token embeddings, Engram tables, CTC charset, and SentencePiece vocab.
+ */
+export function extractVerifiedMirageDecoderTablesBytes(
+  cactBytes: Buffer
+): Buffer {
+  verifyMirageCactArchiveBytes(cactBytes);
+  const raw = extractDecoderTablesCactBytes(cactBytes);
+  const buf = Buffer.from(raw.buffer, raw.byteOffset, raw.byteLength);
+  const pin = MIRAGE_FULL_PIPELINE_PIN.decoderTables;
+  if (buf.byteLength !== pin.expectedSize) {
+    throw new Error(
+      `Extracted ${pin.file} size mismatch: expected ${pin.expectedSize}, got ${buf.byteLength}`
+    );
   }
-  const tempGz = `${targetPath}.gz.part-${randomUUID()}`;
-  try {
-    const gzBytes = gzipSync(onnxBuffer, { level: 9 });
-    writeFileSync(tempGz, gzBytes);
-    renameSync(tempGz, `${targetPath}.gz`);
-  } catch {
-    try {
-      rmSync(tempGz, { force: true });
-    } catch {
-      // Non-critical compression fallback
+  const sha256 = createHash('sha256').update(buf).digest('hex');
+  if (sha256 !== pin.expectedSha256) {
+    throw new Error(
+      `Extracted ${pin.file} SHA-256 mismatch: expected ${pin.expectedSha256}, got ${sha256}`
+    );
+  }
+  return buf;
+}
+
+/**
+ * Reconstructs one of the full-pipeline ONNX graphs (`reader`, `crossKv`, `decoderStep`)
+ * directly from `mirage.cact` using zeroed skeletons and deterministic placements.
+ */
+export function reconstructVerifiedMirageFullOnnxBytes(
+  componentKey: Exclude<MirageFullPipelineComponentKey, 'decoderTables'>,
+  cactBytes: Buffer,
+  rootDir: string = MIRAGE_PACKAGE_ROOT
+): Buffer {
+  const { codebook, entries } = verifyMirageCactArchiveBytes(cactBytes);
+  const pin = MIRAGE_FULL_PIPELINE_PIN[componentKey];
+  const assetsDir = path.resolve(rootDir, MIRAGE_RECONSTRUCTION_REL_DIR);
+  const skeletonGzBytes = readVerifiedAssetFile(path.join(assetsDir, pin.skeletonFile), {
+    file: pin.skeletonFile,
+    size: pin.skeletonSize,
+    sha256: pin.skeletonSha256,
+  });
+  const placementsBytes = readVerifiedAssetFile(path.join(assetsDir, pin.placementsFile), {
+    file: pin.placementsFile,
+    size: pin.placementsSize,
+    sha256: pin.placementsSha256,
+  });
+
+  const placements = JSON.parse(
+    placementsBytes.toString('utf8')
+  ) as MiragePlacementRecord[];
+  const onnxBuffer = gunzipSync(skeletonGzBytes);
+  if (onnxBuffer.byteLength !== pin.expectedSize) {
+    throw new Error(
+      `${pin.onnxFile} skeleton size mismatch: expected ${pin.expectedSize}, got ${onnxBuffer.byteLength}`
+    );
+  }
+
+  const fp16Table = getFp16ToFp32Table();
+  const entryCache = new Map<number, Float32Array>();
+
+  for (const placement of placements) {
+    const transformed = resolvePlacementWeight(
+      cactBytes,
+      entries,
+      codebook,
+      fp16Table,
+      placement,
+      entryCache
+    );
+    const srcBytes = Buffer.from(
+      transformed.buffer,
+      transformed.byteOffset,
+      transformed.byteLength
+    );
+    if (srcBytes.byteLength !== placement.length) {
+      throw new Error(
+        `Placement byte length mismatch for ${placement.tensor}: expected ${placement.length}, got ${srcBytes.byteLength}`
+      );
     }
+    srcBytes.copy(onnxBuffer, placement.offset);
+  }
+
+  const actualSha256 = createHash('sha256').update(onnxBuffer).digest('hex');
+  if (actualSha256 !== pin.expectedSha256) {
+    throw new Error(
+      `Reconstructed ${pin.onnxFile} SHA-256 mismatch: expected ${pin.expectedSha256}, got ${actualSha256}`
+    );
   }
   return onnxBuffer;
+}
+
+export function reconstructVerifiedMirageComponentBytes(
+  componentKey: MirageFullPipelineComponentKey,
+  cactBytes: Buffer,
+  rootDir: string = MIRAGE_PACKAGE_ROOT
+): Buffer {
+  if (componentKey === 'decoderTables') {
+    return extractVerifiedMirageDecoderTablesBytes(cactBytes);
+  }
+  return reconstructVerifiedMirageFullOnnxBytes(componentKey, cactBytes, rootDir);
+}
+
+export function ensureReconstructedMirageComponentFile(
+  componentKey: MirageFullPipelineComponentKey,
+  targetPath: string,
+  cactBytes: Buffer,
+  rootDir: string = MIRAGE_PACKAGE_ROOT
+): Buffer {
+  const payload = reconstructVerifiedMirageComponentBytes(
+    componentKey,
+    cactBytes,
+    rootDir
+  );
+  writeVerifiedArtifactWithGzip(targetPath, payload);
+  return payload;
 }
 

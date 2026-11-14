@@ -103,6 +103,7 @@ export interface MirageInferenceParams {
   maxDetections: number;
   iouThreshold: number;
   analysisMode: MirageAnalysisMode;
+  mirageLanguage?: string;
   includeOcr: boolean;
 }
 
@@ -141,7 +142,7 @@ export const DEFAULT_MODEL_PARAMS: PerModelParameterConfig = {
     render: { showBoxes: true, showMasks: true, showLabels: true, showConfidence: true, maskOpacity: 0.35, confidenceThreshold: 0.35 }
   },
   'mirage': {
-    inference: { confidenceThreshold: 0.25, maxDetections: 15, iouThreshold: 0.45, analysisMode: 'fast', includeOcr: true },
+    inference: { confidenceThreshold: 0.25, maxDetections: 15, iouThreshold: 0.45, analysisMode: 'fast', mirageLanguage: 'en', includeOcr: true },
     render: { showBoxes: true, showMasks: true, showLabels: true, showConfidence: true, maskOpacity: 0.35, confidenceThreshold: 0.25 }
   }
 };

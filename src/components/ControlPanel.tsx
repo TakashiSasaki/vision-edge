@@ -21,6 +21,21 @@ import {
   isMirageExperimentalVariant,
   type MirageExperimentalExecutionDiagnostics,
 } from '../services/mirageExperimentalOnnxService';
+import { MIRAGE_SUPPORTED_LANGUAGES } from '../services/mirageCactCodec';
+
+const MIRAGE_LANGUAGE_LABELS: Record<string, string> = {
+  en: '英語 (en)',
+  es: 'スペイン語 (es)',
+  fr: 'フランス語 (fr)',
+  pt: 'ポルトガル語 (pt)',
+  de: 'ドイツ語 (de)',
+  it: 'イタリア語 (it)',
+  nl: 'オランダ語 (nl)',
+  pl: 'ポーランド語 (pl)',
+  ru: 'ロシア語 (ru)',
+  ar: 'アラビア語 (ar)',
+  zh: '中国語 (zh)',
+};
 
 interface ControlPanelProps {
   activeModel: RunnableModelType;
@@ -115,6 +130,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   const iouThreshold = inferenceParams.iouThreshold ?? 0.45;
   const maskThreshold = inferenceParams.maskThreshold ?? 0.50;
   const mirageAnalysisMode = inferenceParams.analysisMode ?? 'fast';
+  const mirageLanguage = inferenceParams.mirageLanguage ?? 'en';
   const mirageIncludeOcr = inferenceParams.includeOcr ?? true;
   const experimentalNmsIou =
     inferenceParams.experimentalNmsIou !== undefined
@@ -198,13 +214,19 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             className="p-2.5 rounded-lg border border-amber-500/40 bg-amber-950/25 text-amber-100 space-y-1.5"
           >
             <div className="font-bold text-amber-300 flex items-center justify-between">
-              <span>【実験用機能】部分Mirage ONNX 領域候補推論</span>
+              <span>
+                {mirageAnalysisMode === 'full'
+                  ? '【実験用機能】Mirage ONNX フルパイプライン推論'
+                  : '【実験用機能】部分Mirage ONNX 領域候補推論'}
+              </span>
               <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-900/60 border border-amber-600/40">
-                452/583 tensors · opset 17
+                {mirageAnalysisMode === 'full' ? '4段ONNX + CQテーブル · opset 17' : '452/583 tensors · opset 17'}
               </span>
             </div>
             <p className="text-[11px] text-amber-200/90 leading-relaxed">
-              公式.cactから復元した部分モデル（SHA-256: <code className="font-mono">52d52d29...</code>）です。物体名・OCR文字列・言語/領域処理・最終候補選別は未実装のため、<strong>物体領域候補・テキスト領域候補・枠・128×128診断用マスク</strong>として表示します（検証4画像で公式54領域中52件対応・余分候補80件、中間層167件の不一致あり）。
+              {mirageAnalysisMode === 'full'
+                ? '公式.cactから再構成した Encoder + Reader (OCR) + CrossKV + Autoregressive Decoder の全段をブラウザ内ONNX Runtimeで実行します（初回切替時は約105MBの追加入手・SHA-256検証を実施）。既定の安全側は引き続き公式WASM版です。'
+                : '公式.cactから復元した部分モデル（SHA-256: 52d52d29...）です。パラメータタブで「フル推論」に切り替えると OCR・語彙命名・構造デコーダを有効化できます。高速モードでは物体領域候補・テキスト領域候補・枠・128×128診断用マスクを表示します。'}
             </p>
             {onSelectStillImagePreset && (
               <div className="pt-1 border-t border-amber-800/40 space-y-1.5">
@@ -697,6 +719,78 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
               {isExperimentalMirage && (
                 <>
+                  {/* Experimental ONNX Pipeline Mode & Decoder Language */}
+                  <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium text-slate-200">ONNX パイプライン構成</span>
+                      <span className="font-mono text-cyan-400 font-semibold text-[11px]">
+                        {mirageAnalysisMode === 'full' ? 'フル推論 (全4グラフ)' : '高速 (Encoder候補のみ)'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="ONNX パイプライン構成">
+                      <button
+                        type="button"
+                        onClick={() => updateInferenceParam('analysisMode', 'fast')}
+                        className={`p-2 rounded border text-left transition-colors ${
+                          mirageAnalysisMode === 'fast'
+                            ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
+                            : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="text-[11px]">高速（候補のみ）</div>
+                        <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                          Encoder のみ (34.3MB)
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateInferenceParam('analysisMode', 'full')}
+                        className={`p-2 rounded border text-left transition-colors ${
+                          mirageAnalysisMode === 'full'
+                            ? 'bg-cyan-950/70 border-cyan-500 text-white font-semibold'
+                            : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="text-[11px]">フル推論（OCR・命名）</div>
+                        <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                          OCR + CrossKV + デコーダ
+                        </div>
+                      </button>
+                    </div>
+                    {mirageAnalysisMode === 'full' && (
+                      <div className="pt-1.5 border-t border-slate-800/80 space-y-1.5">
+                        <div className="flex items-center justify-between gap-2 text-xs">
+                          <label htmlFor="mirage-onnx-language" className="text-slate-300">
+                            デコーダ出力言語
+                          </label>
+                          <select
+                            id="mirage-onnx-language"
+                            aria-label="Mirage 出力言語"
+                            value={mirageLanguage}
+                            onChange={(e) => updateInferenceParam('mirageLanguage', e.target.value)}
+                            className="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px] text-slate-100"
+                          >
+                            {MIRAGE_SUPPORTED_LANGUAGES.map((code) => (
+                              <option key={code} value={code}>
+                                {MIRAGE_LANGUAGE_LABELS[code] ?? code}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <label className="flex items-center justify-between text-xs cursor-pointer">
+                          <span className="text-slate-300">CTC OCR 文字認識 (reader.onnx)</span>
+                          <input
+                            type="checkbox"
+                            aria-label="CTC OCR 文字認識"
+                            checked={mirageIncludeOcr}
+                            onChange={(e) => updateInferenceParam('includeOcr', e.target.checked)}
+                            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700 cursor-pointer"
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Candidate Post-processing / NMS Policy */}
                   <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2">
                     <div className="flex justify-between items-center text-xs">
@@ -793,8 +887,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       className="p-3 bg-slate-950/90 border border-slate-800 rounded-lg space-y-1 font-mono text-[10px] text-slate-300"
                     >
                       <div className="text-cyan-400 font-sans font-bold text-[11px] mb-1">
-                        実験用部分ONNX 直近推論診断
+                        {experimentalDiagnostics.pipelineMode === 'full_pipeline'
+                          ? '実験用 Mirage ONNX フル推論 診断'
+                          : '実験用部分ONNX 直近推論診断'}
                       </div>
+                      <div>パイプライン: {experimentalDiagnostics.pipelineMode === 'full_pipeline' ? 'full_pipeline (Encoder+Reader+CrossKV+Decoder)' : 'encoder_only (候補抽出のみ)'}</div>
                       <div>要求EP: {experimentalDiagnostics.requestedProvider} ／ 設定EP: {experimentalDiagnostics.configuredProviders.join(' → ')}</div>
                       {experimentalDiagnostics.fallbackReason && (
                         <div className="text-amber-300">フォールバック理由: {experimentalDiagnostics.fallbackReason}</div>
@@ -802,6 +899,21 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       <div>入力 valid_hw: [{experimentalDiagnostics.validHw[0]}, {experimentalDiagnostics.validHw[1]}] (元画像 {experimentalDiagnostics.metadata.W}×{experimentalDiagnostics.metadata.H} · ceil32)</div>
                       <div>座標逆変換倍率: [{experimentalDiagnostics.metadata.coordinate_scale.map(v => v.toFixed(3)).join(', ')}]</div>
                       <div>抽出候補: 物体 {experimentalDiagnostics.objectProposalCount}件 ／ テキスト {experimentalDiagnostics.textProposalCount}件{experimentalDiagnostics.nativeOverlayEnabled ? ` ／ 公式WASM ${experimentalDiagnostics.nativeOverlayCount}件` : ''}</div>
+                      {experimentalDiagnostics.pipelineMode === 'full_pipeline' && (
+                        <>
+                          <div>
+                            デコーダ: 言語 {experimentalDiagnostics.decoderLanguage ?? 'en'} · {experimentalDiagnostics.generatedTokenCount ?? 0}トークン ({experimentalDiagnostics.decoderStepsExecuted ?? 0}step) · OCR {experimentalDiagnostics.ocrLineCount ?? 0}行
+                          </div>
+                          {experimentalDiagnostics.assembledObservation && (
+                            <div className="text-emerald-300/90 break-words">
+                              領域: {experimentalDiagnostics.assembledObservation.regions.length}件 ／ 関係: {experimentalDiagnostics.assembledObservation.relations.length}件
+                              {experimentalDiagnostics.assembledObservation.text.length > 0
+                                ? ` ／ OCR: ${experimentalDiagnostics.assembledObservation.text.map(t => t.string).slice(0, 3).join(' | ')}`
+                                : ''}
+                            </div>
+                          )}
+                        </>
+                      )}
                       <div>処理時間: 前処理 {experimentalDiagnostics.timingsMs.preprocess.toFixed(1)}ms · 推論 {experimentalDiagnostics.timingsMs.inference.toFixed(1)}ms · 後処理 {experimentalDiagnostics.timingsMs.postprocess.toFixed(1)}ms</div>
                     </div>
                   )}

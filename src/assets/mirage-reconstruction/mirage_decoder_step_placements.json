@@ -1,0 +1,6996 @@
+[
+  {
+    "tensor": "embedding/embedding",
+    "layer": null,
+    "onnxName": "embed_T",
+    "entry": 0,
+    "entryMode": "cq_id",
+    "entryShape": [
+      8299,
+      512
+    ],
+    "transform": "T",
+    "offset": 424114,
+    "length": 16996352,
+    "shape": [
+      512,
+      8299
+    ]
+  },
+  {
+    "tensor": "engrams_0/key_proj/kernel",
+    "layer": null,
+    "onnxName": "eng_0_key_proj",
+    "entry": 229,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "id",
+    "offset": 17420498,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "engrams_0/value_proj/kernel",
+    "layer": null,
+    "onnxName": "eng_0_value_proj",
+    "entry": 230,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "id",
+    "offset": 18469108,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "engrams_1/key_proj/kernel",
+    "layer": null,
+    "onnxName": "eng_1_key_proj",
+    "entry": 233,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "id",
+    "offset": 19517716,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "engrams_1/value_proj/kernel",
+    "layer": null,
+    "onnxName": "eng_1_value_proj",
+    "entry": 234,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "id",
+    "offset": 20566326,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_pre",
+    "layer": 0,
+    "onnxName": "mhc_a_pre_0",
+    "entry": 217,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 21614923,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_pre",
+    "layer": 0,
+    "onnxName": "mhc_b_pre_0",
+    "entry": 220,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 21614948,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_pre",
+    "layer": 0,
+    "onnxName": "mhc_phi_pre_0",
+    "entry": 223,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 21614994,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_post",
+    "layer": 0,
+    "onnxName": "mhc_a_post_0",
+    "entry": 218,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 21647784,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_post",
+    "layer": 0,
+    "onnxName": "mhc_b_post_0",
+    "entry": 221,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 21647810,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_post",
+    "layer": 0,
+    "onnxName": "mhc_phi_post_0",
+    "entry": 224,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 21647857,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_res",
+    "layer": 0,
+    "onnxName": "mhc_a_res_0",
+    "entry": 219,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 21680646,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_res",
+    "layer": 0,
+    "onnxName": "mhc_b_res_0",
+    "entry": 222,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 21680673,
+    "length": 64,
+    "shape": [
+      4,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_res",
+    "layer": 0,
+    "onnxName": "mhc_phi_res_0",
+    "entry": 225,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      128,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 21680767,
+    "length": 131072,
+    "shape": [
+      2048,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_proj/kernel",
+    "layer": 0,
+    "onnxName": "sa_q_proj_0",
+    "entry": 2,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 21811868,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_proj/kernel",
+    "layer": 0,
+    "onnxName": "sa_k_proj_0",
+    "entry": 3,
+    "entryMode": "cq_T",
+    "entryShape": [
+      96,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 22598328,
+    "length": 196608,
+    "shape": [
+      512,
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_proj/kernel",
+    "layer": 0,
+    "onnxName": "sa_v_proj_0",
+    "entry": 4,
+    "entryMode": "cq_T",
+    "entryShape": [
+      128,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 22794965,
+    "length": 262144,
+    "shape": [
+      512,
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/gate_proj/kernel",
+    "layer": 0,
+    "onnxName": "sa_gate_proj_0",
+    "entry": 10,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 23057141,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/out_proj/kernel",
+    "layer": 0,
+    "onnxName": "sa_out_proj_0",
+    "entry": 11,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 24105748,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/attn_gate",
+    "layer": 0,
+    "onnxName": "attn_gate_0",
+    "entry": 13,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 25154345,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_proj/kernel",
+    "layer": 0,
+    "onnxName": "ca_q_proj_0",
+    "entry": 239,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 25154378,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/gate_proj/kernel",
+    "layer": 0,
+    "onnxName": "ca_gate_proj_0",
+    "entry": 242,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 25940842,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/out_proj/kernel",
+    "layer": 0,
+    "onnxName": "ca_out_proj_0",
+    "entry": 243,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 26989449,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_gate",
+    "layer": 0,
+    "onnxName": "cross_gate_0",
+    "entry": 247,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 28038047,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d1",
+    "layer": 0,
+    "onnxName": "h_d1_0",
+    "entry": 15,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 28038070,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d2",
+    "layer": 0,
+    "onnxName": "h_d2_0",
+    "entry": 16,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 28040137,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/b2",
+    "layer": 0,
+    "onnxName": "h_b2_0",
+    "entry": 17,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 28042204,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d3",
+    "layer": 0,
+    "onnxName": "h_d3_0",
+    "entry": 18,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 28044271,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d4",
+    "layer": 0,
+    "onnxName": "h_d4_0",
+    "entry": 19,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 28046338,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1b",
+    "layer": 0,
+    "onnxName": "h_w1b_0",
+    "entry": 21,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 28048407,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2b",
+    "layer": 0,
+    "onnxName": "h_w2b_0",
+    "entry": 23,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 28052524,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3b",
+    "layer": 0,
+    "onnxName": "h_w3b_0",
+    "entry": 25,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 28056641,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_v",
+    "layer": 0,
+    "onnxName": "h_cond_v_0",
+    "entry": 26,
+    "entryMode": "fp16",
+    "entryShape": [
+      512,
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 28060764,
+    "length": 16384,
+    "shape": [
+      512,
+      8
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_u",
+    "layer": 0,
+    "onnxName": "h_cond_u_0",
+    "entry": 27,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 28077175,
+    "length": 16384,
+    "shape": [
+      8,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_pre",
+    "layer": 1,
+    "onnxName": "mhc_a_pre_1",
+    "entry": 217,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 28093580,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_pre",
+    "layer": 1,
+    "onnxName": "mhc_b_pre_1",
+    "entry": 220,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 28093605,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_pre",
+    "layer": 1,
+    "onnxName": "mhc_phi_pre_1",
+    "entry": 223,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 28093651,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_post",
+    "layer": 1,
+    "onnxName": "mhc_a_post_1",
+    "entry": 218,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 28126441,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_post",
+    "layer": 1,
+    "onnxName": "mhc_b_post_1",
+    "entry": 221,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 28126467,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_post",
+    "layer": 1,
+    "onnxName": "mhc_phi_post_1",
+    "entry": 224,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 28126514,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_res",
+    "layer": 1,
+    "onnxName": "mhc_a_res_1",
+    "entry": 219,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 28159303,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_res",
+    "layer": 1,
+    "onnxName": "mhc_b_res_1",
+    "entry": 222,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 28159330,
+    "length": 64,
+    "shape": [
+      4,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_res",
+    "layer": 1,
+    "onnxName": "mhc_phi_res_1",
+    "entry": 225,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      128,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 28159424,
+    "length": 131072,
+    "shape": [
+      2048,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_proj/kernel",
+    "layer": 1,
+    "onnxName": "sa_q_proj_1",
+    "entry": 29,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 28290525,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_proj/kernel",
+    "layer": 1,
+    "onnxName": "sa_k_proj_1",
+    "entry": 30,
+    "entryMode": "cq_T",
+    "entryShape": [
+      96,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 29076985,
+    "length": 196608,
+    "shape": [
+      512,
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_proj/kernel",
+    "layer": 1,
+    "onnxName": "sa_v_proj_1",
+    "entry": 31,
+    "entryMode": "cq_T",
+    "entryShape": [
+      128,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 29273622,
+    "length": 262144,
+    "shape": [
+      512,
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/gate_proj/kernel",
+    "layer": 1,
+    "onnxName": "sa_gate_proj_1",
+    "entry": 37,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 29535798,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/out_proj/kernel",
+    "layer": 1,
+    "onnxName": "sa_out_proj_1",
+    "entry": 38,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 30584405,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/attn_gate",
+    "layer": 1,
+    "onnxName": "attn_gate_1",
+    "entry": 40,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 31633002,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_proj/kernel",
+    "layer": 1,
+    "onnxName": "ca_q_proj_1",
+    "entry": 249,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 31633035,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/gate_proj/kernel",
+    "layer": 1,
+    "onnxName": "ca_gate_proj_1",
+    "entry": 252,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 32419499,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/out_proj/kernel",
+    "layer": 1,
+    "onnxName": "ca_out_proj_1",
+    "entry": 253,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 33468106,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_gate",
+    "layer": 1,
+    "onnxName": "cross_gate_1",
+    "entry": 257,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 34516704,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d1",
+    "layer": 1,
+    "onnxName": "h_d1_1",
+    "entry": 42,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 34516727,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d2",
+    "layer": 1,
+    "onnxName": "h_d2_1",
+    "entry": 43,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 34518794,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/b2",
+    "layer": 1,
+    "onnxName": "h_b2_1",
+    "entry": 44,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 34520861,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d3",
+    "layer": 1,
+    "onnxName": "h_d3_1",
+    "entry": 45,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 34522928,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d4",
+    "layer": 1,
+    "onnxName": "h_d4_1",
+    "entry": 46,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 34524995,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1b",
+    "layer": 1,
+    "onnxName": "h_w1b_1",
+    "entry": 48,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 34527064,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2b",
+    "layer": 1,
+    "onnxName": "h_w2b_1",
+    "entry": 50,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 34531181,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3b",
+    "layer": 1,
+    "onnxName": "h_w3b_1",
+    "entry": 52,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 34535298,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_v",
+    "layer": 1,
+    "onnxName": "h_cond_v_1",
+    "entry": 53,
+    "entryMode": "fp16",
+    "entryShape": [
+      512,
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 34539421,
+    "length": 16384,
+    "shape": [
+      512,
+      8
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_u",
+    "layer": 1,
+    "onnxName": "h_cond_u_1",
+    "entry": 54,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 34555832,
+    "length": 16384,
+    "shape": [
+      8,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_pre",
+    "layer": 2,
+    "onnxName": "mhc_a_pre_2",
+    "entry": 217,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 34572237,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_pre",
+    "layer": 2,
+    "onnxName": "mhc_b_pre_2",
+    "entry": 220,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 34572262,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_pre",
+    "layer": 2,
+    "onnxName": "mhc_phi_pre_2",
+    "entry": 223,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 34572308,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_post",
+    "layer": 2,
+    "onnxName": "mhc_a_post_2",
+    "entry": 218,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 34605098,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_post",
+    "layer": 2,
+    "onnxName": "mhc_b_post_2",
+    "entry": 221,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 34605124,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_post",
+    "layer": 2,
+    "onnxName": "mhc_phi_post_2",
+    "entry": 224,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 34605171,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_res",
+    "layer": 2,
+    "onnxName": "mhc_a_res_2",
+    "entry": 219,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 34637960,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_res",
+    "layer": 2,
+    "onnxName": "mhc_b_res_2",
+    "entry": 222,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 34637987,
+    "length": 64,
+    "shape": [
+      4,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_res",
+    "layer": 2,
+    "onnxName": "mhc_phi_res_2",
+    "entry": 225,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      128,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 34638081,
+    "length": 131072,
+    "shape": [
+      2048,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_proj/kernel",
+    "layer": 2,
+    "onnxName": "sa_q_proj_2",
+    "entry": 56,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 34769182,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_proj/kernel",
+    "layer": 2,
+    "onnxName": "sa_k_proj_2",
+    "entry": 57,
+    "entryMode": "cq_T",
+    "entryShape": [
+      96,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 35555642,
+    "length": 196608,
+    "shape": [
+      512,
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_proj/kernel",
+    "layer": 2,
+    "onnxName": "sa_v_proj_2",
+    "entry": 58,
+    "entryMode": "cq_T",
+    "entryShape": [
+      128,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 35752279,
+    "length": 262144,
+    "shape": [
+      512,
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/gate_proj/kernel",
+    "layer": 2,
+    "onnxName": "sa_gate_proj_2",
+    "entry": 64,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 36014455,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/out_proj/kernel",
+    "layer": 2,
+    "onnxName": "sa_out_proj_2",
+    "entry": 65,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 37063062,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/attn_gate",
+    "layer": 2,
+    "onnxName": "attn_gate_2",
+    "entry": 67,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 38111659,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_proj/kernel",
+    "layer": 2,
+    "onnxName": "ca_q_proj_2",
+    "entry": 259,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 38111692,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/gate_proj/kernel",
+    "layer": 2,
+    "onnxName": "ca_gate_proj_2",
+    "entry": 262,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 38898156,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/out_proj/kernel",
+    "layer": 2,
+    "onnxName": "ca_out_proj_2",
+    "entry": 263,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 39946763,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_gate",
+    "layer": 2,
+    "onnxName": "cross_gate_2",
+    "entry": 267,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 40995361,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d1",
+    "layer": 2,
+    "onnxName": "h_d1_2",
+    "entry": 69,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 40995384,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d2",
+    "layer": 2,
+    "onnxName": "h_d2_2",
+    "entry": 70,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 40997451,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/b2",
+    "layer": 2,
+    "onnxName": "h_b2_2",
+    "entry": 71,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 40999518,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d3",
+    "layer": 2,
+    "onnxName": "h_d3_2",
+    "entry": 72,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 41001585,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d4",
+    "layer": 2,
+    "onnxName": "h_d4_2",
+    "entry": 73,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 41003652,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1b",
+    "layer": 2,
+    "onnxName": "h_w1b_2",
+    "entry": 75,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 41005721,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2b",
+    "layer": 2,
+    "onnxName": "h_w2b_2",
+    "entry": 77,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 41009838,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3b",
+    "layer": 2,
+    "onnxName": "h_w3b_2",
+    "entry": 79,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 41013955,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_v",
+    "layer": 2,
+    "onnxName": "h_cond_v_2",
+    "entry": 80,
+    "entryMode": "fp16",
+    "entryShape": [
+      512,
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 41018078,
+    "length": 16384,
+    "shape": [
+      512,
+      8
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_u",
+    "layer": 2,
+    "onnxName": "h_cond_u_2",
+    "entry": 81,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 41034489,
+    "length": 16384,
+    "shape": [
+      8,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_pre",
+    "layer": 3,
+    "onnxName": "mhc_a_pre_3",
+    "entry": 217,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 41050894,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_pre",
+    "layer": 3,
+    "onnxName": "mhc_b_pre_3",
+    "entry": 220,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 41050919,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_pre",
+    "layer": 3,
+    "onnxName": "mhc_phi_pre_3",
+    "entry": 223,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 41050965,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_post",
+    "layer": 3,
+    "onnxName": "mhc_a_post_3",
+    "entry": 218,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 41083755,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_post",
+    "layer": 3,
+    "onnxName": "mhc_b_post_3",
+    "entry": 221,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 41083781,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_post",
+    "layer": 3,
+    "onnxName": "mhc_phi_post_3",
+    "entry": 224,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 41083828,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_res",
+    "layer": 3,
+    "onnxName": "mhc_a_res_3",
+    "entry": 219,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 41116617,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_res",
+    "layer": 3,
+    "onnxName": "mhc_b_res_3",
+    "entry": 222,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 41116644,
+    "length": 64,
+    "shape": [
+      4,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_res",
+    "layer": 3,
+    "onnxName": "mhc_phi_res_3",
+    "entry": 225,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      128,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 41116738,
+    "length": 131072,
+    "shape": [
+      2048,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_proj/kernel",
+    "layer": 3,
+    "onnxName": "sa_q_proj_3",
+    "entry": 83,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 41247839,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_proj/kernel",
+    "layer": 3,
+    "onnxName": "sa_k_proj_3",
+    "entry": 84,
+    "entryMode": "cq_T",
+    "entryShape": [
+      96,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 42034299,
+    "length": 196608,
+    "shape": [
+      512,
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_proj/kernel",
+    "layer": 3,
+    "onnxName": "sa_v_proj_3",
+    "entry": 85,
+    "entryMode": "cq_T",
+    "entryShape": [
+      128,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 42230936,
+    "length": 262144,
+    "shape": [
+      512,
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/gate_proj/kernel",
+    "layer": 3,
+    "onnxName": "sa_gate_proj_3",
+    "entry": 91,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 42493112,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/out_proj/kernel",
+    "layer": 3,
+    "onnxName": "sa_out_proj_3",
+    "entry": 92,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 43541719,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/attn_gate",
+    "layer": 3,
+    "onnxName": "attn_gate_3",
+    "entry": 94,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 44590316,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_proj/kernel",
+    "layer": 3,
+    "onnxName": "ca_q_proj_3",
+    "entry": 269,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 44590349,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/gate_proj/kernel",
+    "layer": 3,
+    "onnxName": "ca_gate_proj_3",
+    "entry": 272,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 45376813,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/out_proj/kernel",
+    "layer": 3,
+    "onnxName": "ca_out_proj_3",
+    "entry": 273,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 46425420,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_gate",
+    "layer": 3,
+    "onnxName": "cross_gate_3",
+    "entry": 277,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 47474018,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d1",
+    "layer": 3,
+    "onnxName": "h_d1_3",
+    "entry": 96,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 47474041,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d2",
+    "layer": 3,
+    "onnxName": "h_d2_3",
+    "entry": 97,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 47476108,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/b2",
+    "layer": 3,
+    "onnxName": "h_b2_3",
+    "entry": 98,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 47478175,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d3",
+    "layer": 3,
+    "onnxName": "h_d3_3",
+    "entry": 99,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 47480242,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d4",
+    "layer": 3,
+    "onnxName": "h_d4_3",
+    "entry": 100,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 47482309,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1b",
+    "layer": 3,
+    "onnxName": "h_w1b_3",
+    "entry": 102,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 47484378,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2b",
+    "layer": 3,
+    "onnxName": "h_w2b_3",
+    "entry": 104,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 47488495,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3b",
+    "layer": 3,
+    "onnxName": "h_w3b_3",
+    "entry": 106,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 47492612,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_v",
+    "layer": 3,
+    "onnxName": "h_cond_v_3",
+    "entry": 107,
+    "entryMode": "fp16",
+    "entryShape": [
+      512,
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 47496735,
+    "length": 16384,
+    "shape": [
+      512,
+      8
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_u",
+    "layer": 3,
+    "onnxName": "h_cond_u_3",
+    "entry": 108,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 47513146,
+    "length": 16384,
+    "shape": [
+      8,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_pre",
+    "layer": 4,
+    "onnxName": "mhc_a_pre_4",
+    "entry": 217,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 47529551,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_pre",
+    "layer": 4,
+    "onnxName": "mhc_b_pre_4",
+    "entry": 220,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 47529576,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_pre",
+    "layer": 4,
+    "onnxName": "mhc_phi_pre_4",
+    "entry": 223,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 47529622,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_post",
+    "layer": 4,
+    "onnxName": "mhc_a_post_4",
+    "entry": 218,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 47562412,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_post",
+    "layer": 4,
+    "onnxName": "mhc_b_post_4",
+    "entry": 221,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 47562438,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_post",
+    "layer": 4,
+    "onnxName": "mhc_phi_post_4",
+    "entry": 224,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 47562485,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_res",
+    "layer": 4,
+    "onnxName": "mhc_a_res_4",
+    "entry": 219,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 47595274,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_res",
+    "layer": 4,
+    "onnxName": "mhc_b_res_4",
+    "entry": 222,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 47595301,
+    "length": 64,
+    "shape": [
+      4,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_res",
+    "layer": 4,
+    "onnxName": "mhc_phi_res_4",
+    "entry": 225,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      128,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 47595395,
+    "length": 131072,
+    "shape": [
+      2048,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_proj/kernel",
+    "layer": 4,
+    "onnxName": "sa_q_proj_4",
+    "entry": 110,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 47726496,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_proj/kernel",
+    "layer": 4,
+    "onnxName": "sa_k_proj_4",
+    "entry": 111,
+    "entryMode": "cq_T",
+    "entryShape": [
+      96,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 48512956,
+    "length": 196608,
+    "shape": [
+      512,
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_proj/kernel",
+    "layer": 4,
+    "onnxName": "sa_v_proj_4",
+    "entry": 112,
+    "entryMode": "cq_T",
+    "entryShape": [
+      128,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 48709593,
+    "length": 262144,
+    "shape": [
+      512,
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/gate_proj/kernel",
+    "layer": 4,
+    "onnxName": "sa_gate_proj_4",
+    "entry": 118,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 48971769,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/out_proj/kernel",
+    "layer": 4,
+    "onnxName": "sa_out_proj_4",
+    "entry": 119,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 50020376,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/attn_gate",
+    "layer": 4,
+    "onnxName": "attn_gate_4",
+    "entry": 121,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 51068973,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_proj/kernel",
+    "layer": 4,
+    "onnxName": "ca_q_proj_4",
+    "entry": 279,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 51069006,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/gate_proj/kernel",
+    "layer": 4,
+    "onnxName": "ca_gate_proj_4",
+    "entry": 282,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 51855470,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/out_proj/kernel",
+    "layer": 4,
+    "onnxName": "ca_out_proj_4",
+    "entry": 283,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 52904077,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_gate",
+    "layer": 4,
+    "onnxName": "cross_gate_4",
+    "entry": 287,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 53952675,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d1",
+    "layer": 4,
+    "onnxName": "h_d1_4",
+    "entry": 123,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 53952698,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d2",
+    "layer": 4,
+    "onnxName": "h_d2_4",
+    "entry": 124,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 53954765,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/b2",
+    "layer": 4,
+    "onnxName": "h_b2_4",
+    "entry": 125,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 53956832,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d3",
+    "layer": 4,
+    "onnxName": "h_d3_4",
+    "entry": 126,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 53958899,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d4",
+    "layer": 4,
+    "onnxName": "h_d4_4",
+    "entry": 127,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 53960966,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1b",
+    "layer": 4,
+    "onnxName": "h_w1b_4",
+    "entry": 129,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 53963035,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2b",
+    "layer": 4,
+    "onnxName": "h_w2b_4",
+    "entry": 131,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 53967152,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3b",
+    "layer": 4,
+    "onnxName": "h_w3b_4",
+    "entry": 133,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 53971269,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_v",
+    "layer": 4,
+    "onnxName": "h_cond_v_4",
+    "entry": 134,
+    "entryMode": "fp16",
+    "entryShape": [
+      512,
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 53975392,
+    "length": 16384,
+    "shape": [
+      512,
+      8
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_u",
+    "layer": 4,
+    "onnxName": "h_cond_u_4",
+    "entry": 135,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 53991803,
+    "length": 16384,
+    "shape": [
+      8,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_pre",
+    "layer": 5,
+    "onnxName": "mhc_a_pre_5",
+    "entry": 217,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 54008208,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_pre",
+    "layer": 5,
+    "onnxName": "mhc_b_pre_5",
+    "entry": 220,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 54008233,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_pre",
+    "layer": 5,
+    "onnxName": "mhc_phi_pre_5",
+    "entry": 223,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 54008279,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_post",
+    "layer": 5,
+    "onnxName": "mhc_a_post_5",
+    "entry": 218,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 54041069,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_post",
+    "layer": 5,
+    "onnxName": "mhc_b_post_5",
+    "entry": 221,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 54041095,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_post",
+    "layer": 5,
+    "onnxName": "mhc_phi_post_5",
+    "entry": 224,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 54041142,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_res",
+    "layer": 5,
+    "onnxName": "mhc_a_res_5",
+    "entry": 219,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 54073931,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_res",
+    "layer": 5,
+    "onnxName": "mhc_b_res_5",
+    "entry": 222,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 54073958,
+    "length": 64,
+    "shape": [
+      4,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_res",
+    "layer": 5,
+    "onnxName": "mhc_phi_res_5",
+    "entry": 225,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      128,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 54074052,
+    "length": 131072,
+    "shape": [
+      2048,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_proj/kernel",
+    "layer": 5,
+    "onnxName": "sa_q_proj_5",
+    "entry": 137,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 54205153,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_proj/kernel",
+    "layer": 5,
+    "onnxName": "sa_k_proj_5",
+    "entry": 138,
+    "entryMode": "cq_T",
+    "entryShape": [
+      96,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 54991613,
+    "length": 196608,
+    "shape": [
+      512,
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_proj/kernel",
+    "layer": 5,
+    "onnxName": "sa_v_proj_5",
+    "entry": 139,
+    "entryMode": "cq_T",
+    "entryShape": [
+      128,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 55188250,
+    "length": 262144,
+    "shape": [
+      512,
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/gate_proj/kernel",
+    "layer": 5,
+    "onnxName": "sa_gate_proj_5",
+    "entry": 145,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 55450426,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/out_proj/kernel",
+    "layer": 5,
+    "onnxName": "sa_out_proj_5",
+    "entry": 146,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 56499033,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/attn_gate",
+    "layer": 5,
+    "onnxName": "attn_gate_5",
+    "entry": 148,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 57547630,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_proj/kernel",
+    "layer": 5,
+    "onnxName": "ca_q_proj_5",
+    "entry": 289,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 57547663,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/gate_proj/kernel",
+    "layer": 5,
+    "onnxName": "ca_gate_proj_5",
+    "entry": 292,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 58334127,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/out_proj/kernel",
+    "layer": 5,
+    "onnxName": "ca_out_proj_5",
+    "entry": 293,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 59382734,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_gate",
+    "layer": 5,
+    "onnxName": "cross_gate_5",
+    "entry": 297,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 60431332,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d1",
+    "layer": 5,
+    "onnxName": "h_d1_5",
+    "entry": 150,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 60431355,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d2",
+    "layer": 5,
+    "onnxName": "h_d2_5",
+    "entry": 151,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 60433422,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/b2",
+    "layer": 5,
+    "onnxName": "h_b2_5",
+    "entry": 152,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 60435489,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d3",
+    "layer": 5,
+    "onnxName": "h_d3_5",
+    "entry": 153,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 60437556,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d4",
+    "layer": 5,
+    "onnxName": "h_d4_5",
+    "entry": 154,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 60439623,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1b",
+    "layer": 5,
+    "onnxName": "h_w1b_5",
+    "entry": 156,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 60441692,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2b",
+    "layer": 5,
+    "onnxName": "h_w2b_5",
+    "entry": 158,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 60445809,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3b",
+    "layer": 5,
+    "onnxName": "h_w3b_5",
+    "entry": 160,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 60449926,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_v",
+    "layer": 5,
+    "onnxName": "h_cond_v_5",
+    "entry": 161,
+    "entryMode": "fp16",
+    "entryShape": [
+      512,
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 60454049,
+    "length": 16384,
+    "shape": [
+      512,
+      8
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_u",
+    "layer": 5,
+    "onnxName": "h_cond_u_5",
+    "entry": 162,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 60470460,
+    "length": 16384,
+    "shape": [
+      8,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_pre",
+    "layer": 6,
+    "onnxName": "mhc_a_pre_6",
+    "entry": 217,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 60486865,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_pre",
+    "layer": 6,
+    "onnxName": "mhc_b_pre_6",
+    "entry": 220,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 60486890,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_pre",
+    "layer": 6,
+    "onnxName": "mhc_phi_pre_6",
+    "entry": 223,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 60486936,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_post",
+    "layer": 6,
+    "onnxName": "mhc_a_post_6",
+    "entry": 218,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 60519726,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_post",
+    "layer": 6,
+    "onnxName": "mhc_b_post_6",
+    "entry": 221,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 60519752,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_post",
+    "layer": 6,
+    "onnxName": "mhc_phi_post_6",
+    "entry": 224,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 60519799,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_res",
+    "layer": 6,
+    "onnxName": "mhc_a_res_6",
+    "entry": 219,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 60552588,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_res",
+    "layer": 6,
+    "onnxName": "mhc_b_res_6",
+    "entry": 222,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 60552615,
+    "length": 64,
+    "shape": [
+      4,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_res",
+    "layer": 6,
+    "onnxName": "mhc_phi_res_6",
+    "entry": 225,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      128,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 60552709,
+    "length": 131072,
+    "shape": [
+      2048,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_proj/kernel",
+    "layer": 6,
+    "onnxName": "sa_q_proj_6",
+    "entry": 164,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 60683810,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_proj/kernel",
+    "layer": 6,
+    "onnxName": "sa_k_proj_6",
+    "entry": 165,
+    "entryMode": "cq_T",
+    "entryShape": [
+      96,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 61470270,
+    "length": 196608,
+    "shape": [
+      512,
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_proj/kernel",
+    "layer": 6,
+    "onnxName": "sa_v_proj_6",
+    "entry": 166,
+    "entryMode": "cq_T",
+    "entryShape": [
+      128,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 61666907,
+    "length": 262144,
+    "shape": [
+      512,
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/gate_proj/kernel",
+    "layer": 6,
+    "onnxName": "sa_gate_proj_6",
+    "entry": 172,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 61929083,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/out_proj/kernel",
+    "layer": 6,
+    "onnxName": "sa_out_proj_6",
+    "entry": 173,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 62977690,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/attn_gate",
+    "layer": 6,
+    "onnxName": "attn_gate_6",
+    "entry": 175,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 64026287,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_proj/kernel",
+    "layer": 6,
+    "onnxName": "ca_q_proj_6",
+    "entry": 299,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 64026320,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/gate_proj/kernel",
+    "layer": 6,
+    "onnxName": "ca_gate_proj_6",
+    "entry": 302,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 64812784,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/out_proj/kernel",
+    "layer": 6,
+    "onnxName": "ca_out_proj_6",
+    "entry": 303,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 65861391,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_gate",
+    "layer": 6,
+    "onnxName": "cross_gate_6",
+    "entry": 307,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 66909989,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d1",
+    "layer": 6,
+    "onnxName": "h_d1_6",
+    "entry": 177,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 66910012,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d2",
+    "layer": 6,
+    "onnxName": "h_d2_6",
+    "entry": 178,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 66912079,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/b2",
+    "layer": 6,
+    "onnxName": "h_b2_6",
+    "entry": 179,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 66914146,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d3",
+    "layer": 6,
+    "onnxName": "h_d3_6",
+    "entry": 180,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 66916213,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d4",
+    "layer": 6,
+    "onnxName": "h_d4_6",
+    "entry": 181,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 66918280,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1b",
+    "layer": 6,
+    "onnxName": "h_w1b_6",
+    "entry": 183,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 66920349,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2b",
+    "layer": 6,
+    "onnxName": "h_w2b_6",
+    "entry": 185,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 66924466,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3b",
+    "layer": 6,
+    "onnxName": "h_w3b_6",
+    "entry": 187,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 66928583,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_v",
+    "layer": 6,
+    "onnxName": "h_cond_v_6",
+    "entry": 188,
+    "entryMode": "fp16",
+    "entryShape": [
+      512,
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 66932706,
+    "length": 16384,
+    "shape": [
+      512,
+      8
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_u",
+    "layer": 6,
+    "onnxName": "h_cond_u_6",
+    "entry": 189,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 66949117,
+    "length": 16384,
+    "shape": [
+      8,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_pre",
+    "layer": 7,
+    "onnxName": "mhc_a_pre_7",
+    "entry": 217,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 66965522,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_pre",
+    "layer": 7,
+    "onnxName": "mhc_b_pre_7",
+    "entry": 220,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 66965547,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_pre",
+    "layer": 7,
+    "onnxName": "mhc_phi_pre_7",
+    "entry": 223,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 66965593,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_post",
+    "layer": 7,
+    "onnxName": "mhc_a_post_7",
+    "entry": 218,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 66998383,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_post",
+    "layer": 7,
+    "onnxName": "mhc_b_post_7",
+    "entry": 221,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 66998409,
+    "length": 16,
+    "shape": [
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_post",
+    "layer": 7,
+    "onnxName": "mhc_phi_post_7",
+    "entry": 224,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      32,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 66998456,
+    "length": 32768,
+    "shape": [
+      2048,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_a_res",
+    "layer": 7,
+    "onnxName": "mhc_a_res_7",
+    "entry": 219,
+    "entryMode": "fp16",
+    "entryShape": [
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 67031245,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/mhc_b_res",
+    "layer": 7,
+    "onnxName": "mhc_b_res_7",
+    "entry": 222,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      4,
+      4
+    ],
+    "transform": "layer_id",
+    "offset": 67031272,
+    "length": 64,
+    "shape": [
+      4,
+      4
+    ]
+  },
+  {
+    "tensor": "stack/mhc_phi_res",
+    "layer": 7,
+    "onnxName": "mhc_phi_res_7",
+    "entry": 225,
+    "entryMode": "cq_T_per_layer",
+    "entryShape": [
+      128,
+      2048
+    ],
+    "transform": "layer_id",
+    "offset": 67031366,
+    "length": 131072,
+    "shape": [
+      2048,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_proj/kernel",
+    "layer": 7,
+    "onnxName": "sa_q_proj_7",
+    "entry": 191,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 67162467,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_proj/kernel",
+    "layer": 7,
+    "onnxName": "sa_k_proj_7",
+    "entry": 192,
+    "entryMode": "cq_T",
+    "entryShape": [
+      96,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 67948927,
+    "length": 196608,
+    "shape": [
+      512,
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_proj/kernel",
+    "layer": 7,
+    "onnxName": "sa_v_proj_7",
+    "entry": 193,
+    "entryMode": "cq_T",
+    "entryShape": [
+      128,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 68145564,
+    "length": 262144,
+    "shape": [
+      512,
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/gate_proj/kernel",
+    "layer": 7,
+    "onnxName": "sa_gate_proj_7",
+    "entry": 199,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 68407740,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/out_proj/kernel",
+    "layer": 7,
+    "onnxName": "sa_out_proj_7",
+    "entry": 200,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 69456347,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_proj/kernel",
+    "layer": 7,
+    "onnxName": "ca_q_proj_7",
+    "entry": 309,
+    "entryMode": "cq_T",
+    "entryShape": [
+      384,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 70504952,
+    "length": 786432,
+    "shape": [
+      512,
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/gate_proj/kernel",
+    "layer": 7,
+    "onnxName": "ca_gate_proj_7",
+    "entry": 312,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 71291416,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/out_proj/kernel",
+    "layer": 7,
+    "onnxName": "ca_out_proj_7",
+    "entry": 313,
+    "entryMode": "cq_T",
+    "entryShape": [
+      512,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 72340023,
+    "length": 1048576,
+    "shape": [
+      512,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_gate",
+    "layer": 7,
+    "onnxName": "cross_gate_7",
+    "entry": 317,
+    "entryMode": "fp16_scalar",
+    "entryShape": [
+      1
+    ],
+    "transform": "layer_id",
+    "offset": 73388621,
+    "length": 4,
+    "shape": [
+      1
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d1",
+    "layer": 7,
+    "onnxName": "h_d1_7",
+    "entry": 204,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 73388644,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d2",
+    "layer": 7,
+    "onnxName": "h_d2_7",
+    "entry": 205,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 73390711,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/b2",
+    "layer": 7,
+    "onnxName": "h_b2_7",
+    "entry": 206,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 73392778,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d3",
+    "layer": 7,
+    "onnxName": "h_d3_7",
+    "entry": 207,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 73394845,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/d4",
+    "layer": 7,
+    "onnxName": "h_d4_7",
+    "entry": 208,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 73396912,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1b",
+    "layer": 7,
+    "onnxName": "h_w1b_7",
+    "entry": 210,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 73398981,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2b",
+    "layer": 7,
+    "onnxName": "h_w2b_7",
+    "entry": 212,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 73403098,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3b",
+    "layer": 7,
+    "onnxName": "h_w3b_7",
+    "entry": 214,
+    "entryMode": "fp16",
+    "entryShape": [
+      32,
+      32
+    ],
+    "transform": "layer_id",
+    "offset": 73407215,
+    "length": 4096,
+    "shape": [
+      32,
+      32
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_v",
+    "layer": 7,
+    "onnxName": "h_cond_v_7",
+    "entry": 215,
+    "entryMode": "fp16",
+    "entryShape": [
+      512,
+      8
+    ],
+    "transform": "layer_id",
+    "offset": 73411338,
+    "length": 16384,
+    "shape": [
+      512,
+      8
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/cond_u",
+    "layer": 7,
+    "onnxName": "h_cond_u_7",
+    "entry": 216,
+    "entryMode": "fp16",
+    "entryShape": [
+      8,
+      512
+    ],
+    "transform": "layer_id",
+    "offset": 73427749,
+    "length": 16384,
+    "shape": [
+      8,
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/ZCRMSNorm_0/scale",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6092",
+    "entry": 1,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73444202,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6093",
+    "entry": 5,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73446277,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6094",
+    "entry": 5,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73447840,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6095",
+    "entry": 5,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73449403,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6096",
+    "entry": 6,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73450965,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6097",
+    "entry": 6,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73451375,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6098",
+    "entry": 6,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73451785,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6099",
+    "entry": 7,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73452196,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6100",
+    "entry": 7,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73452735,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6101",
+    "entry": 7,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73453274,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_norm/scale",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6103",
+    "entry": 8,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73453814,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_norm/scale",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6119",
+    "entry": 9,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73454034,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_attn_norm/scale",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6135",
+    "entry": 12,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73454255,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_norm/scale",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6137",
+    "entry": 238,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73456332,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_norm/scale",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6139",
+    "entry": 244,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73458408,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_cross_norm/scale",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6141",
+    "entry": 246,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73458629,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/pre_hada_norm/scale",
+    "layer": 0,
+    "onnxName": "onnx::Mul_6143",
+    "entry": 14,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73460706,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1a",
+    "layer": 0,
+    "onnxName": "onnx::MatMul_6144",
+    "entry": 20,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73462785,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2a",
+    "layer": 0,
+    "onnxName": "onnx::MatMul_6145",
+    "entry": 22,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73463840,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3a",
+    "layer": 0,
+    "onnxName": "onnx::MatMul_6146",
+    "entry": 24,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73464895,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/ZCRMSNorm_0/scale",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6150",
+    "entry": 28,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73466028,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6151",
+    "entry": 32,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73468103,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6152",
+    "entry": 32,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73469666,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6153",
+    "entry": 32,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73471229,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6154",
+    "entry": 33,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73472791,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6155",
+    "entry": 33,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73473201,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6156",
+    "entry": 33,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73473611,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6157",
+    "entry": 34,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73474022,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6158",
+    "entry": 34,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73474561,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6159",
+    "entry": 34,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73475100,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_norm/scale",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6161",
+    "entry": 35,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73475640,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_norm/scale",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6177",
+    "entry": 36,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73475860,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_attn_norm/scale",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6193",
+    "entry": 39,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73476081,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_norm/scale",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6195",
+    "entry": 248,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73478158,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_norm/scale",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6197",
+    "entry": 254,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73480234,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_cross_norm/scale",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6199",
+    "entry": 256,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73480455,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/pre_hada_norm/scale",
+    "layer": 1,
+    "onnxName": "onnx::Mul_6201",
+    "entry": 41,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73482532,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1a",
+    "layer": 1,
+    "onnxName": "onnx::MatMul_6202",
+    "entry": 47,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73484611,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2a",
+    "layer": 1,
+    "onnxName": "onnx::MatMul_6203",
+    "entry": 49,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73485666,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3a",
+    "layer": 1,
+    "onnxName": "onnx::MatMul_6204",
+    "entry": 51,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73486721,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/ZCRMSNorm_0/scale",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6208",
+    "entry": 55,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73487854,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6209",
+    "entry": 59,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73489929,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6210",
+    "entry": 59,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73491492,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6211",
+    "entry": 59,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73493055,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6212",
+    "entry": 60,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73494617,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6213",
+    "entry": 60,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73495027,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6214",
+    "entry": 60,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73495437,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6215",
+    "entry": 61,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73495848,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6216",
+    "entry": 61,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73496387,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6217",
+    "entry": 61,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73496926,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_norm/scale",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6219",
+    "entry": 62,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73497466,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_norm/scale",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6235",
+    "entry": 63,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73497686,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_attn_norm/scale",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6251",
+    "entry": 66,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73497907,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_norm/scale",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6253",
+    "entry": 258,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73499984,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_norm/scale",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6255",
+    "entry": 264,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73502060,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_cross_norm/scale",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6257",
+    "entry": 266,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73502281,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/pre_hada_norm/scale",
+    "layer": 2,
+    "onnxName": "onnx::Mul_6259",
+    "entry": 68,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73504358,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1a",
+    "layer": 2,
+    "onnxName": "onnx::MatMul_6260",
+    "entry": 74,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73506437,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2a",
+    "layer": 2,
+    "onnxName": "onnx::MatMul_6261",
+    "entry": 76,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73507492,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3a",
+    "layer": 2,
+    "onnxName": "onnx::MatMul_6262",
+    "entry": 78,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73508547,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "engrams_0/taps",
+    "layer": null,
+    "onnxName": "onnx::Mul_6265",
+    "entry": 231,
+    "entryMode": "fp16",
+    "entryShape": [
+      4,
+      512
+    ],
+    "transform": "tap_row",
+    "row": 0,
+    "offset": 73509678,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "engrams_0/taps",
+    "layer": null,
+    "onnxName": "onnx::Mul_6266",
+    "entry": 231,
+    "entryMode": "fp16",
+    "entryShape": [
+      4,
+      512
+    ],
+    "transform": "tap_row",
+    "row": 1,
+    "offset": 73511753,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "engrams_0/taps",
+    "layer": null,
+    "onnxName": "onnx::Mul_6267",
+    "entry": 231,
+    "entryMode": "fp16",
+    "entryShape": [
+      4,
+      512
+    ],
+    "transform": "tap_row",
+    "row": 2,
+    "offset": 73513828,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "engrams_0/taps",
+    "layer": null,
+    "onnxName": "onnx::Mul_6268",
+    "entry": 231,
+    "entryMode": "fp16",
+    "entryShape": [
+      4,
+      512
+    ],
+    "transform": "tap_row",
+    "row": 3,
+    "offset": 73515903,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/ZCRMSNorm_0/scale",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6274",
+    "entry": 82,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73517980,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6275",
+    "entry": 86,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73520055,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6276",
+    "entry": 86,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73521618,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6277",
+    "entry": 86,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73523181,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6278",
+    "entry": 87,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73524743,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6279",
+    "entry": 87,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73525153,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6280",
+    "entry": 87,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73525563,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6281",
+    "entry": 88,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73525974,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6282",
+    "entry": 88,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73526513,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6283",
+    "entry": 88,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73527052,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_norm/scale",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6285",
+    "entry": 89,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73527592,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_norm/scale",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6301",
+    "entry": 90,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73527812,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_attn_norm/scale",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6317",
+    "entry": 93,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73528033,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_norm/scale",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6319",
+    "entry": 268,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73530110,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_norm/scale",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6321",
+    "entry": 274,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73532186,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_cross_norm/scale",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6323",
+    "entry": 276,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73532407,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/pre_hada_norm/scale",
+    "layer": 3,
+    "onnxName": "onnx::Mul_6325",
+    "entry": 95,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73534484,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1a",
+    "layer": 3,
+    "onnxName": "onnx::MatMul_6326",
+    "entry": 101,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73536563,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2a",
+    "layer": 3,
+    "onnxName": "onnx::MatMul_6327",
+    "entry": 103,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73537618,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3a",
+    "layer": 3,
+    "onnxName": "onnx::MatMul_6328",
+    "entry": 105,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73538673,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/ZCRMSNorm_0/scale",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6332",
+    "entry": 109,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73539766,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6333",
+    "entry": 113,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73541841,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6334",
+    "entry": 113,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73543404,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6335",
+    "entry": 113,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73544967,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6336",
+    "entry": 114,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73546529,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6337",
+    "entry": 114,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73546939,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6338",
+    "entry": 114,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73547349,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6339",
+    "entry": 115,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73547760,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6340",
+    "entry": 115,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73548299,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6341",
+    "entry": 115,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73548838,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_norm/scale",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6343",
+    "entry": 116,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73549378,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_norm/scale",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6359",
+    "entry": 117,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73549598,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_attn_norm/scale",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6375",
+    "entry": 120,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73549819,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_norm/scale",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6377",
+    "entry": 278,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73551896,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_norm/scale",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6379",
+    "entry": 284,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73553972,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_cross_norm/scale",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6381",
+    "entry": 286,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73554193,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/pre_hada_norm/scale",
+    "layer": 4,
+    "onnxName": "onnx::Mul_6383",
+    "entry": 122,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73556270,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1a",
+    "layer": 4,
+    "onnxName": "onnx::MatMul_6384",
+    "entry": 128,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73558349,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2a",
+    "layer": 4,
+    "onnxName": "onnx::MatMul_6385",
+    "entry": 130,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73559404,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3a",
+    "layer": 4,
+    "onnxName": "onnx::MatMul_6386",
+    "entry": 132,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73560459,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/ZCRMSNorm_0/scale",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6390",
+    "entry": 136,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73561512,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6391",
+    "entry": 140,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73563587,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6392",
+    "entry": 140,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73565150,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6393",
+    "entry": 140,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73566713,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6394",
+    "entry": 141,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73568275,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6395",
+    "entry": 141,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73568685,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6396",
+    "entry": 141,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73569095,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6397",
+    "entry": 142,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73569506,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6398",
+    "entry": 142,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73570045,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6399",
+    "entry": 142,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73570584,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_norm/scale",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6401",
+    "entry": 143,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73571124,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_norm/scale",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6417",
+    "entry": 144,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73571344,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_attn_norm/scale",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6433",
+    "entry": 147,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73571565,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_norm/scale",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6435",
+    "entry": 288,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73573642,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_norm/scale",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6437",
+    "entry": 294,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73575718,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_cross_norm/scale",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6439",
+    "entry": 296,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73575939,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/pre_hada_norm/scale",
+    "layer": 5,
+    "onnxName": "onnx::Mul_6441",
+    "entry": 149,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73578016,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1a",
+    "layer": 5,
+    "onnxName": "onnx::MatMul_6442",
+    "entry": 155,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73580095,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2a",
+    "layer": 5,
+    "onnxName": "onnx::MatMul_6443",
+    "entry": 157,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73581150,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3a",
+    "layer": 5,
+    "onnxName": "onnx::MatMul_6444",
+    "entry": 159,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73582205,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/ZCRMSNorm_0/scale",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6448",
+    "entry": 163,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73583258,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6449",
+    "entry": 167,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73585333,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6450",
+    "entry": 167,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73586896,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6451",
+    "entry": 167,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73588459,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6452",
+    "entry": 168,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73590021,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6453",
+    "entry": 168,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73590431,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6454",
+    "entry": 168,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73590841,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6455",
+    "entry": 169,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73591252,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6456",
+    "entry": 169,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73591791,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6457",
+    "entry": 169,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73592330,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_norm/scale",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6459",
+    "entry": 170,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73592870,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_norm/scale",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6475",
+    "entry": 171,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73593090,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_attn_norm/scale",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6491",
+    "entry": 174,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73593311,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_norm/scale",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6493",
+    "entry": 298,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73595388,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_norm/scale",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6495",
+    "entry": 304,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73597464,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_cross_norm/scale",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6497",
+    "entry": 306,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73597685,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/pre_hada_norm/scale",
+    "layer": 6,
+    "onnxName": "onnx::Mul_6499",
+    "entry": 176,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73599762,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1a",
+    "layer": 6,
+    "onnxName": "onnx::MatMul_6500",
+    "entry": 182,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73601841,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2a",
+    "layer": 6,
+    "onnxName": "onnx::MatMul_6501",
+    "entry": 184,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73602896,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3a",
+    "layer": 6,
+    "onnxName": "onnx::MatMul_6502",
+    "entry": 186,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73603951,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "engrams_1/taps",
+    "layer": null,
+    "onnxName": "onnx::Mul_6505",
+    "entry": 235,
+    "entryMode": "fp16",
+    "entryShape": [
+      4,
+      512
+    ],
+    "transform": "tap_row",
+    "row": 0,
+    "offset": 73605002,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "engrams_1/taps",
+    "layer": null,
+    "onnxName": "onnx::Mul_6506",
+    "entry": 235,
+    "entryMode": "fp16",
+    "entryShape": [
+      4,
+      512
+    ],
+    "transform": "tap_row",
+    "row": 1,
+    "offset": 73607077,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "engrams_1/taps",
+    "layer": null,
+    "onnxName": "onnx::Mul_6507",
+    "entry": 235,
+    "entryMode": "fp16",
+    "entryShape": [
+      4,
+      512
+    ],
+    "transform": "tap_row",
+    "row": 2,
+    "offset": 73609152,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "engrams_1/taps",
+    "layer": null,
+    "onnxName": "onnx::Mul_6508",
+    "entry": 235,
+    "entryMode": "fp16",
+    "entryShape": [
+      4,
+      512
+    ],
+    "transform": "tap_row",
+    "row": 3,
+    "offset": 73611227,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/ZCRMSNorm_0/scale",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6514",
+    "entry": 190,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73613304,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6515",
+    "entry": 194,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73615379,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6516",
+    "entry": 194,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73616942,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_taps",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6517",
+    "entry": 194,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      384
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73618505,
+    "length": 1536,
+    "shape": [
+      384
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6518",
+    "entry": 195,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73620067,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6519",
+    "entry": 195,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73620477,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_taps",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6520",
+    "entry": 195,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      96
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73620887,
+    "length": 384,
+    "shape": [
+      96
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6521",
+    "entry": 196,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 0,
+    "offset": 73621298,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6522",
+    "entry": 196,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 1,
+    "offset": 73621837,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/v_taps",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6523",
+    "entry": 196,
+    "entryMode": "fp16",
+    "entryShape": [
+      3,
+      128
+    ],
+    "transform": "layer_row",
+    "row": 2,
+    "offset": 73622376,
+    "length": 512,
+    "shape": [
+      128
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/q_norm/scale",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6525",
+    "entry": 197,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73622916,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/self_attn/k_norm/scale",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6541",
+    "entry": 198,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73623136,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_attn_norm/scale",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6557",
+    "entry": 201,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73623357,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_norm/scale",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6559",
+    "entry": 308,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73625434,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/cross_attn/q_norm/scale",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6561",
+    "entry": 314,
+    "entryMode": "fp16",
+    "entryShape": [
+      48
+    ],
+    "transform": "layer_plus1",
+    "offset": 73627510,
+    "length": 192,
+    "shape": [
+      48
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/post_cross_norm/scale",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6563",
+    "entry": 316,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73627731,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/pre_hada_norm/scale",
+    "layer": 7,
+    "onnxName": "onnx::Mul_6565",
+    "entry": 203,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "layer_plus1",
+    "offset": 73629808,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w1a",
+    "layer": 7,
+    "onnxName": "onnx::MatMul_6566",
+    "entry": 209,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73631887,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w2a",
+    "layer": 7,
+    "onnxName": "onnx::MatMul_6567",
+    "entry": 211,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73632942,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/layers/block/hadamard_mlp/w3a",
+    "layer": 7,
+    "onnxName": "onnx::MatMul_6568",
+    "entry": 213,
+    "entryMode": "fp16",
+    "entryShape": [
+      16,
+      16
+    ],
+    "transform": "layer_T",
+    "offset": 73633997,
+    "length": 1024,
+    "shape": [
+      16,
+      16
+    ]
+  },
+  {
+    "tensor": "stack/final_norm/scale",
+    "layer": null,
+    "onnxName": "onnx::Mul_6571",
+    "entry": 236,
+    "entryMode": "fp16",
+    "entryShape": [
+      512
+    ],
+    "transform": "plus1",
+    "offset": 73635050,
+    "length": 2048,
+    "shape": [
+      512
+    ]
+  }
+]

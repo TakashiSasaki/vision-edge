@@ -231,12 +231,91 @@ export const MIRAGE_LOCAL_URL = '/api/model-cache/mirage/mirage.cact';
 export const MIRAGE_WEBGPU_LOCAL_URL =
   '/api/model-cache/mirage/mirage-webgpu.onnx';
 
+import {
+  MIRAGE_DECODER_TABLES_EXPECTED_SHA256,
+  MIRAGE_DECODER_TABLES_EXPECTED_SIZE,
+  MIRAGE_DECODER_TABLES_FILE,
+} from './mirageCactCodec.ts';
+
 export const MIRAGE_EXPERIMENTAL_ONNX_FILE =
   'cact-dequantized-reference-order.onnx';
 export const MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE = 34_281_503;
 export const MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256 =
   '52d52d2918160404cd806702a270736819712025cf3c6aa8e907a06bc3cbdd07';
 export const MIRAGE_EXPERIMENTAL_ONNX_LOCAL_URL = `/api/model-cache/mirage/${MIRAGE_EXPERIMENTAL_ONNX_FILE}?sha256=${MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256}`;
+
+export {
+  MIRAGE_DECODER_TABLES_FILE,
+  MIRAGE_DECODER_TABLES_EXPECTED_SIZE,
+  MIRAGE_DECODER_TABLES_EXPECTED_SHA256,
+};
+
+export const MIRAGE_READER_ONNX_FILE = 'mirage-reader.onnx';
+export const MIRAGE_READER_ONNX_EXPECTED_SIZE = 7_880_013;
+export const MIRAGE_READER_ONNX_EXPECTED_SHA256 =
+  '79b39a53ae24cd6904eabb94814ec5ad8ee171d23800e9c56a637dc1e0c6d34b';
+export const MIRAGE_READER_ONNX_LOCAL_URL = `/api/model-cache/mirage/${MIRAGE_READER_ONNX_FILE}?sha256=${MIRAGE_READER_ONNX_EXPECTED_SHA256}`;
+
+export const MIRAGE_CROSS_KV_ONNX_FILE = 'mirage-cross-kv.onnx';
+export const MIRAGE_CROSS_KV_ONNX_EXPECTED_SIZE = 16_668_140;
+export const MIRAGE_CROSS_KV_ONNX_EXPECTED_SHA256 =
+  '7978dfc75e3e0584ca44379d402b8e671e0e10d10c2eb337400b999338ef9c3e';
+export const MIRAGE_CROSS_KV_ONNX_LOCAL_URL = `/api/model-cache/mirage/${MIRAGE_CROSS_KV_ONNX_FILE}?sha256=${MIRAGE_CROSS_KV_ONNX_EXPECTED_SHA256}`;
+
+export const MIRAGE_DECODER_STEP_ONNX_FILE = 'mirage-decoder-step.onnx';
+export const MIRAGE_DECODER_STEP_ONNX_EXPECTED_SIZE = 73_637_843;
+export const MIRAGE_DECODER_STEP_ONNX_EXPECTED_SHA256 =
+  '4249e1f404a318e80bb18cc95960d6de81dad13587455680e5321e018dc079f6';
+export const MIRAGE_DECODER_STEP_ONNX_LOCAL_URL = `/api/model-cache/mirage/${MIRAGE_DECODER_STEP_ONNX_FILE}?sha256=${MIRAGE_DECODER_STEP_ONNX_EXPECTED_SHA256}`;
+
+export const MIRAGE_DECODER_TABLES_LOCAL_URL = `/api/model-cache/mirage/${MIRAGE_DECODER_TABLES_FILE}?sha256=${MIRAGE_DECODER_TABLES_EXPECTED_SHA256}`;
+
+export type MirageFullPipelineComponentKey =
+  | 'reader'
+  | 'crossKv'
+  | 'decoderStep'
+  | 'decoderTables';
+
+export interface MiragePinnedComponentSpec {
+  key: MirageFullPipelineComponentKey;
+  file: string;
+  expectedSize: number;
+  expectedSha256: string;
+  localUrl: string;
+}
+
+export const MIRAGE_FULL_PIPELINE_COMPONENTS: Readonly<
+  Record<MirageFullPipelineComponentKey, MiragePinnedComponentSpec>
+> = {
+  reader: {
+    key: 'reader',
+    file: MIRAGE_READER_ONNX_FILE,
+    expectedSize: MIRAGE_READER_ONNX_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_READER_ONNX_EXPECTED_SHA256,
+    localUrl: MIRAGE_READER_ONNX_LOCAL_URL,
+  },
+  crossKv: {
+    key: 'crossKv',
+    file: MIRAGE_CROSS_KV_ONNX_FILE,
+    expectedSize: MIRAGE_CROSS_KV_ONNX_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_CROSS_KV_ONNX_EXPECTED_SHA256,
+    localUrl: MIRAGE_CROSS_KV_ONNX_LOCAL_URL,
+  },
+  decoderStep: {
+    key: 'decoderStep',
+    file: MIRAGE_DECODER_STEP_ONNX_FILE,
+    expectedSize: MIRAGE_DECODER_STEP_ONNX_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_DECODER_STEP_ONNX_EXPECTED_SHA256,
+    localUrl: MIRAGE_DECODER_STEP_ONNX_LOCAL_URL,
+  },
+  decoderTables: {
+    key: 'decoderTables',
+    file: MIRAGE_DECODER_TABLES_FILE,
+    expectedSize: MIRAGE_DECODER_TABLES_EXPECTED_SIZE,
+    expectedSha256: MIRAGE_DECODER_TABLES_EXPECTED_SHA256,
+    localUrl: MIRAGE_DECODER_TABLES_LOCAL_URL,
+  },
+} as const;
 
 export const LOCAL_CACTUS_WASM_JS_URL = '/wasm/cactus/cactus.js';
 export const LOCAL_CACTUS_WASM_BINARY_URL = '/wasm/cactus/cactus.wasm';
