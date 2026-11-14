@@ -11,7 +11,10 @@ export default defineConfig({
   ...(logDir ? { outputDir: path.join(logDir, 'results') } : {}),
   use: {
     baseURL: 'http://127.0.0.1:4173',
-    launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH },
+    launchOptions: {
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+      args: ['--headless=new', '--enable-unsafe-webgpu'],
+    },
     serviceWorkers: 'block',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

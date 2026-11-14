@@ -36,7 +36,7 @@ else {
       acquire:()=>assetTask(['--use-env-proxy','scripts/real-sdk/assets.mjs','--acquire']),
       audit:()=>node(['scripts/real-sdk/audit.mjs']),
     };
-    try { const result=await execute(tasks[phase](),{root,runDir,...(phase==='preflight'?{timeoutMs:60_000}:phase==='preflight-tests'?{timeoutMs:120_000}:{})}); if(result.exit!==0){process.exitCode=result.exit;break;} }
+    try { const result=await execute(tasks[phase](),{root,runDir,...(phase==='preflight'?{timeoutMs:60_000}:phase==='preflight-tests'?{timeoutMs:120_000}:phase==='browser'?{timeoutMs:1_800_000}:{})}); if(result.exit!==0){process.exitCode=result.exit;break;} }
     catch(error) { console.error(`runner: FAIL ${String(error)}; artifacts: ${runDir}`);process.exitCode=1;break; }
   }
 }

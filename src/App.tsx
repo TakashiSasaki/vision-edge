@@ -336,9 +336,12 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
     onSelectDetection={selectFamily} cameraActive={isCameraActive} facingMode={facingMode} onToggleFacing={handleToggleFacingMode}
     onStart={handleCameraStart} onStop={handleCameraStop} ttsConfig={ttsConfig} />;
 
-  const experimentalDiagnostics = isExperimentalMirage && hasCurrentFrame
-    ? engine.getExperimentalMirageDiagnostics()
-    : null;
+  const experimentalDiagnostics =
+    isExperimentalMirage &&
+    (hasCurrentFrame ||
+      (modelState.status === 'ready' && modelState.model === activeModel))
+      ? engine.getExperimentalMirageDiagnostics()
+      : null;
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col font-sans">

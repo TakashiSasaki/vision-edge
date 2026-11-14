@@ -29,6 +29,7 @@ import type {
 } from '../types/vision';
 import {
   resolveModelAssetUrls,
+  resolveOrtWasmUrls,
   type AssetSourceRecorder,
 } from './modelAssetResolver';
 import {
@@ -1118,6 +1119,46 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     this.owner = new OnnxSessionOwner(session, 'Mirage-Exp-ONNX');
     this.nativeOverlayTaskFactory = nativeOverlayTaskFactory;
     this.modelBytes = modelBytes;
+
+    const initialMetadata = computeMirageCeil32Metadata(512, 512);
+    const initialActiveProvider: 'wasm' | 'webgpu' =
+      this.backend.configuredProviders.includes('webgpu') &&
+      !this.backend.fallbackReason
+        ? 'webgpu'
+        : 'wasm';
+    this.lastDiagnostics = {
+      variantId: this.variantId,
+      requestedProvider,
+      configuredProviders: this.backend.configuredProviders as readonly (
+        | 'webgpu'
+        | 'wasm'
+      )[],
+      activeProvider: initialActiveProvider,
+      actualKernelBackend: 'unmeasured',
+      allowWasmFallback: this.allowWasmFallback,
+      fallbackReason: this.backend.fallbackReason,
+      webgpuAdapter: this.webgpuAdapter,
+      artifactSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
+      artifactSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
+      opset: MIRAGE_EXPERIMENTAL_ONNX_OPSET,
+      tensorCoverage: `${MIRAGE_EXPERIMENTAL_ONNX_TENSOR_COUNT}/${MIRAGE_TOTAL_CHECKPOINT_TENSOR_COUNT}`,
+      validHw: [512, 512],
+      metadata: initialMetadata,
+      nmsIou: 0.5,
+      confidenceThreshold: 0.3,
+      objectProposalCount: 0,
+      textProposalCount: 0,
+      nativeOverlayEnabled: false,
+      nativeOverlayCount: 0,
+      pipelineMode: 'encoder_only',
+      fullPipelineAssetsLoaded: false,
+      timingsMs: {
+        preprocess: 0,
+        inference: 0,
+        postprocess: 0,
+        total: 0,
+      },
+    };
   }
 
   public getLastDiagnostics(): MirageExperimentalExecutionDiagnostics | null {
@@ -1714,8 +1755,29 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
 
       const requestedProvider =
         this.variantId === 'mirage-onnx-exp-webgpu' ? 'webgpu' : 'wasm';
+      const fullFallbackReasons: string[] = [];
+      if (fullAssets) {
+        if (fullAssets.readerBackend.fallbackReason) {
+          fullFallbackReasons.push(`reader: ${fullAssets.readerBackend.fallbackReason}`);
+        }
+        if (fullAssets.crossKvBackend.fallbackReason) {
+          fullFallbackReasons.push(`crossKv: ${fullAssets.crossKvBackend.fallbackReason}`);
+        }
+        if (fullAssets.decoderStepBackend.fallbackReason) {
+          fullFallbackReasons.push(`decoderStep: ${fullAssets.decoderStepBackend.fallbackReason}`);
+        }
+      }
+      const combinedFallbackReason =
+        fullFallbackReasons.length > 0
+          ? [this.backend.fallbackReason, ...fullFallbackReasons].filter(Boolean).join(' | ')
+          : this.backend.fallbackReason;
       const activeProvider: 'wasm' | 'webgpu' =
-        requestedProvider === 'webgpu' && !this.backend.fallbackReason
+        this.backend.configuredProviders.includes('webgpu') &&
+        !combinedFallbackReason &&
+        (!fullAssets ||
+          (fullAssets.readerBackend.configuredProviders.includes('webgpu') &&
+            fullAssets.crossKvBackend.configuredProviders.includes('webgpu') &&
+            fullAssets.decoderStepBackend.configuredProviders.includes('webgpu')))
           ? 'webgpu'
           : 'wasm';
 
@@ -1735,7 +1797,7 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
         activeProvider,
         actualKernelBackend: 'unmeasured',
         allowWasmFallback: this.allowWasmFallback,
-        fallbackReason: this.backend.fallbackReason,
+        fallbackReason: combinedFallbackReason,
         webgpuAdapter: this.webgpuAdapter,
         artifactSha256: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SHA256,
         artifactSize: MIRAGE_EXPERIMENTAL_ONNX_EXPECTED_SIZE,
@@ -2080,6 +2142,95 @@ async function fetchVerifiedMiragePipelineComponent(
   return bytes;
 }
 
+async function configureOrtEnvForMirage(): Promise<void> {
+  if (!ort.env?.wasm) return;
+  const wasm = await resolveOrtWasmUrls();
+  const isolated =
+    typeof globalThis.crossOriginIsolated === 'boolean' &&
+    globalThis.crossOriginIsolated;
+  const cores =
+    typeof navigator !== 'undefined' && navigator.hardwareConcurrency
+      ? navigator.hardwareConcurrency
+      : 2;
+  ort.env.wasm.numThreads = isolated ? Math.min(4, Math.max(1, cores - 1)) : 1;
+  ort.env.wasm.wasmPaths = wasm.primaryUrl;
+}
+
+function createResilientWebGpuSession(
+  bytes: Uint8Array,
+  initialSession: ort.InferenceSession,
+  backend: OnnxBackendInfo,
+  allowWasmFallback: boolean
+): ort.InferenceSession {
+  let activeSession = initialSession;
+  let fallbackAttempted = false;
+
+  const handler: ProxyHandler<ort.InferenceSession> = {
+    get(_target, prop) {
+      if (prop === 'run') {
+        return async (
+          feeds: ort.InferenceSession.FeedsType,
+          arg2?:
+            | ort.InferenceSession.FetchesType
+            | ort.InferenceSession.RunOptions,
+          arg3?: ort.InferenceSession.RunOptions
+        ): Promise<ort.InferenceSession.ReturnType> => {
+          const runOn = (
+            target: ort.InferenceSession
+          ): Promise<ort.InferenceSession.ReturnType> =>
+            Reflect.apply(
+              target.run,
+              target,
+              arg3 !== undefined
+                ? [feeds, arg2, arg3]
+                : arg2 !== undefined
+                  ? [feeds, arg2]
+                  : [feeds]
+            );
+          try {
+            return await runOn(activeSession);
+          } catch (err) {
+            if (
+              !allowWasmFallback ||
+              fallbackAttempted ||
+              !backend.configuredProviders.includes('webgpu')
+            ) {
+              throw err;
+            }
+            fallbackAttempted = true;
+            await configureOrtEnvForMirage();
+            const fallbackSession = await ort.InferenceSession.create(bytes, {
+              executionProviders: ['wasm'],
+              graphOptimizationLevel: 'all',
+              logSeverityLevel: 3,
+            });
+            try {
+              await activeSession.release?.();
+            } catch {
+              // ignore cleanup failure on broken WebGPU session
+            }
+            activeSession = fallbackSession;
+            backend.configuredProviders = ['wasm'];
+            backend.fallbackReason = `WebGPU runtime inference failed; fell back to WASM: ${
+              err instanceof Error ? err.message : String(err)
+            }`;
+            return await runOn(activeSession);
+          }
+        };
+      }
+      if (prop === 'release') {
+        return async () => {
+          await activeSession.release?.();
+        };
+      }
+      const value = Reflect.get(activeSession, prop, activeSession);
+      return typeof value === 'function' ? value.bind(activeSession) : value;
+    },
+  };
+
+  return new Proxy(initialSession, handler);
+}
+
 export async function acquireMirageFullPipelineAssets(options: {
   variantId: MirageExperimentalVariantId;
   delegate: 'WebGPU' | 'WASM';
@@ -2100,6 +2251,19 @@ export async function acquireMirageFullPipelineAssets(options: {
     );
   };
 
+  const webgpuAdapter =
+    delegate === 'WebGPU' ? await probeWebGpuAdapterDiagnostics() : null;
+  if (delegate === 'WebGPU' && !allowWasmFallback && !webgpuAdapter?.available) {
+    throw new Error(
+      webgpuAdapter?.error
+        ? `Strict WebGPU full-pipeline session requested (allowWasmFallback=false), but WebGPU is unavailable: ${webgpuAdapter.error}`
+        : 'Strict WebGPU full-pipeline session requested (allowWasmFallback=false), but WebGPU adapter is unavailable'
+    );
+  }
+  if (delegate === 'WebGPU') {
+    await configureOrtEnvForMirage();
+  }
+
   try {
     const tableBytes = await fetchVerifiedMiragePipelineComponent(
       'decoderTables',
@@ -2117,23 +2281,89 @@ export async function acquireMirageFullPipelineAssets(options: {
       if (isCancelled?.()) {
         throw new Error(`Cancelled during ${key} download`);
       }
-      if (delegate === 'WebGPU' && !allowWasmFallback) {
-        const session = await ort.InferenceSession.create(bytes, {
-          executionProviders: ['webgpu'],
-          graphOptimizationLevel: 'all',
-          logSeverityLevel: 3,
-        });
-        createdSessions.push(session);
-        return {
-          session,
-          backend: {
+      if (delegate === 'WebGPU') {
+        if (!allowWasmFallback) {
+          const session = await ort.InferenceSession.create(bytes, {
+            executionProviders: ['webgpu'],
+            graphOptimizationLevel: 'all',
+            logSeverityLevel: 3,
+          });
+          createdSessions.push(session);
+          return {
+            session,
+            backend: {
+              runtime: 'onnxruntime-web',
+              requestedProvider: 'webgpu',
+              configuredProviders: ['webgpu'],
+              fallbackReason: null,
+              actualBackend: 'unmeasured',
+            },
+          };
+        }
+        if (!webgpuAdapter?.available) {
+          const wasmSession = await ort.InferenceSession.create(bytes, {
+            executionProviders: ['wasm'],
+            graphOptimizationLevel: 'all',
+            logSeverityLevel: 3,
+          });
+          createdSessions.push(wasmSession);
+          return {
+            session: wasmSession,
+            backend: {
+              runtime: 'onnxruntime-web',
+              requestedProvider: 'webgpu',
+              configuredProviders: ['wasm'],
+              fallbackReason: webgpuAdapter?.error
+                ? `WebGPU adapter unavailable (${webgpuAdapter.error}); WASM configured`
+                : 'WebGPU adapter unavailable; WASM configured',
+              actualBackend: 'unmeasured',
+            },
+          };
+        }
+        try {
+          const gpuSession = await ort.InferenceSession.create(bytes, {
+            executionProviders: ['webgpu'],
+            graphOptimizationLevel: 'all',
+            logSeverityLevel: 3,
+          });
+          const backend: OnnxBackendInfo = {
             runtime: 'onnxruntime-web',
             requestedProvider: 'webgpu',
             configuredProviders: ['webgpu'],
             fallbackReason: null,
             actualBackend: 'unmeasured',
-          },
-        };
+          };
+          const resilientSession = createResilientWebGpuSession(
+            bytes,
+            gpuSession,
+            backend,
+            true
+          );
+          createdSessions.push(resilientSession);
+          return {
+            session: resilientSession,
+            backend,
+          };
+        } catch (gpuErr) {
+          const wasmSession = await ort.InferenceSession.create(bytes, {
+            executionProviders: ['wasm'],
+            graphOptimizationLevel: 'all',
+            logSeverityLevel: 3,
+          });
+          createdSessions.push(wasmSession);
+          return {
+            session: wasmSession,
+            backend: {
+              runtime: 'onnxruntime-web',
+              requestedProvider: 'webgpu',
+              configuredProviders: ['wasm'],
+              fallbackReason: `WebGPU session creation failed; fell back to WASM: ${
+                gpuErr instanceof Error ? gpuErr.message : String(gpuErr)
+              }`,
+              actualBackend: 'unmeasured',
+            },
+          };
+        }
       }
       const created = await createOrtSession(bytes, delegate, {
         fallbackModelBytes: () => bytes,
@@ -2295,6 +2525,7 @@ export async function createMirageExperimentalOnnxTask(
           'Strict WebGPU session requires verified model bytes'
         );
       }
+      await configureOrtEnvForMirage();
       session = await ort.InferenceSession.create(verifiedBytes, {
         executionProviders: ['webgpu'],
         graphOptimizationLevel: 'all',
@@ -2311,6 +2542,64 @@ export async function createMirageExperimentalOnnxTask(
         fallbackReason: null,
         actualBackend: 'unmeasured',
       };
+    } else if (delegate === 'WebGPU' && allowWasmFallback && verifiedBytes) {
+      if (webgpuAdapter?.available) {
+        try {
+          await configureOrtEnvForMirage();
+          session = await ort.InferenceSession.create(verifiedBytes, {
+            executionProviders: ['webgpu'],
+            graphOptimizationLevel: 'all',
+            logSeverityLevel: 3,
+          });
+          recordAssetSource?.(
+            `mirage:${variantId}`,
+            asset.source
+          );
+          backend = {
+            runtime: 'onnxruntime-web',
+            requestedProvider: 'webgpu',
+            configuredProviders: ['webgpu'],
+            fallbackReason: null,
+            actualBackend: 'unmeasured',
+          };
+        } catch (gpuErr) {
+          const created = await createOrtSession(verifiedBytes, 'WASM', {
+            fallbackModelUrl: asset.fallbackUrl,
+            fallbackModelBytes: () => verifiedBytes,
+            variantId,
+            recordAssetSource,
+            modelId: 'mirage',
+            primarySource: asset.source,
+          });
+          session = created.session;
+          backend = {
+            ...created.backend,
+            requestedProvider: 'webgpu',
+            configuredProviders: ['wasm'],
+            fallbackReason: `WebGPU session creation failed; fell back to WASM: ${
+              gpuErr instanceof Error ? gpuErr.message : String(gpuErr)
+            }`,
+          };
+        }
+      } else {
+        const created = await createOrtSession(verifiedBytes, 'WASM', {
+          fallbackModelUrl: asset.fallbackUrl,
+          fallbackModelBytes: () => verifiedBytes,
+          variantId,
+          recordAssetSource,
+          modelId: 'mirage',
+          primarySource: asset.source,
+        });
+        session = created.session;
+        backend = {
+          ...created.backend,
+          requestedProvider: 'webgpu',
+          configuredProviders: ['wasm'],
+          fallbackReason: webgpuAdapter?.error
+            ? `WebGPU adapter unavailable (${webgpuAdapter.error}); WASM configured`
+            : 'WebGPU adapter unavailable; WASM configured',
+        };
+      }
     } else {
       const created = await createOrtSession(
         verifiedBytes ?? asset.primaryUrl,

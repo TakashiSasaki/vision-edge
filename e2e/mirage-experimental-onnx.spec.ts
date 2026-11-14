@@ -172,6 +172,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     context,
     page,
   }, testInfo) => {
+    test.setTimeout(360_000);
     if (process.env.REQUIRE_MIRAGE_REAL_MODEL === '1') {
       expect(
         existsSync(ONNX_ARTIFACT_PATH),
@@ -247,6 +248,29 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         bridge.ort.env.wasm.numThreads = 1;
         bridge.ort.env.wasm.wasmPaths = `${window.location.origin}/api/model-cache/wasm/ort/`;
 
+        function compareFloat32Tensors(
+          actual: Float32Array,
+          expected: Float32Array,
+          atol = 2e-4,
+          rtol = 2e-4
+        ) {
+          return activeBridge.compareMirageTensorParity(
+            actual,
+            expected,
+            atol,
+            rtol,
+            1e-6
+          );
+        }
+
+        async function fetchFloat32(filename: string): Promise<Float32Array> {
+          const r = await fetch(`/api/model-cache/mirage/fixtures/${filename}`);
+          if (!r.ok) {
+            throw new Error(`Failed to fetch ${filename}: HTTP ${r.status}`);
+          }
+          return new Float32Array(await r.arrayBuffer());
+        }
+
         // Test direct ['webgpu'] session creation (no automatic WASM fallback)
         webgpuDirectSessionOutcome.attempted = true;
         const directStart = performance.now();
@@ -261,37 +285,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           );
           webgpuDirectSessionOutcome.sessionCreated = true;
           webgpuDirectSessionOutcome.createMs = performance.now() - directStart;
-          try {
-            const runStart = performance.now();
-            const dummyImage = new bridge.ort.Tensor(
-              'float32',
-              new Float32Array(1 * 3 * 512 * 512),
-              [1, 3, 512, 512]
-            );
-            const dummyHw = new bridge.ort.Tensor(
-              'int64',
-              new BigInt64Array([BigInt(512), BigInt(512)]),
-              [2]
-            );
-            const out = await directSession.run(
-              { image: dummyImage, valid_hw: dummyHw },
-              ['detections', 'prototypes', 'coefficients']
-            );
-            webgpuDirectSessionOutcome.runSucceeded =
-              !!out.detections && !!out.prototypes && !!out.coefficients;
-            webgpuDirectSessionOutcome.runMs = performance.now() - runStart;
-            dummyImage.dispose?.();
-            dummyHw.dispose?.();
-            for (const v of Object.values(out)) {
-              (v as { dispose?: () => void })?.dispose?.();
-            }
-          } catch (runErr) {
-            webgpuDirectSessionOutcome.error = `WebGPU run failed: ${
-              runErr instanceof Error ? runErr.message : String(runErr)
-            }`;
-          } finally {
-            await directSession.release();
-          }
+          await directSession.release();
         } catch (createErr) {
           webgpuDirectSessionOutcome.createMs = performance.now() - directStart;
           webgpuDirectSessionOutcome.error = `WebGPU session create failed: ${
@@ -322,7 +316,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
             strictErr instanceof Error ? strictErr.message : String(strictErr);
         }
 
-        // 4. Test mirage-onnx-exp-webgpu via application task factory (with configured fallback observation)
+        // 4. Test mirage-onnx-exp-webgpu via application task factory and verify full WebGPU Encoder parity on text_regions
         const webgpuTaskStart = performance.now();
         const webgpuTask = await bridge.createMirageExperimentalOnnxTask({
           variantId: 'mirage-onnx-exp-webgpu',
@@ -330,14 +324,52 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         const webgpuTaskInitMs = performance.now() - webgpuTaskStart;
         const webgpuBackendInfo = webgpuTask.backend;
 
-        // Run one inference on square_blank using webgpuTask to confirm end-to-end execution
+        const gpuCaseEntry = manifest.cases.text_regions;
+        const [gpuImage, gpuRefDet, gpuRefProto, gpuRefCoeff] = await Promise.all([
+          fetchFloat32(gpuCaseEntry.input_tensor_file),
+          fetchFloat32(gpuCaseEntry.heads.detections.file),
+          fetchFloat32(gpuCaseEntry.heads.prototypes.file),
+          fetchFloat32(gpuCaseEntry.heads.coefficients.file),
+        ]);
+        const gpuMeta = bridge.computeMirageCeil32Metadata(
+          gpuCaseEntry.metadata.W,
+          gpuCaseEntry.metadata.H
+        );
         const webgpuWarmupStart = performance.now();
         const webgpuBlankHeads = await webgpuTask.runRawHeads({
-          image: new Float32Array(1 * 3 * 512 * 512),
-          valid_hw: [512, 512],
-          metadata: bridge.computeMirageCeil32Metadata(512, 512),
+          image: gpuImage,
+          valid_hw: [gpuCaseEntry.valid_hw[0], gpuCaseEntry.valid_hw[1]],
+          metadata: gpuMeta,
         });
         const webgpuWarmupMs = performance.now() - webgpuWarmupStart;
+        webgpuDirectSessionOutcome.runSucceeded =
+          webgpuBlankHeads.detections.length === 40960 &&
+          webgpuBlankHeads.prototypes.length === 524288 &&
+          webgpuBlankHeads.coefficients.length === 131072;
+        webgpuDirectSessionOutcome.runMs = Number(webgpuWarmupMs.toFixed(2));
+        const webgpuDetDiff = compareFloat32Tensors(webgpuBlankHeads.detections, gpuRefDet);
+        const webgpuProtoDiff = compareFloat32Tensors(webgpuBlankHeads.prototypes, gpuRefProto);
+        const webgpuCoeffDiff = compareFloat32Tensors(webgpuBlankHeads.coefficients, gpuRefCoeff);
+        const webgpuTextRegionsParity = {
+          caseName: 'text_regions',
+          detectionsAllcloseAt2e4: webgpuDetDiff.allcloseAt2e4,
+          prototypesAllcloseAt2e4: webgpuProtoDiff.allcloseAt2e4,
+          coefficientsAllcloseAt2e4: webgpuCoeffDiff.allcloseAt2e4,
+          allThreeHeadsAllcloseAt2e4:
+            webgpuDetDiff.allcloseAt2e4 &&
+            webgpuProtoDiff.allcloseAt2e4 &&
+            webgpuCoeffDiff.allcloseAt2e4,
+          minCosineSimilarity: Math.min(
+            webgpuDetDiff.cosineSimilarity,
+            webgpuProtoDiff.cosineSimilarity,
+            webgpuCoeffDiff.cosineSimilarity
+          ),
+          maxAbsDiff: Math.max(
+            webgpuDetDiff.maxAbsDiff,
+            webgpuProtoDiff.maxAbsDiff,
+            webgpuCoeffDiff.maxAbsDiff
+          ),
+        };
         await webgpuTask.close();
 
         // 5. Initialize mirage-onnx-exp-wasm and run all 8 identical-input benchmark cases
@@ -347,29 +379,6 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         });
         const wasmTaskInitMs = performance.now() - wasmTaskStart;
         const wasmBackendInfo = wasmTask.backend;
-
-        function compareFloat32Tensors(
-          actual: Float32Array,
-          expected: Float32Array,
-          atol = 2e-4,
-          rtol = 2e-4
-        ) {
-          return activeBridge.compareMirageTensorParity(
-            actual,
-            expected,
-            atol,
-            rtol,
-            1e-6
-          );
-        }
-
-        async function fetchFloat32(filename: string): Promise<Float32Array> {
-          const r = await fetch(`/api/model-cache/mirage/fixtures/${filename}`);
-          if (!r.ok) {
-            throw new Error(`Failed to fetch ${filename}: HTTP ${r.status}`);
-          }
-          return new Float32Array(await r.arrayBuffer());
-        }
 
         const caseReports: Record<string, IdenticalInputCaseReport> = {};
         const caseNames = Object.keys(manifest.cases);
@@ -533,6 +542,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
                 webgpuBlankHeads.prototypes.length,
                 webgpuBlankHeads.coefficients.length,
               ],
+              webgpuTextRegionsParity,
               backend: webgpuBackendInfo,
             },
           },
@@ -573,8 +583,27 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
       browserReport.executionProviders.webgpu.backend.requestedProvider
     ).toBe('webgpu');
     expect(
+      browserReport.executionProviders.webgpu.webgpuAdapterAvailable
+    ).toBe(true);
+    expect(
+      browserReport.executionProviders.webgpu.directWebGpuSession.sessionCreated
+    ).toBe(true);
+    expect(
+      browserReport.executionProviders.webgpu.directWebGpuSession.runSucceeded
+    ).toBe(true);
+    expect(['PASSED', 'PASSED_SOFTWARE_ADAPTER']).toContain(
+      browserReport.executionProviders.webgpu.strictWebGpuTask.status
+    );
+    expect(
+      browserReport.executionProviders.webgpu.backend.configuredProviders
+    ).toContain('webgpu');
+    expect(
       browserReport.executionProviders.webgpu.applicationWarmupOutputLengths
     ).toEqual([64 * 64 * 10, 32 * 128 * 128, 32 * 64 * 64]);
+    expect(
+      browserReport.executionProviders.webgpu.webgpuTextRegionsParity
+        .allThreeHeadsAllcloseAt2e4
+    ).toBe(true);
 
     // Assertions on all 8 benchmark cases in real browser WASM
     const cases = browserReport.cases;
@@ -850,6 +879,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     context,
     page,
   }, testInfo) => {
+    test.setTimeout(360_000);
     if (process.env.REQUIRE_MIRAGE_REAL_MODEL === '1') {
       expect(
         existsSync(ONNX_ARTIFACT_PATH),
@@ -957,12 +987,13 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
       fullPage: true,
     });
 
-    // 4. Switch to experimental WebGPU variant and verify initialization + inference
+    // 4. Switch to experimental WebGPU variant and verify initialization + EP diagnostics
+    await page.getByRole('button', { name: 'カメラ映像' }).click();
     await variantSelect.selectOption('mirage-onnx-exp-webgpu');
     await expect(page.getByRole('status')).toContainText('モデル準備完了', {
       timeout: 60_000,
     });
-    await expect(diagBox).toContainText('要求EP: webgpu', {
+    await expect(diagBox).toContainText('要求EP: webgpu ／ 設定EP: webgpu', {
       timeout: 30_000,
     });
     await page.goto('about:blank');
@@ -1244,6 +1275,19 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
         }
       > = {};
 
+      const cachedInputs: Record<
+        string,
+        {
+          memory: Float32Array;
+          dense_features: Float32Array;
+          metadata: ReturnType<typeof bridge.computeMirageCeil32Metadata>;
+          decoded: ReturnType<typeof bridge.decodeMirageExperimentalOutputs>;
+          nativeRgba: Uint8ClampedArray;
+          W: number;
+          H: number;
+        }
+      > = {};
+
       for (const caseName of Object.keys(fullRef.cases)) {
         const refCase = fullRef.cases[caseName];
         const fixtEntry = manifest.cases[caseName];
@@ -1270,6 +1314,17 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
 
         const imgEl = await loadPngElement(fixtEntry.png_file);
         const nativeRgba = extractNativeRgba(imgEl, fixtEntry.metadata.W, fixtEntry.metadata.H);
+        if (caseName === 'text_regions' || caseName === 'coco_000000331352') {
+          cachedInputs[caseName] = {
+            memory: rawHeads.memory,
+            dense_features: rawHeads.dense_features,
+            metadata,
+            decoded,
+            nativeRgba,
+            W: fixtEntry.metadata.W,
+            H: fixtEntry.metadata.H,
+          };
+        }
         const ocrLinesActual = await bridge.readMirageTextLines(
           fullAssets.readerSession,
           nativeRgba,
@@ -1416,6 +1471,15 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
       let strictWebGpuError: string | null = null;
       let strictWebGpuEncoderCreated = false;
       let strictWebGpuFullAssetsCreated = false;
+      let strictWebGpuFullPipelineRunSucceeded = false;
+      let strictWebGpuOcrExactMatch = false;
+      let strictWebGpuCkAllcloseAt2e4: boolean | null = null;
+      let strictWebGpuCkCosineSimilarity: number | null = null;
+      let strictWebGpuCvCosineSimilarity: number | null = null;
+      let strictWebGpuStep0LogitsCosineSimilarity: number | null = null;
+      let strictWebGpuStep0LogitsAllcloseAt2e4: boolean | null = null;
+      let strictWebGpuTokenPrefixExactMatch: boolean | null = null;
+      let strictWebGpuDecodeMs: number | null = null;
       try {
         const gpuTask = await bridge.createMirageExperimentalOnnxTask({
           variantId: 'mirage-onnx-exp-webgpu',
@@ -1430,12 +1494,98 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
             allowWasmFallback: false,
           });
           strictWebGpuFullAssetsCreated = true;
-          await gpuFull.readerSession.release?.().catch(() => undefined);
-          await gpuFull.crossKvSession.release?.().catch(() => undefined);
-          await gpuFull.decoderStepSession.release?.().catch(() => undefined);
-          strictWebGpuStatus = webgpuAdapter.isSoftwareAdapter
-            ? 'PASSED_SOFTWARE_ADAPTER'
-            : 'PASSED_HARDWARE_WEBGPU';
+          try {
+            const cachedText = cachedInputs.text_regions;
+            const cachedCoco = cachedInputs.coco_000000331352;
+            if (!cachedText || !cachedCoco) {
+              throw new Error('Missing cached inputs for WebGPU 4-session probe');
+            }
+
+            // 1. Run CrossKV + 8-layer Decoder (4-token prefix) on WebGPU using cached text_regions features
+            const refTextCase = fullRef.cases.text_regions;
+            const gpuCrossKv = await bridge.runMirageCrossKv(
+              gpuFull.crossKvSession,
+              cachedText.memory,
+              cachedText.dense_features,
+              cachedText.metadata,
+              cachedText.decoded.objects,
+              cachedText.decoded.text,
+              gpuFull.tableReader
+            );
+            const [refGpuCk, refGpuCv] = await Promise.all([
+              fetchFloat32(refTextCase.ckFile),
+              fetchFloat32(refTextCase.cvFile),
+            ]);
+            const gpuCkParity = bridge.compareMirageTensorParity(
+              gpuCrossKv.crossK,
+              refGpuCk,
+              2e-4,
+              2e-4,
+              1e-4
+            );
+            strictWebGpuCkAllcloseAt2e4 = gpuCkParity.allcloseAt2e4;
+            strictWebGpuCkCosineSimilarity = gpuCkParity.cosineSimilarity;
+            strictWebGpuCvCosineSimilarity = bridge.compareMirageTensorParity(
+              gpuCrossKv.crossV,
+              refGpuCv,
+              2e-4,
+              2e-4,
+              1e-4
+            ).cosineSimilarity;
+
+            const gpuDecodeStart = performance.now();
+            const gpuDecRes = await bridge.runMirageGreedyDecode(
+              gpuFull.decoderStepSession,
+              gpuCrossKv,
+              gpuFull.tableReader,
+              {
+                language: 'en',
+                maxTokens: 4,
+                captureStep0Logits: true,
+              }
+            );
+            strictWebGpuDecodeMs = Number((performance.now() - gpuDecodeStart).toFixed(1));
+            if (!gpuDecRes.step0Logits) {
+              throw new Error('WebGPU greedy decode omitted step0Logits on text_regions');
+            }
+            const refGpuStep0 = await fetchFloat32(refTextCase.languages.en.step0LogitsFile);
+            const gpuStep0Parity = bridge.compareMirageTensorParity(
+              gpuDecRes.step0Logits,
+              refGpuStep0,
+              2e-4,
+              2e-4,
+              1e-4
+            );
+            strictWebGpuStep0LogitsCosineSimilarity = gpuStep0Parity.cosineSimilarity;
+            strictWebGpuStep0LogitsAllcloseAt2e4 = gpuStep0Parity.allcloseAt2e4;
+            const expectedPrefix = refTextCase.languages.en.generatedTokenIds.slice(0, 4);
+            strictWebGpuTokenPrefixExactMatch =
+              gpuDecRes.generatedTokenIds.length === 4 &&
+              gpuDecRes.generatedTokenIds.every((id, idx) => id === expectedPrefix[idx]);
+
+            // 2. Run Reader OCR on WebGPU for cached coco_000000331352 proposals
+            const refCocoCase = fullRef.cases.coco_000000331352;
+            const gpuOcrLinesActual = await bridge.readMirageTextLines(
+              gpuFull.readerSession,
+              cachedCoco.nativeRgba,
+              cachedCoco.W,
+              cachedCoco.H,
+              cachedCoco.decoded.text,
+              gpuFull.tableReader.charset
+            );
+            strictWebGpuOcrExactMatch =
+              gpuOcrLinesActual.length === refCocoCase.ocrLines.length &&
+              gpuOcrLinesActual.every((s, idx) => s === refCocoCase.ocrLines[idx]);
+
+            strictWebGpuFullPipelineRunSucceeded = true;
+            strictWebGpuStatus = webgpuAdapter.isSoftwareAdapter
+              ? 'PASSED_SOFTWARE_ADAPTER'
+              : 'PASSED_HARDWARE_WEBGPU';
+          } finally {
+            await gpuFull.readerSession.release?.().catch(() => undefined);
+            await gpuFull.crossKvSession.release?.().catch(() => undefined);
+            await gpuFull.decoderStepSession.release?.().catch(() => undefined);
+          }
         } finally {
           await gpuTask.close();
         }
@@ -1473,10 +1623,21 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
           hardwareWebGpuStatus:
             webgpuAdapter.adapterAvailable && !webgpuAdapter.isSoftwareAdapter
               ? strictWebGpuStatus
-              : 'BLOCKED',
+              : webgpuAdapter.isSoftwareAdapter
+                ? 'BLOCKED_SOFTWARE_ADAPTER_ONLY'
+                : 'BLOCKED',
           adapter: webgpuAdapter,
           encoderCreated: strictWebGpuEncoderCreated,
           fullAssetsCreated: strictWebGpuFullAssetsCreated,
+          fullPipelineRunSucceeded: strictWebGpuFullPipelineRunSucceeded,
+          ocrExactMatch: strictWebGpuOcrExactMatch,
+          ckAllcloseAt2e4: strictWebGpuCkAllcloseAt2e4,
+          ckCosineSimilarity: strictWebGpuCkCosineSimilarity,
+          cvCosineSimilarity: strictWebGpuCvCosineSimilarity,
+          step0LogitsCosineSimilarity: strictWebGpuStep0LogitsCosineSimilarity,
+          step0LogitsAllcloseAt2e4: strictWebGpuStep0LogitsAllcloseAt2e4,
+          tokenPrefixExactMatch: strictWebGpuTokenPrefixExactMatch,
+          decodeMs: strictWebGpuDecodeMs,
           error: strictWebGpuError,
         },
       };
@@ -1519,6 +1680,28 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     expect(report.detectForVideoE2e.hasNativeAttribution).toBe(false);
     expect(report.detectForVideoE2e.detectionCount).toBeGreaterThan(0);
     expect(report.detectForVideoE2e.hasAssembledObservation).toBe(true);
+
+    expect(['PASSED_SOFTWARE_ADAPTER', 'PASSED_HARDWARE_WEBGPU']).toContain(
+      report.strictWebGpu4SessionProbe.status
+    );
+    expect(report.strictWebGpu4SessionProbe.hardwareWebGpuStatus).toBe(
+      report.strictWebGpu4SessionProbe.adapter.isSoftwareAdapter
+        ? 'BLOCKED_SOFTWARE_ADAPTER_ONLY'
+        : 'PASSED_HARDWARE_WEBGPU'
+    );
+    expect(report.strictWebGpu4SessionProbe.encoderCreated).toBe(true);
+    expect(report.strictWebGpu4SessionProbe.fullAssetsCreated).toBe(true);
+    expect(report.strictWebGpu4SessionProbe.fullPipelineRunSucceeded).toBe(true);
+    expect(report.strictWebGpu4SessionProbe.ocrExactMatch).toBe(true);
+    expect(report.strictWebGpu4SessionProbe.ckAllcloseAt2e4).toBe(true);
+    expect(
+      report.strictWebGpu4SessionProbe.cvCosineSimilarity
+    ).toBeGreaterThanOrEqual(0.999999);
+    expect(report.strictWebGpu4SessionProbe.step0LogitsAllcloseAt2e4).toBe(true);
+    expect(
+      report.strictWebGpu4SessionProbe.step0LogitsCosineSimilarity
+    ).toBeGreaterThanOrEqual(0.999999);
+    expect(report.strictWebGpu4SessionProbe.tokenPrefixExactMatch).toBe(true);
   });
 
   test('switches experimental Mirage UI from fast proposal mode to full 4-graph inference and changes decoder language', async ({
