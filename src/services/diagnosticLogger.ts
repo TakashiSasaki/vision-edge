@@ -30,7 +30,7 @@ export interface DiagnosticLogEntry {
 
 export interface SelfTestResult {
   step:
-    | 'server-status'
+    | 'browser-cache-status'
     | 'asset-fetch'
     | 'sha256-verify'
     | 'ort-wasm'
@@ -139,7 +139,7 @@ class DiagnosticLogger {
 
     // Server-side transmission if explicitly requested and telemetry enabled
     if (options?.sendToServer && this.serverTelemetryEnabled) {
-      this.sendToServer(entry).catch(() => {
+      this.sendToServer().catch(() => {
         // Silently ignore server logging network errors to prevent loops
       });
     }
@@ -180,27 +180,9 @@ class DiagnosticLogger {
     }
   }
 
-  public sendToServer = async (entry: DiagnosticLogEntry): Promise<void> => {
-    if (typeof fetch !== 'function') return;
-    if (
-      typeof window === 'undefined' ||
-      !(
-        window as unknown as { __CONTAINER_MODEL_CACHE_ENABLED__?: boolean }
-      ).__CONTAINER_MODEL_CACHE_ENABLED__
-    ) {
-      return;
-    }
-    try {
-      await fetch('/api/model-cache/diagnostics/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry),
-        keepalive: true,
-      });
-    } catch {
-      // Non-blocking telemetry
-    }
-  }
+  public sendToServer = async (): Promise<void> => {
+    // Server-side model cache telemetry endpoint removed; diagnostics remain client-side.
+  };
 
   public generateReport = async (extra?: {
     activeModel?: { model: string; variantId: string; status: string; errorCause?: string };

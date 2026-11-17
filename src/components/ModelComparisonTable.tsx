@@ -13,9 +13,10 @@ interface Props {
 
 function sourceDescription(modelId: RunnableModelType): string {
   const source = getResolvedSource(modelId);
-  if (source === 'container-cache') return 'コンテナ内キャッシュ配信（未取得時は外部URLへ自動フォールバック）';
-  if (source === 'external-fallback') return '外部配布元URLへの自動フォールバック配信';
-  return '外部配布元URL直接取得（コンテナキャッシュ有効時はローカル配信）';
+  if (source === 'browser-cache') return 'ブラウザキャッシュ配信（Service Worker / Cache Storage）';
+  if (source === 'cors-proxy') return 'CORS中継経由オンライン取得（初回取得後はブラウザキャッシュ保存）';
+  if (source === 'external-fallback') return '外部ミラーURLへの自動フォールバック配信';
+  return '外部配布元URLからブラウザへ直接取得（Service Worker キャッシュ保存）';
 }
 
 export function ModelComparisonTable({

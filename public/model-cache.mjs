@@ -1,83 +1,204 @@
-const integrityLabels = { pinned: '固定ハッシュ一致', 'self-recorded': '取得時ハッシュ一致', invalid: '検証失敗', 'not-present': '未保存', pending: '検証待ち', unknown: '不明', blocked: '未検証・取得無効' };
-const stateLabels = { cached: '配信準備済み', downloading: '取得中', unavailable: '未準備' };
-const families = { 'selfie-segmenter': 'Selfie Segmenter', mediapipe: 'MediaPipe Object Detector', 'yolo-seg': 'YOLO', segformer: 'SegFormer', 'image-classifier': 'EfficientNet（画像分類）' };
-const safeName = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(value);
-const safeFile = value => typeof value === 'string' && /^[a-zA-Z0-9_-][a-zA-Z0-9._-]{0,159}$/.test(value) && !value.includes('..');
-const safePath = value => typeof value === 'string' && /^\/api\/model-cache\/models\/[a-zA-Z0-9._-]+(\?sha256=[a-f0-9]{64})?$/.test(value);
-// A verification success belongs to a cached, present, verified byte record.
-// Non-cached states have no verified size/hash; only their state-specific
-// pending/absent/failed/unknown observations may be displayed as coherent.
-function coherentState(value, cached) {
-  if (cached) return true;
-  if (value.status === 'cached' || value.size !== null || value.sha256 !== null || (value.error !== null && (typeof value.error !== 'string' || !value.error.length))) return false;
-  if (value.status === 'downloading') return value.integrity === 'pending' && value.filePresent === null && value.error === null;
-  if (value.status !== 'unavailable') return false;
-  if (value.integrity === 'blocked') return value.acquisitionEnabled === false && typeof value.blockedReason === 'string' && value.blockedReason.length > 0 && value.error !== null;
-  if (value.integrity === 'not-present') return value.filePresent === false;
-  if (value.integrity === 'invalid') return value.filePresent !== null && value.error !== null;
-  return value.integrity === 'unknown' && value.filePresent === null;
+export const MODEL_CACHE_NAME = 'vision-studio-models-v1';
+
+export function formatBytes(bytes) {
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) return '—';
+  if (bytes < 1024) return `${bytes.toLocaleString('ja-JP')} B`;
+  const mb = bytes / (1024 * 1024);
+  if (mb >= 1) {
+    return `${mb.toFixed(1)} MB (${bytes.toLocaleString('ja-JP')} bytes)`;
+  }
+  return `${(bytes / 1024).toFixed(1)} KB (${bytes.toLocaleString('ja-JP')} bytes)`;
 }
-export function inventorySnapshot(payload) {
-  if (!payload || payload.enabled !== true || payload.schemaVersion !== 2 || !Number.isInteger(payload.catalogCount) || payload.catalogCount < 0 || !payload.variants || typeof payload.variants !== 'object' || Array.isArray(payload.variants) || Object.keys(payload.variants).length !== payload.catalogCount || typeof payload.observedAt !== 'string' || !Number.isFinite(Date.parse(payload.observedAt))) throw new Error('Unavailable status API');
+
+function sanitizeSafeUrl(rawUrl) {
+  if (typeof rawUrl !== 'string' || !rawUrl.length) return null;
+  try {
+    const parsed = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : 'https://localhost');
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function summarizeBrowserCache(records) {
+  if (!Array.isArray(records)) {
+    throw new TypeError('Browser cache records must be an array');
+  }
+  const entries = [];
+  let totalBytes = 0;
   let invalid = 0;
-  const rows = Object.entries(payload.variants).map(([key, value]) => {
-    const identity = value && Object.hasOwn(families, value.id) && safeName(value.variantId) && key === `${value.id}:${value.variantId}` && safeFile(value.file);
-    const shape = identity && Object.hasOwn(stateLabels, value.status) && Object.hasOwn(integrityLabels, value.integrity) && [true, false, null].includes(value.filePresent);
-    const cached = shape && value.acquisitionEnabled !== false && value.blockedReason == null && value.status === 'cached' && value.filePresent === true && ['pinned', 'self-recorded'].includes(value.integrity) && Number.isSafeInteger(value.size) && value.size > 0 && typeof value.sha256 === 'string' && /^[a-f0-9]{64}$/.test(value.sha256) && value.error === null && (value.integrity !== 'pinned' || (value.sha256 === value.expectedSha256 && value.size === value.expectedSize));
-    const valid = shape && coherentState(value, cached);
-    if (!valid) invalid++;
-    const path = identity ? (safePath(value.localUrl) ? value.localUrl : `/api/model-cache/models/${value.file}${value.id === 'image-classifier' && typeof value.expectedSha256 === 'string' && /^[a-f0-9]{64}$/.test(value.expectedSha256) ? `?sha256=${value.expectedSha256}` : ''}`) : '—';
-    return { family: identity ? families[value.id] : '不明なモデル', variant: identity ? value.variantId : '不明', file: identity ? value.file : '不正なファイル名（非表示）', size: cached ? `${value.size.toLocaleString('ja-JP')} bytes` : '—', presence: shape ? (value.filePresent === true ? 'あり' : value.filePresent === false ? 'なし' : '不明') : '不明', readiness: valid ? (value.integrity === 'blocked' ? 'BLOCKED（モデル未検証）' : stateLabels[value.status]) : '不明（不正な状態）', integrity: valid ? integrityLabels[value.integrity] : '不明', error: valid && value.integrity === 'blocked' ? 'モデル資産・SDK互換性などの確認待ち' : value?.error ? '取得・検証エラーあり（詳細は管理ログ）' : '—', cached, path, url: cached ? path : null };
-  });
-  return { rows, invalid, observedAt: payload.observedAt };
-}
-function table(document, host, rows, empty) {
-  host.replaceChildren();
-  if (!rows.length) { const p = document.createElement('p'); p.textContent = empty; host.append(p); return; }
-  const headers = ['モデル', 'バリアント', 'ファイル名', '検証済みサイズ', '実ファイル', '準備状態', '整合性', '診断'];
-  const keys = ['family', 'variant', 'file', 'size', 'presence', 'readiness', 'integrity', 'error'];
-  const element = document.createElement('table'), head = element.createTHead(), hrow = head.insertRow();
-  for (const label of headers) { const th = document.createElement('th'); th.scope = 'col'; th.textContent = label; hrow.append(th); }
-  const body = element.createTBody();
-  for (const row of rows) {
-    const tr = body.insertRow();
-    keys.forEach((key, i) => {
-      const td = tr.insertCell();
-      td.dataset.label = headers[i];
-      if (key === 'file') {
-        if (row.cached && row.url) {
-          const a = document.createElement('a');
-          a.href = row.url;
-          a.className = 'model-link';
-          a.textContent = row.file;
-          a.setAttribute('download', row.file);
-          td.append(a);
-          if (row.path && row.path !== '—') {
-            const pDiv = document.createElement('div');
-            pDiv.className = 'cache-path';
-            pDiv.textContent = row.path;
-            td.append(pDiv);
-          }
-        } else {
-          td.textContent = row.file;
-          if (row.path && row.path !== '—') {
-            const pDiv = document.createElement('div');
-            pDiv.className = 'cache-path';
-            pDiv.textContent = row.path;
-            td.append(pDiv);
-          }
-        }
-      } else {
-        td.textContent = row[key];
-      }
+
+  for (const record of records) {
+    const parsed = sanitizeSafeUrl(record?.url);
+    const size = typeof record?.size === 'number' && Number.isSafeInteger(record.size) && record.size >= 0
+      ? record.size
+      : null;
+    if (!parsed) {
+      invalid++;
+      continue;
+    }
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    const rawName = parts.at(-1) || parsed.pathname || parsed.host;
+    const safeFileName = rawName.replace(/[\r\n<>]/g, '').slice(0, 160) || 'cached-model';
+    if (size !== null) totalBytes += size;
+    entries.push({
+      url: parsed.href,
+      host: parsed.host,
+      fileName: safeFileName,
+      size,
+      sizeLabel: formatBytes(size),
+      contentType: typeof record?.contentType === 'string' ? record.contentType.slice(0, 100) : 'application/octet-stream',
+      cachedAt: typeof record?.cachedAt === 'string' && Number.isFinite(Date.parse(record.cachedAt))
+        ? new Date(record.cachedAt).toLocaleString('ja-JP')
+        : '—',
+      sha256: typeof record?.sha256 === 'string' && /^[a-f0-9]{64}$/i.test(record.sha256)
+        ? `${record.sha256.slice(0, 12)}...`
+        : '—',
     });
   }
-  host.append(element);
+
+  entries.sort((a, b) => a.fileName.localeCompare(b.fileName));
+  return { entries, totalBytes, invalid };
 }
-export function mountInventory(document, fetchImpl) {
-  const pageUrlEl = document.getElementById('page-url'), copyBtn = document.getElementById('copy-page-url'), copyNotice = document.getElementById('copy-notice');
+
+export async function readBrowserCacheState(
+  cachesApi = typeof globalThis.caches !== 'undefined' ? globalThis.caches : undefined,
+  swContainer = typeof navigator !== 'undefined' ? navigator.serviceWorker : undefined
+) {
+  let swStatus = {
+    supported: Boolean(swContainer),
+    registered: false,
+    activeState: null,
+    controllerActive: Boolean(swContainer?.controller),
+  };
+
+  if (swContainer && typeof swContainer.getRegistration === 'function') {
+    try {
+      const reg = await swContainer.getRegistration('/');
+      if (reg) {
+        swStatus = {
+          supported: true,
+          registered: true,
+          activeState: reg.active?.state ?? reg.waiting?.state ?? reg.installing?.state ?? null,
+          controllerActive: Boolean(swContainer.controller),
+        };
+      }
+    } catch {
+      // Service Worker inspection failure stays non-fatal
+    }
+  }
+
+  if (!cachesApi || typeof cachesApi.open !== 'function') {
+    return { available: false, swStatus, entries: [], totalBytes: 0, invalid: 0 };
+  }
+
+  const cache = await cachesApi.open(MODEL_CACHE_NAME);
+  const requests = await cache.keys();
+  const rawRecords = [];
+
+  for (const req of requests) {
+    const res = await cache.match(req);
+    if (!res) continue;
+    const lenHeader = res.headers.get('content-length');
+    let size = lenHeader && /^\d+$/.test(lenHeader) ? Number(lenHeader) : null;
+    if (size === null) {
+      try {
+        size = (await res.clone().arrayBuffer()).byteLength;
+      } catch {
+        size = null;
+      }
+    }
+    rawRecords.push({
+      url: req.url,
+      size,
+      contentType: res.headers.get('content-type') || 'application/octet-stream',
+      cachedAt: res.headers.get('x-vision-cached-at'),
+      sha256: res.headers.get('x-vision-sha256'),
+    });
+  }
+
+  const summary = summarizeBrowserCache(rawRecords);
+  return { available: true, swStatus, ...summary };
+}
+
+function renderCacheTable(document, host, entries, onDelete) {
+  host.replaceChildren();
+  if (!entries.length) {
+    const p = document.createElement('p');
+    p.textContent = 'このブラウザの Cache Storage にはまだモデル・WASMが保存されていません（モデルを実行すると自動保存されます）。';
+    host.append(p);
+    return;
+  }
+
+  const headers = ['ファイル名 / URL', '配信元', 'サイズ', 'SHA-256確認', '保存日時', '操作'];
+  const table = document.createElement('table');
+  const head = table.createTHead();
+  const hrow = head.insertRow();
+  for (const label of headers) {
+    const th = document.createElement('th');
+    th.scope = 'col';
+    th.textContent = label;
+    hrow.append(th);
+  }
+  const body = table.createTBody();
+
+  for (const entry of entries) {
+    const tr = body.insertRow();
+
+    const tdFile = tr.insertCell();
+    tdFile.dataset.label = headers[0];
+    const strong = document.createElement('strong');
+    strong.textContent = entry.fileName;
+    const pathDiv = document.createElement('div');
+    pathDiv.className = 'cache-path';
+    pathDiv.textContent = entry.url;
+    tdFile.append(strong, pathDiv);
+
+    const tdHost = tr.insertCell();
+    tdHost.dataset.label = headers[1];
+    tdHost.textContent = entry.host;
+
+    const tdSize = tr.insertCell();
+    tdSize.dataset.label = headers[2];
+    tdSize.textContent = entry.sizeLabel;
+
+    const tdSha = tr.insertCell();
+    tdSha.dataset.label = headers[3];
+    tdSha.textContent = entry.sha256;
+
+    const tdTime = tr.insertCell();
+    tdTime.dataset.label = headers[4];
+    tdTime.textContent = entry.cachedAt;
+
+    const tdAction = tr.insertCell();
+    tdAction.dataset.label = headers[5];
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'danger-button small-button';
+    delBtn.textContent = '削除';
+    delBtn.setAttribute('aria-label', `${entry.fileName} をキャッシュから削除`);
+    delBtn.addEventListener('click', () => {
+      void onDelete(entry.url);
+    });
+    tdAction.append(delBtn);
+  }
+
+  host.append(table);
+}
+
+export function mountInventory(document, env = {}) {
+  const cachesApi = env.cachesApi ?? (typeof globalThis.caches !== 'undefined' ? globalThis.caches : undefined);
+  const swContainer = env.serviceWorkerContainer ?? (typeof navigator !== 'undefined' ? navigator.serviceWorker : undefined);
+
+  const pageUrlEl = document.getElementById('page-url');
+  const copyBtn = document.getElementById('copy-page-url');
+  const copyNotice = document.getElementById('copy-notice');
   if (pageUrlEl) {
-    const currentUrl = (typeof window !== 'undefined' && window.location?.href) ? window.location.href : (document.URL || '/model-cache.html');
+    const currentUrl =
+      typeof window !== 'undefined' && window.location?.href
+        ? window.location.href
+        : document.URL || '/model-cache.html';
     pageUrlEl.textContent = currentUrl;
     if (copyBtn) {
       copyBtn.addEventListener('click', async () => {
@@ -96,35 +217,99 @@ export function mountInventory(document, fetchImpl) {
             ta.remove();
           }
           if (copyNotice) copyNotice.textContent = 'URLをコピーしました！';
-          setTimeout(() => { if (copyNotice) copyNotice.textContent = ''; }, 3000);
+          setTimeout(() => {
+            if (copyNotice) copyNotice.textContent = '';
+          }, 3000);
         } catch {
           if (copyNotice) copyNotice.textContent = 'コピーに失敗しました。';
         }
       });
     }
   }
-  const button = document.getElementById('refresh'), notice = document.getElementById('notice'), observed = document.getElementById('observed'), cached = document.getElementById('cached'), configured = document.getElementById('configured');
+
+  const refreshBtn = document.getElementById('refresh');
+  const clearAllBtn = document.getElementById('clear-all');
+  const swStatusEl = document.getElementById('sw-status');
+  const notice = document.getElementById('notice');
+  const observed = document.getElementById('observed');
+  const cachedHost = document.getElementById('cached');
+
   let pending = false;
+
+  async function deleteEntry(url) {
+    if (!cachesApi || typeof cachesApi.open !== 'function') return;
+    try {
+      const cache = await cachesApi.open(MODEL_CACHE_NAME);
+      await cache.delete(url);
+      swContainer?.controller?.postMessage({ type: 'DELETE_MODEL_CACHE_ENTRY', url });
+    } finally {
+      await refresh();
+    }
+  }
+
+  async function clearAll() {
+    if (!cachesApi || typeof cachesApi.delete !== 'function') return;
+    if (clearAllBtn) clearAllBtn.disabled = true;
+    try {
+      await cachesApi.delete(MODEL_CACHE_NAME);
+      swContainer?.controller?.postMessage({ type: 'CLEAR_MODEL_CACHE' });
+    } finally {
+      if (clearAllBtn) clearAllBtn.disabled = false;
+      await refresh();
+    }
+  }
+
   async function refresh() {
     if (pending) return;
-    pending = true; button.disabled = true; notice.textContent = '観測中…';
-    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 5000);
+    pending = true;
+    if (refreshBtn) refreshBtn.disabled = true;
+    if (notice) notice.textContent = 'ブラウザキャッシュを確認中…';
+
     try {
-      const response = await fetchImpl('/api/model-cache/status', { method: 'GET', cache: 'no-store', signal: controller.signal });
-      if (!response.ok) throw new Error('Status HTTP failure');
-      const snapshot = inventorySnapshot(await response.json());
-      const ready = snapshot.rows.filter(row => row.cached);
-      notice.textContent = snapshot.invalid ? `一部の状態が不正です（${snapshot.invalid}件）。そのファイルは保存・検証済みとして数えていません。` : `保存・検証済み ${ready.length}件 ／ 設定済み ${snapshot.rows.length}件`;
-      observed.textContent = `サーバー観測時刻: ${new Date(snapshot.observedAt).toLocaleString('ja-JP')} ／ 受信時刻: ${new Date().toLocaleString('ja-JP')}`;
-      table(document, cached, ready, snapshot.invalid ? '検証済みと確認できるファイルはありません。一部の状態は不明です。' : 'この観測では保存・検証済みファイルはありません。');
-      table(document, configured, snapshot.rows.filter(row => !row.cached), '未準備の登録ファイルはありません。');
+      const state = await readBrowserCacheState(cachesApi, swContainer);
+      if (swStatusEl) {
+        if (!state.swStatus.supported) {
+          swStatusEl.textContent = 'Service Worker: このブラウザでは非対応です（Cache Storage 直接参照のみ使用）';
+        } else if (state.swStatus.registered) {
+          swStatusEl.textContent = `Service Worker: 登録済み (${state.swStatus.activeState ?? 'pending'}${state.swStatus.controllerActive ? '・ページ制御中' : ''})`;
+        } else {
+          swStatusEl.textContent = 'Service Worker: 未登録（HTTPSまたはメインスタジオ起動時に登録されます）';
+        }
+      }
+
+      if (!state.available) {
+        if (notice) notice.textContent = '取得不能：この環境では Cache Storage API を参照できません。';
+        if (observed) observed.textContent = `確認時刻: ${new Date().toLocaleString('ja-JP')}`;
+        cachedHost?.replaceChildren();
+        return;
+      }
+
+      if (notice) {
+        notice.textContent = state.invalid
+          ? `ブラウザ保存済み ${state.entries.length}件（合計 ${formatBytes(state.totalBytes)} · 無効レコード ${state.invalid}件を除外）`
+          : `ブラウザ保存済み ${state.entries.length}件（合計 ${formatBytes(state.totalBytes)}）`;
+      }
+      if (observed) {
+        observed.textContent = `確認時刻: ${new Date().toLocaleString('ja-JP')} ／ ストア名: ${MODEL_CACHE_NAME}`;
+      }
+      if (clearAllBtn) {
+        clearAllBtn.disabled = state.entries.length === 0;
+      }
+      if (cachedHost) {
+        renderCacheTable(document, cachedHost, state.entries, deleteEntry);
+      }
     } catch {
-      notice.textContent = '取得不能：キャッシュAPIが利用できません。保存ファイル数・状態は不明です。';
-      observed.textContent = `取得試行時刻: ${new Date().toLocaleString('ja-JP')}`;
-      cached.replaceChildren(); configured.replaceChildren();
-    } finally { clearTimeout(timer); pending = false; button.disabled = false; }
+      if (notice) notice.textContent = '取得不能：ブラウザキャッシュの読み取りに失敗しました。';
+      if (observed) observed.textContent = `確認試行時刻: ${new Date().toLocaleString('ja-JP')}`;
+      cachedHost?.replaceChildren();
+    } finally {
+      pending = false;
+      if (refreshBtn) refreshBtn.disabled = false;
+    }
   }
-  button.addEventListener('click', refresh);
+
+  refreshBtn?.addEventListener('click', refresh);
+  clearAllBtn?.addEventListener('click', clearAll);
   void refresh();
   return refresh;
 }

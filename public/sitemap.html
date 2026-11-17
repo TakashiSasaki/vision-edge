@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>サイトマップ | VisionStudio AI</title>
-  <meta name="description" content="VisionStudio AI のサイトマップ。メインスタジオ、モデルキャッシュ一覧、再配布可能モデル配信パス、ライセンス情報への案内。">
+  <meta name="description" content="VisionStudio AI のサイトマップ。メインスタジオ、ブラウザモデルキャッシュ管理、モデル配信元URL、ライセンス情報への案内。">
   <link rel="stylesheet" href="/model-cache.css">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
 </head>
@@ -13,85 +13,91 @@
   <nav class="site-nav" aria-label="サイト内ナビゲーション">
     <a href="/">アプリに戻る</a>
     <span aria-hidden="true">·</span>
-    <a href="/model-cache.html">コンテナのモデルキャッシュ一覧</a>
+    <a href="/model-cache.html">ブラウザのモデルキャッシュ一覧</a>
     <span aria-hidden="true">·</span>
     <a href="/licenses/classifier-models.txt">分類モデルの出典・ライセンス</a>
   </nav>
 
   <h1>サイトマップ</h1>
-  <p>VisionStudio AI アプリケーション内の全ページ、モデルキャッシュ機能、公開APIエンドポイント、およびライセンス・仕様情報への案内です。</p>
+  <p>VisionStudio AI アプリケーション内の全ページ、ブラウザキャッシュ管理機能、公開モデルURL、およびライセンス・仕様情報への案内です。</p>
 
   <section aria-labelledby="pages-title">
     <h2 id="pages-title">主要アプリケーション画面</h2>
     <ul>
       <li>
         <a href="/"><strong>Webcam Vision &amp; Segmentation Studio</strong> (/)</a>
-        <p>リアルタイムWebカメラ入力に対する人物領域推定（Selfie Segmenter）、物体検出（MediaPipe EfficientDet）、セグメンテーション（YOLO / SegFormer）、画像全体分類（EfficientNet）を実行するメインスタジオ。</p>
+        <p>リアルタイムWebカメラ入力に対する人物領域推定（Selfie Segmenter）、物体検出（MediaPipe EfficientDet）、セグメンテーション（YOLO / SegFormer）、画像全体分類（EfficientNet）、ステレオ深度推定（Stereo Depth）を実行するメインスタジオ。</p>
       </li>
       <li>
-        <a href="/model-cache.html"><strong>コンテナのモデルキャッシュ一覧</strong> (/model-cache.html)</a>
-        <p>コンテナ内にキャッシュされたモデルバイナリの保存状況、SHA256ハッシュ検証状態、および再配布可能なモデルファイルの配信URL・ダウンロードリンク一覧。</p>
+        <a href="/model-cache.html"><strong>ブラウザのモデルキャッシュ一覧</strong> (/model-cache.html)</a>
+        <p>Service Worker とブラウザの Cache Storage (<code>vision-studio-models-v1</code>) に保存されたモデルの確認・削除、および利用モデルの取得元URL一覧。</p>
       </li>
     </ul>
   </section>
 
   <section aria-labelledby="models-title">
-    <h2 id="models-title">コンテナキャッシュ対象モデルファイル（再配布可能）</h2>
-    <p>コンテナ内でキャッシュ配信される登録済みモデル一覧と各配信URLパスです。検証済みファイルはローカルキャッシュから即時配信されます。</p>
+    <h2 id="models-title">利用モデルファイル・配信URL一覧</h2>
+    <p>各モデルは初回実行時に公式CDN（CORS対応）またはステートレスCORS中継からブラウザへダウンロードされ、Service Worker 経由でブラウザにキャッシュされます。</p>
     <ul>
       <li>
-        <a href="/api/model-cache/models/efficientnet_lite0.tflite?sha256=6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0"><code>efficientnet_lite0.tflite</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/efficientnet_lite0.tflite?sha256=6c7ab0a6e5dcbf38a8c33b960996a55a3b4300b36a018c4545801de3a3c8bde0</code> — 画像全体分類 Lite0 / Apache-2.0 / 224x224入力</div>
+        <a href="https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite"><code>efficientnet_lite0.tflite</code></a>
+        <div class="cache-path">URL: <code>https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite</code> — 画像全体分類 Lite0 / Apache-2.0 / 224x224入力</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/efficientnet_lite2.tflite?sha256=94b6c84a5d6de20f932558de213b50e0338dcc06ab83d8d64b12128a476b4b83"><code>efficientnet_lite2.tflite</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/efficientnet_lite2.tflite?sha256=94b6c84a5d6de20f932558de213b50e0338dcc06ab83d8d64b12128a476b4b83</code> — 画像全体分類 Lite2 / Apache-2.0 / 260x260入力</div>
+        <a href="https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite"><code>efficientnet_lite2.tflite</code></a>
+        <div class="cache-path">URL: <code>https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite</code> — 画像全体分類 Lite2 / Apache-2.0 / 260x260入力</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/selfie_segmenter.tflite"><code>selfie_segmenter.tflite</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/selfie_segmenter.tflite</code> — 人物領域推定 Selfie Segmenter General / Apache-2.0</div>
+        <a href="https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite"><code>selfie_segmenter.tflite</code></a>
+        <div class="cache-path">URL: <code>https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite</code> — 人物領域推定 Selfie Segmenter General / Apache-2.0</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/selfie_segmenter_landscape.tflite"><code>selfie_segmenter_landscape.tflite</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/selfie_segmenter_landscape.tflite</code> — 人物領域推定 Selfie Segmenter Landscape / Apache-2.0</div>
+        <a href="https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite"><code>selfie_segmenter_landscape.tflite</code></a>
+        <div class="cache-path">URL: <code>https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite</code> — 人物領域推定 Selfie Segmenter Landscape / Apache-2.0</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/efficientdet_lite0.tflite"><code>efficientdet_lite0.tflite</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/efficientdet_lite0.tflite</code> — 物体検出 MediaPipe EfficientDet Lite0 / Apache-2.0</div>
+        <a href="https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite"><code>efficientdet_lite0.tflite</code></a>
+        <div class="cache-path">URL: <code>https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite</code> — 物体検出 MediaPipe EfficientDet Lite0 / Apache-2.0</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/efficientdet_lite2.tflite"><code>efficientdet_lite2.tflite</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/efficientdet_lite2.tflite</code> — 物体検出 MediaPipe EfficientDet Lite2 / Apache-2.0</div>
+        <a href="https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/float16/1/efficientdet_lite2.tflite"><code>efficientdet_lite2.tflite</code></a>
+        <div class="cache-path">URL: <code>https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/float16/1/efficientdet_lite2.tflite</code> — 物体検出 MediaPipe EfficientDet Lite2 / Apache-2.0</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/yolov8n-seg.onnx"><code>yolov8n-seg.onnx</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/yolov8n-seg.onnx</code> — Ultralytics YOLOv8 Nano セグメンテーション / AGPL-3.0</div>
+        <a href="https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/yolov8n-seg.onnx"><code>yolov8n-seg.onnx</code></a>
+        <div class="cache-path">URL: <code>https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/yolov8n-seg.onnx</code> — Ultralytics YOLOv8 Nano セグメンテーション / AGPL-3.0</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/yolov8s-seg.onnx"><code>yolov8s-seg.onnx</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/yolov8s-seg.onnx</code> — Ultralytics YOLOv8 Small セグメンテーション / AGPL-3.0</div>
+        <a href="https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/dynamic/yolov8s-seg.onnx"><code>yolov8s-seg.onnx</code></a>
+        <div class="cache-path">URL: <code>https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/dynamic/yolov8s-seg.onnx</code> — Ultralytics YOLOv8 Small セグメンテーション / AGPL-3.0</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/segformer-b0-quantized.onnx"><code>segformer-b0-quantized.onnx</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/segformer-b0-quantized.onnx</code> — SegFormer B0 Quantized セグメンテーション / NVIDIA Non-Commercial License</div>
+        <a href="https://huggingface.co/Xenova/segformer-b0-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx"><code>segformer-b0-quantized.onnx</code></a>
+        <div class="cache-path">URL: <code>https://huggingface.co/Xenova/segformer-b0-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx</code> — SegFormer B0 Quantized セグメンテーション / NVIDIA Non-Commercial License</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/segformer-b1-quantized.onnx"><code>segformer-b1-quantized.onnx</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/segformer-b1-quantized.onnx</code> — SegFormer B1 Quantized セグメンテーション / NVIDIA Non-Commercial License</div>
+        <a href="https://huggingface.co/Xenova/segformer-b1-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx"><code>segformer-b1-quantized.onnx</code></a>
+        <div class="cache-path">URL: <code>https://huggingface.co/Xenova/segformer-b1-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx</code> — SegFormer B1 Quantized セグメンテーション / NVIDIA Non-Commercial License</div>
       </li>
       <li>
-        <a href="/api/model-cache/models/segformer-b2-quantized.onnx"><code>segformer-b2-quantized.onnx</code></a>
-        <div class="cache-path">URL: <code>/api/model-cache/models/segformer-b2-quantized.onnx</code> — SegFormer B2 Quantized セグメンテーション / NVIDIA Non-Commercial License</div>
+        <a href="https://huggingface.co/Xenova/segformer-b2-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx"><code>segformer-b2-quantized.onnx</code></a>
+        <div class="cache-path">URL: <code>https://huggingface.co/Xenova/segformer-b2-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx</code> — SegFormer B2 Quantized セグメンテーション / NVIDIA Non-Commercial License</div>
       </li>
-    </ul>
-  </section>
-
-  <section aria-labelledby="api-title">
-    <h2 id="api-title">キャッシュ API &amp; 診断エンドポイント</h2>
-    <ul>
       <li>
-        <a href="/api/model-cache/status"><code>/api/model-cache/status</code></a>
-        <p>モデルカタログ、ハッシュ検証状態、WASMアセット配置状態をJSON形式で返却する読み取り専用エンドポイント。</p>
+        <a href="/api/cors-proxy/stereo/model_528_240_float32.onnx"><code>model_528_240_float32.onnx</code></a>
+        <div class="cache-path">URL: <code>/api/cors-proxy/stereo/model_528_240_float32.onnx</code> — MobileStereoNet-2D / MIT（Google Drive CORS中継）</div>
+      </li>
+      <li>
+        <a href="/api/cors-proxy/stereo/hitnet_sceneflow_240x320.onnx"><code>hitnet_sceneflow_240x320.onnx</code></a>
+        <div class="cache-path">URL: <code>/api/cors-proxy/stereo/hitnet_sceneflow_240x320.onnx</code> — HITNet SceneFlow / Apache-2.0（GitHub Releases CORS中継）</div>
+      </li>
+      <li>
+        <a href="/api/cors-proxy/stereo/crestereo_init_iter2_180x320.onnx"><code>crestereo_init_iter2_180x320.onnx</code></a>
+        <div class="cache-path">URL: <code>/api/cors-proxy/stereo/crestereo_init_iter2_180x320.onnx</code> — CREStereo Init Iter2 / Apache-2.0（GitHub Releases CORS中継）</div>
+      </li>
+      <li>
+        <a href="/api/cors-proxy/stereo/crestereo_combined_iter5_240x320.onnx"><code>crestereo_combined_iter5_240x320.onnx</code></a>
+        <div class="cache-path">URL: <code>/api/cors-proxy/stereo/crestereo_combined_iter5_240x320.onnx</code> — CREStereo Combined Iter5 / Apache-2.0（GitHub Releases CORS中継）</div>
       </li>
     </ul>
   </section>

@@ -13,15 +13,15 @@ import {
   MIRAGE_UPSTREAM_URL,
   MIRAGE_VARIANT_CATALOG,
   getVariantCatalogEntry,
+  resetResolvedSourcesForTest,
   resolveModelAssetUrls,
-  setContainerModelCacheEnabledForTest,
 } from './modelAssetResolver';
 import * as mirageReconstructor from './mirageOnnxReconstructor';
 
 async function request(
   manager: ContainerModelCacheManager,
   method: 'GET' | 'HEAD',
-  url = MIRAGE_LOCAL_URL,
+  url = '/api/model-cache/mirage/mirage.cact',
 ) {
   const headers: Record<string, string> = {};
   let body: string | Buffer = '';
@@ -46,7 +46,7 @@ describe('Mirage asset delivery and cache integrity', () => {
   });
 
   afterEach(async () => {
-    setContainerModelCacheEnabledForTest(null);
+    resetResolvedSourcesForTest();
     vi.restoreAllMocks();
     await rm(directory, { recursive: true, force: true });
   });
@@ -62,7 +62,7 @@ describe('Mirage asset delivery and cache integrity', () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const manager = new ContainerModelCacheManager({ cacheDir: directory, fetchImpl: fetch });
 
-    const result = await request(manager, 'GET', MIRAGE_LOCAL_URL);
+    const result = await request(manager, 'GET');
 
     expect(result.status).toBe(200);
     expect(result.headers['x-model-variant']).toBe('mirage-51m');
@@ -90,7 +90,7 @@ describe('Mirage asset delivery and cache integrity', () => {
       cacheDir: directory,
       fetchImpl: badFetch,
     });
-    const badRes = await request(managerBad, 'GET', MIRAGE_LOCAL_URL);
+    const badRes = await request(managerBad, 'GET');
     expect(badRes.status).toBe(503);
     expect(JSON.parse(badRes.body)).toMatchObject({
       reason: 'Pinned model SHA256 mismatch',
@@ -109,7 +109,7 @@ describe('Mirage asset delivery and cache integrity', () => {
       cacheDir: directory,
       fetchImpl: goodFetch,
     });
-    const goodRes = await request(managerGood, 'GET', MIRAGE_LOCAL_URL);
+    const goodRes = await request(managerGood, 'GET');
     expect(goodRes.status).toBe(200);
     expect(Buffer.from(goodRes.body)).toEqual(validArchive);
     expect(await readFile(targetPath)).toEqual(validArchive);
@@ -136,7 +136,7 @@ describe('Mirage asset delivery and cache integrity', () => {
     // Caller 1 disconnects before upstream completes
     const caller1Listeners: Record<string, (() => void)[]> = {};
     const caller1Req = {
-      url: MIRAGE_LOCAL_URL,
+      url: '/api/model-cache/mirage/mirage.cact',
       method: 'GET',
       destroyed: false,
       once(ev: string, fn: () => void) { (caller1Listeners[ev] ??= []).push(fn); },
@@ -153,7 +153,7 @@ describe('Mirage asset delivery and cache integrity', () => {
     } as unknown as ServerResponse;
 
     const p1 = mw(caller1Req, caller1Res, () => {});
-    const p2 = request(manager, 'GET', MIRAGE_LOCAL_URL);
+    const p2 = request(manager, 'GET');
 
     await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
 
@@ -195,13 +195,11 @@ describe('Mirage asset delivery and cache integrity', () => {
     expect(await readdir(directory)).toEqual([]);
   });
 
-  it.each([false, true])('keeps the original .cact routing as the default (cache=%s)', async (cacheEnabled) => {
-    setContainerModelCacheEnabledForTest(cacheEnabled);
+  it('keeps the original .cact routing directly to HF upstream as default', async () => {
     const fetch = vi.spyOn(globalThis, 'fetch');
-    const expected = cacheEnabled
-      ? { primaryUrl: MIRAGE_LOCAL_URL, fallbackUrl: MIRAGE_UPSTREAM_URL, source: 'container-cache' }
-      : { primaryUrl: MIRAGE_UPSTREAM_URL, fallbackUrl: null, source: 'external' };
+    const expected = { primaryUrl: MIRAGE_UPSTREAM_URL, fallbackUrl: null, source: 'external' };
 
+    expect(MIRAGE_LOCAL_URL).toBe(MIRAGE_UPSTREAM_URL);
     expect(await resolveModelAssetUrls('mirage')).toEqual(expected);
     expect(await resolveModelAssetUrls('mirage', 'mirage-51m')).toEqual(expected);
     expect(getVariantCatalogEntry('mirage')).toMatchObject({ variantId: 'mirage-51m', isDefault: true });

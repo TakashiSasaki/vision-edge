@@ -50,8 +50,8 @@ interface ClassifierCi {
 }
 declare global { interface Window { classifierCi: ClassifierCi } }
 const classifierCi: ClassifierCi = window.classifierCi = { marker: 'CLASSIFIER_CI_ONLY', creates: [], calls: 0, closes: 0, failCreates: 0, failRuns: 0 };
-export const ImageClassifier = { createFromOptions: async (_fileset: unknown, options: { baseOptions: { modelAssetPath: string; delegate: string }; runningMode: string }) => {
-  const variant = options.baseOptions.modelAssetPath.includes('efficientnet_lite2') ? 'lite2' : 'lite0';
+export const ImageClassifier = { createFromOptions: async (_fileset: unknown, options: { baseOptions: { modelAssetBuffer?: Uint8Array; modelAssetPath?: string; delegate: string }; runningMode: string }) => {
+  const variant = options.baseOptions.modelAssetBuffer?.byteLength === 24_325_765 || options.baseOptions.modelAssetPath?.includes('efficientnet_lite2') ? 'lite2' : 'lite0';
   classifierCi.creates.push(`${variant}:${options.baseOptions.delegate}`);
   const gate = classifierCi.gate; if (gate) await gate;
   if (classifierCi.failCreates > 0) { classifierCi.failCreates--; throw Error('CLASSIFIER_CI_ONLY initialization failure'); }

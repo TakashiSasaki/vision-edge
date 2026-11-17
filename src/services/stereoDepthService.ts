@@ -18,10 +18,11 @@ import {
   unknownOnnxBackend,
 } from './onnxSession';
 import {
-  isContainerModelCacheEnabled,
   resolveOrtWasmUrls,
+  type AssetDeliverySource,
   type AssetSourceRecorder,
 } from './modelAssetResolver';
+import { fetchModelBytesWithBrowserCache, STEREO_CORS_PROXY_PREFIX } from './browserModelCache';
 import {
   computeDisparityStats,
   computeSadDisparity,
@@ -143,7 +144,6 @@ export const STEREO_MODEL_PROFILES: Record<StereoDepthVariantId, StereoModelProf
       'https://cdn.jsdelivr.net/gh/zz990099/lightstereo_cpp@master/models/lightstereo_s_sceneflow_general_opt_256_512.onnx',
     fallbackModelUrl:
       'https://raw.githubusercontent.com/zz990099/lightstereo_cpp/master/models/lightstereo_s_sceneflow_general_opt_256_512.onnx',
-    containerCacheUrl: '/api/model-cache/stereo/lightstereo_s_sceneflow_general_opt_256_512.onnx',
   },
   'mobilestereonet-2d': {
     variantId: 'mobilestereonet-2d',
@@ -158,11 +158,11 @@ export const STEREO_MODEL_PROFILES: Record<StereoDepthVariantId, StereoModelProf
     license: 'MIT',
     licenseNote: 'MobileStereoNet-2D (Shamsafar et al. / ONNX-MobileStereoNet) / MIT（3D畳み込み集約ノードのため自動時はWASM構成 · 240×528 · 手動でWebGPU強制試行可能）',
     upstreamUrl: 'https://github.com/ibaiGorordo/ONNX-MobileStereoNet',
-    onlineDelivery: 'direct-cors',
-    onlineSourceLabel: 'Google Drive Direct (CORS)',
+    onlineDelivery: 'cors-proxy',
+    onlineSourceLabel: 'Google Drive (CORS中継 + ブラウザキャッシュ)',
     defaultModelUrl:
       'https://drive.usercontent.google.com/download?id=1Dkyrg5Fu554gqxfclkHC6zJBCYrdzOO0&export=download&confirm=t',
-    containerCacheUrl: '/api/model-cache/stereo/model_528_240_float32.onnx',
+    corsProxyUrl: `${STEREO_CORS_PROXY_PREFIX}model_528_240_float32.onnx`,
   },
   'hitnet-sf': {
     variantId: 'hitnet-sf',
@@ -177,11 +177,11 @@ export const STEREO_MODEL_PROFILES: Record<StereoDepthVariantId, StereoModelProf
     license: 'Apache-2.0',
     licenseNote: 'HITNet SceneFlow (Tankovich et al. / PINTO0309 変換 ONNX) / Apache-2.0（WebGPU優先 + WASMフォールバック · [1,6,240,320]連結入力）',
     upstreamUrl: 'https://github.com/nburrus/stereodemo/releases/tag/v0.1-hitnet',
-    onlineDelivery: 'server-proxy',
-    onlineSourceLabel: 'GitHub Releases (コンテナキャッシュ経由)',
+    onlineDelivery: 'cors-proxy',
+    onlineSourceLabel: 'GitHub Releases (CORS中継 + ブラウザキャッシュ)',
     defaultModelUrl:
       'https://github.com/nburrus/stereodemo/releases/download/v0.1-hitnet/hitnet_sceneflow_240x320.onnx',
-    containerCacheUrl: '/api/model-cache/stereo/hitnet_sceneflow_240x320.onnx',
+    corsProxyUrl: `${STEREO_CORS_PROXY_PREFIX}hitnet_sceneflow_240x320.onnx`,
   },
   'crestereo-init-iter2': {
     variantId: 'crestereo-init-iter2',
@@ -196,11 +196,11 @@ export const STEREO_MODEL_PROFILES: Record<StereoDepthVariantId, StereoModelProf
     license: 'Apache-2.0',
     licenseNote: 'CREStereo Init Iter2 (MEGVII / PINTO0309 変換 ONNX) / Apache-2.0（Concat自動分割によるWebGPU高速実行 + WASMフォールバック対応 · 180×320）',
     upstreamUrl: 'https://github.com/nburrus/stereodemo/releases/tag/v0.1-crestereo',
-    onlineDelivery: 'server-proxy',
-    onlineSourceLabel: 'GitHub Releases (コンテナキャッシュ経由)',
+    onlineDelivery: 'cors-proxy',
+    onlineSourceLabel: 'GitHub Releases (CORS中継 + ブラウザキャッシュ)',
     defaultModelUrl:
       'https://github.com/nburrus/stereodemo/releases/download/v0.1-crestereo/crestereo_init_iter2_180x320.onnx',
-    containerCacheUrl: '/api/model-cache/stereo/crestereo_init_iter2_180x320.onnx',
+    corsProxyUrl: `${STEREO_CORS_PROXY_PREFIX}crestereo_init_iter2_180x320.onnx`,
   },
   'crestereo-combined-iter5': {
     variantId: 'crestereo-combined-iter5',
@@ -215,11 +215,11 @@ export const STEREO_MODEL_PROFILES: Record<StereoDepthVariantId, StereoModelProf
     license: 'Apache-2.0',
     licenseNote: 'CREStereo Combined Iter5 (MEGVII / PINTO0309 変換 ONNX) / Apache-2.0（Concat自動分割によるWebGPU高速実行 + WASMフォールバック対応 · 240×320）',
     upstreamUrl: 'https://github.com/nburrus/stereodemo/releases/tag/v0.1-crestereo',
-    onlineDelivery: 'server-proxy',
-    onlineSourceLabel: 'GitHub Releases (コンテナキャッシュ経由)',
+    onlineDelivery: 'cors-proxy',
+    onlineSourceLabel: 'GitHub Releases (CORS中継 + ブラウザキャッシュ)',
     defaultModelUrl:
       'https://github.com/nburrus/stereodemo/releases/download/v0.1-crestereo/crestereo_combined_iter5_240x320.onnx',
-    containerCacheUrl: '/api/model-cache/stereo/crestereo_combined_iter5_240x320.onnx',
+    corsProxyUrl: `${STEREO_CORS_PROXY_PREFIX}crestereo_combined_iter5_240x320.onnx`,
   },
   'custom-onnx': {
     variantId: 'custom-onnx',
@@ -1143,7 +1143,7 @@ export interface StereoWorkerInitConfig {
   profile: StereoModelProfile;
   onnxBytes?: Uint8Array;
   backendPreference?: StereoBackendPreference;
-  primarySource?: 'container-cache' | 'external' | 'external-fallback';
+  primarySource?: AssetDeliverySource;
   recordAssetSource?: AssetSourceRecorder;
   workerFactory?: () => StereoWorkerLike;
 }
@@ -1317,8 +1317,8 @@ export class StereoWorkerEngine implements StereoDepthTask {
       }
 
       if (config.profile.engineType === 'sad-cpu' || config.profile.engineType === 'webgpu-wgsl') {
-        config.recordAssetSource?.('stereo-depth', 'container-cache');
-        config.recordAssetSource?.(`stereo-depth:${config.variantId}`, 'container-cache');
+        config.recordAssetSource?.('stereo-depth', 'browser-cache');
+        config.recordAssetSource?.(`stereo-depth:${config.variantId}`, 'browser-cache');
       } else {
         const src = config.primarySource ?? 'external';
         config.recordAssetSource?.('stereo-depth', src);
@@ -1591,32 +1591,19 @@ export function clearRemoteStereoOnnxCache(): void {
   remoteStereoOnnxCache.clear();
 }
 
-function isLikelyHtmlPayload(bytes: Uint8Array): boolean {
-  if (bytes.byteLength === 0) return true;
-  const head = String.fromCharCode(...bytes.subarray(0, Math.min(32, bytes.byteLength)))
-    .trimStart()
-    .toLowerCase();
-  return head.startsWith('<!doctype') || head.startsWith('<html');
-}
-
 async function fetchStereoOnnxBytes(
   url: string,
   fetchImpl: typeof fetch,
   signal?: AbortSignal
-): Promise<Uint8Array> {
-  const init: RequestInit = signal
-    ? { method: 'GET', redirect: 'follow', signal }
-    : { method: 'GET', redirect: 'follow' };
-  const response = await fetchImpl(url, init);
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-  const buffer = await response.arrayBuffer();
-  const rawBytes = new Uint8Array(buffer);
-  if (rawBytes.byteLength < 1024 || isLikelyHtmlPayload(rawBytes)) {
-    throw new Error(`Invalid ONNX payload (${rawBytes.byteLength} bytes)`);
-  }
-  return stripOnnxGraphValueInfo(rawBytes);
+): Promise<{ bytes: Uint8Array; fromCache: boolean }> {
+  const { bytes: rawBytes, fromCache } = await fetchModelBytesWithBrowserCache(url, {
+    fetchImpl,
+    signal,
+  });
+  return {
+    bytes: stripOnnxGraphValueInfo(rawBytes),
+    fromCache,
+  };
 }
 
 export interface StereoDepthTaskOptions {
@@ -1669,8 +1656,8 @@ export async function createStereoDepthTask(
         workerFactory: options.workerFactory,
       });
     }
-    options.recordAssetSource?.('stereo-depth', 'container-cache');
-    options.recordAssetSource?.(`stereo-depth:${profile.variantId}`, 'container-cache');
+    options.recordAssetSource?.('stereo-depth', 'browser-cache');
+    options.recordAssetSource?.(`stereo-depth:${profile.variantId}`, 'browser-cache');
     return new StereoSadEngine();
   }
 
@@ -1684,14 +1671,14 @@ export async function createStereoDepthTask(
         workerFactory: options.workerFactory,
       });
     }
-    options.recordAssetSource?.('stereo-depth', 'container-cache');
-    options.recordAssetSource?.(`stereo-depth:${profile.variantId}`, 'container-cache');
+    options.recordAssetSource?.('stereo-depth', 'browser-cache');
+    options.recordAssetSource?.(`stereo-depth:${profile.variantId}`, 'browser-cache');
     return StereoWgslEngine.create(backendPreference);
   }
 
   const buildStereoEngine = async (
     onnxBytes: Uint8Array,
-    primarySource: 'container-cache' | 'external' | 'external-fallback'
+    primarySource: AssetDeliverySource
   ): Promise<StereoDepthTask> => {
     if (useWorker) {
       return StereoWorkerEngine.create({
@@ -1755,15 +1742,14 @@ export async function createStereoDepthTask(
 
   if (localBytes) {
     const preparedLocal = stripOnnxGraphValueInfo(localBytes);
-    return buildStereoEngine(preparedLocal, 'container-cache');
+    return buildStereoEngine(preparedLocal, 'browser-cache');
   }
 
   interface CandidateSource {
     url: string;
-    source: 'container-cache' | 'external' | 'external-fallback';
+    source: AssetDeliverySource;
   }
 
-  const cacheEnabled = isContainerModelCacheEnabled();
   const candidates: CandidateSource[] = [];
 
   if (options.modelUrl) {
@@ -1775,20 +1761,17 @@ export async function createStereoDepthTask(
     ) {
       candidates.push({ url: profile.fallbackModelUrl, source: 'external-fallback' });
     }
-  } else if (profile.onlineDelivery === 'server-proxy') {
-    if (!cacheEnabled || !profile.containerCacheUrl) {
+  } else if (profile.onlineDelivery === 'cors-proxy') {
+    if (!profile.corsProxyUrl) {
       throw new Error(
-        `${profile.variantId} の ONNX モデル (${profile.fileName}) は配布元の CORS 制約のため、コンテナキャッシュサーバー経由またはローカル .onnx 読み込みが必要です。右パネル「モデル調整」からローカルの .onnx ファイルを選択するか、「LightStereo-S」「MobileStereoNet-2D」「SAD Baseline」へ切り替えてください。`
+        `${profile.variantId} の ONNX モデル (${profile.fileName}) の取得URLが未設定です。右パネル「モデル調整」からローカルの .onnx ファイルを選択してください。`
       );
     }
-    candidates.push({ url: profile.containerCacheUrl, source: 'container-cache' });
+    candidates.push({ url: profile.corsProxyUrl, source: 'cors-proxy' });
   } else if (profile.defaultModelUrl) {
     candidates.push({ url: profile.defaultModelUrl, source: 'external' });
     if (profile.fallbackModelUrl && profile.fallbackModelUrl !== profile.defaultModelUrl) {
       candidates.push({ url: profile.fallbackModelUrl, source: 'external-fallback' });
-    }
-    if (cacheEnabled && profile.containerCacheUrl) {
-      candidates.push({ url: profile.containerCacheUrl, source: 'container-cache' });
     }
   } else {
     throw new Error(
@@ -1800,7 +1783,7 @@ export async function createStereoDepthTask(
   if (!options.modelUrl) {
     const cachedRemote = remoteStereoOnnxCache.get(profile.variantId);
     if (cachedRemote) {
-      return buildStereoEngine(cachedRemote, candidates[0]?.source ?? 'external');
+      return buildStereoEngine(cachedRemote, 'browser-cache');
     }
   }
 
@@ -1808,7 +1791,7 @@ export async function createStereoDepthTask(
   activeInitController = controller;
 
   let loadedBytes: Uint8Array | null = null;
-  let resolvedSource: CandidateSource['source'] = candidates[0].source;
+  let resolvedSource: AssetDeliverySource = candidates[0].source;
   const failureMessages: string[] = [];
   let lastError: unknown;
 
@@ -1818,12 +1801,13 @@ export async function createStereoDepthTask(
         throw new Error('Stereo model download aborted due to variant switch');
       }
       try {
-        loadedBytes = await fetchStereoOnnxBytes(
+        const fetched = await fetchStereoOnnxBytes(
           candidate.url,
           fetchImpl,
           controller?.signal
         );
-        resolvedSource = candidate.source;
+        loadedBytes = fetched.bytes;
+        resolvedSource = fetched.fromCache ? 'browser-cache' : candidate.source;
         break;
       } catch (err) {
         if (controller?.signal.aborted) {

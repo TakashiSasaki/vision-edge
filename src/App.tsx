@@ -333,7 +333,7 @@ export default function App({ engine: suppliedEngine, classificationEngine }: { 
         return;
       }
       try {
-        const res = await fetch(`/api/model-cache/mirage/fixtures/${preset}.png`);
+        const res = await fetch(`/api/mirage/fixtures/${preset}.png`);
         if (res.ok) {
           const blob = await res.blob();
           const bitmap = await createImageBitmap(blob);

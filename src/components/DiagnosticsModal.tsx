@@ -89,8 +89,8 @@ export function DiagnosticsModal({
 
     const initialSteps: SelfTestResult[] = [
       {
-        step: 'server-status',
-        name: '1. サーバー状態・キャッシュAPI確認 (/api/model-cache/status)',
+        step: 'browser-cache-status',
+        name: '1. Service Worker & ブラウザモデルキャッシュ確認 (Cache Storage)',
         status: 'pending',
       },
       {
@@ -151,21 +151,31 @@ export function DiagnosticsModal({
       coefficients: Float32Array;
     } | null = null;
 
-    // Step 1: Server Status
+    // Step 1: Service Worker & Browser Cache Storage Status
     try {
       updateStep(0, { status: 'running' });
       const t0 = performance.now();
-      const res = await fetch('/api/model-cache/status');
-      const ms = Math.round(performance.now() - t0);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      const swSupported = typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
+      const registration = swSupported
+        ? await navigator.serviceWorker.getRegistration().catch(() => undefined)
+        : undefined;
+      const cacheSupported = typeof caches !== 'undefined';
+      let cachedEntryCount = 0;
+      if (cacheSupported) {
+        const cache = await caches.open('vision-studio-models-v1');
+        cachedEntryCount = (await cache.keys()).length;
       }
-      const data = await res.json();
+      const ms = Math.round(performance.now() - t0);
       updateStep(0, {
         status: 'passed',
         durationMs: ms,
-        message: `サーバー応答正常 (カタログ数: ${data.catalogCount ?? '不明'}, WASM: MP=${data.wasm?.mediapipe?.available}, ORT=${data.wasm?.ort?.available})`,
-        details: { data },
+        message: `SW=${registration?.active ? '有効' : swSupported ? '登録待機/未制御' : '非対応'}, ブラウザ保存数=${cachedEntryCount}件`,
+        details: {
+          serviceWorkerSupported: swSupported,
+          serviceWorkerActive: Boolean(registration?.active),
+          cacheStorageSupported: cacheSupported,
+          cachedEntryCount,
+        },
       });
     } catch (err) {
       updateStep(0, {

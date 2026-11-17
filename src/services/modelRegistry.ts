@@ -223,7 +223,7 @@ export const STEREO_DEPTH_MODEL: ModelMetadata = {
     {
       id: 'hitnet-sf',
       name: 'HITNet (ONNX・軽量タイル精密化)',
-      description: '反復タイル精密化による高速ステレオONNX (240×320 · WebGPU優先 · コンテナキャッシュ経由オンライン自動取得対応)。ローカル .onnx 上書きも可能です。',
+      description: '反復タイル精密化による高速ステレオONNX (240×320 · WebGPU優先 · CORS中継 + ブラウザキャッシュ対応)。ローカル .onnx 上書きも可能です。',
       fileName: STEREO_VARIANT_CATALOG['stereo-depth:hitnet-sf'].file,
       upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:hitnet-sf'].upstreamUrl,
       localUrl: STEREO_VARIANT_CATALOG['stereo-depth:hitnet-sf'].localUrl,
@@ -231,7 +231,7 @@ export const STEREO_DEPTH_MODEL: ModelMetadata = {
     {
       id: 'crestereo-init-iter2',
       name: 'CREStereo Init Iter2 (ONNX・高精度)',
-      description: '階層的再帰精密化＋適応相関による高精度ステレオONNX (180×320 · Concat自動分割WebGPU優先 · コンテナキャッシュ経由オンライン自動取得対応)。',
+      description: '階層的再帰精密化＋適応相関による高精度ステレオONNX (180×320 · Concat自動分割WebGPU優先 · CORS中継 + ブラウザキャッシュ対応)。',
       fileName: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-init-iter2'].file,
       upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-init-iter2'].upstreamUrl,
       localUrl: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-init-iter2'].localUrl,
@@ -239,7 +239,7 @@ export const STEREO_DEPTH_MODEL: ModelMetadata = {
     {
       id: 'crestereo-combined-iter5',
       name: 'CREStereo Combined Iter5 (ONNX・最高精度)',
-      description: '2段階入力（init＋next · 240×320 · Concat自動分割WebGPU優先）で細部まで精密化する最高精度ステレオONNX（コンテナキャッシュ経由オンライン自動取得対応）。',
+      description: '2段階入力（init＋next · 240×320 · Concat自動分割WebGPU優先）で細部まで精密化する最高精度ステレオONNX（CORS中継 + ブラウザキャッシュ対応）。',
       fileName: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-combined-iter5'].file,
       upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-combined-iter5'].upstreamUrl,
       localUrl: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-combined-iter5'].localUrl,
@@ -347,7 +347,7 @@ export function backendDescription(state: ModelState): string {
 export const IMAGE_CLASSIFIER_MODEL = {
   id: 'image-classifier', name: 'EfficientNet-Lite', implemented: true, availableInUI: true,
   runtime: 'MediaPipe ImageClassifier0.10.14', outputType: 'whole-image-classification',
-  defaultVariantId: 'lite0', assetVerification: 'pinned-container-cache-required',
+  defaultVariantId: 'lite0', assetVerification: 'pinned-client-sha256-required',
   variants: Object.values(IMAGE_CLASSIFIER_ASSETS).map(entry => ({
     id: entry.variantId, name: entry.variantId === 'lite0' ? 'EfficientNet-Lite0' : 'EfficientNet-Lite2', fileName: entry.file,
     upstreamUrl: entry.upstreamUrl, isDefault: entry.variantId === 'lite0',

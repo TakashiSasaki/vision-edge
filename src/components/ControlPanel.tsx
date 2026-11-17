@@ -47,7 +47,6 @@ import {
   type StereoVideoGroundTruthRegion,
   type StereoVideoPresetId,
 } from '../services/stereoVideoService';
-import { isContainerModelCacheEnabled } from '../services/modelAssetResolver';
 import type { StereoVideoSource } from './VisionCanvas';
 
 const MIRAGE_LANGUAGE_LABELS: Record<string, string> = {
@@ -1550,14 +1549,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                           )}
                         </div>
                       ) : activeStereoProfile.onlineDelivery === 'direct-cors' ||
-                        (activeStereoProfile.onlineDelivery === 'server-proxy' &&
-                          isContainerModelCacheEnabled()) ? (
+                        activeStereoProfile.onlineDelivery === 'cors-proxy' ? (
                         <div className="p-2 rounded bg-cyan-950/35 border border-cyan-700/45 text-[10px] text-cyan-200 leading-relaxed">
                           オンライン自動取得対応 ({activeStereoProfile.onlineSourceLabel ?? 'HTTPS'} · {activeStereoProfile.defaultWidth}×{activeStereoProfile.defaultHeight})。必要に応じてローカルの .onnx ファイルで上書きできます。
-                        </div>
-                      ) : activeStereoProfile.onlineDelivery === 'server-proxy' ? (
-                        <div className="text-[10px] text-amber-300 leading-relaxed">
-                          このモデルは配布元 CORS 制約のためコンテナキャッシュサーバー経由またはローカル .onnx 読込が必要です。ローカルの .onnx ファイルを選択するか、ブラウザ直接取得対応の「LightStereo-S」「MobileStereoNet-2D」をご利用ください。
                         </div>
                       ) : (
                         <div className="text-[10px] text-amber-300">

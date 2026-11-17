@@ -80,7 +80,7 @@ export function ImageClassificationWorkspace(props: Props) {
   return <div className="h-screen w-screen overflow-hidden bg-[#070b14] text-slate-100 flex flex-col">
     <Header activeModel="image-classifier" onSelectModel={model => select(model)} activeVariant={props.variant} onSelectVariant={variant => select('image-classifier', variant)} modelState={state} isCameraActive={props.cameraActive} onToggleCamera={() => { if (props.cameraActive) cameraStop(); else { clearError(); props.onStart(); } }} ttsEnabled={false} onToggleTTS={() => {}} isSpeaking={holding} onOpenComparison={() => setComparison(true)} />
     <div className="px-4 py-2 text-xs space-y-1">
-      {blocked ? <p role="status">BLOCKED：検証済みコンテナキャッシュを利用できません。静的配信・previewではキャッシュAPIが必要です。取得・整合性エラー時に未検証の外部モデルへ切り替えません。</p>
+      {blocked ? <p role="status">BLOCKED：分類モデルの取得または Web Crypto SHA-256 検証に失敗しました（オフラインまたはハッシュ不一致のため未検証モデルを実行しません）。</p>
         : state.status === 'error' ? <p role="alert">分類モデルの初期化に失敗しました。<button type="button" className="ml-2 underline" onClick={() => { invalidate(); void engine.initialize(props.variant, delegate); }}>分類モデルを再試行</button></p>
         : <p role="status">{state.status === 'ready' ? '分類タスク準備完了（実モデル推論の受入確認とは別です）' : '分類モデル準備中'}</p>}
       <p>モデルのライセンス・固定SHA256・入力形状（Lite0:224、Lite2:260）は確認済みです。実モデル推論・動作環境の受け入れは未検証です。</p>

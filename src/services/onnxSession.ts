@@ -150,8 +150,8 @@ export async function createOrtSession(
             const created = await createOrtSessionWithUrl(bytes, delegate, resolution?.graphOptimizationLevel);
             recordAssetSource('wasm-ort', wasm.source);
             if (resolution.modelId) {
-                recordAssetSource(resolution.modelId, resolution.primarySource ?? 'container-cache');
-                if (resolution.variantId) recordAssetSource(`${resolution.modelId}:${resolution.variantId}`, resolution.primarySource ?? 'container-cache');
+                recordAssetSource(resolution.modelId, resolution.primarySource ?? 'browser-cache');
+                if (resolution.variantId) recordAssetSource(`${resolution.modelId}:${resolution.variantId}`, resolution.primarySource ?? 'browser-cache');
             }
             return created;
         }

@@ -28,7 +28,15 @@ export const createImageClassificationTask: ImageClassificationFactory = async (
   let asset;
   try {
     asset = await resolveClassifierAsset(variantId);
-    if (asset.modelId !== entry.modelId || asset.variantId !== variantId || asset.modelAssetPath !== entry.localUrl || asset.source !== 'container-cache') throw new Error('Classifier asset identity mismatch');
+    if (
+      asset.modelId !== entry.modelId ||
+      asset.variantId !== variantId ||
+      !(asset.modelAssetBuffer instanceof Uint8Array) ||
+      asset.modelAssetBuffer.byteLength !== entry.expectedSize ||
+      (asset.source !== 'browser-cache' && asset.source !== 'external')
+    ) {
+      throw new Error('Classifier asset identity mismatch');
+    }
   } catch (cause) { throw new ClassificationInitializationError('asset', cause); }
   if (!current()) throw new Error('Classifier initialization cancelled before WASM');
   let fileset;
@@ -44,7 +52,7 @@ export const createImageClassificationTask: ImageClassificationFactory = async (
   if (!current()) throw new Error('Classifier initialization cancelled before task');
   try {
     const task = await ImageClassifier.createFromOptions(fileset, {
-      baseOptions: { modelAssetPath: asset.modelAssetPath, delegate }, runningMode: 'VIDEO', maxResults: -1,
+      baseOptions: { modelAssetBuffer: asset.modelAssetBuffer, delegate }, runningMode: 'VIDEO', maxResults: -1,
     });
     recordSource('image-classifier', asset.source); recordSource(`image-classifier:${variantId}`, asset.source);
     return { sdkDelegate: delegate, classifyForVideo: (input, timestamp) => task.classifyForVideo(input, timestamp), close: () => task.close() };

@@ -2,7 +2,7 @@ import type { ModelType } from './vision';
 
 export type ImageClassifierVariantId = 'lite0' | 'lite2';
 export type ClassificationDelegate = 'GPU' | 'CPU';
-export type ClassificationAssetSource = 'container-cache' | 'external-fallback' | 'external' | 'unreported';
+export type ClassificationAssetSource = 'browser-cache' | 'cors-proxy' | 'external-fallback' | 'external' | 'unreported';
 export type ModelFamilyType = ModelType | 'image-classifier';
 
 // SDK output IDs are preserved. They are not ranking positions or translated IDs.

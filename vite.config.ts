@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
-import { containerModelCachePlugin } from './src/services/containerModelCacheServer.ts';
+import { modelCorsProxyPlugin } from './src/services/stereoCorsProxyServer.ts';
 
 function excludeOrtWasmPlugin() {
   return {
@@ -23,9 +23,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       excludeOrtWasmPlugin(),
-      containerModelCachePlugin({
-        autoPrefetchOnStart: process.env.CONTAINER_MODEL_CACHE_PREFETCH === 'true',
-      }),
+      modelCorsProxyPlugin(),
     ],
     resolve: {
       alias: [

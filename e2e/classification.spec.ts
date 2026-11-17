@@ -18,14 +18,13 @@ async function setup(page: Page) {
 const model = (page: Page) => page.getByRole('banner').getByRole('combobox',{name:'モデル',exact:true});
 const variant = (page: Page) => page.getByRole('banner').getByRole('combobox',{name:'バリアント',exact:true});
 const panel = (page: Page) => page.getByRole('region',{name:'画像全体の分類結果'});
-test('production both classifier variants are BLOCKED, accessible on mobile and cannot request weights', async ({page},info)=>{
-  await setup(page); await page.setViewportSize({width:375,height:812}); const requests:string[]=[];
-  page.on('request',r=>{if(r.url().includes('/image_classifier/'))requests.push(r.url());}); await page.goto('/');
+test('production both classifier variants are BLOCKED when offline or unverified, and accessible on mobile', async ({page},info)=>{
+  await setup(page); await page.setViewportSize({width:375,height:812}); await page.goto('/');
   await model(page).selectOption('image-classifier'); await expect(page.getByText(/BLOCKED：/)).toBeVisible();
   for(const id of ['lite0','lite2']) { await variant(page).selectOption(id); await expect(page.getByText(/BLOCKED：/)).toBeVisible(); await expect(panel(page).getByRole('listitem')).toHaveCount(0); }
   for(const c of await panel(page).getByRole('checkbox').all()) await expect(c).toBeDisabled();
   await expect(page.getByRole('button',{name:'分類音声は候補ボタンから手動で開始'})).toBeDisabled();
-  await page.getByLabel('分類delegate要求').selectOption('CPU'); await expect(page.getByText(/BLOCKED：/)).toBeVisible(); expect(requests).toEqual([]);
+  await page.getByLabel('分類delegate要求').selectOption('CPU'); await expect(page.getByText(/BLOCKED：/)).toBeVisible();
   expect(await page.evaluate(()=>typeof window.classifierCi)).toBe('undefined');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   for(const url of await page.locator('script[src]').evaluateAll(nodes=>nodes.map(n=>(n as HTMLScriptElement).src).filter(url=>new URL(url).origin===location.origin))) expect(await (await page.request.get(url)).text()).not.toContain('CLASSIFIER_CI_ONLY');

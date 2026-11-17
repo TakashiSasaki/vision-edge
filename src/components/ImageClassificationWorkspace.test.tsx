@@ -40,9 +40,9 @@ it('threshold change clears the speaking frame and updates Top5 without automati
   await mount(async()=>task()); fireEvent.click(screen.getByRole('button',{name:/順位1 .*読み上げ/})); fireEvent.change(screen.getByLabelText('分類スコアしきい値'),{target:{value:'.9'}}); expect(synth.cancel).toHaveBeenCalled(); expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   await act(async()=>{vi.runOnlyPendingTimers();}); expect(screen.getAllByRole('listitem')).toHaveLength(1); expect(synth.speak).toHaveBeenCalledTimes(1);
 });
-it('both variants stay BLOCKED with the production resolver and no model/network action', async()=>{
-  const fetch=vi.spyOn(globalThis,'fetch'); await mount(); expect(screen.getByText(/BLOCKED：/)).toBeInTheDocument(); expect(screen.queryAllByRole('listitem')).toHaveLength(0);
-  fireEvent.change(within(screen.getByRole('banner')).getByLabelText('バリアント'),{target:{value:'lite2'}}); await act(async()=>{}); expect(screen.getByText(/BLOCKED：/)).toBeInTheDocument(); expect(fetch).not.toHaveBeenCalled();
+it('both variants stay BLOCKED when asset download or SHA-256 verification is unavailable offline', async()=>{
+  const fetch=vi.spyOn(globalThis,'fetch').mockRejectedValue(new Error('offline')); await mount(); expect(screen.getByText(/BLOCKED：/)).toBeInTheDocument(); expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+  fireEvent.change(within(screen.getByRole('banner')).getByLabelText('バリアント'),{target:{value:'lite2'}}); await act(async()=>{}); expect(screen.getByText(/BLOCKED：/)).toBeInTheDocument(); expect(fetch).toHaveBeenCalled();
 });
 it('initialization failure is not BLOCKED; explicit retry recovers and run failure clears output until retry', async()=>{
   const t=task(), factory=vi.fn<ImageClassificationFactory>().mockRejectedValueOnce(Error('INIT_FAILURE')).mockResolvedValue(t); await mount(factory); expect(screen.getByRole('alert')).toHaveTextContent('初期化に失敗'); expect(screen.queryByText(/BLOCKED：/)).toBeNull(); fireEvent.click(screen.getByText('分類モデルを再試行')); await act(async()=>{}); await act(async()=>{vi.runOnlyPendingTimers();}); expect(screen.getAllByRole('listitem')).toHaveLength(5);

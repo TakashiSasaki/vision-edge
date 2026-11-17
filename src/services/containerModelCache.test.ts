@@ -1,34 +1,43 @@
 import { Buffer } from 'node:buffer';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { FilesetResolver, ImageSegmenter, ObjectDetector } from '@mediapipe/tasks-vision';
-import { ContainerModelCacheManager, containerModelCachePlugin } from './containerModelCacheServer';
-import { prefetchModels } from '../../scripts/prefetch-models';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  getResolvedSource,
-  LOCAL_MEDIAPIPE_WASM_URL,
+  MODEL_CACHE_NAME,
+  clearBrowserModelCache,
+  deleteBrowserCachedModel,
+  fetchModelBytesWithBrowserCache,
+  isLikelyHtmlPayload,
+  listBrowserCachedModels,
+} from './browserModelCache';
+import {
   MODEL_ASSET_CATALOG,
+  UPSTREAM_MEDIAPIPE_WASM_URL,
+  UPSTREAM_ORT_WASM_URL,
+  isContainerModelCacheEnabled,
   resolveMediaPipeWasmUrls,
   resolveModelAssetUrls,
   resolveOrtWasmUrls,
-  setContainerModelCacheEnabledForTest,
-  UPSTREAM_MEDIAPIPE_WASM_URL,
-  UPSTREAM_ORT_WASM_URL,
 } from './modelAssetResolver';
 import { MODEL_REGISTRY } from './modelRegistry';
-import { VisionEngine } from './visionEngine';
+import {
+  STEREO_CORS_PROXY_PREFIX,
+  STEREO_CORS_PROXY_UPSTREAMS,
+  createModelCorsProxyMiddleware,
+  modelCorsProxyPlugin,
+} from './stereoCorsProxyServer';
 
 function invokeMiddleware(
-  middleware: ReturnType<ContainerModelCacheManager['createMiddleware']>,
+  middleware: ReturnType<typeof createModelCorsProxyMiddleware>,
   url: string,
   method = 'GET'
 ): Promise<{
   statusCode: number;
   headers: Record<string, string>;
   body: Buffer;
+  passedThrough: boolean;
 }> {
   return new Promise((resolve, reject) => {
     const headers: Record<string, string> = {};
@@ -36,8 +45,14 @@ function invokeMiddleware(
     const req = { url, method } as IncomingMessage;
     const mockRes = {
       statusCode: 200,
+      destroyed: false,
+      writableEnded: false,
       setHeader(name: string, value: string) {
         headers[name.toLowerCase()] = String(value);
+      },
+      write(chunk: Buffer | Uint8Array) {
+        chunks.push(Buffer.from(chunk));
+        return true;
       },
       end(chunk?: Buffer | string) {
         if (chunk !== undefined) {
@@ -47,33 +62,28 @@ function invokeMiddleware(
           statusCode: mockRes.statusCode,
           headers,
           body: Buffer.concat(chunks),
+          passedThrough: false,
         });
       },
+      once() {},
+      removeListener() {},
     };
-    const res = mockRes as unknown as ServerResponse;
 
-    middleware(req, res, (err?: unknown) => {
+    middleware(req, mockRes as unknown as ServerResponse, (err?: unknown) => {
       if (err) reject(err);
-      else resolve({ statusCode: 404, headers, body: Buffer.alloc(0) });
+      else resolve({ statusCode: 404, headers, body: Buffer.alloc(0), passedThrough: true });
     }).catch(reject);
   });
 }
 
-describe('Container Model & WASM Cache Server and Client Fallback', () => {
-  let tempDir: string;
-
-  beforeEach(async () => {
-    tempDir = await mkdtemp(path.join(tmpdir(), 'container-model-cache-'));
-    setContainerModelCacheEnabledForTest(null);
-  });
-
-  afterEach(async () => {
-    setContainerModelCacheEnabledForTest(null);
+describe('Browser Model Cache, Service Worker Rules & Stateless Stereo CORS Proxy', () => {
+  afterEach(() => {
     vi.restoreAllMocks();
-    await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 }).catch(() => {});
+    vi.unstubAllGlobals();
   });
 
-  it('exposes upstream URLs, local cache paths, and verified licenses for all 4 models in MODEL_REGISTRY', () => {
+  it('disables server-side container cache and routes all core models + WASM directly to CORS upstream URLs', async () => {
+    expect(isContainerModelCacheEnabled()).toBe(false);
     expect(MODEL_REGISTRY).toHaveLength(4);
     expect(MODEL_ASSET_CATALOG['selfie-segmenter'].license).toBe('Apache-2.0');
     expect(MODEL_ASSET_CATALOG.mediapipe.license).toBe('Apache-2.0');
@@ -83,429 +93,185 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     );
 
     for (const model of MODEL_REGISTRY) {
-      expect(model.license).toBeTruthy();
       expect(model.upstreamUrl).toMatch(/^https:\/\//);
-      expect(model.localCachePath).toMatch(/^\/api\/model-cache\/models\//);
+      expect(model.localCachePath).toBe(model.upstreamUrl);
+      const resolved = await resolveModelAssetUrls(model.id);
+      expect(resolved).toEqual({
+        primaryUrl: model.upstreamUrl,
+        fallbackUrl: null,
+        source: 'external',
+      });
     }
-  });
 
-  it('prefetches all 4 models into container cache on startup and serves models and WASM locally', async () => {
-    const fakePayload = Buffer.alloc(2048, 0x42);
-    const mockFetch = vi.fn(async () => new Response(fakePayload, { status: 200 }));
-
-    const manager = new ContainerModelCacheManager({
-      cacheDir: tempDir,
-      fetchImpl: mockFetch as unknown as typeof fetch,
+    expect(await resolveMediaPipeWasmUrls()).toEqual({
+      primaryUrl: UPSTREAM_MEDIAPIPE_WASM_URL,
+      fallbackUrl: null,
+      source: 'external',
     });
-
-    const snapshot = await manager.prefetchAllModels();
-    expect(mockFetch).toHaveBeenCalledTimes(11);
-    for (const id of ['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer'] as const) {
-      expect(snapshot[id].status).toBe('cached');
-      expect(snapshot[id].size).toBe(2048);
-    }
-
-    const middleware = manager.createMiddleware();
-
-    const statusRes = await invokeMiddleware(middleware, '/api/model-cache/status');
-    expect(statusRes.statusCode).toBe(200);
-    const statusJson = JSON.parse(statusRes.body.toString('utf8'));
-    expect(statusJson.enabled).toBe(true);
-    expect(statusJson.wasm.mediapipe.available).toBe(true);
-    expect(statusJson.wasm.ort.available).toBe(true);
-    expect(statusJson.models['yolo-seg'].status).toBe('cached');
-
-    const modelRes = await invokeMiddleware(
-      middleware,
-      '/api/model-cache/models/yolov8n-seg.onnx'
-    );
-    expect(modelRes.statusCode).toBe(200);
-    expect(modelRes.headers['x-model-source']).toBe('container-cache');
-    expect(modelRes.headers['x-model-license']).toBe('AGPL-3.0');
-    expect(modelRes.body.byteLength).toBe(2048);
-
-    const wasmRes = await invokeMiddleware(
-      middleware,
-      '/api/model-cache/wasm/mediapipe/vision_wasm_internal.js'
-    );
-    expect(wasmRes.statusCode).toBe(200);
-    expect(wasmRes.headers['x-wasm-source']).toBe('container-cache');
-    expect(wasmRes.headers['content-type']).toContain('text/javascript');
-    expect(wasmRes.body.byteLength).toBeGreaterThan(1000);
-  });
-
-  it('resolves container cache URLs when enabled and falls back to external URLs if a model fails to download or load', async () => {
-    setContainerModelCacheEnabledForTest(true);
-
-    const statusPayload = {
-      enabled: true,
-      wasm: {
-        mediapipe: {
-          available: true,
-          localUrl: LOCAL_MEDIAPIPE_WASM_URL,
-          upstreamUrl: UPSTREAM_MEDIAPIPE_WASM_URL,
-          license: 'Apache-2.0',
-        },
-        ort: {
-          available: true,
-          localUrl: '/api/model-cache/wasm/ort/',
-          upstreamUrl: UPSTREAM_ORT_WASM_URL,
-          license: 'MIT',
-        },
-      },
-      models: {
-        'selfie-segmenter': {
-          ...MODEL_ASSET_CATALOG['selfie-segmenter'],
-          status: 'cached',
-          size: 4096,
-          cachedAt: new Date().toISOString(),
-          error: null,
-        },
-        mediapipe: {
-          ...MODEL_ASSET_CATALOG.mediapipe,
-          status: 'unavailable',
-          size: null,
-          cachedAt: null,
-          error: 'HTTP 403',
-        },
-        'yolo-seg': {
-          ...MODEL_ASSET_CATALOG['yolo-seg'],
-          status: 'cached',
-          size: 4096,
-          cachedAt: new Date().toISOString(),
-          error: null,
-        },
-        segformer: {
-          ...MODEL_ASSET_CATALOG.segformer,
-          status: 'cached',
-          size: 4096,
-          cachedAt: new Date().toISOString(),
-          error: null,
-        },
-      },
-    };
-
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify(statusPayload), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    );
-
-    const wasmResolved = await resolveMediaPipeWasmUrls();
-    expect(wasmResolved.primaryUrl).toBe(LOCAL_MEDIAPIPE_WASM_URL);
-    expect(wasmResolved.fallbackUrl).toBe(UPSTREAM_MEDIAPIPE_WASM_URL);
-    expect(wasmResolved.source).toBe('container-cache');
-
-    const ortWasmResolved = await resolveOrtWasmUrls();
-    expect(ortWasmResolved.primaryUrl).toContain('/api/model-cache/wasm/ort/');
-    expect(ortWasmResolved.fallbackUrl).toBe(UPSTREAM_ORT_WASM_URL);
-
-    const cachedSelfie = await resolveModelAssetUrls('selfie-segmenter');
-    expect(cachedSelfie.primaryUrl).toBe(
-      '/api/model-cache/models/selfie_segmenter.tflite'
-    );
-    expect(cachedSelfie.fallbackUrl).toBe(
-      MODEL_ASSET_CATALOG['selfie-segmenter'].upstreamUrl
-    );
-    expect(cachedSelfie.source).toBe('container-cache');
-
-    const unavailableMediapipe = await resolveModelAssetUrls('mediapipe');
-    expect(unavailableMediapipe.primaryUrl).toBe(
-      MODEL_ASSET_CATALOG.mediapipe.upstreamUrl
-    );
-    expect(unavailableMediapipe.fallbackUrl).toBeNull();
-    expect(unavailableMediapipe.source).toBe('external-fallback');
-
-    // Verify VisionEngine defaultFactory falls back to external URL when local URL fails
-    const forVisionTasksSpy = vi
-      .spyOn(FilesetResolver, 'forVisionTasks')
-      .mockRejectedValueOnce(new Error('local WASM failed'))
-      .mockResolvedValueOnce({ wasmLoaderPath: 'loader', wasmBinaryPath: 'wasm' });
-
-    const mockSegmenter = {
-      segmentForVideo: vi.fn(),
-      close: vi.fn(),
-    } as unknown as ImageSegmenter;
-    const createSegmenterSpy = vi
-      .spyOn(ImageSegmenter, 'createFromOptions')
-      .mockRejectedValueOnce(new Error('local model failed'))
-      .mockResolvedValueOnce(mockSegmenter);
-
-    const mockDetector = {
-      detectForVideo: vi.fn(),
-      close: vi.fn(),
-    } as unknown as ObjectDetector;
-    vi.spyOn(ObjectDetector, 'createFromOptions').mockResolvedValue(mockDetector);
-
-    const engine = new VisionEngine();
-    const result = await engine.initialize('selfie-segmenter');
-    expect(result.status).toBe('ready');
-    expect(forVisionTasksSpy).toHaveBeenNthCalledWith(1, LOCAL_MEDIAPIPE_WASM_URL);
-    expect(forVisionTasksSpy).toHaveBeenNthCalledWith(2, UPSTREAM_MEDIAPIPE_WASM_URL);
-    expect(createSegmenterSpy).toHaveBeenNthCalledWith(
-      1,
-      expect.anything(),
-      expect.objectContaining({
-        baseOptions: expect.objectContaining({
-          modelAssetPath: '/api/model-cache/models/selfie_segmenter.tflite',
-        }),
-      })
-    );
-    expect(createSegmenterSpy).toHaveBeenNthCalledWith(
-      2,
-      expect.anything(),
-      expect.objectContaining({
-        baseOptions: expect.objectContaining({
-          modelAssetPath: MODEL_ASSET_CATALOG['selfie-segmenter'].upstreamUrl,
-        }),
-      })
-    );
-    expect(getResolvedSource('wasm-mediapipe')).toBe('external-fallback');
-    expect(getResolvedSource('selfie-segmenter')).toBe('external-fallback');
-    engine.dispose();
-  });
-
-  it('triggers startup model prefetching in dev and preview servers via containerModelCachePlugin', async () => {
-    const fakePayload = Buffer.alloc(2048, 0x42);
-    const mockFetch = vi.fn(async () => new Response(fakePayload, { status: 200 }));
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-    const plugin = containerModelCachePlugin({
-      cacheDir: tempDir,
-      fetchImpl: mockFetch as unknown as typeof fetch,
-      enableInPreview: true,
+    expect(await resolveOrtWasmUrls()).toEqual({
+      primaryUrl: UPSTREAM_ORT_WASM_URL,
+      fallbackUrl: null,
+      source: 'external',
     });
+  });
 
-    type MockServer = { middlewares: { use: (fn: unknown) => void } };
-    const mockDevServer: MockServer = { middlewares: { use: vi.fn() } };
-    if (typeof plugin.configureServer === 'function') {
-      (plugin.configureServer as (server: unknown) => void)(mockDevServer);
-    }
-    expect(mockDevServer.middlewares.use).toHaveBeenCalledTimes(1);
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[container-model-cache] Container dev server started'));
+  it('vite.config.ts mounts stateless modelCorsProxyPlugin instead of containerModelCachePlugin', async () => {
+    const viteConfig = await readFile(path.resolve(process.cwd(), 'vite.config.ts'), 'utf8');
+    expect(viteConfig).toContain('modelCorsProxyPlugin');
+    expect(viteConfig).not.toContain('containerModelCachePlugin');
+    expect(viteConfig).not.toContain('__CONTAINER_MODEL_CACHE_ENABLED__');
+  });
 
-    const mockPreviewServer: MockServer = { middlewares: { use: vi.fn() } };
-    const savedTestLogDir = process.env.TEST_LOG_DIR;
-    const savedCi = process.env.CI;
+  it('stateless stereo CORS proxy streams allowlisted GitHub Releases binaries without writing to container disk', async () => {
+    const { mkdtemp, rm } = await import('node:fs/promises');
+    const { tmpdir } = await import('node:os');
+    const tempRoot = await mkdtemp(path.join(tmpdir(), 'stateless-proxy-'));
     try {
-      delete process.env.TEST_LOG_DIR;
-      delete process.env.CI;
-      if (typeof plugin.configurePreviewServer === 'function') {
-        (plugin.configurePreviewServer as (server: unknown) => void)(mockPreviewServer);
-      }
-      expect(mockPreviewServer.middlewares.use).toHaveBeenCalledTimes(1);
-      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[container-model-cache] Container preview server started'));
-      await vi.waitFor(() =>
-        expect(logSpy).toHaveBeenCalledWith(
-          expect.stringContaining('[container-model-cache] Startup download completed')
-        )
+      const sampleOnnx = Buffer.alloc(2048, 0x33);
+      const mockFetch = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+        expect(String(url)).toBe(STEREO_CORS_PROXY_UPSTREAMS['hitnet_sceneflow_240x320.onnx']);
+        return new Response(init?.method === 'HEAD' ? null : sampleOnnx, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': String(sampleOnnx.byteLength),
+          },
+        });
+      });
+
+      const middleware = createModelCorsProxyMiddleware({
+        rootDir: tempRoot,
+        fetchImpl: mockFetch as unknown as typeof fetch,
+      });
+
+      // Zero disk directory creation inside .cache/container-models
+      const getRes = await invokeMiddleware(
+        middleware,
+        `${STEREO_CORS_PROXY_PREFIX}hitnet_sceneflow_240x320.onnx`
       );
+      expect(getRes.statusCode).toBe(200);
+      expect(getRes.headers['cache-control']).toBe('public, max-age=86400');
+      expect(getRes.headers['x-proxy-cache']).toBe('stateless-stream');
+      expect(getRes.headers['x-upstream-host']).toBe('github.com');
+      expect(getRes.body).toEqual(sampleOnnx);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      // Second request streams directly again (no server disk state); browser SW handles client cache
+      const headRes = await invokeMiddleware(
+        middleware,
+        `${STEREO_CORS_PROXY_PREFIX}hitnet_sceneflow_240x320.onnx`,
+        'HEAD'
+      );
+      expect(headRes.statusCode).toBe(200);
+      expect(headRes.body.byteLength).toBe(0);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(existsSync(path.resolve(tempRoot, '.cache', 'container-models'))).toBe(false);
+
+      // Reject unknown filenames (404), unsafe paths (400), and unrelated routes pass through
+      expect((await invokeMiddleware(middleware, `${STEREO_CORS_PROXY_PREFIX}unknown.onnx`)).statusCode).toBe(404);
+      expect((await invokeMiddleware(middleware, `${STEREO_CORS_PROXY_PREFIX}..%2Fsecret.onnx`)).statusCode).toBe(400);
+      expect((await invokeMiddleware(middleware, '/api/model-cache/status')).passedThrough).toBe(true);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
     } finally {
-      if (savedTestLogDir !== undefined) process.env.TEST_LOG_DIR = savedTestLogDir;
-      if (savedCi !== undefined) process.env.CI = savedCi;
+      await rm(tempRoot, { recursive: true, force: true });
     }
   });
 
-  it('runs prefetchModels script function and returns counts for 11 acquisition-enabled variants', async () => {
-    const fakePayload = Buffer.alloc(2048, 0x42);
-    const mockFetch = vi.fn(async () => new Response(fakePayload, { status: 200 }));
-    const manager = new ContainerModelCacheManager({
-      cacheDir: tempDir,
-      fetchImpl: mockFetch as unknown as typeof fetch,
-    });
-
-    const result = await prefetchModels(manager);
-    expect(result.totalCount).toBe(11);
-    // Nine legacy variants accept synthetic bytes; two pinned classifiers reject them.
-    expect(result.cachedCount).toBe(9);
-    expect(result.unavailableCount).toBe(2);
-    expect(mockFetch).toHaveBeenCalledTimes(11);
-  });
-
-  it('waits for container download to complete before responding when an uncached model file is accessed', async () => {
-    let releaseDownload!: () => void;
-    const downloadGate = new Promise<void>(resolve => {
-      releaseDownload = resolve;
-    });
-    const fakePayload = Buffer.alloc(4096, 0x5a);
-    let downloadCompleted = false;
-    const mockFetch = vi.fn(async () => {
-      await downloadGate;
-      downloadCompleted = true;
-      return new Response(fakePayload, { status: 200 });
-    });
-
-    const manager = new ContainerModelCacheManager({
-      cacheDir: tempDir,
-      fetchImpl: mockFetch as unknown as typeof fetch,
-    });
-    const middleware = manager.createMiddleware();
-
-    let responseResolved = false;
-    const responsePromise = invokeMiddleware(
-      middleware,
-      '/api/model-cache/models/yolov8n-seg.onnx'
-    ).then(res => {
-      responseResolved = true;
-      return res;
-    });
-
-    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
-    expect(downloadCompleted).toBe(false);
-    expect(responseResolved).toBe(false);
-
-    releaseDownload();
-    const res = await responsePromise;
-    expect(downloadCompleted).toBe(true);
-    expect(res.statusCode).toBe(200);
-    expect(res.headers['x-model-source']).toBe('container-cache');
-    expect(res.body).toEqual(fakePayload);
-
-    // Even if the cached file is removed from the container later, accessing the model URL re-downloads and waits
-    await rm(manager.getVariantFilePath('yolo-seg:yolov8n-seg'), { force: true });
-    await rm(`${manager.getVariantFilePath('yolo-seg:yolov8n-seg')}.identity.json`, { force: true });
-    const redownloadRes = await invokeMiddleware(
-      middleware,
-      '/api/model-cache/models/yolov8n-seg.onnx'
+  it('stateless stereo CORS proxy rejects HTML error pages with 502 and mounts on dev + preview', async () => {
+    const htmlFetch = vi.fn(async () =>
+      new Response('<!doctype html><html>rate limit</html>', {
+        status: 200,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      })
     );
-    expect(redownloadRes.statusCode).toBe(200);
-    expect(redownloadRes.body).toEqual(fakePayload);
-    expect(mockFetch).toHaveBeenCalledTimes(2);
-  });
-
-  it('serves /model-cache.html with readable model file URLs for non-JS user agents without triggering downloads', async () => {
-    const mockFetch = vi.fn(async () => new Response(Buffer.alloc(2048, 0x42), { status: 200 }));
-    const manager = new ContainerModelCacheManager({
-      cacheDir: tempDir,
-      fetchImpl: mockFetch as unknown as typeof fetch,
-    });
-    const middleware = manager.createMiddleware();
-
-    const headers: Record<string, string> = {};
-    let body = '';
-    const req = {
-      url: '/model-cache.html',
-      method: 'GET',
-      headers: {
-        host: 'example.run.app',
-        'x-forwarded-proto': 'https',
-      },
-    } as unknown as IncomingMessage;
-    const res = {
-      statusCode: 200,
-      setHeader(name: string, value: string) {
-        headers[name.toLowerCase()] = String(value);
-      },
-      end(chunk?: Buffer | string) {
-        body = chunk ? String(chunk) : '';
-      },
-    } as unknown as ServerResponse;
-
-    await middleware(req, res, () => {});
-    expect(res.statusCode).toBe(200);
-    expect(headers['content-type']).toContain('text/html');
-    expect(body).not.toContain('<noscript>');
-    expect(body).toContain('https://example.run.app/model-cache.html');
-    expect(body).toContain('https://example.run.app/api/model-cache/models/yolov8n-seg.onnx');
-    expect(body).toContain('https://example.run.app/api/model-cache/models/efficientnet_lite0.tflite?sha256=');
-    expect(mockFetch).not.toHaveBeenCalled();
-  });
-
-  it('defers startup prefetch until after httpServer emits listening and startupDelayMs elapses, running sequentially in priority order', async () => {
-    const requestedUrls: string[] = [];
-    let activeFetches = 0;
-    let maxConcurrentFetches = 0;
-
-    const mockFetch = vi.fn(async (url: string | URL | Request) => {
-      requestedUrls.push(String(url));
-      activeFetches++;
-      maxConcurrentFetches = Math.max(maxConcurrentFetches, activeFetches);
-      await new Promise<void>(resolve => setTimeout(resolve, 2));
-      activeFetches--;
-      return new Response(Buffer.alloc(2048, 0x42), { status: 200 });
+    const middleware = createModelCorsProxyMiddleware({
+      fetchImpl: htmlFetch as unknown as typeof fetch,
     });
 
-    const listeners: Record<string, (() => void)[]> = {};
-    const mockHttpServer = {
-      listening: false,
-      once(event: string, fn: () => void) {
-        (listeners[event] ??= []).push(fn);
-      },
-      emit(event: string) {
-        for (const fn of listeners[event] ?? []) fn();
-      },
-    };
-
-    const plugin = containerModelCachePlugin({
-      cacheDir: tempDir,
-      fetchImpl: mockFetch as unknown as typeof fetch,
-      startupDelayMs: 30,
-      startupConcurrency: 1,
-      startupYieldMs: 0,
-    });
-
-    const mockDevServer = {
-      middlewares: { use: vi.fn() },
-      httpServer: mockHttpServer,
-    };
-
-    if (typeof plugin.configureServer === 'function') {
-      (plugin.configureServer as (server: unknown) => void)(mockDevServer);
-    }
-
-    // Before httpServer is listening, no model download is started
-    await new Promise<void>(resolve => setTimeout(resolve, 50));
-    expect(mockFetch).not.toHaveBeenCalled();
-
-    // Once httpServer starts listening, downloads begin after startupDelayMs
-    mockHttpServer.listening = true;
-    mockHttpServer.emit('listening');
-    expect(mockFetch).not.toHaveBeenCalled();
-
-    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(11), {
-      timeout: 2000,
-    });
-
-    // Startup background prefetch runs one model at a time and starts with the default selfie-segmenter model
-    expect(maxConcurrentFetches).toBe(1);
-    expect(requestedUrls[0]).toContain('selfie_segmenter.tflite');
-  });
-
-  it('lazily fetches and caches stereo ONNX variants on demand without inflating startup prefetch', async () => {
-    const fakeStereoBytes = Buffer.alloc(4096, 0x33);
-    const mockFetch = vi.fn(async () => new Response(fakeStereoBytes, { status: 200 }));
-    const manager = new ContainerModelCacheManager({
-      cacheDir: tempDir,
-      fetchImpl: mockFetch as unknown as typeof fetch,
-    });
-    const middleware = manager.createMiddleware();
-
-    const firstRes = await invokeMiddleware(
+    const res = await invokeMiddleware(
       middleware,
-      '/api/model-cache/stereo/hitnet_sceneflow_240x320.onnx'
+      `${STEREO_CORS_PROXY_PREFIX}crestereo_init_iter2_180x320.onnx`
     );
-    expect(firstRes.statusCode).toBe(200);
-    expect(firstRes.headers['x-model-source']).toBe('container-cache');
-    expect(firstRes.headers['x-model-variant']).toBe('hitnet-sf');
-    expect(firstRes.body.byteLength).toBe(4096);
+    expect(res.statusCode).toBe(502);
+    expect(JSON.parse(res.body.toString('utf8')).error).toContain('HTML');
+
+    const plugin = modelCorsProxyPlugin();
+    const useDev = vi.fn();
+    const usePreview = vi.fn();
+    (plugin.configureServer as (s: unknown) => void)({ middlewares: { use: useDev } });
+    (plugin.configurePreviewServer as (s: unknown) => void)({ middlewares: { use: usePreview } });
+    expect(useDev).toHaveBeenCalledTimes(1);
+    expect(usePreview).toHaveBeenCalledTimes(1);
+  });
+
+  it('browserModelCache caches valid binaries in Cache Storage, rejects HTML/corrupt payloads, and supports listing & deletion', async () => {
+    const store = new Map<string, Response>();
+    const cacheObj = {
+      match: vi.fn(async (k: Request | string) => store.get(typeof k === 'string' ? k : k.url)?.clone()),
+      put: vi.fn(async (k: Request | string, v: Response) => {
+        store.set(typeof k === 'string' ? k : k.url, v);
+      }),
+      delete: vi.fn(async (k: Request | string) => store.delete(typeof k === 'string' ? k : k.url)),
+      keys: vi.fn(async () => Array.from(store.keys()).map((url) => ({ url } as Request))),
+    };
+    vi.stubGlobal('caches', {
+      open: vi.fn(async (name: string) => {
+        expect(name).toBe(MODEL_CACHE_NAME);
+        return cacheObj;
+      }),
+      delete: vi.fn(async () => {
+        store.clear();
+        return true;
+      }),
+    });
+
+    expect(isLikelyHtmlPayload(new TextEncoder().encode('<!DOCTYPE html>'))).toBe(true);
+    expect(isLikelyHtmlPayload(new Uint8Array(2048).fill(0x12))).toBe(false);
+
+    const payload = new Uint8Array(2048).fill(0x42);
+    const mockFetch = vi.fn(async () => new Response(payload, { status: 200 }));
+    const url = 'https://cdn.jsdelivr.net/gh/zz990099/lightstereo_cpp@master/models/lightstereo_s_sceneflow_general_opt_256_512.onnx';
+
+    const first = await fetchModelBytesWithBrowserCache(url, { fetchImpl: mockFetch as unknown as typeof fetch });
+    expect(first.fromCache).toBe(false);
+    expect(first.bytes).toEqual(payload);
     expect(mockFetch).toHaveBeenCalledTimes(1);
 
-    // Second request serves directly from disk cache without another upstream fetch
-    const secondRes = await invokeMiddleware(
-      middleware,
-      '/api/model-cache/stereo/hitnet_sceneflow_240x320.onnx'
-    );
-    expect(secondRes.statusCode).toBe(200);
-    expect(secondRes.body.byteLength).toBe(4096);
+    const second = await fetchModelBytesWithBrowserCache(url, { fetchImpl: mockFetch as unknown as typeof fetch });
+    expect(second.fromCache).toBe(true);
+    expect(second.bytes).toEqual(payload);
     expect(mockFetch).toHaveBeenCalledTimes(1);
 
-    // Unknown file rejects with 404
-    const unknownRes = await invokeMiddleware(
-      middleware,
-      '/api/model-cache/stereo/nonexistent.onnx'
-    );
-    expect(unknownRes.statusCode).toBe(404);
+    const list = await listBrowserCachedModels();
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({
+      url,
+      host: 'cdn.jsdelivr.net',
+      fileName: 'lightstereo_s_sceneflow_general_opt_256_512.onnx',
+      size: 2048,
+    });
+
+    expect(await deleteBrowserCachedModel(url)).toBe(true);
+    expect(await listBrowserCachedModels()).toEqual([]);
+
+    await fetchModelBytesWithBrowserCache(url, { fetchImpl: mockFetch as unknown as typeof fetch });
+    expect(await listBrowserCachedModels()).toHaveLength(1);
+    expect(await clearBrowserModelCache()).toBe(true);
+    expect(await listBrowserCachedModels()).toEqual([]);
+  });
+
+  it('public/sw.js and public/model-cache.html enforce browser-only caching and expose readable catalog URLs', async () => {
+    const swCode = await readFile(path.resolve(process.cwd(), 'public', 'sw.js'), 'utf8');
+    expect(swCode).toContain("MODEL_CACHE_NAME = 'vision-studio-models-v1'");
+    expect(swCode).toContain('/api/cors-proxy/stereo/');
+    expect(swCode).toContain('CLEAR_MODEL_CACHE');
+    expect(swCode).toContain('DELETE_MODEL_CACHE_ENTRY');
+    expect(swCode).toContain("event.request.headers.has('range')");
+
+    const html = await readFile(path.resolve(process.cwd(), 'public', 'model-cache.html'), 'utf8');
+    expect(html).not.toContain('/api/model-cache/');
+    expect(html).toContain('https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite');
+    expect(html).toContain('https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/yolov8n-seg.onnx');
+    expect(html).toContain('/api/cors-proxy/stereo/hitnet_sceneflow_240x320.onnx');
   });
 });
-

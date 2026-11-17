@@ -8,7 +8,7 @@ import type {
 
 export type StereoInputLayout = 'dual' | 'stacked';
 export type StereoNormalizationMode = 'imagenet' | 'zero-one' | 'zero-255' | 'minus-one-one';
-export type StereoOnlineDeliveryMode = 'direct-cors' | 'server-proxy' | 'local-only';
+export type StereoOnlineDeliveryMode = 'direct-cors' | 'cors-proxy' | 'local-only';
 
 export interface StereoModelProfile {
   variantId: StereoDepthVariantId;
@@ -27,7 +27,7 @@ export interface StereoModelProfile {
   onlineSourceLabel?: string;
   defaultModelUrl?: string;
   fallbackModelUrl?: string;
-  containerCacheUrl?: string;
+  corsProxyUrl?: string;
 }
 
 export interface SadComputeOptions {

@@ -31,7 +31,6 @@ import {
   type StereoWorkerResponse,
 } from './stereoDepthService';
 import * as onnxSessionModule from './onnxSession';
-import { setContainerModelCacheEnabledForTest } from './modelAssetResolver';
 import { VisionEngine, type VisionTaskFactory } from './visionEngine';
 import type { StereoDepthMapData } from '../types/vision';
 
@@ -65,7 +64,6 @@ describe('stereoDepthService', () => {
     clearLocalStereoOnnxBytes('crestereo-combined-iter5');
     clearLocalStereoOnnxBytes('custom-onnx');
     clearRemoteStereoOnnxCache();
-    setContainerModelCacheEnabledForTest(null);
     vi.restoreAllMocks();
   });
 
@@ -386,7 +384,7 @@ describe('stereoDepthService', () => {
     ).rejects.toThrow(/オンライン取得に失敗しました/);
   });
 
-  it('downloads MobileStereoNet-2D directly via CORS and HITNet/CREStereo via container cache proxy', async () => {
+  it('downloads MobileStereoNet-2D directly via CORS and HITNet/CREStereo via stateless CORS proxy', async () => {
     const fakeOnnxBytes = new Uint8Array(2048).fill(0x22);
     const mockFetch = vi.fn<typeof fetch>(async () => new Response(fakeOnnxBytes, { status: 200 }));
     const mockSession = {
@@ -407,25 +405,18 @@ describe('stereoDepthService', () => {
       },
     });
 
-    // 1. MobileStereoNet-2D downloads directly from Google Drive Direct CORS URL and runs on WASM (5D Conv3d cost aggregation)
-    setContainerModelCacheEnabledForTest(false);
+    // 1. MobileStereoNet-2D downloads via same-origin stateless CORS proxy (Google Drive blocks cross-site browser Sec-Fetch-Mode: cors) and runs on WASM (5D Conv3d cost aggregation)
     const msTask = await createStereoDepthTask({
       variantId: 'mobilestereonet-2d',
       fetchImpl: mockFetch,
     });
     expect(mockFetch.mock.calls[0][0]).toBe(
-      STEREO_MODEL_PROFILES['mobilestereonet-2d'].defaultModelUrl
+      STEREO_MODEL_PROFILES['mobilestereonet-2d'].corsProxyUrl
     );
     expect(createSpy.mock.calls[0][1]).toBe('WASM');
     await msTask.close();
 
-    // 2. Server-proxy variants explain requirement clearly when container cache is disabled
-    await expect(
-      createStereoDepthTask({ variantId: 'hitnet-sf', fetchImpl: mockFetch })
-    ).rejects.toThrow(/コンテナキャッシュサーバー経由/);
-
-    // 3. When container cache is enabled, HITNet & CREStereo download from same-origin /api/model-cache/stereo/
-    setContainerModelCacheEnabledForTest(true);
+    // 2. HITNet & CREStereo download from same-origin stateless /api/cors-proxy/stereo/
     for (const variantId of [
       'hitnet-sf',
       'crestereo-init-iter2',
@@ -436,7 +427,7 @@ describe('stereoDepthService', () => {
         fetchImpl: mockFetch,
       });
       expect(mockFetch).toHaveBeenLastCalledWith(
-        STEREO_MODEL_PROFILES[variantId].containerCacheUrl,
+        STEREO_MODEL_PROFILES[variantId].corsProxyUrl,
         { method: 'GET', redirect: 'follow' }
       );
       await task.close();
