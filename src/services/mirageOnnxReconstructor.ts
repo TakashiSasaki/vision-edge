@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { gunzipSync, gzipSync } from 'node:zlib';
+import { gunzipSync } from 'node:zlib';
 import {
   decodeCqMatrix,
   decodeFp16Entry,
@@ -275,18 +275,6 @@ function writeVerifiedArtifactWithGzip(targetPath: string, payload: Buffer): voi
       // Ignore cleanup error
     }
     throw err;
-  }
-  const tempGz = `${targetPath}.gz.part-${randomUUID()}`;
-  try {
-    const gzBytes = gzipSync(payload, { level: 9 });
-    writeFileSync(tempGz, gzBytes);
-    renameSync(tempGz, `${targetPath}.gz`);
-  } catch {
-    try {
-      rmSync(tempGz, { force: true });
-    } catch {
-      // Non-critical compression fallback
-    }
   }
 }
 

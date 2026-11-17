@@ -3,8 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from './App';
 import { VisionEngine, type SegmenterTask, type VisionTaskFactory } from './services/visionEngine';
-import { ModelStatus } from './components/ModelStatus';
-import { MIRAGE_WEBGPU_UNAVAILABLE_CODE, MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA } from './services/mirageAvailability';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -17,16 +15,19 @@ function fixture() {
   const yoloTask = { detectForVideo: vi.fn(async () => []), close: vi.fn() };
   const segformerTask = { detectForVideo: vi.fn(async () => []), close: vi.fn() };
   const mirageTask = { detectForVideo: vi.fn(async () => []), close: vi.fn() };
+  const stereoTask = { estimateForVideo: vi.fn(async () => ({}) as never), close: vi.fn() };
   const factory: VisionTaskFactory = {
     load: vi.fn(async () => ({ wasmLoaderPath: 'loader', wasmBinaryPath: 'wasm' })),
     detector: vi.fn(async () => detector), segmenter: vi.fn(async () => segmenter),
     yoloSeg: vi.fn(async () => yoloTask),
     segformer: vi.fn(async () => segformerTask),
     mirage: vi.fn(async () => mirageTask),
+    stereoDepth: vi.fn(async () => stereoTask),
   };
-  return { engine: new VisionEngine(factory), factory, detector, segmenter, yoloTask, segformerTask, mirageTask };
+  return { engine: new VisionEngine(factory), factory, detector, segmenter, yoloTask, segformerTask, mirageTask, stereoTask };
 }
 beforeEach(() => {
+  window.localStorage?.clear();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
   Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: {
@@ -43,7 +44,7 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   const header = screen.getByRole('banner');
   const model = within(header).getByRole('combobox', { name: 'モデル' });
   const enabled = within(model).getAllByRole('option').filter(option => !(option as HTMLOptionElement).disabled);
-  expect(enabled.map(option => (option as HTMLOptionElement).value)).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer', 'mirage', 'image-classifier']);
+  expect(enabled.map(option => (option as HTMLOptionElement).value)).toEqual(['selfie-segmenter', 'mediapipe', 'yolo-seg', 'segformer', 'mirage', 'stereo-depth', 'image-classifier']);
   expect(within(header).getAllByRole('combobox')).toHaveLength(2);
   const variantSelect = within(header).getByRole('combobox', { name: 'バリアント' });
   expect(variantSelect).toHaveValue('general');
@@ -59,8 +60,6 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   await user.selectOptions(model, 'mirage');
   await waitFor(() => expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'mirage', variantId: 'mirage-51m' }));
   expect(model).toHaveValue('mirage');
-  expect(within(variantSelect).getByRole('option', { name: /Mirage WebGPU/ })).toBeDisabled();
-  await user.selectOptions(variantSelect, 'mirage-webgpu');
   expect(variantSelect).toHaveValue('mirage-51m');
   expect(f.factory.mirage).toHaveBeenCalledTimes(1);
   expect(f.factory.mirage).toHaveBeenCalledWith(expect.objectContaining({ variantId: 'mirage-51m' }));
@@ -73,11 +72,6 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
     const button = within(dialog).getByRole('button', { name });
     expect(button).not.toBeDisabled();
   }
-  const blockedMirage = within(dialog).getByRole('button', { name: /Mirage WebGPU/ });
-  expect(blockedMirage).toBeDisabled();
-  expect(blockedMirage).toHaveTextContent(MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA);
-  await user.click(blockedMirage);
-  expect(model).toHaveValue('mediapipe');
   expect(within(dialog).queryByText('稼働中')).not.toBeInTheDocument();
   await user.click(within(dialog).getByRole('button', { name: /General/ }));
   expect(model).toHaveValue('selfie-segmenter');
@@ -85,25 +79,6 @@ it('uses the implemented choices in both UI paths and shows read-only backend se
   expect(screen.queryByText('現在しきい値を超える物体はありません')).not.toBeInTheDocument();
   expect(screen.getByLabelText('推論FPS')).toHaveTextContent('推論: 未計測');
   expect(document.body).not.toHaveTextContent(/\d+\s*FPS|\d+ms|稼働中/);
-});
-
-it('rejects blocked Mirage initialization before custom factories and offers the native variant without a futile retry', async () => {
-  const f = fixture();
-  const blocked = await f.engine.initialize('mirage', 'mirage-webgpu');
-  expect(blocked).toMatchObject({
-    status: 'error', model: 'mirage', variantId: 'mirage-webgpu', stage: 'task',
-    cause: { code: MIRAGE_WEBGPU_UNAVAILABLE_CODE },
-  });
-  expect(f.factory.mirage).not.toHaveBeenCalled();
-  expect(f.factory.load).not.toHaveBeenCalled();
-  const retry = vi.fn();
-  render(<ModelStatus state={f.engine.getState()} onRetry={retry} />);
-  expect(screen.getByRole('alert')).toHaveTextContent(MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA);
-  expect(screen.queryByRole('button', { name: 'モデルを再試行' })).not.toBeInTheDocument();
-  expect(retry).not.toHaveBeenCalled();
-  expect(await f.engine.initialize('mirage')).toMatchObject({ status: 'ready', variantId: 'mirage-51m' });
-  expect(f.factory.mirage).toHaveBeenCalledTimes(1);
-  f.engine.dispose();
 });
 
 it('renders WASM failure separately from camera failure, and retries only on the explicit button', async () => {
@@ -180,4 +155,157 @@ it('disposes pending task ownership on unmount and releases its late completion'
   expect(f.engine.getState().status).toBe('idle');
   expect(f.segmenter.close).toHaveBeenCalledTimes(1);
   expect(container).toBeEmptyDOMElement();
+});
+
+it('remembers the last selected model and variant across remounts', async () => {
+  const first = fixture();
+  const user = userEvent.setup();
+  const view1 = render(<App engine={first.engine} />);
+  await screen.findByText('モデル準備完了（カメラの準備・推論成功とは別です）');
+
+  const header1 = screen.getByRole('banner');
+  await user.selectOptions(within(header1).getByRole('combobox', { name: 'モデル' }), 'stereo-depth');
+  await waitFor(() =>
+    expect(first.engine.getState()).toMatchObject({
+      status: 'ready',
+      model: 'stereo-depth',
+      variantId: 'stereo-sad-baseline',
+    })
+  );
+
+  await user.selectOptions(within(header1).getByRole('combobox', { name: 'バリアント' }), 'lightstereo-s');
+  await waitFor(() =>
+    expect(first.engine.getState()).toMatchObject({
+      status: 'ready',
+      model: 'stereo-depth',
+      variantId: 'lightstereo-s',
+    })
+  );
+
+  view1.unmount();
+
+  const second = fixture();
+  render(<App engine={second.engine} />);
+  await waitFor(() =>
+    expect(second.engine.getState()).toMatchObject({
+      status: 'ready',
+      model: 'stereo-depth',
+      variantId: 'lightstereo-s',
+    })
+  );
+  const header2 = screen.getByRole('banner');
+  expect(within(header2).getByRole('combobox', { name: 'モデル' })).toHaveValue('stereo-depth');
+  expect(within(header2).getByRole('combobox', { name: 'バリアント' })).toHaveValue('lightstereo-s');
+});
+
+it('allows switching Stereo Depth execution backend preference (auto / webgpu / wasm) per model in ControlPanel', async () => {
+  const f = fixture();
+  const user = userEvent.setup();
+  render(<App engine={f.engine} />);
+  await screen.findByText('モデル準備完了（カメラの準備・推論成功とは別です）');
+
+  const header = screen.getByRole('banner');
+  await user.selectOptions(within(header).getByRole('combobox', { name: 'モデル' }), 'stereo-depth');
+  await waitFor(() =>
+    expect(f.factory.stereoDepth).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variantId: 'stereo-sad-baseline',
+        backendPreference: 'auto',
+      })
+    )
+  );
+
+  await user.click(screen.getByRole('button', { name: 'モデル調整' }));
+  const backendGroup = screen.getByRole('group', { name: 'ステレオ実行バックエンド' });
+  await user.click(within(backendGroup).getByRole('button', { name: 'WebGPU 強制' }));
+  await waitFor(() =>
+    expect(f.factory.stereoDepth).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        variantId: 'stereo-sad-baseline',
+        backendPreference: 'webgpu',
+      })
+    )
+  );
+
+  await user.click(within(backendGroup).getByRole('button', { name: 'WASM (CPU)' }));
+  await waitFor(() =>
+    expect(f.factory.stereoDepth).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        variantId: 'stereo-sad-baseline',
+        backendPreference: 'wasm',
+      })
+    )
+  );
+});
+
+it('defaults Stereo Depth real camera 180-degree rotation ON, allows toggling, and shows disabled status during SBS video playback', async () => {
+  const f = fixture();
+  const dummyCanvas = document.createElement('canvas');
+  f.stereoTask.estimateForVideo.mockResolvedValue({
+    width: 16,
+    height: 9,
+    disparity: new Float32Array(16 * 9).fill(8),
+    minDisparity: 8,
+    maxDisparity: 8,
+    medianDisparity: 8,
+    scaleMinDisparity: 8,
+    scaleMaxDisparity: 16,
+    validRatio: 1,
+    overlayCanvas: dummyCanvas,
+    leftCanvas: dummyCanvas,
+    rightCanvas: dummyCanvas,
+    colormap: 'turbo',
+    viewMode: 'left-overlay',
+    swapLeftRight: false,
+    rotate180: false,
+    sourceEyeWidth: 480,
+    sourceEyeHeight: 270,
+  } as never);
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+    clearRect: vi.fn(),
+    drawImage: vi.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
+    fillRect: vi.fn(),
+    strokeRect: vi.fn(),
+    fillText: vi.fn(),
+    measureText: vi.fn(() => ({ width: 20 })),
+    beginPath: vi.fn(),
+    rect: vi.fn(),
+    clip: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    closePath: vi.fn(),
+    stroke: vi.fn(),
+    fill: vi.fn(),
+  } as unknown as CanvasRenderingContext2D);
+
+  const user = userEvent.setup();
+  render(<App engine={f.engine} />);
+  await screen.findByText('モデル準備完了（カメラの準備・推論成功とは別です）');
+
+  const header = screen.getByRole('banner');
+  await user.selectOptions(within(header).getByRole('combobox', { name: 'モデル' }), 'stereo-depth');
+  await waitFor(() =>
+    expect(f.engine.getState()).toMatchObject({ status: 'ready', model: 'stereo-depth' })
+  );
+
+  await user.click(screen.getByRole('button', { name: 'モデル調整' }));
+  const rotateCheckbox = screen.getByRole('checkbox', {
+    name: '実カメラ入力を180°回転 (逆さ設置補正)',
+  });
+  expect(rotateCheckbox).toBeChecked();
+  expect(screen.getByText('実カメラ適用中')).toBeInTheDocument();
+
+  await user.click(rotateCheckbox);
+  expect(rotateCheckbox).not.toBeChecked();
+  expect(screen.getByText('OFF (正立入力)')).toBeInTheDocument();
+
+  // Re-enable before switching to a synthetic SBS video preset
+  await user.click(rotateCheckbox);
+  expect(rotateCheckbox).toBeChecked();
+
+  await user.click(screen.getByRole('button', { name: '合成: 移動ブロック' }));
+  expect(screen.getByText('動画・静止画では無効')).toBeInTheDocument();
+  expect(rotateCheckbox).toBeChecked();
 });

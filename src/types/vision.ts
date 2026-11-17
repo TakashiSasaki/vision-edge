@@ -1,18 +1,32 @@
-export type ModelType = 'selfie-segmenter' | 'yolo-seg' | 'mediapipe' | 'segformer' | 'mirage';
+export type ModelType = 'selfie-segmenter' | 'yolo-seg' | 'mediapipe' | 'segformer' | 'mirage' | 'stereo-depth';
 
-export type RunnableModelType = 'selfie-segmenter' | 'mediapipe' | 'yolo-seg' | 'segformer' | 'mirage';
+export type RunnableModelType = 'selfie-segmenter' | 'mediapipe' | 'yolo-seg' | 'segformer' | 'mirage' | 'stereo-depth';
 
 export type SelfieVariantId = 'general' | 'landscape';
-export type MediapipeVariantId = 'lite0' | 'lite2' | 'ssd-mobilenet-v2';
+export type MediapipeVariantId = 'lite0' | 'lite2';
 export type YoloSegVariantId = 'yolov8n-seg' | 'yolov8s-seg';
 export type SegFormerVariantId = 'b0' | 'b1' | 'b2';
 export type MirageVariantId =
-  | 'mirage-webgpu'
   | 'mirage-51m'
   | 'mirage-onnx-exp-wasm'
   | 'mirage-onnx-exp-webgpu';
+export type StereoDepthVariantId =
+  | 'stereo-sad-baseline'
+  | 'stereo-webgpu-wgsl'
+  | 'lightstereo-s'
+  | 'mobilestereonet-2d'
+  | 'hitnet-sf'
+  | 'crestereo-init-iter2'
+  | 'crestereo-combined-iter5'
+  | 'custom-onnx';
 
-export type ModelVariantId = SelfieVariantId | MediapipeVariantId | YoloSegVariantId | SegFormerVariantId | MirageVariantId;
+export type ModelVariantId =
+  | SelfieVariantId
+  | MediapipeVariantId
+  | YoloSegVariantId
+  | SegFormerVariantId
+  | MirageVariantId
+  | StereoDepthVariantId;
 
 export interface ModelVariantMetadata {
   id: string;
@@ -22,8 +36,6 @@ export interface ModelVariantMetadata {
   upstreamUrl: string;
   localUrl: string;
   isDefault?: boolean;
-  /** A visible variant may be unavailable until its implementation is validated. */
-  unavailableReason?: string;
 }
 
 // An immutable browser video frame is preferred when the platform supports it.
@@ -107,12 +119,71 @@ export interface MirageInferenceParams {
   includeOcr: boolean;
 }
 
+export type StereoColormap = 'turbo' | 'viridis' | 'inferno' | 'grayscale';
+export type StereoViewMode = 'left-overlay' | 'split-3pane' | 'depth-only';
+export type StereoBackendPreference = 'auto' | 'webgpu' | 'wasm';
+
+export interface StereoDepthInferenceParams {
+  confidenceThreshold: number;
+  backendPreference: StereoBackendPreference;
+  maxDisparity: number;
+  sadWindowSize: 5 | 7 | 9;
+  autoNormalizeDisparity: boolean;
+  minDisparityPx: number;
+  maxDisparityPx: number;
+  swapLeftRight: boolean;
+  cameraRotate180: boolean;
+  colormap: StereoColormap;
+  viewMode: StereoViewMode;
+  baselineMm: number;
+  focalLengthPx: number;
+  showCalibrationDepth: boolean;
+}
+
+export interface StereoDepthMapData {
+  width: number;
+  height: number;
+  disparity: Float32Array;
+  minDisparity: number;
+  maxDisparity: number;
+  medianDisparity: number;
+  scaleMinDisparity: number;
+  scaleMaxDisparity: number;
+  validRatio: number;
+  overlayCanvas: HTMLCanvasElement;
+  leftCanvas: HTMLCanvasElement;
+  rightCanvas: HTMLCanvasElement;
+  colormap: StereoColormap;
+  viewMode: StereoViewMode;
+  swapLeftRight: boolean;
+  rotate180?: boolean;
+  sourceEyeWidth: number;
+  sourceEyeHeight: number;
+}
+
+export interface StereoDepthProbeResult {
+  normX: number;
+  normY: number;
+  pixelX: number;
+  pixelY: number;
+  disparityPx: number;
+  valid: boolean;
+  depthMeters: number | null;
+}
+
+export interface StereoPinnedProbe extends StereoDepthProbeResult {
+  id: string;
+  label: string;
+  variantId: string;
+}
+
 export type ModelInferenceParamsMap = {
   'selfie-segmenter': SelfieInferenceParams;
   'mediapipe': MediapipeInferenceParams;
   'yolo-seg': YoloSegInferenceParams;
   'segformer': SegFormerInferenceParams;
   'mirage': MirageInferenceParams;
+  'stereo-depth': StereoDepthInferenceParams;
 };
 
 export interface ModelParameterConfig<T = unknown> {
@@ -144,6 +215,25 @@ export const DEFAULT_MODEL_PARAMS: PerModelParameterConfig = {
   'mirage': {
     inference: { confidenceThreshold: 0.25, maxDetections: 15, iouThreshold: 0.45, analysisMode: 'fast', mirageLanguage: 'en', includeOcr: true },
     render: { showBoxes: true, showMasks: true, showLabels: true, showConfidence: true, maskOpacity: 0.35, confidenceThreshold: 0.25 }
+  },
+  'stereo-depth': {
+    inference: {
+      confidenceThreshold: 0.35,
+      backendPreference: 'auto',
+      maxDisparity: 64,
+      sadWindowSize: 7,
+      autoNormalizeDisparity: true,
+      minDisparityPx: 0,
+      maxDisparityPx: 64,
+      swapLeftRight: false,
+      cameraRotate180: true,
+      colormap: 'turbo',
+      viewMode: 'left-overlay',
+      baselineMm: 60,
+      focalLengthPx: 500,
+      showCalibrationDepth: true,
+    },
+    render: { showBoxes: false, showMasks: true, showLabels: true, showConfidence: false, maskOpacity: 0.72, confidenceThreshold: 0.35 }
   }
 };
 
@@ -173,11 +263,12 @@ export interface DetectionFrame {
   requestId: number;
   objects: DetectedObject[];
   semanticMask?: HTMLCanvasElement;
+  depthMap?: StereoDepthMapData;
 }
 
 export interface OnnxBackendInfo {
-  runtime:'onnxruntime-web';
-  requestedProvider:'auto'|'webgpu'|'wasm'|'unreported';
+  runtime:'onnxruntime-web' | 'stereo-sad-cpu' | 'stereo-webgpu-wgsl';
+  requestedProvider:'auto'|'webgpu'|'wasm'|'unreported'|'cpu';
   configuredProviders:readonly string[];
   fallbackReason:string|null;
   actualBackend:'unmeasured';

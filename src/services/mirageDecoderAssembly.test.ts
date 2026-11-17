@@ -492,12 +492,19 @@ describe('mirageDecoderAssembly full-pipeline helpers', () => {
     expect(seenEngramHashCheck).toBeGreaterThanOrEqual(0);
 
     const fedTokens: number[] = [];
+    const seenCrossK: ort.Tensor[] = [];
+    const seenCrossV: ort.Tensor[] = [];
+    const seenPastKInputs: ort.Tensor[] = [];
+    const emittedPastKOutputs: ort.Tensor[] = [];
     const frId = tableReader.vocab.langIds.fr;
     const bannedObj1 = tableReader.vocab.refId('object', 1);
     const allowedObj0 = tableReader.vocab.refId('object', 0);
 
     const mockDecoderStep: MirageOrtSessionRunner = {
       async run(feeds) {
+        seenCrossK.push(feeds.cross_k);
+        seenCrossV.push(feeds.cross_v);
+        seenPastKInputs.push(feeds.past_k);
         const logits = new Float32Array(tableReader.vocab.size).fill(-10);
         const posArr = feeds.pos_onehot.data as Float32Array;
         const pos = posArr.indexOf(1);
@@ -509,23 +516,25 @@ describe('mirageDecoderAssembly full-pipeline helpers', () => {
         } else if (pos === 2) {
           logits[tableReader.vocab.eos] = 80;
         }
+        const nextPastK = new ort.Tensor(
+          'float32',
+          new Float32Array(
+            MIRAGE_DECODER_LAYERS *
+              MIRAGE_DECODER_KV_HEADS *
+              MIRAGE_MAX_SEQ *
+              MIRAGE_CROSS_HEAD_DIM
+          ),
+          [
+            MIRAGE_DECODER_LAYERS,
+            MIRAGE_DECODER_KV_HEADS,
+            MIRAGE_MAX_SEQ,
+            MIRAGE_CROSS_HEAD_DIM,
+          ]
+        );
+        emittedPastKOutputs.push(nextPastK);
         return {
           logits: new ort.Tensor('float32', logits, [tableReader.vocab.size]),
-          new_past_k: new ort.Tensor(
-            'float32',
-            new Float32Array(
-              MIRAGE_DECODER_LAYERS *
-                MIRAGE_DECODER_KV_HEADS *
-                MIRAGE_MAX_SEQ *
-                MIRAGE_CROSS_HEAD_DIM
-            ),
-            [
-              MIRAGE_DECODER_LAYERS,
-              MIRAGE_DECODER_KV_HEADS,
-              MIRAGE_MAX_SEQ,
-              MIRAGE_CROSS_HEAD_DIM,
-            ]
-          ),
+          new_past_k: nextPastK,
           new_past_v: new ort.Tensor(
             'float32',
             new Float32Array(
@@ -573,6 +582,14 @@ describe('mirageDecoderAssembly full-pipeline helpers', () => {
     expect(greedy.generatedTokenIds).toEqual([allowedObj0]);
     expect(greedy.decodedText).toBe('<obj0>');
     expect(greedy.stepsExecuted).toBe(3);
+    // Verify constant cross_k/cross_v tensors are reused across all steps without re-allocation
+    expect(seenCrossK[1]).toBe(seenCrossK[0]);
+    expect(seenCrossK[2]).toBe(seenCrossK[0]);
+    expect(seenCrossV[1]).toBe(seenCrossV[0]);
+    expect(seenCrossV[2]).toBe(seenCrossV[0]);
+    // Verify recurrent KV tensors chain directly from new_past_k -> past_k without CPU re-wrapping
+    expect(seenPastKInputs[1]).toBe(emittedPastKOutputs[0]);
+    expect(seenPastKInputs[2]).toBe(emittedPastKOutputs[1]);
   });
 
   it('parses Mirage grammar lines, extracts mask polygons, and assembles DetectedObjects faithfully', () => {

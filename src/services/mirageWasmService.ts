@@ -20,7 +20,6 @@ import type {
   MirageWorkerRequest,
   MirageWorkerResponse,
 } from './mirageWasmWorker';
-import { mirageWebGpuUnavailableError } from './mirageAvailability';
 
 export interface MirageSnapshotLike {
   readonly frameId: number;
@@ -60,6 +59,7 @@ export interface MirageTask {
     extraOptions?: MirageInferExtraOptions
   ): Promise<DetectedObject[]>;
   getLastConsumedSnapshotHash?(): string | null;
+  getLastRawObservation?(): MirageRawObservation | null;
   notifySourceChanged?(): number;
   close(): void | Promise<void>;
 }
@@ -177,6 +177,7 @@ export class MirageWasmEngine implements MirageTask {
   private nextRequestId = 1;
   private sourceGeneration = 1;
   private lastConsumedSnapshotHash: string | null = null;
+  private lastRawObservation: MirageRawObservation | null = null;
   private readonly pendingRequests = new Map<
     number,
     {
@@ -217,6 +218,10 @@ export class MirageWasmEngine implements MirageTask {
 
   public getLastConsumedSnapshotHash(): string | null {
     return this.lastConsumedSnapshotHash;
+  }
+
+  public getLastRawObservation(): MirageRawObservation | null {
+    return this.lastRawObservation;
   }
 
   public async initializeWorker(
@@ -397,6 +402,7 @@ export class MirageWasmEngine implements MirageTask {
         return [];
       }
 
+      this.lastRawObservation = response.observation;
       return this.postprocessObservation(
         response.observation,
         confidenceThreshold,
@@ -478,10 +484,6 @@ export async function createMirageWasmTask(
   options: MirageTaskOptions = {}
 ): Promise<MirageTask> {
   const variantId: MirageVariantId = options.variantId ?? 'mirage-51m';
-
-  if (variantId === 'mirage-webgpu') {
-    throw mirageWebGpuUnavailableError();
-  }
 
   const asset = await resolveModelAssetUrls('mirage', variantId);
   const origin =

@@ -68,23 +68,28 @@ export interface OrtSessionResolutionOptions {
     recordAssetSource?: AssetSourceRecorder;
     fallbackModelUrl?: string | null;
     fallbackModelBytes?: () => Uint8Array | Promise<Uint8Array>;
-    modelId?: Extract<RunnableModelType, 'yolo-seg' | 'segformer' | 'mirage'>;
+    modelId?: Extract<RunnableModelType, 'yolo-seg' | 'segformer' | 'mirage' | 'stereo-depth'>;
     primarySource?: AssetDeliverySource;
     variantId?: string;
+    graphOptimizationLevel?: ort.InferenceSession.SessionOptions['graphOptimizationLevel'];
 }
 
 async function createOrtSessionWithUrl(
     targetUrlOrBytes: string | Uint8Array,
-    delegate?: 'GPU' | 'WebGPU' | 'WASM'
+    delegate?: 'GPU' | 'WebGPU' | 'WASM',
+    graphOptimizationLevel?: ort.InferenceSession.SessionOptions['graphOptimizationLevel']
 ): Promise<{ session: ort.InferenceSession; backend: OnnxBackendInfo }> {
     const requestedProvider = delegate === 'WASM' ? 'wasm' : delegate ? 'webgpu' : 'auto';
     const available = typeof navigator !== 'undefined' && !!navigator.gpu;
     const providers = delegate === 'WASM' || !available ? ['wasm'] : ['webgpu', 'wasm'];
     const backend: OnnxBackendInfo = { runtime: 'onnxruntime-web', requestedProvider, configuredProviders: providers, fallbackReason: delegate !== 'WASM' && !available ? 'WebGPU API unavailable; WASM configured' : null, actualBackend: 'unmeasured' };
-    const create = (executionProviders: string[]) =>
-        typeof targetUrlOrBytes === 'string'
-            ? ort.InferenceSession.create(targetUrlOrBytes, { executionProviders, graphOptimizationLevel: 'all', logSeverityLevel: 3 })
-            : ort.InferenceSession.create(targetUrlOrBytes, { executionProviders, graphOptimizationLevel: 'all', logSeverityLevel: 3 });
+    const create = (executionProviders: string[]) => {
+        const isWasmOnly = executionProviders.length > 0 && executionProviders.every(ep => ep === 'wasm');
+        const resolvedOptLevel = graphOptimizationLevel ?? (isWasmOnly && delegate === 'WASM' ? 'disabled' : 'all');
+        return typeof targetUrlOrBytes === 'string'
+            ? ort.InferenceSession.create(targetUrlOrBytes, { executionProviders, graphOptimizationLevel: resolvedOptLevel, logSeverityLevel: 3 })
+            : ort.InferenceSession.create(targetUrlOrBytes, { executionProviders, graphOptimizationLevel: resolvedOptLevel, logSeverityLevel: 3 });
+    };
     try {
         return { session: await create(providers), backend };
     }
@@ -115,7 +120,7 @@ export async function createOrtSession(
         ort.env.wasm.wasmPaths = wasm.primaryUrl;
     }
     try {
-        const created = await createOrtSessionWithUrl(modelUrl, delegate);
+        const created = await createOrtSessionWithUrl(modelUrl, delegate, resolution?.graphOptimizationLevel);
         recordAssetSource('wasm-ort', wasm.source);
         if (resolution?.modelId) {
             recordAssetSource(resolution.modelId, resolution.primarySource ?? 'external');
@@ -129,7 +134,7 @@ export async function createOrtSession(
                 ort.env.wasm.wasmPaths = wasm.fallbackUrl;
             }
             try {
-                const created = await createOrtSessionWithUrl(resolution.fallbackModelUrl, delegate);
+                const created = await createOrtSessionWithUrl(resolution.fallbackModelUrl, delegate, resolution?.graphOptimizationLevel);
                 recordAssetSource('wasm-ort', wasm.fallbackUrl ? 'external-fallback' : wasm.source);
                 if (resolution.modelId) {
                     recordAssetSource(resolution.modelId, 'external-fallback');
@@ -142,7 +147,7 @@ export async function createOrtSession(
         }
         if (resolution?.fallbackModelBytes) {
             const bytes = await Promise.resolve(resolution.fallbackModelBytes());
-            const created = await createOrtSessionWithUrl(bytes, delegate);
+            const created = await createOrtSessionWithUrl(bytes, delegate, resolution?.graphOptimizationLevel);
             recordAssetSource('wasm-ort', wasm.source);
             if (resolution.modelId) {
                 recordAssetSource(resolution.modelId, resolution.primarySource ?? 'container-cache');

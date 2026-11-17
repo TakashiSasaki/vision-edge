@@ -144,8 +144,8 @@ function invokeMiddleware(
 
 describe('Experimental Partial Mirage ONNX Integration', () => {
   it('preserves existing MODEL_VARIANT_CATALOG count while registering experimental Mirage ONNX variants', () => {
-    // Existing 10 detection/segmentation variants in MODEL_VARIANT_CATALOG remain untouched
-    expect(Object.keys(MODEL_VARIANT_CATALOG)).toHaveLength(10);
+    // Existing 9 detection/segmentation variants in MODEL_VARIANT_CATALOG remain untouched
+    expect(Object.keys(MODEL_VARIANT_CATALOG)).toHaveLength(9);
 
     const wasmEntry = getVariantCatalogEntry('mirage', 'mirage-onnx-exp-wasm');
     expect(wasmEntry.file).toBe(MIRAGE_EXPERIMENTAL_ONNX_FILE);
@@ -162,12 +162,7 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
     expect(MIRAGE_MODEL.defaultVariantId).toBe('mirage-51m');
     expect(getVariantCatalogEntry('mirage').variantId).toBe('mirage-51m');
 
-    // mirage-webgpu remains blocked with unvalidated error
-    expect(() => getVariantCatalogEntry('mirage', 'mirage-webgpu')).toThrow(
-      /Mirage ONNX is unavailable|not been completed/i
-    );
-
-    // Backend descriptions distinguish official WASM, blocked mirage-webgpu, and experimental partial ONNX
+    // Backend descriptions distinguish official WASM and experimental partial ONNX
     expect(
       backendDescription({
         status: 'ready',
@@ -476,16 +471,6 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
       expect(corruptedRes.status).toBe(503);
       expect(JSON.parse(corruptedRes.body.toString('utf8'))).toMatchObject({
         code: 'MIRAGE_EXPERIMENTAL_ONNX_INTEGRITY_FAILED',
-      });
-
-      // 4. mirage-webgpu.onnx remains 503 MIRAGE_ONNX_NOT_VALIDATED
-      const webgpuRes = await invokeMiddleware(
-        mw,
-        '/api/model-cache/mirage/mirage-webgpu.onnx'
-      );
-      expect(webgpuRes.status).toBe(503);
-      expect(JSON.parse(webgpuRes.body.toString('utf8'))).toMatchObject({
-        code: 'MIRAGE_ONNX_NOT_VALIDATED',
       });
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
@@ -1349,6 +1334,36 @@ describe('Experimental Partial Mirage ONNX Integration', () => {
         'prototypes',
         'coefficients',
       ]);
+
+      // Verify WebGPU variant synchronizes engine.backend when a full-pipeline session falls back to WASM
+      stepIdx = 0;
+      const webgpuEngine = new MirageExperimentalOnnxEngine(
+        encoderSession,
+        'mirage-onnx-exp-webgpu',
+        {
+          runtime: 'onnxruntime-web',
+          requestedProvider: 'webgpu',
+          configuredProviders: ['webgpu'],
+          fallbackReason: null,
+          actualBackend: 'unmeasured',
+        }
+      );
+      webgpuEngine.attachFullPipelineAssets({
+        readerSession,
+        crossKvSession,
+        decoderStepSession,
+        tableReader,
+        readerBackend: { runtime: 'onnxruntime-web', requestedProvider: 'webgpu', configuredProviders: ['webgpu'], fallbackReason: null, actualBackend: 'unmeasured' },
+        crossKvBackend: { runtime: 'onnxruntime-web', requestedProvider: 'webgpu', configuredProviders: ['webgpu'], fallbackReason: null, actualBackend: 'unmeasured' },
+        decoderStepBackend: { runtime: 'onnxruntime-web', requestedProvider: 'webgpu', configuredProviders: ['wasm'], fallbackReason: 'WebGPU decoderStep shader limit exceeded; fell back to WASM', actualBackend: 'unmeasured' },
+      });
+      await webgpuEngine.detectForVideo(canvas, 0.3, {
+        analysisMode: 'full',
+        mirageLanguage: 'fr',
+      });
+      expect(webgpuEngine.backend.configuredProviders).toEqual(['wasm']);
+      expect(webgpuEngine.backend.fallbackReason).toContain('decoderStep: WebGPU decoderStep shader limit exceeded');
+      expect(webgpuEngine.getLastDiagnostics()?.activeProvider).toBe('wasm');
 
       await engine.close();
       expect(readerSession.release).toHaveBeenCalledTimes(1);

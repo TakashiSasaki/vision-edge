@@ -19,7 +19,6 @@ import type {
   MirageRegion,
   MirageObject,
 } from './mirageVisionAdapter';
-import { traceMaskContourPolygon } from './mirageWebGpuService';
 import { disposeTensors, OnnxInferenceError } from './onnxSession';
 
 export const MIRAGE_READER_STRIP_H = 48;
@@ -718,99 +717,130 @@ export async function runMirageGreedyDecode(
   const { cosTable, sinTable } = getMirageRopeTables();
   const halfDim = MIRAGE_CROSS_HEAD_DIM / 2;
 
-  let pastK = new Float32Array(
-    MIRAGE_DECODER_LAYERS *
-      MIRAGE_DECODER_KV_HEADS *
-      MIRAGE_MAX_SEQ *
-      MIRAGE_CROSS_HEAD_DIM
-  );
-  let pastV = new Float32Array(
-    MIRAGE_DECODER_LAYERS *
-      MIRAGE_DECODER_KV_HEADS *
-      MIRAGE_MAX_SEQ *
-      MIRAGE_CROSS_V_DIM
-  );
-  let rawQHist = new Float32Array(MIRAGE_DECODER_LAYERS * 2 * 384);
-  let rawKHist = new Float32Array(MIRAGE_DECODER_LAYERS * 2 * 96);
-  let rawVHist = new Float32Array(MIRAGE_DECODER_LAYERS * 2 * 128);
-  let engVHist = new Float32Array(2 * 9 * MIRAGE_EMBEDDING_DIM);
+  const crossKTensor = new ort.Tensor('float32', crossKv.crossK, [
+    MIRAGE_DECODER_LAYERS,
+    MIRAGE_CROSS_KV_HEADS,
+    MIRAGE_MAX_M,
+    MIRAGE_CROSS_HEAD_DIM,
+  ]);
+  const crossVTensor = new ort.Tensor('float32', crossKv.crossV, [
+    MIRAGE_DECODER_LAYERS,
+    MIRAGE_CROSS_KV_HEADS,
+    MIRAGE_MAX_M,
+    MIRAGE_CROSS_V_DIM,
+  ]);
+  const crossMaskTensor = new ort.Tensor('float32', crossKv.crossMask, [
+    MIRAGE_MAX_M,
+  ]);
 
+  let pastKTensor: ort.Tensor = new ort.Tensor(
+    'float32',
+    new Float32Array(
+      MIRAGE_DECODER_LAYERS *
+        MIRAGE_DECODER_KV_HEADS *
+        MIRAGE_MAX_SEQ *
+        MIRAGE_CROSS_HEAD_DIM
+    ),
+    [
+      MIRAGE_DECODER_LAYERS,
+      MIRAGE_DECODER_KV_HEADS,
+      MIRAGE_MAX_SEQ,
+      MIRAGE_CROSS_HEAD_DIM,
+    ]
+  );
+  let pastVTensor: ort.Tensor = new ort.Tensor(
+    'float32',
+    new Float32Array(
+      MIRAGE_DECODER_LAYERS *
+        MIRAGE_DECODER_KV_HEADS *
+        MIRAGE_MAX_SEQ *
+        MIRAGE_CROSS_V_DIM
+    ),
+    [
+      MIRAGE_DECODER_LAYERS,
+      MIRAGE_DECODER_KV_HEADS,
+      MIRAGE_MAX_SEQ,
+      MIRAGE_CROSS_V_DIM,
+    ]
+  );
+  let rawQHistTensor: ort.Tensor = new ort.Tensor(
+    'float32',
+    new Float32Array(MIRAGE_DECODER_LAYERS * 2 * 384),
+    [MIRAGE_DECODER_LAYERS, 2, 384]
+  );
+  let rawKHistTensor: ort.Tensor = new ort.Tensor(
+    'float32',
+    new Float32Array(MIRAGE_DECODER_LAYERS * 2 * 96),
+    [MIRAGE_DECODER_LAYERS, 2, 96]
+  );
+  let rawVHistTensor: ort.Tensor = new ort.Tensor(
+    'float32',
+    new Float32Array(MIRAGE_DECODER_LAYERS * 2 * 128),
+    [MIRAGE_DECODER_LAYERS, 2, 128]
+  );
+  let engVHistTensor: ort.Tensor = new ort.Tensor(
+    'float32',
+    new Float32Array(2 * 9 * MIRAGE_EMBEDDING_DIM),
+    [2, 9, MIRAGE_EMBEDDING_DIM]
+  );
+
+  const tokenEmbScratch = new Float32Array(MIRAGE_EMBEDDING_DIM);
+  const eng0Scratch = new Float32Array(MIRAGE_EMBEDDING_DIM);
+  const eng1Scratch = new Float32Array(MIRAGE_EMBEDDING_DIM);
+  const ropeCosScratch = new Float32Array(halfDim);
+  const ropeSinScratch = new Float32Array(halfDim);
   const posOnehot = new Float32Array(MIRAGE_MAX_SEQ);
   const selfMask = new Float32Array(MIRAGE_MAX_SEQ).fill(-1e9);
+  let prevPosIndex = -1;
 
   const tokens: number[] = [vocab.bos, langId];
   const generated: number[] = [];
   let stepsExecuted = 0;
 
   const stepOne = async (tokenId: number, t: number): Promise<Float32Array> => {
-    posOnehot.fill(0);
+    if (prevPosIndex >= 0) {
+      posOnehot[prevPosIndex] = 0.0;
+    }
     posOnehot[t] = 1.0;
+    prevPosIndex = t;
     selfMask[t] = 0.0;
 
-    const tokenEmb = tableReader.readTokenEmbedding(tokenId);
-    const eng0 = tableReader.readEngramVector(0, tokens, t);
-    const eng1 = tableReader.readEngramVector(1, tokens, t);
-    const ropeCos = cosTable.subarray(t * halfDim, (t + 1) * halfDim);
-    const ropeSin = sinTable.subarray(t * halfDim, (t + 1) * halfDim);
+    const tokenEmb = tableReader.readTokenEmbedding(tokenId, tokenEmbScratch);
+    const eng0 = tableReader.readEngramVector(0, tokens, t, eng0Scratch);
+    const eng1 = tableReader.readEngramVector(1, tokens, t, eng1Scratch);
+    ropeCosScratch.set(cosTable.subarray(t * halfDim, (t + 1) * halfDim));
+    ropeSinScratch.set(sinTable.subarray(t * halfDim, (t + 1) * halfDim));
 
-    const owned: ort.Tensor[] = [
+    const stepInputs: ort.Tensor[] = [
       new ort.Tensor('float32', tokenEmb, [MIRAGE_EMBEDDING_DIM]),
       new ort.Tensor('float32', eng0, [MIRAGE_EMBEDDING_DIM]),
       new ort.Tensor('float32', eng1, [MIRAGE_EMBEDDING_DIM]),
-      new ort.Tensor('float32', new Float32Array(ropeCos), [halfDim]),
-      new ort.Tensor('float32', new Float32Array(ropeSin), [halfDim]),
-      new ort.Tensor('float32', new Float32Array(posOnehot), [MIRAGE_MAX_SEQ]),
-      new ort.Tensor('float32', new Float32Array(selfMask), [MIRAGE_MAX_SEQ]),
-      new ort.Tensor('float32', crossKv.crossK, [
-        MIRAGE_DECODER_LAYERS,
-        MIRAGE_CROSS_KV_HEADS,
-        MIRAGE_MAX_M,
-        MIRAGE_CROSS_HEAD_DIM,
-      ]),
-      new ort.Tensor('float32', crossKv.crossV, [
-        MIRAGE_DECODER_LAYERS,
-        MIRAGE_CROSS_KV_HEADS,
-        MIRAGE_MAX_M,
-        MIRAGE_CROSS_V_DIM,
-      ]),
-      new ort.Tensor('float32', crossKv.crossMask, [MIRAGE_MAX_M]),
-      new ort.Tensor('float32', pastK, [
-        MIRAGE_DECODER_LAYERS,
-        MIRAGE_DECODER_KV_HEADS,
-        MIRAGE_MAX_SEQ,
-        MIRAGE_CROSS_HEAD_DIM,
-      ]),
-      new ort.Tensor('float32', pastV, [
-        MIRAGE_DECODER_LAYERS,
-        MIRAGE_DECODER_KV_HEADS,
-        MIRAGE_MAX_SEQ,
-        MIRAGE_CROSS_V_DIM,
-      ]),
-      new ort.Tensor('float32', rawQHist, [MIRAGE_DECODER_LAYERS, 2, 384]),
-      new ort.Tensor('float32', rawKHist, [MIRAGE_DECODER_LAYERS, 2, 96]),
-      new ort.Tensor('float32', rawVHist, [MIRAGE_DECODER_LAYERS, 2, 128]),
-      new ort.Tensor('float32', engVHist, [2, 9, MIRAGE_EMBEDDING_DIM]),
+      new ort.Tensor('float32', ropeCosScratch, [halfDim]),
+      new ort.Tensor('float32', ropeSinScratch, [halfDim]),
+      new ort.Tensor('float32', posOnehot, [MIRAGE_MAX_SEQ]),
+      new ort.Tensor('float32', selfMask, [MIRAGE_MAX_SEQ]),
     ];
+    const stepDisposables: ort.Tensor[] = [...stepInputs];
 
     try {
       const outputs = await decoderStepSession.run(
         {
-          token_emb: owned[0],
-          eng0_emb: owned[1],
-          eng1_emb: owned[2],
-          rope_cos: owned[3],
-          rope_sin: owned[4],
-          pos_onehot: owned[5],
-          self_mask: owned[6],
-          cross_k: owned[7],
-          cross_v: owned[8],
-          cross_mask: owned[9],
-          past_k: owned[10],
-          past_v: owned[11],
-          raw_q_hist: owned[12],
-          raw_k_hist: owned[13],
-          raw_v_hist: owned[14],
-          eng_v_hist: owned[15],
+          token_emb: stepInputs[0],
+          eng0_emb: stepInputs[1],
+          eng1_emb: stepInputs[2],
+          rope_cos: stepInputs[3],
+          rope_sin: stepInputs[4],
+          pos_onehot: stepInputs[5],
+          self_mask: stepInputs[6],
+          cross_k: crossKTensor,
+          cross_v: crossVTensor,
+          cross_mask: crossMaskTensor,
+          past_k: pastKTensor,
+          past_v: pastVTensor,
+          raw_q_hist: rawQHistTensor,
+          raw_k_hist: rawKHistTensor,
+          raw_v_hist: rawVHistTensor,
+          eng_v_hist: engVHistTensor,
         },
         [
           'logits',
@@ -823,12 +853,6 @@ export async function runMirageGreedyDecode(
         ]
       );
 
-      for (const val of Object.values(outputs)) {
-        if (val && typeof val === 'object' && 'data' in val) {
-          owned.push(val);
-        }
-      }
-
       const logitsT = outputs?.logits;
       const npk = outputs?.new_past_k;
       const npv = outputs?.new_past_v;
@@ -836,6 +860,11 @@ export async function runMirageGreedyDecode(
       const nrk = outputs?.new_raw_k_hist;
       const nrv = outputs?.new_raw_v_hist;
       const neh = outputs?.new_eng_v_hist;
+
+      if (logitsT) {
+        stepDisposables.push(logitsT);
+      }
+
       if (
         !logitsT?.data ||
         !npk?.data ||
@@ -845,6 +874,9 @@ export async function runMirageGreedyDecode(
         !nrv?.data ||
         !neh?.data
       ) {
+        for (const tOut of [npk, npv, nrq, nrk, nrv, neh]) {
+          if (tOut) stepDisposables.push(tOut);
+        }
         throw new OnnxInferenceError(
           'Mirage-Exp-ONNX',
           'output',
@@ -852,67 +884,90 @@ export async function runMirageGreedyDecode(
         );
       }
 
-      pastK = new Float32Array(npk.data as Float32Array);
-      pastV = new Float32Array(npv.data as Float32Array);
-      rawQHist = new Float32Array(nrq.data as Float32Array);
-      rawKHist = new Float32Array(nrk.data as Float32Array);
-      rawVHist = new Float32Array(nrv.data as Float32Array);
-      engVHist = new Float32Array(neh.data as Float32Array);
+      stepDisposables.push(
+        pastKTensor,
+        pastVTensor,
+        rawQHistTensor,
+        rawKHistTensor,
+        rawVHistTensor,
+        engVHistTensor
+      );
+      pastKTensor = npk;
+      pastVTensor = npv;
+      rawQHistTensor = nrq;
+      rawKHistTensor = nrk;
+      rawVHistTensor = nrv;
+      engVHistTensor = neh;
+
       stepsExecuted++;
       return new Float32Array(logitsT.data as Float32Array);
     } finally {
-      disposeTensors(owned);
+      disposeTensors(stepDisposables);
     }
   };
 
-  await stepOne(vocab.bos, 0);
-  if (options.isStale?.()) {
+  try {
+    await stepOne(vocab.bos, 0);
+    if (options.isStale?.()) {
+      return {
+        language,
+        generatedTokenIds: generated,
+        decodedText: '',
+        stepsExecuted,
+      };
+    }
+    let logits = await stepOne(langId, 1);
+    const step0Logits = options.captureStep0Logits
+      ? new Float32Array(logits)
+      : undefined;
+
+    for (let genIdx = 0; genIdx < maxTokens; genIdx++) {
+      if (options.isStale?.()) {
+        break;
+      }
+      let bestId = vocab.eos;
+      let bestScore = -Infinity;
+      const nLogits = Math.min(logits.length, banned.length);
+      for (let id = 0; id < nLogits; id++) {
+        if (banned[id]) continue;
+        const s = logits[id];
+        if (s > bestScore) {
+          bestScore = s;
+          bestId = id;
+        }
+      }
+      if (bestId === vocab.eos) {
+        break;
+      }
+      generated.push(bestId);
+      tokens.push(bestId);
+      const t = tokens.length - 1;
+      if (t >= MIRAGE_MAX_SEQ) {
+        break;
+      }
+      logits = await stepOne(bestId, t);
+    }
+
     return {
       language,
       generatedTokenIds: generated,
-      decodedText: '',
+      decodedText: vocab.decode(generated),
       stepsExecuted,
+      ...(step0Logits ? { step0Logits } : {}),
     };
+  } finally {
+    disposeTensors([
+      crossKTensor,
+      crossVTensor,
+      crossMaskTensor,
+      pastKTensor,
+      pastVTensor,
+      rawQHistTensor,
+      rawKHistTensor,
+      rawVHistTensor,
+      engVHistTensor,
+    ]);
   }
-  let logits = await stepOne(langId, 1);
-  const step0Logits = options.captureStep0Logits
-    ? new Float32Array(logits)
-    : undefined;
-
-  for (let genIdx = 0; genIdx < maxTokens; genIdx++) {
-    if (options.isStale?.()) {
-      break;
-    }
-    let bestId = vocab.eos;
-    let bestScore = -Infinity;
-    const nLogits = Math.min(logits.length, banned.length);
-    for (let id = 0; id < nLogits; id++) {
-      if (banned[id]) continue;
-      const s = logits[id];
-      if (s > bestScore) {
-        bestScore = s;
-        bestId = id;
-      }
-    }
-    if (bestId === vocab.eos) {
-      break;
-    }
-    generated.push(bestId);
-    tokens.push(bestId);
-    const t = tokens.length - 1;
-    if (t >= MIRAGE_MAX_SEQ) {
-      break;
-    }
-    logits = await stepOne(bestId, t);
-  }
-
-  return {
-    language,
-    generatedTokenIds: generated,
-    decodedText: vocab.decode(generated),
-    stepsExecuted,
-    ...(step0Logits ? { step0Logits } : {}),
-  };
 }
 
 const THINK_RE = /<think>([\s\S]*?)<\/think>/;
@@ -1048,9 +1103,184 @@ export function parseMirageDecodedText(text: string): MirageParsedDecodedText {
   return rec;
 }
 
+function clamp01(v: number): number {
+  if (!Number.isFinite(v)) return 0;
+  return Math.max(0, Math.min(1, v));
+}
+
+function perpendicularDistance(
+  px: number,
+  py: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+): number {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const magSq = dx * dx + dy * dy;
+  if (magSq === 0) {
+    return Math.hypot(px - x1, py - y1);
+  }
+  const u = ((px - x1) * dx + (py - y1) * dy) / magSq;
+  const clampedU = Math.max(0, Math.min(1, u));
+  const projX = x1 + clampedU * dx;
+  const projY = y1 + clampedU * dy;
+  return Math.hypot(px - projX, py - projY);
+}
+
+function ramerDouglasPeucker(
+  points: ReadonlyArray<{ x: number; y: number }>,
+  epsilon: number
+): Array<{ x: number; y: number }> {
+  if (points.length <= 2) return [...points];
+  let maxDist = 0;
+  let index = 0;
+  const end = points.length - 1;
+  for (let i = 1; i < end; i++) {
+    const dist = perpendicularDistance(
+      points[i].x,
+      points[i].y,
+      points[0].x,
+      points[0].y,
+      points[end].x,
+      points[end].y
+    );
+    if (dist > maxDist) {
+      maxDist = dist;
+      index = i;
+    }
+  }
+  if (maxDist > epsilon) {
+    const left = ramerDouglasPeucker(points.slice(0, index + 1), epsilon);
+    const right = ramerDouglasPeucker(points.slice(index), epsilon);
+    return left.slice(0, -1).concat(right);
+  }
+  return [points[0], points[end]];
+}
+
+/**
+ * Traces the external contour polygon of a binary mask and simplifies it using Ramer-Douglas-Peucker.
+ */
+export function traceMaskContourPolygon(
+  maskGrid: Uint8Array,
+  protoSize: number,
+  minPx: number,
+  minPy: number,
+  maxPx: number,
+  maxPy: number,
+  bbox: BoundingBox,
+  epsilon = 0.008
+): Array<{ x: number; y: number }> {
+  let startX = -1;
+  let startY = -1;
+  let activePixels = 0;
+
+  for (let py = minPy; py < maxPy && startY === -1; py++) {
+    const rowOffset = py * protoSize;
+    for (let px = minPx; px < maxPx; px++) {
+      if (maskGrid[rowOffset + px] > 0) {
+        startX = px;
+        startY = py;
+        break;
+      }
+    }
+  }
+
+  if (startX !== -1) {
+    for (let py = minPy; py < maxPy; py++) {
+      const rowOffset = py * protoSize;
+      for (let px = minPx; px < maxPx; px++) {
+        if (maskGrid[rowOffset + px] > 0) activePixels++;
+      }
+    }
+  }
+
+  if (startX === -1 || activePixels < 8) {
+    const x1 = bbox.x;
+    const y1 = bbox.y;
+    const x2 = clamp01(bbox.x + bbox.width);
+    const y2 = clamp01(bbox.y + bbox.height);
+    return [
+      { x: Number(x1.toFixed(4)), y: Number(y1.toFixed(4)) },
+      { x: Number(x2.toFixed(4)), y: Number(y1.toFixed(4)) },
+      { x: Number(x2.toFixed(4)), y: Number(y2.toFixed(4)) },
+      { x: Number(x1.toFixed(4)), y: Number(y2.toFixed(4)) },
+    ];
+  }
+
+  const DIRS = [
+    [-1, 0],
+    [-1, -1],
+    [0, -1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+    [-1, 1],
+  ];
+
+  const rawPoints: Array<{ x: number; y: number }> = [];
+  let currX = startX;
+  let currY = startY;
+  let backtrackDir = 0;
+  const maxSteps = 300;
+
+  for (let step = 0; step < maxSteps; step++) {
+    rawPoints.push({
+      x: clamp01(currX / protoSize),
+      y: clamp01(currY / protoSize),
+    });
+
+    let foundNext = false;
+    for (let i = 0; i < 8; i++) {
+      const dirIdx = (backtrackDir + i) % 8;
+      const [dx, dy] = DIRS[dirIdx];
+      const nx = currX + dx;
+      const ny = currY + dy;
+      if (
+        nx >= 0 &&
+        nx < protoSize &&
+        ny >= 0 &&
+        ny < protoSize &&
+        maskGrid[ny * protoSize + nx] > 0
+      ) {
+        currX = nx;
+        currY = ny;
+        backtrackDir = (dirIdx + 5) % 8;
+        foundNext = true;
+        break;
+      }
+    }
+
+    if (!foundNext || (currX === startX && currY === startY && step > 2)) {
+      break;
+    }
+  }
+
+  if (rawPoints.length < 3) {
+    const x1 = bbox.x;
+    const y1 = bbox.y;
+    const x2 = clamp01(bbox.x + bbox.width);
+    const y2 = clamp01(bbox.y + bbox.height);
+    return [
+      { x: Number(x1.toFixed(4)), y: Number(y1.toFixed(4)) },
+      { x: Number(x2.toFixed(4)), y: Number(y1.toFixed(4)) },
+      { x: Number(x2.toFixed(4)), y: Number(y2.toFixed(4)) },
+      { x: Number(x1.toFixed(4)), y: Number(y2.toFixed(4)) },
+    ];
+  }
+
+  const simplified = ramerDouglasPeucker(rawPoints, epsilon);
+  return simplified.map((p) => ({
+    x: Number(p.x.toFixed(4)),
+    y: Number(p.y.toFixed(4)),
+  }));
+}
+
 /**
  * Extracts a `0..1000` scale boundary polygon `[x1, y1, x2, y2, ...]` from a `128x128` proposal mask
- * using the existing Moore-Neighbor + Douglas-Peucker contour tracer.
+ * using Moore-Neighbor + Douglas-Peucker contour tracing.
  */
 export function extractProposalMaskPolygon1000(
   proposal: MirageProposalLike

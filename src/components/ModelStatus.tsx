@@ -1,6 +1,5 @@
 import { ModelAssetsBlockedError } from '../services/modelAssetResolver';
 import type { ModelState } from '../types/vision';
-import { MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA } from '../services/mirageAvailability';
 
 export function ModelStatus({
   state,
@@ -11,21 +10,6 @@ export function ModelStatus({
   onRetry: () => void;
   onOpenDiagnostics?: () => void;
 }) {
-  if (state.status === 'error' && state.model === 'mirage' && state.variantId === 'mirage-webgpu') return (
-    <div role="alert" className="px-4 py-2 text-xs text-rose-300 bg-slate-900 flex items-center justify-between border-b border-rose-900/40">
-      <span>{MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA}</span>
-      {onOpenDiagnostics && (
-        <button
-          type="button"
-          onClick={onOpenDiagnostics}
-          className="px-2.5 py-1 text-xs font-medium rounded bg-slate-800 text-cyan-300 hover:bg-slate-700 transition-colors shrink-0 ml-3"
-        >
-          詳細ログ・自己診断
-        </button>
-      )}
-    </div>
-  );
-
   if (state.status === 'error') {
     const rawCause =
       state.cause instanceof Error

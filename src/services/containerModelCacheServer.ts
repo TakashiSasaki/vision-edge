@@ -21,6 +21,7 @@ import {
   MIRAGE_UPSTREAM_URL,
   MODEL_ASSET_CATALOG,
   MODEL_VARIANT_CATALOG,
+  STEREO_VARIANT_CATALOG,
   UPSTREAM_MEDIAPIPE_WASM_URL,
   UPSTREAM_ORT_WASM_URL,
   type ContainerCacheStatusResponse,
@@ -31,7 +32,6 @@ import {
   type ContainerModelStatusEntry,
   getVariantCatalogEntry,
 } from './modelAssetResolver.ts';
-import { MIRAGE_WEBGPU_UNAVAILABLE_CODE, MIRAGE_WEBGPU_UNAVAILABLE_REASON } from './mirageAvailability.ts';
 import {
   ensureReconstructedMirageComponentFile,
   ensureReconstructedMirageOnnxFile,
@@ -207,6 +207,7 @@ export class ContainerModelCacheManager {
     MirageFullPipelineComponentKey,
     Promise<string>
   >();
+  private readonly stereoInflight = new Map<string, Promise<string>>();
   private readonly activeFileReaders = new Map<string, number>();
   private readonly fileLastAccessed = new Map<string, number>();
   private accessSequence = 0;
@@ -250,7 +251,7 @@ export class ContainerModelCacheManager {
         localUrl: entry.localUrl,
         upstreamUrl: entry.upstreamUrl,
         license: entry.license,
-        acquisitionEnabled: !entry.blockedReason, blockedReason: entry.blockedReason ?? null,
+        acquisitionEnabled: true, blockedReason: null,
         filePresent: null, integrity: 'unknown', sha256: null,
         expectedSize: entry.expectedSize ?? null, expectedSha256: entry.expectedSha256 ?? null,
       };
@@ -476,12 +477,8 @@ export class ContainerModelCacheManager {
   }
 
   public async syncVariantDiskState(key: string): Promise<ContainerModelStatusEntry> {
-    const entry = this.requireVariant(key);
+    this.requireVariant(key);
     const current = this.variantStates.get(key)!;
-    if (entry.blockedReason) {
-      const blocked: ContainerModelStatusEntry = { ...current, status: 'unavailable', filePresent: existsSync(this.getVariantFilePath(key)), size: null, sha256: null, cachedAt: null, integrity: 'blocked', error: `BLOCKED: ${entry.blockedReason}` };
-      this.variantStates.set(key, blocked); return blocked;
-    }
     if (this.variantInflight.has(key)) return current;
     const file = this.getVariantFilePath(key);
     let updated: ContainerModelStatusEntry;
@@ -506,7 +503,6 @@ export class ContainerModelCacheManager {
     }
 
     const diskEntry = await this.syncVariantDiskState(key);
-    if (entry.blockedReason) return diskEntry;
     if (diskEntry.status === 'cached') {
       return diskEntry;
     }
@@ -630,6 +626,129 @@ export class ContainerModelCacheManager {
     })();
 
     this.variantInflight.set(key, task);
+    return task;
+  }
+
+  private async acquireStereoModel(entry: ModelVariantCatalogEntry): Promise<string> {
+    const stereoDir = path.join(this.cacheDir, 'stereo');
+    const targetPath = path.join(stereoDir, entry.file);
+
+    try {
+      const info = await lstat(targetPath);
+      if (info.isFile() && !info.isSymbolicLink() && info.size >= MIN_VALID_MODEL_BYTES && info.size <= MAX_MODEL_BYTES) {
+        this.touchCacheFile(targetPath);
+        return targetPath;
+      }
+    } catch {
+      // Cache miss; proceed to fetch upstream
+    }
+
+    const existing = this.stereoInflight.get(entry.variantId);
+    if (existing) {
+      return existing;
+    }
+
+    const task = (async (): Promise<string> => {
+      const controller = new AbortController();
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      let rejectDeadline!: (err: Error) => void;
+      const deadline = new Promise<never>((_, reject) => {
+        rejectDeadline = reject;
+      });
+      const resetTimer = () => {
+        if (timer !== undefined) clearTimeout(timer);
+        timer = setTimeout(() => {
+          controller.abort();
+          rejectDeadline(new Error('Model cache acquisition timeout'));
+        }, PREFETCH_TIMEOUT_MS);
+      };
+      resetTimer();
+
+      const tempPath = `${targetPath}.part-${randomUUID()}`;
+      try {
+        await mkdir(stereoDir, { recursive: true });
+        const response = await Promise.race([
+          this.fetchImpl(entry.upstreamUrl, {
+            method: 'GET',
+            redirect: 'follow',
+            signal: controller.signal,
+          }),
+          deadline,
+        ]);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const advertised = Number(response.headers.get('Content-Length'));
+        if (Number.isFinite(advertised) && advertised > MAX_MODEL_BYTES) {
+          throw new Error('Model exceeds cache size limit');
+        }
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error('Empty model response body');
+        }
+
+        let headChunks: Uint8Array[] = [];
+        let fh: FileHandle | undefined;
+        let size = 0;
+        try {
+          while (true) {
+            const { done, value } = await Promise.race([reader.read(), deadline]);
+            if (done) break;
+            resetTimer();
+            size += value.byteLength;
+            if (size > MAX_MODEL_BYTES) {
+              controller.abort();
+              void reader.cancel().catch(() => {});
+              throw new Error('Model exceeds cache size limit');
+            }
+            if (!fh) {
+              headChunks.push(value);
+              if (size >= MIN_VALID_MODEL_BYTES) {
+                const headBuf = Buffer.concat(headChunks);
+                const prefix = headBuf.subarray(0, 32).toString('utf8').trimStart().toLowerCase();
+                if (prefix.startsWith('<!doctype') || prefix.startsWith('<html')) {
+                  throw new Error('Invalid ONNX payload (HTML)');
+                }
+                fh = await open(tempPath, 'w');
+                await fh.write(headBuf);
+                headChunks = [];
+              }
+            } else {
+              await fh.write(value);
+            }
+          }
+          if (size < MIN_VALID_MODEL_BYTES) {
+            throw new Error(`Downloaded payload too small (${size} bytes)`);
+          }
+          if (fh) {
+            await fh.close();
+            fh = undefined;
+          } else {
+            await writeFile(tempPath, Buffer.concat(headChunks));
+          }
+          await this.enforceCacheQuota(size, [targetPath]);
+          await rename(tempPath, targetPath);
+          this.touchCacheFile(targetPath);
+          return targetPath;
+        } finally {
+          if (fh) {
+            await fh.close().catch(() => {});
+            fh = undefined;
+          }
+          void reader.cancel().catch(() => {});
+          reader.releaseLock();
+        }
+      } catch (cause) {
+        controller.abort();
+        await rm(tempPath, { force: true }).catch(() => {});
+        throw cause;
+      } finally {
+        if (timer !== undefined) clearTimeout(timer);
+        this.stereoInflight.delete(entry.variantId);
+      }
+    })();
+
+    this.stereoInflight.set(entry.variantId, task);
     return task;
   }
 
@@ -1510,11 +1629,6 @@ export class ContainerModelCacheManager {
               const data = JSON.parse(body);
               this.diagnosticLogs.push(data);
               if (this.diagnosticLogs.length > 200) this.diagnosticLogs.shift();
-              console.log(
-                `[client-diagnostics] [${data.level ?? 'info'}] [${data.stage ?? 'unknown'}] [${data.modelId ?? ''}:${data.variantId ?? ''}] ${data.message ?? ''}`,
-                data.details ?? '',
-                data.error ?? ''
-              );
               res.statusCode = 200;
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
               res.end(JSON.stringify({ ok: true, receivedId: data.id }));
@@ -1606,7 +1720,7 @@ export class ContainerModelCacheManager {
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.end(
               JSON.stringify({
-                error: entry.blockedReason ? 'BLOCKED: asset verification pending; acquisition and serving disabled' : entry.expectedSha256 ? 'Pinned model unavailable; no upstream fallback permitted' : 'Model not available in container cache; use external fallback',
+                error: entry.expectedSha256 ? 'Pinned model unavailable; no upstream fallback permitted' : 'Model not available in container cache; use external fallback',
                 model: modelId,
                 variantId: entry.variantId,
                 upstreamUrl: state.upstreamUrl,
@@ -1692,22 +1806,6 @@ export class ContainerModelCacheManager {
           res.setHeader('X-Model-Variant', 'mirage-51m');
           res.setHeader('X-Model-License', 'Apache-2.0');
           res.end(req.method === 'HEAD' ? undefined : bytes);
-          return;
-        }
-
-        if (pathname === '/api/model-cache/mirage/mirage-webgpu.onnx') {
-          // Old generated files are not validated Mirage exports. Keep them on
-          // disk for inspection, but never serve them or generate replacements.
-          res.statusCode = 503;
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.setHeader('Cache-Control', 'no-store');
-          res.end(req.method === 'HEAD' ? undefined : JSON.stringify({
-            status: 'unavailable',
-            code: MIRAGE_WEBGPU_UNAVAILABLE_CODE,
-            error: MIRAGE_WEBGPU_UNAVAILABLE_REASON,
-            model: 'mirage',
-            variantId: 'mirage-webgpu',
-          }));
           return;
         }
 
@@ -1800,6 +1898,82 @@ export class ContainerModelCacheManager {
             res.end(JSON.stringify({ error: 'Fixture not found' }));
             return;
           }
+        }
+
+        if (pathname.startsWith('/api/model-cache/stereo/')) {
+          const filename = decodeURIComponent(
+            pathname.slice('/api/model-cache/stereo/'.length)
+          );
+          if (!isSafeFilename(filename)) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ error: 'Invalid stereo model filename' }));
+            return;
+          }
+          const entry = Object.values(STEREO_VARIANT_CATALOG).find(
+            (item) =>
+              item.file === filename &&
+              item.variantId !== 'stereo-sad-baseline' &&
+              item.variantId !== 'stereo-webgpu-wgsl' &&
+              item.variantId !== 'custom-onnx' &&
+              item.upstreamUrl.startsWith('https://')
+          );
+          if (!entry) {
+            res.statusCode = 404;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ error: 'Unknown stereo model file' }));
+            return;
+          }
+
+          const disconnect = waitForRequestDisconnect(req, res);
+          let foundPath: string | null = null;
+          let failureReason: string | null = null;
+          try {
+            const result = await Promise.race([
+              this.acquireStereoModel(entry),
+              disconnect.promise,
+            ]);
+            if (result === 'disconnected' || disconnect.isDisconnected()) return;
+            foundPath = result;
+          } catch (cause) {
+            if (disconnect.isDisconnected()) return;
+            failureReason = publicCacheError(cause);
+          } finally {
+            disconnect.cleanup();
+          }
+
+          if (!foundPath) {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(
+              JSON.stringify({
+                error: 'Stereo ONNX model unavailable in container cache',
+                model: 'stereo-depth',
+                variantId: entry.variantId,
+                upstreamUrl: entry.upstreamUrl,
+                ...(failureReason ? { reason: failureReason } : {}),
+              })
+            );
+            return;
+          }
+
+          this.retainCacheFile(foundPath);
+          let bytes: Buffer;
+          try {
+            bytes = await readFile(foundPath);
+          } finally {
+            this.releaseCacheFile(foundPath);
+          }
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/octet-stream');
+          res.setHeader('Content-Length', String(bytes.byteLength));
+          res.setHeader('Cache-Control', 'public, max-age=3600');
+          res.setHeader('X-Model-Source', 'container-cache');
+          res.setHeader('X-Model-Id', 'stereo-depth');
+          res.setHeader('X-Model-Variant', entry.variantId);
+          res.setHeader('X-Model-License', entry.license);
+          res.end(req.method === 'HEAD' ? undefined : bytes);
+          return;
         }
 
 

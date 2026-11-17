@@ -45,12 +45,13 @@ function makeVideoReady(container: HTMLElement) {
   });
 }
 beforeEach(() => {
+  window.localStorage?.clear();
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'performance'] });
   raf = new Map(); nextId = 0;
   vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation(callback => { raf.set(++nextId, callback); return nextId; });
   vi.spyOn(globalThis, 'cancelAnimationFrame').mockImplementation(id => { raf.delete(id); });
   clearRect = vi.fn();
-  const ctx = { clearRect, drawImage: vi.fn(), save: vi.fn(), restore: vi.fn(), beginPath: vi.fn(), arc: vi.fn(), roundRect: vi.fn(), stroke: vi.fn(), fill: vi.fn(), fillText: vi.fn(), measureText: vi.fn(() => ({ width: 20 })) };
+  const ctx = { clearRect, drawImage: vi.fn(), save: vi.fn(), restore: vi.fn(), translate: vi.fn(), rotate: vi.fn(), fillRect: vi.fn(), strokeRect: vi.fn(), rect: vi.fn(), clip: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(), beginPath: vi.fn(), arc: vi.fn(), roundRect: vi.fn(), stroke: vi.fn(), fill: vi.fn(), fillText: vi.fn(), measureText: vi.fn(() => ({ width: 20 })) };
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
   Object.defineProperty(HTMLVideoElement.prototype, 'getVideoPlaybackQuality', { configurable: true, value: function(this: HTMLVideoElement) { return { totalVideoFrames: Math.floor(this.currentTime * 1000000) + 1 }; } });
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
@@ -599,4 +600,134 @@ it('PR06-F01: publication owns the display snapshot and recovers when a producer
   step(); act(() => { vi.advanceTimersByTime(0); }); expect(f.segment).toHaveBeenCalledTimes(2);
   expect(view.container.querySelector('video')).toBe(video); expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
   expect(f.factory.segmenter).toHaveBeenCalledTimes(1); expect(f.segmenter.close).not.toHaveBeenCalled();
+});
+
+it('rotates live stereo camera input and pre-inference preview by 180deg by default, while keeping preset SBS videos upright', async () => {
+  const f = fixture();
+  const dummyCanvas = document.createElement('canvas');
+  const estimateForVideo = vi.fn(() => ({
+    width: 16,
+    height: 9,
+    disparity: new Float32Array(16 * 9).fill(8),
+    minDisparity: 8,
+    maxDisparity: 8,
+    medianDisparity: 8,
+    scaleMinDisparity: 8,
+    scaleMaxDisparity: 8,
+    validRatio: 1,
+    overlayCanvas: dummyCanvas,
+    leftCanvas: dummyCanvas,
+    rightCanvas: dummyCanvas,
+    colormap: 'turbo' as const,
+    viewMode: 'left-overlay' as const,
+    swapLeftRight: false,
+    rotate180: true,
+    sourceEyeWidth: 320,
+    sourceEyeHeight: 180,
+  }));
+  f.factory.stereoDepth = vi.fn(async () => ({ estimateForVideo, close: vi.fn() }));
+  await f.engine.initialize('stereo-depth', 'stereo-sad-baseline');
+
+  const view = render(
+    <VisionCanvas
+      engine={f.engine}
+      activeModel="stereo-depth"
+      modelState={f.engine.getState()}
+      facingMode="environment"
+      onToggleFacingMode={vi.fn()}
+      renderOptions={{ showBoxes: false, showMasks: true, showLabels: true, showConfidence: false, maskOpacity: 0.72, confidenceThreshold: 0.35 }}
+      inferenceParams={{ cameraRotate180: true, swapLeftRight: false }}
+      ttsConfig={{ enabled: false, autoReadout: false, cooldownSec: 3, rate: 1, pitch: 1, volume: 1, voiceURI: '' }}
+      isCameraActive={true}
+      onCameraStart={vi.fn()}
+      onCameraStop={vi.fn()}
+      onSelectObject={vi.fn()}
+      onFrame={vi.fn()}
+    />
+  );
+  await act(async () => {});
+
+  const video = view.container.querySelector('video')!;
+  Object.defineProperties(video, {
+    videoWidth: { configurable: true, value: 640 },
+    videoHeight: { configurable: true, value: 180 },
+    readyState: { configurable: true, value: 2 },
+  });
+
+  // Trigger draw BEFORE inference settles so pre-inference fallback preview executes
+  step();
+  const canvas = view.container.querySelector('canvas')!;
+  const ctx = canvas.getContext('2d')!;
+  expect(vi.mocked(ctx.translate)).toHaveBeenCalledWith(320, 180);
+  expect(vi.mocked(ctx.rotate)).toHaveBeenCalledWith(Math.PI);
+  // With rotate180=true & swapLeftRight=false, fallback left-eye preview samples raw right half (srcX = 320)
+  expect(vi.mocked(ctx.drawImage)).toHaveBeenCalledWith(video, 320, 0, 320, 180, 0, 0, 320, 180);
+
+  await act(async () => { vi.advanceTimersByTime(0); });
+  expect(estimateForVideo).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({ rotate180: true, swapLeftRight: false })
+  );
+
+  // Turning off cameraRotate180 disables rotation on live camera inference
+  estimateForVideo.mockClear();
+  view.rerender(
+    <VisionCanvas
+      engine={f.engine}
+      activeModel="stereo-depth"
+      modelState={f.engine.getState()}
+      facingMode="environment"
+      onToggleFacingMode={vi.fn()}
+      renderOptions={{ showBoxes: false, showMasks: true, showLabels: true, showConfidence: false, maskOpacity: 0.72, confidenceThreshold: 0.35 }}
+      inferenceParams={{ cameraRotate180: false, swapLeftRight: false }}
+      ttsConfig={{ enabled: false, autoReadout: false, cooldownSec: 3, rate: 1, pitch: 1, volume: 1, voiceURI: '' }}
+      isCameraActive={true}
+      onCameraStart={vi.fn()}
+      onCameraStop={vi.fn()}
+      onSelectObject={vi.fn()}
+      onFrame={vi.fn()}
+    />
+  );
+  step();
+  await act(async () => { vi.advanceTimersByTime(0); });
+  expect(estimateForVideo).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({ rotate180: false })
+  );
+
+  // Switching to a preset SBS video keeps rotate180=false even when cameraRotate180=true
+  estimateForVideo.mockClear();
+  view.rerender(
+    <VisionCanvas
+      engine={f.engine}
+      activeModel="stereo-depth"
+      modelState={f.engine.getState()}
+      facingMode="environment"
+      onToggleFacingMode={vi.fn()}
+      renderOptions={{ showBoxes: false, showMasks: true, showLabels: true, showConfidence: false, maskOpacity: 0.72, confidenceThreshold: 0.35 }}
+      inferenceParams={{ cameraRotate180: true, swapLeftRight: false }}
+      ttsConfig={{ enabled: false, autoReadout: false, cooldownSec: 3, rate: 1, pitch: 1, volume: 1, voiceURI: '' }}
+      isCameraActive={true}
+      onCameraStart={vi.fn()}
+      onCameraStop={vi.fn()}
+      onSelectObject={vi.fn()}
+      onFrame={vi.fn()}
+      stereoVideoSource={{
+        kind: 'preset',
+        presetId: 'synth_moving_blocks',
+        id: 'preset:synth_moving_blocks',
+        label: '合成SBS動画: 移動立体ブロック',
+      }}
+    />
+  );
+  await act(async () => {
+    vi.advanceTimersByTime(0);
+  });
+  expect(estimateForVideo).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({ rotate180: false })
+  );
+
+  view.unmount();
+  f.engine.dispose();
 });

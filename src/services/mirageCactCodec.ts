@@ -347,23 +347,33 @@ function walshGroupInto(
   codebook: Float64Array,
   fp16Table: Float32Array,
   block: Float64Array,
-  temp: Float64Array,
   validCount: number,
   out: Float32Array,
-  outIndexFn: (k: number) => number
+  outOffset: number,
+  outStride: number
 ): void {
   const norm = fp16Table[normU16];
-  const bytesPerGroup = (groupSize * bits) / 8;
+  if (!Number.isFinite(norm)) {
+    throw new Error('Non-finite CQ dequantization output');
+  }
+  const bytesPerGroup = (groupSize * bits) >> 3;
   let packedIdx = packedStart;
 
   if (bits === 2) {
     for (let b = 0; b < bytesPerGroup; b++) {
       const byteVal = bytes[packedIdx++];
-      const base = b * 4;
+      const base = b << 2;
       block[base] = codebook[cbOffset + (byteVal & 3)] * norm;
       block[base + 1] = codebook[cbOffset + ((byteVal >> 2) & 3)] * norm;
       block[base + 2] = codebook[cbOffset + ((byteVal >> 4) & 3)] * norm;
       block[base + 3] = codebook[cbOffset + ((byteVal >> 6) & 3)] * norm;
+    }
+  } else if (bits === 4) {
+    for (let b = 0; b < bytesPerGroup; b++) {
+      const byteVal = bytes[packedIdx++];
+      const base = b << 1;
+      block[base] = codebook[cbOffset + (byteVal & 15)] * norm;
+      block[base + 1] = codebook[cbOffset + ((byteVal >> 4) & 15)] * norm;
     }
   } else {
     for (let b = 0; b < bytesPerGroup; b++) {
@@ -380,22 +390,27 @@ function walshGroupInto(
     const stride = width << 1;
     for (let start = 0; start < groupSize; start += stride) {
       for (let k = 0; k < width; k++) {
-        const a = block[start + k];
-        const c = block[start + width + k];
-        temp[start + k] = a + c;
-        temp[start + width + k] = a - c;
+        const idx0 = start + k;
+        const idx1 = idx0 + width;
+        const a = block[idx0];
+        const c = block[idx1];
+        block[idx0] = a + c;
+        block[idx1] = a - c;
       }
     }
-    block.set(temp);
   }
 
   const invSqrtGroup = 1.0 / Math.sqrt(groupSize);
-  for (let k = 0; k < validCount; k++) {
-    const val = Math.fround(block[k] * invSqrtGroup);
-    if (!Number.isFinite(val)) {
-      throw new Error('Non-finite CQ dequantization output');
+  if (outStride === 1) {
+    for (let k = 0; k < validCount; k++) {
+      out[outOffset + k] = block[k] * invSqrtGroup;
     }
-    out[outIndexFn(k)] = val;
+  } else {
+    let dstIdx = outOffset;
+    for (let k = 0; k < validCount; k++) {
+      out[dstIdx] = block[k] * invSqrtGroup;
+      dstIdx += outStride;
+    }
   }
 }
 
@@ -420,7 +435,6 @@ export function decodeCqRowInto(
   }
 
   const block = new Float64Array(entry.group);
-  const temp = new Float64Array(entry.group);
   const bytesPerGroup = (entry.group * entry.bits) / 8;
   const rowPackedStart = entry.offset + rowIndex * layout.rowIndexBytes;
   const rowNormStart = layout.normsBaseOffset + rowIndex * layout.groupsPerRow * 2;
@@ -442,10 +456,10 @@ export function decodeCqRowInto(
       codebook,
       fp16Table,
       block,
-      temp,
       validCount,
       out,
-      (k) => outOffset + colBase + k
+      outOffset + colBase,
+      1
     );
   }
 }
@@ -465,17 +479,21 @@ export function decodeCqMatrix(
   const transpose = options.transpose === true;
   const out = new Float32Array(layout.rows * layout.cols);
   const block = new Float64Array(entry.group);
-  const temp = new Float64Array(entry.group);
   const bytesPerGroup = (entry.group * entry.bits) / 8;
+  const outStride = transpose ? layout.rows : 1;
 
   for (let r = 0; r < layout.rows; r++) {
     const rowPackedStart = entry.offset + r * layout.rowIndexBytes;
     const rowNormStart = layout.normsBaseOffset + r * layout.groupsPerRow * 2;
+    const rowOutBase = transpose ? r : r * layout.cols;
     for (let g = 0; g < layout.groupsPerRow; g++) {
       const normByteOff = rowNormStart + g * 2;
       const normU16 = bytes[normByteOff] | (bytes[normByteOff + 1] << 8);
       const colBase = g * entry.group;
       const validCount = Math.min(entry.group, layout.cols - colBase);
+      const outOffset = transpose
+        ? colBase * layout.rows + r
+        : rowOutBase + colBase;
       walshGroupInto(
         bytes,
         rowPackedStart + g * bytesPerGroup,
@@ -488,12 +506,10 @@ export function decodeCqMatrix(
         codebook,
         fp16Table,
         block,
-        temp,
         validCount,
         out,
-        transpose
-          ? (k) => (colBase + k) * layout.rows + r
-          : (k) => r * layout.cols + colBase + k
+        outOffset,
+        outStride
       );
     }
   }

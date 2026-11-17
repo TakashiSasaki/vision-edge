@@ -4,11 +4,11 @@ import type { ModelMetadata, ModelVariantMetadata, ModelState, RunnableModelType
 import {
   MIRAGE_MODEL_ASSET_ENTRY,
   MIRAGE_VARIANT_CATALOG,
-  MIRAGE_WEBGPU_LOCAL_URL,
   MODEL_ASSET_CATALOG,
   MODEL_VARIANT_CATALOG,
+  STEREO_MODEL_ASSET_ENTRY,
+  STEREO_VARIANT_CATALOG,
 } from './modelAssetResolver';
-import { MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA } from './mirageAvailability';
 
 export const MODEL_REGISTRY: readonly ModelMetadata[] = [
   { id: 'selfie-segmenter', name: 'Selfie Segmenter', implemented: true,
@@ -64,13 +64,6 @@ export const MODEL_REGISTRY: readonly ModelMetadata[] = [
         fileName: MODEL_VARIANT_CATALOG['mediapipe:lite2'].file,
         upstreamUrl: MODEL_VARIANT_CATALOG['mediapipe:lite2'].upstreamUrl,
         localUrl: MODEL_VARIANT_CATALOG['mediapipe:lite2'].localUrl,
-      },
-      {
-        id: 'ssd-mobilenet-v2', name: 'SSD MobileNetV2（BLOCKED・互換性確認待ち）',
-        description: '提供モデル:256×256・float32・91ラベル枠（80意味クラス）。SDK0.10.14互換性の確認待ちで取得・実推論は無効です。',
-        fileName: MODEL_VARIANT_CATALOG['mediapipe:ssd-mobilenet-v2'].file,
-        upstreamUrl: MODEL_VARIANT_CATALOG['mediapipe:ssd-mobilenet-v2'].upstreamUrl,
-        localUrl: MODEL_VARIANT_CATALOG['mediapipe:ssd-mobilenet-v2'].localUrl,
       },
     ],
   },
@@ -154,16 +147,6 @@ export const MIRAGE_MODEL: ModelMetadata = {
   defaultVariantId: 'mirage-51m',
   variants: [
     {
-      id: 'mirage-webgpu',
-      name: 'Mirage WebGPU (ONNX・利用不可)',
-      description: MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA,
-      fileName: 'mirage-webgpu.onnx',
-      // Information only: no downloadable ONNX artifact is registered.
-      upstreamUrl: 'https://huggingface.co/Cactus-Compute/mirage',
-      localUrl: MIRAGE_WEBGPU_LOCAL_URL,
-      unavailableReason: MIRAGE_WEBGPU_UNAVAILABLE_REASON_JA,
-    },
-    {
       id: 'mirage-51m',
       name: 'Mirage 51.3M (2-bit/4-bit .cact WASM · 20.6MB)',
       description: '公式量子化アーカイブ (.cact) を Web Worker 上の CPU WebAssembly で非同期推論するフルモデル版。',
@@ -191,9 +174,91 @@ export const MIRAGE_MODEL: ModelMetadata = {
   ],
 };
 
+export const STEREO_DEPTH_MODEL: ModelMetadata = {
+  id: 'stereo-depth',
+  name: 'Stereo Depth (視差・深度)',
+  implemented: true,
+  runtime: 'WebGPU WGSL Compute · ONNX Runtime Web (WebGPU/WASM) · 内蔵CPU SAD',
+  outputType: '視差マップ (px) と校正深度 (m) のカラーマップ可視化・任意座標プローブ',
+  description: 'Side-by-Side (左右分割) ステレオ映像から視差と深度を推定します。即時動作する軽量CPU SADベースラインとネイティブWebGPU WGSLコンピュートシェーダ版に加え、Concat自動分割によるWebGPU高速化対応の各ステレオONNXモデルを比較できます。',
+  license: STEREO_MODEL_ASSET_ENTRY.license,
+  licenseNote: STEREO_MODEL_ASSET_ENTRY.licenseNote,
+  upstreamUrl: STEREO_MODEL_ASSET_ENTRY.upstreamUrl,
+  localCachePath: STEREO_MODEL_ASSET_ENTRY.localUrl,
+  defaultVariantId: 'stereo-sad-baseline',
+  variants: [
+    {
+      id: 'stereo-sad-baseline',
+      name: 'SAD Baseline (内蔵CPU・軽量高速)',
+      description: 'スライディングウィンドウSAD＋放物線サブピクセル補間。外部ファイル不要で即座にリアルタイム動作します。',
+      fileName: STEREO_VARIANT_CATALOG['stereo-depth:stereo-sad-baseline'].file,
+      upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:stereo-sad-baseline'].upstreamUrl,
+      localUrl: STEREO_VARIANT_CATALOG['stereo-depth:stereo-sad-baseline'].localUrl,
+      isDefault: true,
+    },
+    {
+      id: 'stereo-webgpu-wgsl',
+      name: 'WebGPU WGSL Compute (超高速・GPU視差集約)',
+      description: 'ブラウザWebGPUコンピュートシェーダによるCensus+Gradient視差推定＋中央値平滑化 (重み不要・GPU非対応時はCPU SADへ自動フォールバック)。',
+      fileName: STEREO_VARIANT_CATALOG['stereo-depth:stereo-webgpu-wgsl'].file,
+      upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:stereo-webgpu-wgsl'].upstreamUrl,
+      localUrl: STEREO_VARIANT_CATALOG['stereo-depth:stereo-webgpu-wgsl'].localUrl,
+    },
+    {
+      id: 'lightstereo-s',
+      name: 'LightStereo-S (ONNX・超軽量リアルタイム)',
+      description: '2D CNNベースの最速級リアルタイムステレオONNX (256×512 · Concat自動分割WebGPU優先 · オンライン自動取得対応)。ローカル .onnx での上書きも可能です。',
+      fileName: STEREO_VARIANT_CATALOG['stereo-depth:lightstereo-s'].file,
+      upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:lightstereo-s'].upstreamUrl,
+      localUrl: STEREO_VARIANT_CATALOG['stereo-depth:lightstereo-s'].localUrl,
+    },
+    {
+      id: 'mobilestereonet-2d',
+      name: 'MobileStereoNet-2D (ONNX・モバイル軽量)',
+      description: '省メモリ・軽量ステレオONNX (240×528 · 5D Conv3d含むためWASM推奨 · オンライン自動取得対応)。ローカル .onnx での上書きも可能です。',
+      fileName: STEREO_VARIANT_CATALOG['stereo-depth:mobilestereonet-2d'].file,
+      upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:mobilestereonet-2d'].upstreamUrl,
+      localUrl: STEREO_VARIANT_CATALOG['stereo-depth:mobilestereonet-2d'].localUrl,
+    },
+    {
+      id: 'hitnet-sf',
+      name: 'HITNet (ONNX・軽量タイル精密化)',
+      description: '反復タイル精密化による高速ステレオONNX (240×320 · WebGPU優先 · コンテナキャッシュ経由オンライン自動取得対応)。ローカル .onnx 上書きも可能です。',
+      fileName: STEREO_VARIANT_CATALOG['stereo-depth:hitnet-sf'].file,
+      upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:hitnet-sf'].upstreamUrl,
+      localUrl: STEREO_VARIANT_CATALOG['stereo-depth:hitnet-sf'].localUrl,
+    },
+    {
+      id: 'crestereo-init-iter2',
+      name: 'CREStereo Init Iter2 (ONNX・高精度)',
+      description: '階層的再帰精密化＋適応相関による高精度ステレオONNX (180×320 · Concat自動分割WebGPU優先 · コンテナキャッシュ経由オンライン自動取得対応)。',
+      fileName: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-init-iter2'].file,
+      upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-init-iter2'].upstreamUrl,
+      localUrl: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-init-iter2'].localUrl,
+    },
+    {
+      id: 'crestereo-combined-iter5',
+      name: 'CREStereo Combined Iter5 (ONNX・最高精度)',
+      description: '2段階入力（init＋next · 240×320 · Concat自動分割WebGPU優先）で細部まで精密化する最高精度ステレオONNX（コンテナキャッシュ経由オンライン自動取得対応）。',
+      fileName: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-combined-iter5'].file,
+      upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-combined-iter5'].upstreamUrl,
+      localUrl: STEREO_VARIANT_CATALOG['stereo-depth:crestereo-combined-iter5'].localUrl,
+    },
+    {
+      id: 'custom-onnx',
+      name: 'Custom Stereo ONNX (任意モデル読込)',
+      description: '任意のステレオONNXモデル（1入力[1,6,H,W]・2入力[1,3,H,W]・2chフロー出力を自動認識・Concat自動分割WebGPU対応）をテストできます。',
+      fileName: STEREO_VARIANT_CATALOG['stereo-depth:custom-onnx'].file,
+      upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:custom-onnx'].upstreamUrl,
+      localUrl: STEREO_VARIANT_CATALOG['stereo-depth:custom-onnx'].localUrl,
+    },
+  ],
+};
+
 export const RUNNABLE_MODEL_REGISTRY: readonly ModelMetadata[] = [
   ...MODEL_REGISTRY,
   MIRAGE_MODEL,
+  STEREO_DEPTH_MODEL,
 ];
 
 export function isRunnableModel(id: unknown): id is RunnableModelType {
@@ -223,9 +288,6 @@ export function getVariantMetadata(
 export function backendDescription(state: ModelState): string {
   if(state.status!=='ready')return 'バックエンド未準備';
   if(state.model==='mirage'){
-    if (state.variantId === 'mirage-webgpu') {
-      return 'Mirage ONNX 利用不可（元モデルとの一致未検証）';
-    }
     if (
       state.variantId === 'mirage-onnx-exp-wasm' ||
       state.variantId === 'mirage-onnx-exp-webgpu'
@@ -247,6 +309,31 @@ export function backendDescription(state: ModelState): string {
       return `実験用部分ONNX 要求: ${requested}／設定: ${configured}${backend?.fallbackReason ? `／理由: ${backend.fallbackReason.slice(0, 180)}` : ''}（実行バックエンドは未計測）`;
     }
     return 'Cactus WebAssembly (CPU / Web Worker 非同期推論)';
+  }
+  if (state.model === 'stereo-depth') {
+    const backend = state.backend;
+    if (backend?.runtime === 'stereo-sad-cpu') {
+      return 'Stereo SAD (CPU スライディングウィンドウ視差推定)';
+    }
+    if (backend?.runtime === 'stereo-webgpu-wgsl') {
+      const usingGpu = backend.configuredProviders.includes('webgpu-wgsl');
+      if (usingGpu) {
+        return 'Stereo WGSL Compute (WebGPU GPUコンピュート視差推定)';
+      }
+      return `Stereo WGSL Compute → CPU SAD フォールバック${backend.fallbackReason ? ` (${backend.fallbackReason.slice(0, 120)})` : ''}`;
+    }
+    const requested =
+      backend?.requestedProvider === 'auto'
+        ? '自動(WebGPU優先)'
+        : backend?.requestedProvider === 'webgpu'
+          ? 'WebGPU優先'
+          : backend?.requestedProvider === 'wasm'
+            ? 'WASM'
+            : '未報告';
+    const configured = backend?.configuredProviders.length
+      ? backend.configuredProviders.map(p => (p === 'wasm' ? 'WASM' : 'WebGPU')).join(' → ')
+      : '未報告';
+    return `Stereo ONNX 要求: ${requested}／設定: ${configured}${backend?.fallbackReason ? `／理由: ${backend.fallbackReason.slice(0, 180)}` : ''}（実行バックエンドは未計測）`;
   }
   if(state.model==='mediapipe'||state.model==='selfie-segmenter')return `${state.delegate} delegate 指定・初期化済み（GPU実動作は未計測）`;
   const backend=state.backend;

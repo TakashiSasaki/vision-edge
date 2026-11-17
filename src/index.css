@@ -9,6 +9,8 @@
 @source not "../docs/verification/pr22-output-corrections";
 @source not "../docs/verification/mirage*";
 @source not "../docs/mirage-integration.md";
+@source not "../docs/mirage*";
+@source not "../docs/stereo-depth-models.md";
 @source not "../scripts/mirage";
 @source not "../pyproject.toml";
 @source not "../requirements-mirage.txt";

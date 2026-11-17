@@ -129,12 +129,10 @@ class DiagnosticLogger {
 
     this.notify();
 
-    // Console mirror
+    // Console mirror (avoid console.error with raw Error stacks on handled diagnostics so preview host overlays are not triggered)
     const prefix = `[Diagnostics][${stage}][${modelId}:${variantId}]`;
-    if (level === 'error') {
-      console.error(prefix, message, options?.details ?? '', options?.error ?? '');
-    } else if (level === 'warn') {
-      console.warn(prefix, message, options?.details ?? '', options?.error ?? '');
+    if (level === 'error' || level === 'warn') {
+      console.warn(prefix, message, options?.details ?? '');
     } else {
       console.log(prefix, message, options?.details ?? '');
     }

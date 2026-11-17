@@ -1,4 +1,4 @@
-import type { DetectionFrame, DetectedObject } from '../types/vision';
+import type { DetectionFrame, DetectedObject, StereoDepthMapData } from '../types/vision';
 
 // The synchronous Canvas work shared by the UI and instrumentation experiment.
 // True means a result (including an empty one) was copied to the visible Canvas.
@@ -7,11 +7,27 @@ export function drawCanvasFrame(
   video: Pick<HTMLVideoElement, 'videoWidth' | 'videoHeight' | 'readyState'>,
   frame: DetectionFrame | null,
   buffer: { current: HTMLCanvasElement | null },
-  overlays: (ctx: CanvasRenderingContext2D, width: number, height: number, objects: DetectedObject[], semanticMask?: HTMLCanvasElement) => void,
+  overlays: (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    objects: DetectedObject[],
+    semanticMask?: HTMLCanvasElement,
+    depthMap?: StereoDepthMapData
+  ) => void,
   current: () => boolean,
 ): boolean {
-  if (video.videoWidth > 0 && canvas.width !== video.videoWidth) canvas.width = video.videoWidth;
-  if (video.videoHeight > 0 && canvas.height !== video.videoHeight) canvas.height = video.videoHeight;
+  const targetWidth = frame?.depthMap
+    ? frame.depthMap.viewMode === 'split-3pane'
+      ? frame.depthMap.sourceEyeWidth * 3
+      : frame.depthMap.sourceEyeWidth
+    : video.videoWidth;
+  const targetHeight = frame?.depthMap
+    ? frame.depthMap.sourceEyeHeight
+    : video.videoHeight;
+
+  if (targetWidth > 0 && canvas.width !== targetWidth) canvas.width = targetWidth;
+  if (targetHeight > 0 && canvas.height !== targetHeight) canvas.height = targetHeight;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Overlay context unavailable');
   if (frame && video.readyState >= 2) {
@@ -20,7 +36,8 @@ export function drawCanvasFrame(
     offscreen.width = canvas.width; offscreen.height = canvas.height;
     const offCtx = offscreen.getContext('2d');
     if (!offCtx) throw new Error('Overlay buffer unavailable');
-    if(frame.semanticMask)overlays(offCtx, offscreen.width, offscreen.height, frame.objects,frame.semanticMask);
+    if (frame.depthMap) overlays(offCtx, offscreen.width, offscreen.height, frame.objects, frame.semanticMask, frame.depthMap);
+    else if (frame.semanticMask) overlays(offCtx, offscreen.width, offscreen.height, frame.objects, frame.semanticMask);
     else overlays(offCtx, offscreen.width, offscreen.height, frame.objects);
     if (!current()) return false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);

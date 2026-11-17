@@ -34,6 +34,7 @@ import {
 } from './modelAssetResolver';
 import {
   cancelInFlightMirageWasmInit,
+  createMirageWasmTask,
   type MirageInferExtraOptions,
   type MirageSnapshotLike,
   type MirageTask,
@@ -443,6 +444,14 @@ export function computeMirageCeil32Metadata(
   };
 }
 
+const UINT8_TO_MIRAGE_NORM: Float32Array = (() => {
+  const lut = new Float32Array(256);
+  for (let v = 0; v < 256; v++) {
+    lut[v] = v / 127.5 - 1.0;
+  }
+  return lut;
+})();
+
 /**
  * Packs an RGBA or RGB buffer of already-resized `(w, h)` pixels into a `[1, 3, 512, 512]`
  * NCHW Float32Array placed at top-left `[:h, :w]` with `0.0` padding and `v / 127.5 - 1` normalization.
@@ -454,16 +463,31 @@ export function packResizedPixelsToMirageTensor(
 ): MiragePreprocessedInput {
   const { w, h } = metadata;
   const planeSize = 512 * 512;
+  const plane2Offset = 2 * planeSize;
   const image = new Float32Array(3 * planeSize); // Zero-filled by default (padding = 0.0)
-  for (let row = 0; row < h; row++) {
-    const dstRowOffset = row * 512;
-    const srcRowOffset = row * w * channels;
-    for (let col = 0; col < w; col++) {
-      const srcIdx = srcRowOffset + col * channels;
-      const dstIdx = dstRowOffset + col;
-      image[dstIdx] = pixels[srcIdx] / 127.5 - 1.0;
-      image[planeSize + dstIdx] = pixels[srcIdx + 1] / 127.5 - 1.0;
-      image[2 * planeSize + dstIdx] = pixels[srcIdx + 2] / 127.5 - 1.0;
+  if (pixels instanceof Float32Array) {
+    for (let row = 0; row < h; row++) {
+      const dstRowOffset = row * 512;
+      const srcRowOffset = row * w * channels;
+      for (let col = 0; col < w; col++) {
+        const srcIdx = srcRowOffset + col * channels;
+        const dstIdx = dstRowOffset + col;
+        image[dstIdx] = pixels[srcIdx] / 127.5 - 1.0;
+        image[planeSize + dstIdx] = pixels[srcIdx + 1] / 127.5 - 1.0;
+        image[plane2Offset + dstIdx] = pixels[srcIdx + 2] / 127.5 - 1.0;
+      }
+    }
+  } else {
+    for (let row = 0; row < h; row++) {
+      const dstRowOffset = row * 512;
+      const srcRowOffset = row * w * channels;
+      for (let col = 0; col < w; col++) {
+        const srcIdx = srcRowOffset + col * channels;
+        const dstIdx = dstRowOffset + col;
+        image[dstIdx] = UINT8_TO_MIRAGE_NORM[pixels[srcIdx]];
+        image[planeSize + dstIdx] = UINT8_TO_MIRAGE_NORM[pixels[srcIdx + 1]];
+        image[plane2Offset + dstIdx] = UINT8_TO_MIRAGE_NORM[pixels[srcIdx + 2]];
+      }
     }
   }
   return {
@@ -729,6 +753,7 @@ export function decodeMirageExperimentalOutputs(
         for (let py = 0; py < 128; py++) {
           const gy = GRID_128[py];
           const yInBox = gy >= by0 && gy <= by1;
+          if (!yInBox && py !== centerRow) continue;
           const protoRowBase = py * 128;
           for (let px = 0; px < 128; px++) {
             const gx = GRID_128[px];
@@ -743,7 +768,7 @@ export function decodeMirageExperimentalOutputs(
               sum = Math.fround(
                 sum +
                   Math.fround(
-                    coeffVec[r] * prototypes[r * 16384 + protoPixelIdx]
+                    coeffVec[r] * prototypes[(r << 14) + protoPixelIdx]
                   )
               );
             }
@@ -1184,6 +1209,8 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
     return next;
   }
 
+  private resizeCanvas: HTMLCanvasElement | null = null;
+
   public preprocessInput(
     input: InferenceInput | HTMLImageElement | MirageSourceFrameSnapshot
   ): MiragePreprocessedInput {
@@ -1208,9 +1235,12 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
       const metadata = computeMirageCeil32Metadata(srcW, srcH);
       const { w, h } = metadata;
 
-      const resizeCanvas = document.createElement('canvas');
-      resizeCanvas.width = w;
-      resizeCanvas.height = h;
+      if (!this.resizeCanvas) {
+        this.resizeCanvas = document.createElement('canvas');
+      }
+      const resizeCanvas = this.resizeCanvas;
+      if (resizeCanvas.width !== w) resizeCanvas.width = w;
+      if (resizeCanvas.height !== h) resizeCanvas.height = h;
       const ctx = resizeCanvas.getContext('2d', {
         willReadFrequently: true,
       });
@@ -1781,6 +1811,18 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
           ? 'webgpu'
           : 'wasm';
 
+      if (
+        this.backend.fallbackReason !== combinedFallbackReason ||
+        (activeProvider === 'wasm' &&
+          this.backend.configuredProviders.includes('webgpu'))
+      ) {
+        this.backend = {
+          ...this.backend,
+          configuredProviders: [activeProvider],
+          fallbackReason: combinedFallbackReason,
+        };
+      }
+
       const sameSourceSnapshot =
         onnxInputPixelHash === snapshot.pixelHash &&
         (!overlayNative ||
@@ -1858,6 +1900,7 @@ export class MirageExperimentalOnnxEngine implements MirageTask {
   public async close(): Promise<void> {
     this.sourceGeneration++;
     this.lastSourceElement = null;
+    this.resizeCanvas = null;
     if (this.nativeOverlayTask) {
       const taskToClose = this.nativeOverlayTask;
       this.nativeOverlayTask = null;
@@ -2656,6 +2699,7 @@ export async function createMirageExperimentalOnnxTask(
 export interface MirageExperimentalBrowserBridge {
   ort: typeof ort;
   createMirageExperimentalOnnxTask: typeof createMirageExperimentalOnnxTask;
+  createMirageWasmTask: typeof createMirageWasmTask;
   acquireMirageFullPipelineAssets: typeof acquireMirageFullPipelineAssets;
   MirageDecoderTableReader: typeof MirageDecoderTableReader;
   buildCrossKvInputArrays: typeof buildCrossKvInputArrays;
@@ -2687,6 +2731,7 @@ if (typeof window !== 'undefined') {
   window.__mirageExperimentalBridge = {
     ort,
     createMirageExperimentalOnnxTask,
+    createMirageWasmTask,
     acquireMirageFullPipelineAssets,
     MirageDecoderTableReader,
     buildCrossKvInputArrays,

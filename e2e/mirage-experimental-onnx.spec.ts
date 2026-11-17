@@ -906,7 +906,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     });
     await modelSelect.selectOption('mirage');
 
-    // Default variant remains mirage-51m; mirage-webgpu remains disabled
+    // Default variant remains mirage-51m
     const variantSelect = header.getByRole('combobox', {
       name: 'バリアント',
       exact: true,
@@ -914,7 +914,7 @@ test.describe('Experimental Partial Mirage ONNX Browser Verification', () => {
     await expect(variantSelect).toHaveValue('mirage-51m');
     await expect(
       variantSelect.locator('option[value="mirage-webgpu"]')
-    ).toBeDisabled();
+    ).toHaveCount(0);
 
     // Select experimental WASM variant
     await variantSelect.selectOption('mirage-onnx-exp-wasm');

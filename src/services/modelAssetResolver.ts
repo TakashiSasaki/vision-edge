@@ -1,6 +1,5 @@
 import type { ClassifierAssetStatuses } from './imageClassifierAssets.ts';
 import type { RunnableModelType } from '../types/vision.ts';
-import { mirageWebGpuUnavailableError } from './mirageAvailability.ts';
 
 export type AssetDeliverySource = 'container-cache' | 'external-fallback' | 'external';
 export type AssetSourceRecorder = (assetKey: string, source: AssetDeliverySource) => void;
@@ -100,7 +99,6 @@ export const WASM_ASSET_CATALOG: Record<'mediapipe' | 'ort', WasmAssetCatalogEnt
 };
 
 export interface ModelVariantCatalogEntry {
-  blockedReason?: string;
   licenseNoticeUrl?: string;
   expectedSize?: number;
   expectedSha256?: string;
@@ -157,17 +155,6 @@ export const MODEL_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = {
     license: 'Apache-2.0',
     licenseNote: 'Google MediaPipe / Apache License 2.0（コンテナキャッシュ・再配布可）',
   },
-  'mediapipe:ssd-mobilenet-v2': {
-    modelId: 'mediapipe', variantId: 'ssd-mobilenet-v2', file: 'ssd_mobilenet_v2.tflite',
-    upstreamUrl: 'https://storage.googleapis.com/mediapipe-models/object_detector/ssd_mobilenet_v2/float32/1/ssd_mobilenet_v2.tflite',
-    localUrl: '/api/model-cache/models/ssd_mobilenet_v2.tflite?sha256=b8ccb1a25d45455ba52e85f26531948e1cb75efeb94c7c3d456d54fd4d6fbdd2',
-    license: 'Apache-2.0',
-    licenseNoticeUrl: '/licenses/ssd-mobilenet-v2.txt',
-    licenseNote: 'MediaPipe協力者のモデルを含むApache-2.0声明に基づく。提供ファイルにはlicenseフィールドなし。',
-    expectedSize: 11_316_189,
-    expectedSha256: 'b8ccb1a25d45455ba52e85f26531948e1cb75efeb94c7c3d456d54fd4d6fbdd2',
-    blockedReason: '提供モデルのSDK0.10.14互換性の確認待ち（固定ピン取得済み）',
-  },
   'yolo-seg:yolov8n-seg': {
     modelId: 'yolo-seg',
     variantId: 'yolov8n-seg',
@@ -222,14 +209,11 @@ export const MODEL_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = {
   },
 };
 
-export type LegacyRunnableModelType = Exclude<RunnableModelType, 'mirage'>;
+export type LegacyRunnableModelType = Exclude<RunnableModelType, 'mirage' | 'stereo-depth'>;
 
 export const MIRAGE_UPSTREAM_URL =
   'https://huggingface.co/Cactus-Compute/mirage/resolve/76c1e9e53381aca8fc3843c636216c96ff220122/mirage.cact';
 export const MIRAGE_LOCAL_URL = '/api/model-cache/mirage/mirage.cact';
-
-export const MIRAGE_WEBGPU_LOCAL_URL =
-  '/api/model-cache/mirage/mirage-webgpu.onnx';
 
 import {
   MIRAGE_DECODER_TABLES_EXPECTED_SHA256,
@@ -366,19 +350,116 @@ export const MIRAGE_MODEL_ASSET_ENTRY: ModelAssetCatalogEntry = {
   licenseNote: MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'].licenseNote,
 };
 
+export const STEREO_VARIANT_CATALOG: Record<string, ModelVariantCatalogEntry> = {
+  'stereo-depth:stereo-sad-baseline': {
+    modelId: 'stereo-depth',
+    variantId: 'stereo-sad-baseline',
+    file: 'builtin-stereo-sad',
+    upstreamUrl: 'https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API',
+    localUrl: '/api/model-cache/stereo/builtin-stereo-sad',
+    license: 'MIT (Built-in)',
+    licenseNote: '内蔵CPUステレオマッチング (Separable Sliding-Window SAD · 重み取得不要)',
+    isDefault: true,
+  },
+  'stereo-depth:stereo-webgpu-wgsl': {
+    modelId: 'stereo-depth',
+    variantId: 'stereo-webgpu-wgsl',
+    file: 'builtin-stereo-webgpu-wgsl',
+    upstreamUrl: 'https://www.w3.org/TR/webgpu/',
+    localUrl: '/api/model-cache/stereo/builtin-stereo-webgpu-wgsl',
+    license: 'MIT (Built-in)',
+    licenseNote: '内蔵WebGPU WGSLコンピュートシェーダ (Census + Gradient GPU視差集約 · 重み取得不要 · WASM/CPU自動フォールバック)',
+  },
+  'stereo-depth:lightstereo-s': {
+    modelId: 'stereo-depth',
+    variantId: 'lightstereo-s',
+    file: 'lightstereo_s_sceneflow_general_opt_256_512.onnx',
+    upstreamUrl:
+      'https://cdn.jsdelivr.net/gh/zz990099/lightstereo_cpp@master/models/lightstereo_s_sceneflow_general_opt_256_512.onnx',
+    localUrl: '/api/model-cache/stereo/lightstereo_s_sceneflow_general_opt_256_512.onnx',
+    license: 'Apache-2.0',
+    licenseNote: 'LightStereo-S / Apache-2.0（オンライン自動取得 + ローカル.onnx上書き対応 · Concat自動分割WebGPU優先 / WASMフォールバック）',
+  },
+  'stereo-depth:mobilestereonet-2d': {
+    modelId: 'stereo-depth',
+    variantId: 'mobilestereonet-2d',
+    file: 'model_528_240_float32.onnx',
+    upstreamUrl:
+      'https://drive.usercontent.google.com/download?id=1Dkyrg5Fu554gqxfclkHC6zJBCYrdzOO0&export=download&confirm=t',
+    localUrl: '/api/model-cache/stereo/model_528_240_float32.onnx',
+    license: 'MIT',
+    licenseNote: 'MobileStereoNet-2D / MIT（オンライン自動取得 + ローカル.onnx上書き対応 · 5D Conv3d含むためWASM推奨）',
+  },
+  'stereo-depth:hitnet-sf': {
+    modelId: 'stereo-depth',
+    variantId: 'hitnet-sf',
+    file: 'hitnet_sceneflow_240x320.onnx',
+    upstreamUrl:
+      'https://github.com/nburrus/stereodemo/releases/download/v0.1-hitnet/hitnet_sceneflow_240x320.onnx',
+    localUrl: '/api/model-cache/stereo/hitnet_sceneflow_240x320.onnx',
+    license: 'Apache-2.0',
+    licenseNote: 'HITNet SceneFlow / Apache-2.0（オンライン自動取得(コンテナキャッシュ経由) + ローカル.onnx上書き対応 · WebGPU優先 / WASMフォールバック）',
+  },
+  'stereo-depth:crestereo-init-iter2': {
+    modelId: 'stereo-depth',
+    variantId: 'crestereo-init-iter2',
+    file: 'crestereo_init_iter2_180x320.onnx',
+    upstreamUrl:
+      'https://github.com/nburrus/stereodemo/releases/download/v0.1-crestereo/crestereo_init_iter2_180x320.onnx',
+    localUrl: '/api/model-cache/stereo/crestereo_init_iter2_180x320.onnx',
+    license: 'Apache-2.0',
+    licenseNote: 'CREStereo Init Iter2 / Apache-2.0（オンライン自動取得(コンテナキャッシュ経由) + ローカル.onnx上書き対応 · Concat自動分割WebGPU優先 / WASMフォールバック）',
+  },
+  'stereo-depth:crestereo-combined-iter5': {
+    modelId: 'stereo-depth',
+    variantId: 'crestereo-combined-iter5',
+    file: 'crestereo_combined_iter5_240x320.onnx',
+    upstreamUrl:
+      'https://github.com/nburrus/stereodemo/releases/download/v0.1-crestereo/crestereo_combined_iter5_240x320.onnx',
+    localUrl: '/api/model-cache/stereo/crestereo_combined_iter5_240x320.onnx',
+    license: 'Apache-2.0',
+    licenseNote: 'CREStereo Combined Iter5 / Apache-2.0（オンライン自動取得(コンテナキャッシュ経由) + ローカル.onnx上書き対応 · Concat自動分割WebGPU優先 / WASMフォールバック）',
+  },
+  'stereo-depth:custom-onnx': {
+    modelId: 'stereo-depth',
+    variantId: 'custom-onnx',
+    file: 'custom_stereo.onnx',
+    upstreamUrl: 'https://onnxruntime.ai/',
+    localUrl: '/api/model-cache/stereo/custom_stereo.onnx',
+    license: 'ユーザー指定',
+    licenseNote: '任意のステレオONNX重み（1入力/2入力自動対応 · Concat自動分割WebGPU優先）',
+  },
+};
+
+export const STEREO_MODEL_ASSET_ENTRY: ModelAssetCatalogEntry = {
+  id: 'stereo-depth',
+  file: STEREO_VARIANT_CATALOG['stereo-depth:stereo-sad-baseline'].file,
+  upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:stereo-sad-baseline'].upstreamUrl,
+  localUrl: STEREO_VARIANT_CATALOG['stereo-depth:stereo-sad-baseline'].localUrl,
+  license: STEREO_VARIANT_CATALOG['stereo-depth:stereo-sad-baseline'].license,
+  licenseNote: STEREO_VARIANT_CATALOG['stereo-depth:stereo-sad-baseline'].licenseNote,
+};
+
 export function getVariantCatalogEntry(
   model: RunnableModelType,
   variantId?: string
 ): ModelVariantCatalogEntry {
   if (variantId !== undefined && typeof variantId !== 'string') throw new RangeError('Variant id must be a string');
   if (model === 'mirage') {
-    if (variantId === 'mirage-webgpu') throw mirageWebGpuUnavailableError();
     if (variantId !== undefined && variantId !== '') {
       const key = `mirage:${variantId}`;
       if (Object.hasOwn(MIRAGE_VARIANT_CATALOG, key)) return MIRAGE_VARIANT_CATALOG[key];
       throw new RangeError(`Unknown model variant: ${key}`);
     }
     return MIRAGE_VARIANT_CATALOG['mirage:mirage-51m'];
+  }
+  if (model === 'stereo-depth') {
+    if (variantId !== undefined && variantId !== '') {
+      const key = `stereo-depth:${variantId}`;
+      if (Object.hasOwn(STEREO_VARIANT_CATALOG, key)) return STEREO_VARIANT_CATALOG[key];
+      throw new RangeError(`Unknown model variant: ${key}`);
+    }
+    return STEREO_VARIANT_CATALOG['stereo-depth:stereo-sad-baseline'];
   }
   if (variantId !== undefined && variantId !== '') {
     const key = `${model}:${variantId}`;
@@ -584,17 +665,12 @@ export class ModelAssetsBlockedError extends Error {
     super(`${model}:${variantId} BLOCKED: ${reason}`); this.name = 'ModelAssetsBlockedError';
   }
 }
-export function assertVariantAssetAvailable(model: RunnableModelType, variantId?: string): void {
-  const entry = getVariantCatalogEntry(model, variantId);
-  if (entry.blockedReason) throw new ModelAssetsBlockedError(model, entry.variantId, entry.blockedReason);
-}
 
 export async function resolveModelAssetUrls(
   model: RunnableModelType,
   variantId?: string
 ): Promise<ResolvedAssetUrls> {
   const entry = getVariantCatalogEntry(model, variantId);
-  assertVariantAssetAvailable(model, entry.variantId);
   if (model === 'mirage') {
     if (!isContainerModelCacheEnabled()) {
       if (entry.expectedSha256) {

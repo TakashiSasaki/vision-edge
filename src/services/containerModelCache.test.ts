@@ -307,7 +307,7 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     }
   });
 
-  it('runs prefetchModels script function and returns counts for 11 acquisition-enabled variants and one blocked SSD', async () => {
+  it('runs prefetchModels script function and returns counts for 11 acquisition-enabled variants', async () => {
     const fakePayload = Buffer.alloc(2048, 0x42);
     const mockFetch = vi.fn(async () => new Response(fakePayload, { status: 200 }));
     const manager = new ContainerModelCacheManager({
@@ -316,12 +316,11 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     });
 
     const result = await prefetchModels(manager);
-    expect(result.totalCount).toBe(12);
-    // Nine legacy variants accept synthetic bytes; two pinned classifiers reject them, and SSD remains policy-blocked.
+    expect(result.totalCount).toBe(11);
+    // Nine legacy variants accept synthetic bytes; two pinned classifiers reject them.
     expect(result.cachedCount).toBe(9);
-    expect(result.unavailableCount).toBe(3);
+    expect(result.unavailableCount).toBe(2);
     expect(mockFetch).toHaveBeenCalledTimes(11);
-    expect(manager.getVariantsSnapshot()['mediapipe:ssd-mobilenet-v2']).toMatchObject({ status: 'unavailable', integrity: 'blocked', acquisitionEnabled: false, size: null, sha256: null });
   });
 
   it('waits for container download to complete before responding when an uncached model file is accessed', async () => {
@@ -471,6 +470,42 @@ describe('Container Model & WASM Cache Server and Client Fallback', () => {
     // Startup background prefetch runs one model at a time and starts with the default selfie-segmenter model
     expect(maxConcurrentFetches).toBe(1);
     expect(requestedUrls[0]).toContain('selfie_segmenter.tflite');
+  });
+
+  it('lazily fetches and caches stereo ONNX variants on demand without inflating startup prefetch', async () => {
+    const fakeStereoBytes = Buffer.alloc(4096, 0x33);
+    const mockFetch = vi.fn(async () => new Response(fakeStereoBytes, { status: 200 }));
+    const manager = new ContainerModelCacheManager({
+      cacheDir: tempDir,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+    });
+    const middleware = manager.createMiddleware();
+
+    const firstRes = await invokeMiddleware(
+      middleware,
+      '/api/model-cache/stereo/hitnet_sceneflow_240x320.onnx'
+    );
+    expect(firstRes.statusCode).toBe(200);
+    expect(firstRes.headers['x-model-source']).toBe('container-cache');
+    expect(firstRes.headers['x-model-variant']).toBe('hitnet-sf');
+    expect(firstRes.body.byteLength).toBe(4096);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    // Second request serves directly from disk cache without another upstream fetch
+    const secondRes = await invokeMiddleware(
+      middleware,
+      '/api/model-cache/stereo/hitnet_sceneflow_240x320.onnx'
+    );
+    expect(secondRes.statusCode).toBe(200);
+    expect(secondRes.body.byteLength).toBe(4096);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    // Unknown file rejects with 404
+    const unknownRes = await invokeMiddleware(
+      middleware,
+      '/api/model-cache/stereo/nonexistent.onnx'
+    );
+    expect(unknownRes.statusCode).toBe(404);
   });
 });
 

@@ -241,3 +241,105 @@ it('StrictMode cleanup releases the first late stream without harming the second
   old.tracks.forEach(track => expect(track.stop).toHaveBeenCalledTimes(1));
   next.tracks.forEach(track => expect(track.stop).not.toHaveBeenCalled());
 });
+
+it('explicitly requests 3840x1080 in stereo-sbs mode and selects the 3840x1080 camera when multiple cameras exist', async () => {
+  const wrongResStream = fakeStream();
+  Object.defineProperty(wrongResStream.tracks[0], 'getSettings', {
+    configurable: true,
+    value: () => ({ width: 1280, height: 720 }),
+  });
+  const stereoStream = fakeStream();
+  Object.defineProperty(stereoStream.tracks[0], 'getSettings', {
+    configurable: true,
+    value: () => ({ width: 3840, height: 1080 }),
+  });
+
+  const enumerateDevices = vi.fn(async () => [
+    { kind: 'videoinput', deviceId: 'builtin-cam', label: 'Integrated Webcam', groupId: 'g1', toJSON: () => ({}) },
+    { kind: 'videoinput', deviceId: 'mislabeled-cam', label: 'Fallback Cam', groupId: 'g2', toJSON: () => ({}) },
+    { kind: 'videoinput', deviceId: 'stereo-cam', label: 'USB Stereo Camera', groupId: 'g3', toJSON: () => ({}) },
+  ] as MediaDeviceInfo[]);
+
+  const getUserMedia = vi.fn(async (constraints: MediaStreamConstraints) => {
+    const videoConstraints = constraints.video as MediaTrackConstraints;
+    const requestedDeviceId = (videoConstraints.deviceId as { exact?: string } | undefined)?.exact;
+    if (requestedDeviceId === 'builtin-cam') {
+      throw new DOMException('Built-in webcam does not support 3840x1080', 'OverconstrainedError');
+    }
+    if (requestedDeviceId === 'mislabeled-cam') {
+      return wrongResStream.stream;
+    }
+    if (requestedDeviceId === 'stereo-cam') {
+      expect(videoConstraints.width).toEqual({ exact: 3840 });
+      expect(videoConstraints.height).toEqual({ exact: 1080 });
+      return stereoStream.stream;
+    }
+    throw new DOMException('Unexpected camera request', 'OverconstrainedError');
+  });
+
+  Object.defineProperty(navigator, 'mediaDevices', {
+    configurable: true,
+    value: { enumerateDevices, getUserMedia },
+  });
+
+  const videoRef = { current: Object.assign(document.createElement('video'), { srcObject: null }) };
+  const onStop = vi.fn();
+  const view = renderHook(() => useCameraStream(videoRef, true, 'user', onStop, 'stereo-sbs'));
+
+  await act(async () => {});
+  expect(getUserMedia).toHaveBeenCalledTimes(3);
+  expect(getUserMedia.mock.calls[0][0]).toEqual({
+    video: { deviceId: { exact: 'builtin-cam' }, width: { exact: 3840 }, height: { exact: 1080 } },
+    audio: false,
+  });
+  expect(getUserMedia.mock.calls[2][0]).toEqual({
+    video: { deviceId: { exact: 'stereo-cam' }, width: { exact: 3840 }, height: { exact: 1080 } },
+    audio: false,
+  });
+  expect(wrongResStream.tracks.every((t) => t.stop.mock.calls.length === 1)).toBe(true);
+  expect(videoRef.current.srcObject).toBe(stereoStream.stream);
+  expect(view.result.current.cameraReady).toBe(true);
+  expect(view.result.current.cameraError).toBeNull();
+  expect(onStop).not.toHaveBeenCalled();
+});
+
+it('unlocks hidden deviceIds when 2+ ungranted cameras exist and reports stereo camera missing if none support 3840x1080', async () => {
+  const unlockStream = fakeStream();
+  let permissionUnlocked = false;
+  const enumerateDevices = vi.fn(async () =>
+    permissionUnlocked
+      ? ([
+          { kind: 'videoinput', deviceId: 'cam-a', label: 'Cam A', groupId: 'g1', toJSON: () => ({}) },
+          { kind: 'videoinput', deviceId: 'cam-b', label: 'Cam B', groupId: 'g2', toJSON: () => ({}) },
+        ] as MediaDeviceInfo[])
+      : ([
+          { kind: 'videoinput', deviceId: '', label: '', groupId: '', toJSON: () => ({}) },
+          { kind: 'videoinput', deviceId: '', label: '', groupId: '', toJSON: () => ({}) },
+        ] as MediaDeviceInfo[])
+  );
+
+  const getUserMedia = vi.fn(async (constraints: MediaStreamConstraints) => {
+    const videoConstraints = constraints.video;
+    if (videoConstraints === true) {
+      permissionUnlocked = true;
+      return unlockStream.stream;
+    }
+    throw new DOMException('Does not support 3840x1080', 'OverconstrainedError');
+  });
+
+  Object.defineProperty(navigator, 'mediaDevices', {
+    configurable: true,
+    value: { enumerateDevices, getUserMedia },
+  });
+
+  const videoRef = { current: Object.assign(document.createElement('video'), { srcObject: null }) };
+  const onStop = vi.fn();
+  const view = renderHook(() => useCameraStream(videoRef, true, 'user', onStop, 'stereo-sbs'));
+
+  await act(async () => {});
+  expect(unlockStream.tracks.every((t) => t.stop.mock.calls.length === 1)).toBe(true);
+  expect(view.result.current.cameraReady).toBe(false);
+  expect(view.result.current.cameraError).toContain('3840×縦1080ピクセルに対応したステレオカメラが装着されていません');
+  expect(onStop).toHaveBeenCalledTimes(1);
+});
+

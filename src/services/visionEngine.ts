@@ -1,5 +1,21 @@
 import { FilesetResolver, ObjectDetector, ImageSegmenter, type ImageSegmenterResult } from '@mediapipe/tasks-vision';
-import type { DetectedObject, RunnableModelType, ModelState, FrameResult, InferenceInput, YoloSegVariantId, SegFormerVariantId, MirageVariantId, MirageAnalysisMode } from '../types/vision';
+import type {
+  DetectedObject,
+  RunnableModelType,
+  ModelState,
+  FrameResult,
+  InferenceInput,
+  YoloSegVariantId,
+  SegFormerVariantId,
+  MirageVariantId,
+  MirageAnalysisMode,
+  StereoDepthVariantId,
+  StereoDepthMapData,
+  StereoDepthProbeResult,
+  StereoBackendPreference,
+  StereoColormap,
+  StereoViewMode,
+} from '../types/vision';
 import { PipelineProbe, type PipelineObserver, type AttemptOutcome } from './pipelineMetrics';
 import { requireRunnableModel } from './modelRegistry';
 import { getCategoryColor, getLabelInfo } from './dictionary';
@@ -12,9 +28,16 @@ import {
   MirageExperimentalOnnxEngine,
   type MirageExperimentalExecutionDiagnostics,
 } from './mirageExperimentalOnnxService';
+import {
+  cancelInFlightStereoInit,
+  createStereoDepthTask,
+  inspectDisparityMapAtPoint,
+  type StereoDepthTask,
+  type StereoDepthTaskOptions,
+  type StereoDepthRunOptions,
+} from './stereoDepthService';
 import { unknownOnnxBackend } from './onnxSession';
-import { mirageWebGpuUnavailableError } from './mirageAvailability';
-import { assertVariantAssetAvailable, getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSources, type AssetSourceRecorder, type AssetDeliverySource } from './modelAssetResolver';
+import { getVariantCatalogEntry, resolveMediaPipeWasmUrls, resolveModelAssetUrls, recordResolvedSources, type AssetSourceRecorder, type AssetDeliverySource } from './modelAssetResolver';
 import { diagnosticLogger } from './diagnosticLogger';
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
@@ -35,6 +58,24 @@ export interface ExtraInferenceOptions {
   showTextProposals?: boolean;
   showDiagnosticMasks?: boolean;
   overlayNativeWasm?: boolean;
+  maxDisparity?: number;
+  sadWindowSize?: 5 | 7 | 9;
+  autoNormalizeDisparity?: boolean;
+  minDisparityPx?: number;
+  maxDisparityPx?: number;
+  swapLeftRight?: boolean;
+  cameraRotate180?: boolean;
+  rotate180?: boolean;
+  colormap?: StereoColormap;
+  viewMode?: StereoViewMode;
+  baselineMm?: number;
+  focalLengthPx?: number;
+  showCalibrationDepth?: boolean;
+  backendPreference?: StereoBackendPreference;
+}
+
+export interface InitializeOptions {
+  stereoBackendPreference?: StereoBackendPreference;
 }
 
 export interface VisionTaskFactory {
@@ -44,6 +85,7 @@ export interface VisionTaskFactory {
   yoloSeg?: (options?: YoloSegTaskOptions) => Promise<YoloSegTask>;
   segformer?: (options?: SegFormerTaskOptions) => Promise<SegFormerTask>;
   mirage?: (options?: MirageTaskOptions) => Promise<MirageTask>;
+  stereoDepth?: (options?: StereoDepthTaskOptions) => Promise<StereoDepthTask>;
 }
 const DELEGATE = 'GPU' as const;
 function createDefaultFactory(recordAssetSource: AssetSourceRecorder): VisionTaskFactory {
@@ -125,6 +167,7 @@ function createDefaultFactory(recordAssetSource: AssetSourceRecorder): VisionTas
     }
     return createMirageWasmTask({ ...options, recordAssetSource });
   },
+  stereoDepth: (options) => createStereoDepthTask({ ...options, recordAssetSource }),
   };
 }
 type ActiveTask =
@@ -132,7 +175,8 @@ type ActiveTask =
   | { model: 'selfie-segmenter'; variantId: string; task: SegmenterTask }
   | { model: 'yolo-seg'; variantId: string; task: YoloSegTask }
   | { model: 'segformer'; variantId: string; task: SegFormerTask }
-  | { model: 'mirage'; variantId: string; task: MirageTask };
+  | { model: 'mirage'; variantId: string; task: MirageTask }
+  | { model: 'stereo-depth'; variantId: string; task: StereoDepthTask };
 type InitializationResult = Extract<ModelState, { status: 'ready' | 'error' }> | { status: 'cancelled'; model: RunnableModelType; requestId: number };
 
 // One owner, one active task, no task cache. Pending tasks cannot be aborted by
@@ -149,6 +193,8 @@ export class VisionEngine {
   private emptyFrameBufferCount = 0;
   private outputGeneration = 0;
   private acceptedInspector: {task:SegFormerTask;objects:DetectedObject[];generation:number;requestId:number}|null=null;
+  private acceptedDepthMap: {task:StereoDepthTask;depthMap:StereoDepthMapData;generation:number;requestId:number}|null=null;
+  private activeStereoBackendPref: StereoBackendPreference = 'auto';
 
   constructor(private readonly factory?: VisionTaskFactory) {}
 
@@ -169,6 +215,7 @@ export class VisionEngine {
     this.offscreenMaskCanvas = null;
     this.maskImageData = null;
     this.acceptedInspector=null;
+    this.acceptedDepthMap=null;
     if(this.activeTask?.model==='segformer')this.activeTask.task.clearResult?.();
     if(this.activeTask?.model==='mirage')this.activeTask.task.notifySourceChanged?.();
   }
@@ -182,18 +229,26 @@ export class VisionEngine {
     catch (cause) { console.warn('Vision task cleanup failed', { model: active.model, cause }); }
   }
 
-  initialize(model: RunnableModelType, variantId?: string): Promise<InitializationResult> {
+  initialize(
+    model: RunnableModelType,
+    variantId?: string,
+    options?: InitializeOptions
+  ): Promise<InitializationResult> {
     requireRunnableModel(model);
-    // Keep blocked variants in the normal initialization/error lifecycle without
-    // resolving a downloadable asset or allowing an injected factory to bypass it.
-    const targetVariantId = model === 'mirage' && variantId === 'mirage-webgpu'
-      ? variantId
-      : getVariantCatalogEntry(model, variantId).variantId;
-    if (this.state.model === model && this.state.variantId === targetVariantId) {
+    const targetVariantId = getVariantCatalogEntry(model, variantId).variantId;
+    const requestedStereoPref: StereoBackendPreference =
+      model === 'stereo-depth' ? (options?.stereoBackendPreference ?? 'auto') : 'auto';
+    if (
+      this.state.model === model &&
+      this.state.variantId === targetVariantId &&
+      (model !== 'stereo-depth' || this.activeStereoBackendPref === requestedStereoPref)
+    ) {
       if (this.state.status === 'loading' && this.pending) return this.pending;
       if (this.state.status === 'ready') return Promise.resolve(this.state);
     }
     const requestId = ++this.generation;
+    this.activeStereoBackendPref = requestedStereoPref;
+    cancelInFlightStereoInit();
     this.closeTask(this.activeTask);
     this.activeTask = null;
     this.resetOutputs();
@@ -219,9 +274,6 @@ export class VisionEngine {
       let stage: 'wasm' | 'task' = 'wasm';
       try {
         if (!current()) return cancelled();
-        // Production refuses unverified variants before WASM/SDK or any fetch.
-        // Existing explicit task-factory injection remains model-free test scope.
-        if (!this.factory) { stage = 'task'; assertVariantAssetAvailable(model, targetVariantId); stage = 'wasm'; }
         let active: ActiveTask;
         if (model === 'yolo-seg') {
           stage = 'task';
@@ -237,9 +289,18 @@ export class VisionEngine {
           active = { model, variantId: targetVariantId, task };
         } else if (model === 'mirage') {
           stage = 'task';
-          if (targetVariantId === 'mirage-webgpu') throw mirageWebGpuUnavailableError();
           const mirageCreator = factory.mirage ?? createMirageWasmTask;
           const task = await mirageCreator({ variantId: targetVariantId as MirageVariantId, recordAssetSource });
+          if (!task) throw new Error('Model task was not created');
+          active = { model, variantId: targetVariantId, task };
+        } else if (model === 'stereo-depth') {
+          stage = 'task';
+          const stereoCreator = factory.stereoDepth ?? createStereoDepthTask;
+          const task = await stereoCreator({
+            variantId: targetVariantId as StereoDepthVariantId,
+            backendPreference: requestedStereoPref,
+            recordAssetSource,
+          });
           if (!task) throw new Error('Model task was not created');
           active = { model, variantId: targetVariantId, task };
         } else {
@@ -253,7 +314,7 @@ export class VisionEngine {
         }
         if (!current()) { this.closeTask(active); return cancelled(); }
         this.activeTask = active;
-        const ready = { status: 'ready' as const, model, variantId: targetVariantId, requestId, ...(active.model==='yolo-seg'||active.model==='segformer'||active.model==='mirage'?{backend:active.task.backend??unknownOnnxBackend()}:{delegate:DELEGATE}) };
+        const ready = { status: 'ready' as const, model, variantId: targetVariantId, requestId, ...(active.model==='yolo-seg'||active.model==='segformer'||active.model==='mirage'||active.model==='stereo-depth'?{backend:active.task.backend??unknownOnnxBackend()}:{delegate:DELEGATE}) };
         diagnosticLogger.log('info', 'system', model, targetVariantId, `Model ${model} (${targetVariantId}) ready`, {
           details: { requestId, backend: 'backend' in ready ? ready.backend : undefined },
         });
@@ -262,11 +323,22 @@ export class VisionEngine {
       } catch (cause) {
         if (!current()) return cancelled();
         const error = { status: 'error' as const, model, variantId: targetVariantId, requestId, stage, cause };
-        diagnosticLogger.log('error', stage, model, targetVariantId, `Initialization failed: ${cause instanceof Error ? cause.message : String(cause)}`, {
-          error: cause,
-          details: { stage, requestId },
-          sendToServer: typeof window !== 'undefined',
-        });
+        const causeMessage = cause instanceof Error ? cause.message : String(cause);
+        const isPolicyBlocked =
+          (cause instanceof Error && cause.name === 'ModelAssetsBlockedError') ||
+          causeMessage.includes('BLOCKED');
+        diagnosticLogger.log(
+          isPolicyBlocked ? 'warn' : 'error',
+          stage,
+          model,
+          targetVariantId,
+          `Initialization ${isPolicyBlocked ? 'blocked by policy' : 'failed'}: ${causeMessage}`,
+          {
+            error: isPolicyBlocked ? undefined : cause,
+            details: { stage, requestId, policyBlocked: isPolicyBlocked },
+            sendToServer: !isPolicyBlocked && typeof window !== 'undefined',
+          }
+        );
         console.warn('Vision initialization failed', { model, variantId: targetVariantId, stage, cause });
         this.publish(error);
         return error;
@@ -282,6 +354,7 @@ export class VisionEngine {
   dispose(): void {
     const requestId = ++this.generation;
     this.pending = null;
+    cancelInFlightStereoInit();
     this.closeTask(this.activeTask);
     this.activeTask = null;
     this.resetOutputs();
@@ -297,7 +370,7 @@ export class VisionEngine {
   ): FrameResult;
   public detectVideoFrame(
     videoElement: InferenceInput,
-    model: 'yolo-seg' | 'segformer' | 'mirage',
+    model: 'yolo-seg' | 'segformer' | 'mirage' | 'stereo-depth',
     confidenceThreshold: number,
     instrumentation?: PipelineObserver,
     extraOptions?: ExtraInferenceOptions
@@ -333,6 +406,9 @@ export class VisionEngine {
     }
     if (active.model === 'mirage') {
       return this.detectMirageVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration, extraOptions);
+    }
+    if (active.model === 'stereo-depth') {
+      return this.detectStereoDepthVideoFrame(videoElement, confidenceThreshold, instrumentation, state, active, outputGeneration, extraOptions);
     }
     const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
     const engineStart = probe?.start();
@@ -802,6 +878,20 @@ export class VisionEngine {
         engineOutcome = 'stale';
         return { status: 'not-ready', model: 'mirage', requestId: state.requestId };
       }
+      const latestBackend = active.task.backend;
+      if (
+        latestBackend &&
+        'backend' in state &&
+        state.backend &&
+        (state.backend.fallbackReason !== latestBackend.fallbackReason ||
+          state.backend.configuredProviders.join(',') !==
+            latestBackend.configuredProviders.join(','))
+      ) {
+        this.publish({
+          ...state,
+          backend: latestBackend,
+        });
+      }
       engineOutcome = 'success';
       return { status: 'ready', model: 'mirage', requestId: state.requestId, objects: filteredObjects };
     } catch (cause) {
@@ -818,6 +908,148 @@ export class VisionEngine {
       }
       probe?.end('engine', engineStart, engineOutcome);
     }
+  }
+
+  private async detectStereoDepthVideoFrame(
+    videoElement: InferenceInput,
+    confidenceThreshold: number,
+    instrumentation: PipelineObserver | undefined,
+    state: Extract<ModelState, { status: 'ready' }>,
+    active: { model: 'stereo-depth'; task: StereoDepthTask },
+    outputGeneration: number,
+    extraOptions?: ExtraInferenceOptions
+  ): Promise<FrameResult> {
+    const probe = instrumentation ? new PipelineProbe(instrumentation) : undefined;
+    const engineStart = probe?.start();
+    let engineOutcome: AttemptOutcome = 'failed';
+    let postStart: ReturnType<PipelineProbe['start']>;
+    let postStarted = false;
+    let postActive = false;
+    const postMs: number | null = 0;
+    try {
+      const sdkStart = probe?.start();
+      let sdkOutcome: AttemptOutcome = 'failed';
+      let depthMap: StereoDepthMapData;
+      try {
+        const runResult = active.task.estimateForVideo(videoElement, {
+          confidenceThreshold,
+          maxDisparity: extraOptions?.maxDisparity,
+          sadWindowSize: extraOptions?.sadWindowSize,
+          autoNormalizeDisparity: extraOptions?.autoNormalizeDisparity,
+          minDisparityPx: extraOptions?.minDisparityPx,
+          maxDisparityPx: extraOptions?.maxDisparityPx,
+          swapLeftRight: extraOptions?.swapLeftRight,
+          rotate180: extraOptions?.rotate180,
+          colormap: extraOptions?.colormap,
+          viewMode: extraOptions?.viewMode,
+          baselineMm: extraOptions?.baselineMm,
+          focalLengthPx: extraOptions?.focalLengthPx,
+          showCalibrationDepth: extraOptions?.showCalibrationDepth,
+        });
+        depthMap = runResult instanceof Promise ? await runResult : runResult;
+        sdkOutcome = 'success';
+      } finally {
+        probe?.end('sdk', sdkStart, sdkOutcome);
+      }
+      postStart = probe?.start();
+      postStarted = true;
+      postActive = true;
+      if (this.state !== state || this.activeTask !== active || this.outputGeneration !== outputGeneration) {
+        engineOutcome = 'stale';
+        return { status: 'not-ready', model: 'stereo-depth', requestId: state.requestId };
+      }
+
+      this.acceptedDepthMap = {
+        task: active.task,
+        depthMap,
+        generation: outputGeneration,
+        requestId: state.requestId,
+      };
+      this.lastStableObjects = [];
+      this.emptyFrameBufferCount = 0;
+
+      const latestBackend = active.task.backend;
+      if (
+        latestBackend &&
+        'backend' in state &&
+        state.backend &&
+        (state.backend.fallbackReason !== latestBackend.fallbackReason ||
+          state.backend.configuredProviders.join(',') !==
+            latestBackend.configuredProviders.join(','))
+      ) {
+        this.publish({
+          ...state,
+          backend: latestBackend,
+        });
+      }
+
+      engineOutcome = 'success';
+      return {
+        status: 'ready',
+        model: 'stereo-depth',
+        requestId: state.requestId,
+        objects: [],
+        depthMap,
+      };
+    } catch (cause) {
+      if (this.state === state && this.activeTask === active && this.outputGeneration === outputGeneration) {
+        this.resetOutputs();
+        throw cause;
+      }
+      engineOutcome = 'stale';
+      return { status: 'not-ready', model: 'stereo-depth', requestId: state.requestId };
+    } finally {
+      if (postStarted && probe) {
+        const tail = postActive ? probe.elapsed(postStart)?.ms ?? null : 0;
+        probe.duration('postprocess', postMs === null || tail === null ? null : postMs + tail, engineOutcome);
+      }
+      probe?.end('engine', engineStart, engineOutcome);
+    }
+  }
+
+  public inspectDepthAtPoint(
+    normX: number,
+    normY: number,
+    depthMap: StereoDepthMapData,
+    baselineMm = 60,
+    focalLengthPx = 500
+  ): StereoDepthProbeResult | null {
+    const accepted = this.acceptedDepthMap;
+    if (
+      this.activeTask?.model !== 'stereo-depth' ||
+      !accepted ||
+      accepted.task !== this.activeTask.task ||
+      accepted.depthMap !== depthMap ||
+      accepted.generation !== this.outputGeneration ||
+      accepted.requestId !== this.state.requestId
+    ) {
+      return null;
+    }
+    return inspectDisparityMapAtPoint(depthMap, normX, normY, baselineMm, focalLengthPx);
+  }
+
+  public rerenderStereoDepthOverlay(
+    depthMap: StereoDepthMapData,
+    options: StereoDepthRunOptions
+  ): StereoDepthMapData | null {
+    const accepted = this.acceptedDepthMap;
+    if (
+      this.activeTask?.model !== 'stereo-depth' ||
+      !accepted ||
+      accepted.task !== this.activeTask.task ||
+      accepted.depthMap !== depthMap ||
+      accepted.generation !== this.outputGeneration ||
+      accepted.requestId !== this.state.requestId
+    ) {
+      return null;
+    }
+    if (!this.activeTask.task.rerenderOverlay) return depthMap;
+    const updated = this.activeTask.task.rerenderOverlay(depthMap, options);
+    this.acceptedDepthMap = {
+      ...accepted,
+      depthMap: updated,
+    };
+    return updated;
   }
 
   public findObjectAtPoint(

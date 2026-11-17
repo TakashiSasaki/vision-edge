@@ -21,7 +21,7 @@ afterEach(() => { engines.forEach(e => e.dispose()); setContainerModelCacheEnabl
 function assetBoundary(variant: ImageClassifierVariantId) { const entry = assets.classifierAsset(variant); return vi.spyOn(assets, 'resolveClassifierAsset').mockResolvedValue({ modelId: 'image-classifier', variantId: variant, modelAssetPath: entry.localUrl, source: 'container-cache' }); }
 function sdkBoundary() { const t = task(); const load = vi.spyOn(FilesetResolver, 'forVisionTasks').mockResolvedValue({ wasmLoaderPath: 'controlled-loader', wasmBinaryPath: 'controlled-wasm' }); const create = vi.spyOn(ImageClassifier, 'createFromOptions').mockResolvedValue(t as unknown as ImageClassifier); return { t, load, create }; }
 it('registers classification UI family while keeping it outside the detection engine', () => {
-  expect(ALL_MODEL_REGISTRY).toHaveLength(6); expect(MODEL_REGISTRY).toHaveLength(4);
+  expect(ALL_MODEL_REGISTRY).toHaveLength(7); expect(MODEL_REGISTRY).toHaveLength(4);
   expect(IMAGE_CLASSIFIER_MODEL).toMatchObject({ id: 'image-classifier', availableInUI: true, outputType: 'whole-image-classification', assetVerification: 'pinned-container-cache-required' });
   expect(IMAGE_CLASSIFIER_MODEL.variants.map(v => v.id)).toEqual(['lite0', 'lite2']);
   expect(isRunnableModel('image-classifier')).toBe(false);
