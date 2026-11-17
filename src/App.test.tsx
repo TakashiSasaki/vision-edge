@@ -217,7 +217,9 @@ it('allows switching Stereo Depth execution backend preference (auto / webgpu / 
 
   await user.click(screen.getByRole('button', { name: 'モデル調整' }));
   const backendGroup = screen.getByRole('group', { name: 'ステレオ実行バックエンド' });
-  await user.click(within(backendGroup).getByRole('button', { name: 'WebGPU 強制' }));
+  expect(within(backendGroup).getByRole('button', { name: '自動（互換性優先）' })).toBeInTheDocument();
+  expect(screen.getByText('SAD BaselineはCPU専用です。GPUを使うには別の方式を選択してください。')).toBeInTheDocument();
+  await user.click(within(backendGroup).getByRole('button', { name: 'WebGPU優先' }));
   await waitFor(() =>
     expect(f.factory.stereoDepth).toHaveBeenLastCalledWith(
       expect.objectContaining({

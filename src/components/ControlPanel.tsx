@@ -1471,7 +1471,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   {/* Execution Backend Selector (WebGPU / WASM) */}
                   <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-medium text-slate-200">実行バックエンド (WebGPU / WASM)</span>
+                      <span className="font-medium text-slate-200">実行方針と設定済みの優先順位</span>
                       <span className="font-mono text-cyan-400 text-[11px] tabular-nums">
                         {modelState?.status === 'ready' &&
                         modelState.model === 'stereo-depth' &&
@@ -1479,7 +1479,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                           ? modelState.backend.configuredProviders.join(' → ')
                           : modelState?.status === 'loading'
                             ? '読込中...'
-                            : stereoBackendPref}
+                            : '未準備'}
                       </span>
                     </div>
                     <div
@@ -1488,8 +1488,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       aria-label="ステレオ実行バックエンド"
                     >
                       {([
-                        ['auto', '自動 (GPU優先)'],
-                        ['webgpu', 'WebGPU 強制'],
+                        ['auto', '自動（互換性優先）'],
+                        ['webgpu', 'WebGPU優先'],
                         ['wasm', 'WASM (CPU)'],
                       ] as const).map(([pref, label]) => (
                         <button
@@ -1507,6 +1507,22 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                         </button>
                       ))}
                     </div>
+                    <p className="text-[10px] text-slate-400 leading-relaxed">
+                      {activeStereoProfile.engineType === 'sad-cpu'
+                        ? 'SAD BaselineはCPU専用です。GPUを使うには別の方式を選択してください。'
+                        : stereoBackendPref === 'wasm'
+                          ? 'CPUで実行します。'
+                          : stereoBackendPref === 'webgpu'
+                            ? 'WebGPUを優先して試します。利用できない場合やGPU関連エラー時はCPUへ切り替えます。'
+                            : activeStereoProfile.preferWebGpu
+                              ? '互換性を確認してWebGPUを優先します。対応できない場合はCPUを使用します。'
+                              : 'このモデルは互換性のため、自動設定ではWASM（CPU）を使用します。'}
+                    </p>
+                    {activeStereoProfile.engineType === 'onnx' && (
+                      <p className="text-[10px] text-slate-400 leading-relaxed">
+                        表示は設定上の優先順位です。各演算の実行先・物理GPUの使用状況は未計測です。
+                      </p>
+                    )}
                     {modelState?.status === 'ready' &&
                       modelState.model === 'stereo-depth' &&
                       modelState.backend && (
@@ -1515,6 +1531,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                             runtime: {modelState.backend.runtime} · 要求:{' '}
                             {modelState.backend.requestedProvider}
                           </div>
+                          {modelState.backend.configurationNote && (
+                            <div className="text-slate-300 break-words font-sans">
+                              設定の説明: {modelState.backend.configurationNote}
+                            </div>
+                          )}
                           {modelState.backend.fallbackReason && (
                             <div className="text-amber-300 break-words font-sans">
                               フォールバック理由: {modelState.backend.fallbackReason}

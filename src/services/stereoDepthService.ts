@@ -156,7 +156,7 @@ export const STEREO_MODEL_PROFILES: Record<StereoDepthVariantId, StereoModelProf
     normalization: 'imagenet',
     preferWebGpu: false,
     license: 'MIT',
-    licenseNote: 'MobileStereoNet-2D (Shamsafar et al. / ONNX-MobileStereoNet) / MIT（3D畳み込み集約ノードのため自動時はWASM構成 · 240×528 · 手動でWebGPU強制試行可能）',
+    licenseNote: 'MobileStereoNet-2D (Shamsafar et al. / ONNX-MobileStereoNet) / MIT（3D畳み込み集約ノードのため自動時はWASM構成 · 240×528 · 手動でWebGPU優先で試行可能（失敗時はWASM））',
     upstreamUrl: 'https://github.com/ibaiGorordo/ONNX-MobileStereoNet',
     onlineDelivery: 'direct-cors',
     onlineSourceLabel: 'Google Drive Direct (CORS)',
@@ -1059,6 +1059,7 @@ export class StereoOnnxEngine implements StereoDepthTask {
             const errMsg = runError instanceof Error ? runError.message : String(runError);
             this.backend = {
               ...recovered.backend,
+              configurationNote: this.backend.configurationNote,
               requestedProvider: this.backend.requestedProvider,
               fallbackReason: `WebGPU kernel runtime failure (${errMsg}); fell back to WASM`,
             };
@@ -1725,7 +1726,7 @@ export async function createStereoDepthTask(
         : null;
     const concatNote =
       splitResult.splitCount > 0 && backend.configuredProviders.includes('webgpu')
-        ? `Concat分割(${splitResult.splitCount}箇所・最大${splitResult.originalMaxConcatInputs}→4入力ツリー化)でWebGPU有効化`
+        ? `Concat分割(${splitResult.splitCount}箇所・最大${splitResult.originalMaxConcatInputs}→4入力ツリー化)でWebGPU向けにモデルを準備`
         : null;
     const adjustedBackend: OnnxBackendInfo = {
       ...backend,
@@ -1735,7 +1736,12 @@ export async function createStereoDepthTask(
           : backendPreference === 'webgpu'
             ? 'webgpu'
             : backend.requestedProvider,
-      fallbackReason: backend.fallbackReason ?? staticCompat?.reason ?? concatNote,
+      fallbackReason: backend.fallbackReason,
+      configurationNote: [
+        backendPreference === 'auto' && !profile.preferWebGpu
+          ? 'モデルの互換性を優先し、自動設定ではWASMを選択' : null,
+        staticCompat?.reason, concatNote,
+      ].filter(Boolean).join(' / ') || undefined,
     };
     const fallbackToWasm: StereoWasmRecoveryFactory | undefined =
       delegate === 'WebGPU' && adjustedBackend.configuredProviders.includes('webgpu')

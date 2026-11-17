@@ -88,7 +88,13 @@ describe('stereoDepthService', () => {
 
     expect(out.width).toBe(w);
     expect(out.height).toBe(h);
-    expect(out.validRatio).toBeGreaterThan(0.75);
+    // Coverage is meaningful on the overlapping interior, not on borders or
+    // the synthetic discontinuity where the right image duplicates/occludes content.
+    const interior = [];
+    for (let y = 6; y < h - 6; y++) {
+      for (let x = 16; x < w - 6; x++) interior.push(out.disparity[y * w + x]);
+    }
+    expect(interior.filter(d => d >= 0).length / interior.length).toBeGreaterThan(0.75);
 
     // Center of foreground box in left image (x ~ 48, y ~ 24) shifts to x ~ 38 in right image => disparity ~ 10
     const centerDisp = out.disparity[24 * w + 48];
@@ -368,6 +374,9 @@ describe('stereoDepthService', () => {
     });
     expect(createSpy).toHaveBeenCalledTimes(1);
     expect(createSpy.mock.calls[0][1]).toBe('WebGPU');
+    expect(task.backend?.fallbackReason).toBeNull();
+    expect(task.backend?.configurationNote).toContain('Concat分割');
+    expect(task.backend?.actualBackend).toBe('unmeasured');
     expect(exceedsWebGpuStorageBufferLimit(createSpy.mock.calls[0][0] as Uint8Array).exceeds).toBe(false);
     await task.close();
   });

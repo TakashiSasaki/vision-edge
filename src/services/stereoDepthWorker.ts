@@ -196,11 +196,17 @@ export function computeSadDisparity(
   const bestCost = new Int32Array(n);
   bestCost.fill(0x7fffffff);
   const bestDisp = new Int16Array(n);
+  const rightBestCost = new Float64Array(n).fill(Infinity);
+  const rightBestDisp = new Int16Array(n).fill(-1);
   const prevCostAtBest = new Int32Array(n);
   const nextCostAtBest = new Int32Array(n);
   prevCostAtBest.fill(0x7fffffff);
   nextCostAtBest.fill(0x7fffffff);
 
+  // Four minima suffice to retain a competitor outside the winner's +/-1
+  // subpixel basin (at most three disparities belong to that basin).
+  const candidateCosts = new Float32Array(n * 4).fill(Infinity);
+  const candidateDisps = new Int16Array(n * 4);
   let prevCost = new Int32Array(n);
   let currCost = new Int32Array(n);
   const colSum = new Int32Array(width);
@@ -259,17 +265,36 @@ export function computeSadDisparity(
       }
     }
 
-    const regPenalty = d;
-
     for (let i = 0; i < n; i++) {
-      const c = currCost[i] + regPenalty;
+      const x = i % width;
+      const y = Math.floor(i / width);
+      if (x - d < radius + 1 || x >= width - radius - 1 ||
+          y < radius || y >= height - radius) continue;
+      const c = currCost[i];
+      // The same symmetric window cost also votes for the right-reference map.
+      if (c < rightBestCost[i - d]) {
+        rightBestCost[i - d] = c;
+        rightBestDisp[i - d] = d;
+      }
+      const base = i * 4;
+      for (let k = 0; k < 4; k++) {
+        if (c < candidateCosts[base + k]) {
+          for (let j = 3; j > k; j--) {
+            candidateCosts[base + j] = candidateCosts[base + j - 1];
+            candidateDisps[base + j] = candidateDisps[base + j - 1];
+          }
+          candidateCosts[base + k] = c;
+          candidateDisps[base + k] = d;
+          break;
+        }
+      }
       if (d > 0 && bestDisp[i] === d - 1) {
         nextCostAtBest[i] = c;
       }
       if (c < bestCost[i]) {
         bestCost[i] = c;
         bestDisp[i] = d;
-        prevCostAtBest[i] = d > 0 ? prevCost[i] + (d - 1) : c;
+        prevCostAtBest[i] = d > 0 ? prevCost[i] : c;
         nextCostAtBest[i] = c;
       }
     }
@@ -282,29 +307,25 @@ export function computeSadDisparity(
   // 3. Subpixel parabolic refinement + validity gating
   const rawDisp = new Float32Array(n);
   const maxCostSum = maxMeanSad * winArea;
-  let passCount = 0;
-  for (let i = 0; i < n; i++) {
-    if (bestCost[i] <= maxCostSum) passCount++;
-  }
-  let effectiveMaxCostSum = maxCostSum;
-  if (passCount < n * 0.25) {
-    const sortedCosts = Int32Array.from(bestCost).sort();
-    const p85Cost = sortedCosts[Math.min(n - 1, Math.floor(n * 0.85))];
-    effectiveMaxCostSum = Math.max(maxCostSum, p85Cost);
-  }
 
   for (let y = 0; y < height; y++) {
     const rowOff = y * width;
     for (let x = 0; x < width; x++) {
       const i = rowOff + x;
       const cBest = bestCost[i];
-      if (cBest > effectiveMaxCostSum) {
+      let ambiguous = false;
+      for (let k = 0; k < 4; k++) {
+        if (Math.abs(candidateDisps[i * 4 + k] - bestDisp[i]) > 1 &&
+            candidateCosts[i * 4 + k] <= cBest * 1.1 + 1) ambiguous = true;
+      }
+      if (x < radius + 3 || cBest > maxCostSum || ambiguous ||
+          Math.abs(bestDisp[i] - rightBestDisp[i - bestDisp[i]]) > 1) {
         rawDisp[i] = -1;
         continue;
       }
       const d = bestDisp[i];
       let sub = d;
-      if (d > 0 && d < maxD) {
+      if (d > 0 && d < Math.min(maxD, x - radius - 1)) {
         const cPrev = prevCostAtBest[i];
         const cNext = nextCostAtBest[i];
         const denom = 2 * (cPrev - 2 * cBest + cNext);
@@ -1593,6 +1614,17 @@ fn match_disparity(@builtin(global_invocation_id) gid: vec3<u32>) {
   let r = i32(params.aggRadius);
   let maxD = i32(params.maxDisp);
 
+  let reverse = gid.z == 1u;
+  let outIdx = gid.z * params.width * params.height + gid.y * params.width + gid.x;
+  // Census needs a two-pixel halo in addition to the aggregation window.
+  let margin = r + 2;
+  if (ix < margin || ix >= w - margin || iy < margin || iy >= h - margin) {
+    rawDisp[outIdx] = -1.0;
+    return;
+  }
+  let searchLimit = min(maxD, select(ix - margin, w - 1 - margin - ix, reverse));
+  var minima: array<f32, 4> = array<f32, 4>(1e20, 1e20, 1e20, 1e20);
+  var minimaD: array<i32, 4>;
   var bestD: i32 = 0;
   var bestCost: f32 = 1e20;
   var cAtBestMinus1: f32 = 1e20;
@@ -1602,17 +1634,17 @@ fn match_disparity(@builtin(global_invocation_id) gid: vec3<u32>) {
   let side = r * 2 + 1;
   let sampleCount = f32(side * side);
 
-  for (var d: i32 = 0; d <= maxD; d = d + 1) {
+  for (var d: i32 = 0; d <= searchLimit; d = d + 1) {
     var accCost: f32 = 0.0;
     for (var ky: i32 = -r; ky <= r; ky = ky + 1) {
       let sy = clamp(iy + ky, 0, h - 1);
       let rowBase = sy * w;
       for (var kx: i32 = -r; kx <= r; kx = kx + 1) {
         let lx = clamp(ix + kx, 0, w - 1);
-        let rxRaw = lx - d;
+        let rxRaw = lx + select(-d, d, reverse);
         let rx = clamp(rxRaw, 0, w - 1);
-        let li = u32(rowBase + lx);
-        let ri = u32(rowBase + rx);
+        let li = u32(rowBase + select(lx, rx, reverse));
+        let ri = u32(rowBase + select(rx, lx, reverse));
         let cDiff = f32(countOneBits(mLeftCensus[li] ^ mRightCensus[ri]));
         let lDiff = abs(mLeftGray[li] - mRightGray[ri]);
         let gDiff = abs(mLeftGrad[li] - mRightGrad[ri]);
@@ -1620,7 +1652,18 @@ fn match_disparity(@builtin(global_invocation_id) gid: vec3<u32>) {
         accCost = accCost + (3.2 * cDiff + 0.22 * lDiff + 0.16 * gDiff + borderPenalty);
       }
     }
-    let totalCost = accCost + 0.08 * f32(d) * sampleCount;
+    let totalCost = accCost;
+    for (var k = 0; k < 4; k = k + 1) {
+      if (totalCost < minima[k]) {
+        for (var j = 3; j > k; j = j - 1) {
+          minima[j] = minima[j - 1];
+          minimaD[j] = minimaD[j - 1];
+        }
+        minima[k] = totalCost;
+        minimaD[k] = d;
+        break;
+      }
+    }
     if (d > 0 && bestD == d - 1) {
       cAtBestPlus1 = totalCost;
     }
@@ -1634,14 +1677,19 @@ fn match_disparity(@builtin(global_invocation_id) gid: vec3<u32>) {
   }
 
   let meanCost = bestCost / sampleCount;
-  let outIdx = gid.y * params.width + gid.x;
-  if (meanCost > params.maxCostNorm) {
+  var ambiguous = false;
+  for (var k = 0; k < 4; k = k + 1) {
+    if (abs(minimaD[k] - bestD) > 1 && minima[k] <= bestCost * 1.1 + 1e-4) {
+      ambiguous = true;
+    }
+  }
+  if (searchLimit < 2 || meanCost > params.maxCostNorm || ambiguous) {
     rawDisp[outIdx] = -1.0;
     return;
   }
 
   var sub = f32(bestD);
-  if (bestD > 0 && bestD < maxD) {
+  if (bestD > 0 && bestD < searchLimit) {
     let denom = 2.0 * (cAtBestMinus1 - 2.0 * bestCost + cAtBestPlus1);
     if (denom > 1e-4) {
       let delta = clamp((cAtBestMinus1 - cAtBestPlus1) / denom, -0.5, 0.5);
@@ -1661,7 +1709,13 @@ fn median_filter_3x3(@builtin(global_invocation_id) gid: vec3<u32>) {
   }
   let idx = gid.y * params.width + gid.x;
   let center = filtInDisp[idx];
-  if (center < 0.0) {
+  let rx = i32(gid.x) - i32(round(max(0.0, center)));
+  var consistent = false;
+  if (rx >= 0 && rx < i32(params.width)) {
+    let reverseD = filtInDisp[params.width * params.height + gid.y * params.width + u32(rx)];
+    consistent = reverseD >= 0.0 && abs(reverseD - center) <= 1.0;
+  }
+  if (center < 0.0 || !consistent) {
     filtOutDisp[idx] = -1.0;
     return;
   }
@@ -1678,7 +1732,13 @@ fn median_filter_3x3(@builtin(global_invocation_id) gid: vec3<u32>) {
     for (var dx: i32 = -1; dx <= 1; dx = dx + 1) {
       let sx = clamp(ix + dx, 0, w - 1);
       let v = filtInDisp[u32(sy * w + sx)];
-      if (v >= 0.0) {
+      let neighborRx = sx - i32(round(max(0.0, v)));
+      var neighborConsistent = false;
+      if (neighborRx >= 0 && neighborRx < w) {
+        let reverseV = filtInDisp[params.width * params.height + u32(sy * w + neighborRx)];
+        neighborConsistent = reverseV >= 0.0 && abs(reverseV - v) <= 1.0;
+      }
+      if (v >= 0.0 && neighborConsistent) {
         vals[cnt] = v;
         cnt = cnt + 1u;
       }
@@ -1849,7 +1909,7 @@ export async function createWebGpuStereoComputeEngine(): Promise<WebGpuStereoCom
     rightCensusBuf = device.createBuffer({ size: byteSize, usage: WEBGPU_BUFFER_USAGE.STORAGE });
     leftGradBuf = device.createBuffer({ size: byteSize, usage: WEBGPU_BUFFER_USAGE.STORAGE });
     rightGradBuf = device.createBuffer({ size: byteSize, usage: WEBGPU_BUFFER_USAGE.STORAGE });
-    rawDispBuf = device.createBuffer({ size: byteSize, usage: WEBGPU_BUFFER_USAGE.STORAGE });
+    rawDispBuf = device.createBuffer({ size: byteSize * 2, usage: WEBGPU_BUFFER_USAGE.STORAGE });
     outDispBuf = device.createBuffer({
       size: byteSize,
       usage: WEBGPU_BUFFER_USAGE.STORAGE | WEBGPU_BUFFER_USAGE.COPY_SRC,
@@ -1971,7 +2031,7 @@ export async function createWebGpuStereoComputeEngine(): Promise<WebGpuStereoCom
         const pass = encoder.beginComputePass();
         pass.setPipeline(pipeline);
         pass.setBindGroup(0, bg);
-        pass.dispatchWorkgroups(wgX, wgY, 1);
+        pass.dispatchWorkgroups(wgX, wgY, pipeline === matchPipeline ? 2 : 1);
         pass.end();
       }
 
@@ -2181,15 +2241,17 @@ export function createStereoWorkerProcessor(
                 : 'auto';
         const concatNote =
           splitResult.splitCount > 0 && created.backend.configuredProviders.includes('webgpu')
-            ? `Concat分割(${splitResult.splitCount}箇所・最大${splitResult.originalMaxConcatInputs}→4入力ツリー化)でWebGPU有効化`
+            ? `Concat分割(${splitResult.splitCount}箇所・最大${splitResult.originalMaxConcatInputs}→4入力ツリー化)でWebGPU向けにモデルを準備`
             : null;
         const adjustedBackend: OnnxBackendInfo = {
           ...created.backend,
           requestedProvider,
-          fallbackReason:
-            created.backend.fallbackReason ??
-            staticCompatibility?.reason ??
-            concatNote,
+          fallbackReason: created.backend.fallbackReason,
+          configurationNote: [
+            backendPref === 'auto' && !msg.profile.preferWebGpu
+              ? 'モデルの互換性を優先し、自動設定ではWASMを選択' : null,
+            staticCompatibility?.reason, concatNote,
+          ].filter(Boolean).join(' / ') || undefined,
         };
         activeProfile = msg.profile;
         activeSession = created.session;
@@ -2432,6 +2494,7 @@ export function createStereoWorkerProcessor(
               const errMsg = runError instanceof Error ? runError.message : String(runError);
               activeBackend = {
                 ...recovered.backend,
+                configurationNote: activeBackend.configurationNote,
                 requestedProvider: activeBackend.requestedProvider,
                 fallbackReason: `WebGPU kernel runtime failure (${errMsg}); fell back to WASM`,
               };

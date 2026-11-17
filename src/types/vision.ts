@@ -271,6 +271,8 @@ export interface OnnxBackendInfo {
   requestedProvider:'auto'|'webgpu'|'wasm'|'unreported'|'cpu';
   configuredProviders:readonly string[];
   fallbackReason:string|null;
+  /** Configuration decisions/graph preparation, not a failed GPU attempt. */
+  configurationNote?:string;
   actualBackend:'unmeasured';
 }
 

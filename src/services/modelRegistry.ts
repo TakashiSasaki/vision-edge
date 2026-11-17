@@ -324,7 +324,7 @@ export function backendDescription(state: ModelState): string {
     }
     const requested =
       backend?.requestedProvider === 'auto'
-        ? '自動(WebGPU優先)'
+        ? '自動（互換性優先）'
         : backend?.requestedProvider === 'webgpu'
           ? 'WebGPU優先'
           : backend?.requestedProvider === 'wasm'
@@ -333,7 +333,7 @@ export function backendDescription(state: ModelState): string {
     const configured = backend?.configuredProviders.length
       ? backend.configuredProviders.map(p => (p === 'wasm' ? 'WASM' : 'WebGPU')).join(' → ')
       : '未報告';
-    return `Stereo ONNX 要求: ${requested}／設定: ${configured}${backend?.fallbackReason ? `／理由: ${backend.fallbackReason.slice(0, 180)}` : ''}（実行バックエンドは未計測）`;
+    return `Stereo ONNX 要求: ${requested}／設定優先順位: ${configured}${backend?.configurationNote ? `／設定の説明: ${backend.configurationNote}` : ''}${backend?.fallbackReason ? `／切替理由: ${backend.fallbackReason.slice(0, 180)}` : ''}（各演算の実行先・物理GPU使用は未計測）`;
   }
   if(state.model==='mediapipe'||state.model==='selfie-segmenter')return `${state.delegate} delegate 指定・初期化済み（GPU実動作は未計測）`;
   const backend=state.backend;
