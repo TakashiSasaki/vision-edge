@@ -70,11 +70,24 @@ function calculateIoU(
 export class YoloSegEngine implements YoloSegTask {
   private inputCanvas: HTMLCanvasElement | null = null;
   private inputCtx: CanvasRenderingContext2D | null = null;
+  private maskPool: [HTMLCanvasElement[], HTMLCanvasElement[]] = [[], []];
+  private maskPoolIndex = 0;
   private readonly owner: OnnxSessionOwner;
 
   constructor(private readonly session: ort.InferenceSession, public readonly backend: OnnxBackendInfo = unknownOnnxBackend()) {this.owner=new OnnxSessionOwner(session,'YOLO-seg');}
 
   public close(): Promise<void> {
+    if (this.inputCanvas) {
+      this.inputCanvas.width = 0;
+      this.inputCanvas.height = 0;
+    }
+    for (const slot of this.maskPool) {
+      for (const c of slot) {
+        c.width = 0;
+        c.height = 0;
+      }
+      slot.length = 0;
+    }
     this.inputCanvas=null;this.inputCtx=null;return this.owner.close();
   }
 
@@ -269,15 +282,24 @@ export class YoloSegEngine implements YoloSegTask {
     const protoW = protoDims.length >= 4 ? protoDims[3] : 160;
     const protoArea = protoW * protoH;
 
+    const activeMaskSlot = this.maskPool[this.maskPoolIndex];
+    this.maskPoolIndex = (this.maskPoolIndex + 1) & 1;
+
     for (let idx = 0; idx < selected.length; idx++) {
       const item = selected[idx];
       const colorHex = getCategoryColor(item.className);
       const [cr, cg, cb] = parseHexColor(colorHex);
 
-      const maskCanvas = document.createElement('canvas');
-      maskCanvas.width = protoW;
-      maskCanvas.height = protoH;
-      const maskCtx = maskCanvas.getContext('2d');
+      let maskCanvas = activeMaskSlot[idx];
+      if (!maskCanvas) {
+        maskCanvas = document.createElement('canvas');
+        activeMaskSlot[idx] = maskCanvas;
+      }
+      if (maskCanvas.width !== protoW || maskCanvas.height !== protoH) {
+        maskCanvas.width = protoW;
+        maskCanvas.height = protoH;
+      }
+      const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
 
       if (maskCtx) {
         const maskImgData = maskCtx.createImageData(protoW, protoH);

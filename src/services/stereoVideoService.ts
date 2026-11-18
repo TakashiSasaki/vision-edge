@@ -210,6 +210,43 @@ export function formatVideoTimecode(timeSec: number, fps: number): {
   };
 }
 
+function aperiodicSurfaceHash(x: number, y: number, seed: number): number {
+  let h =
+    Math.imul(x ^ 0x27d4eb2d, 0x165667b1) ^
+    Math.imul(y ^ 0x85ebca6b, 0xc2b2ae35) ^
+    Math.imul(seed ^ 0x9e3779b9, 0x27d4eb2f);
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+
+function interpolateSurfaceRgb(
+  baseRgb: readonly [number, number, number],
+  accentRgb: readonly [number, number, number],
+  highlightRgb: readonly [number, number, number],
+  t: number
+): string {
+  const ct = Math.max(0, Math.min(1, t));
+  let r: number;
+  let g: number;
+  let b: number;
+  if (ct < 0.5) {
+    const u = ct * 2;
+    r = Math.round(baseRgb[0] + (accentRgb[0] - baseRgb[0]) * u);
+    g = Math.round(baseRgb[1] + (accentRgb[1] - baseRgb[1]) * u);
+    b = Math.round(baseRgb[2] + (accentRgb[2] - baseRgb[2]) * u);
+  } else {
+    const u = (ct - 0.5) * 2;
+    r = Math.round(accentRgb[0] + (highlightRgb[0] - accentRgb[0]) * u);
+    g = Math.round(accentRgb[1] + (highlightRgb[1] - accentRgb[1]) * u);
+    b = Math.round(accentRgb[2] + (highlightRgb[2] - accentRgb[2]) * u);
+  }
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 function drawRichTexturedRect(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -232,18 +269,49 @@ function drawRichTexturedRect(
   ctx.fillStyle = `rgb(${baseRgb[0]}, ${baseRgb[1]}, ${baseRgb[2]})`;
   ctx.fillRect(rx, ry, rw, rh);
 
-  const cell = 8;
-  for (let py = 0; py < rh; py += cell) {
-    const gy = Math.floor(py / cell);
-    for (let px = 0; px < rw; px += cell) {
-      const gx = Math.floor((px + patternShiftX) / cell);
-      const hash = ((gx * 73 + gy * 179 + seed * 43) >>> 0) % 11;
-      if (hash <= 3) {
-        ctx.fillStyle = `rgb(${accentRgb[0]}, ${accentRgb[1]}, ${accentRgb[2]})`;
-        ctx.fillRect(rx + px + 1, ry + py + 1, Math.min(cell - 2, rw - px - 1), Math.min(cell - 2, rh - py - 1));
-      } else if (hash === 4 || hash === 5) {
-        ctx.fillStyle = `rgb(${highlightRgb[0]}, ${highlightRgb[1]}, ${highlightRgb[2]})`;
-        ctx.fillRect(rx + px + 2, ry + py + 2, Math.min(cell - 4, rw - px - 2), Math.min(cell - 4, rh - py - 2));
+  // Layer 1: Coarse aperiodic macro-patches (19x15) with low-frequency spatial modulation
+  // Eliminates the 88px (11*8) periodic wallpaper ambiguity across wide disparity search ranges (0..192px)
+  const cw = 19;
+  const ch = 15;
+  for (let py = 0; py < rh; py += ch) {
+    const gy = Math.floor(py / ch);
+    const ny = py / Math.max(1, rh);
+    const bh = Math.min(ch, rh - py);
+    for (let px = 0; px < rw; px += cw) {
+      const gx = Math.floor((px + patternShiftX) / cw);
+      const nx = (px + patternShiftX) / Math.max(1, rw);
+      const bw = Math.min(cw, rw - px);
+      const hVal = aperiodicSurfaceHash(gx, gy, seed);
+      const globalWave =
+        0.5 + 0.32 * Math.sin(nx * 4.1 + seed * 0.7) + 0.18 * Math.cos(ny * 3.3 - seed * 0.5);
+      const t = 0.55 * globalWave + 0.45 * hVal;
+      ctx.fillStyle = interpolateSurfaceRgb(baseRgb, accentRgb, highlightRgb, t);
+      ctx.fillRect(rx + px, ry + py, bw, bh);
+    }
+  }
+
+  // Layer 2: Jittered fine aperiodic features (9x7) without uniform 8x8 grid borders
+  const fw = 9;
+  const fh = 7;
+  for (let py = 0; py < rh; py += fh) {
+    const gy = Math.floor(py / fh);
+    const ny = py / Math.max(1, rh);
+    for (let px = 0; px < rw; px += fw) {
+      const gx = Math.floor((px + patternShiftX) / fw);
+      const h1 = aperiodicSurfaceHash(gx, gy, seed + 79);
+      if (h1 < 0.38) continue;
+      const h2 = aperiodicSurfaceHash(gx, gy, seed + 193);
+      const nx = (px + patternShiftX) / Math.max(1, rw);
+      const globalWave =
+        0.5 + 0.32 * Math.sin(nx * 4.1 + seed * 0.7) + 0.18 * Math.cos(ny * 3.3 - seed * 0.5);
+      const t = 0.35 * globalWave + 0.65 * h2;
+      const jx = Math.floor((h1 - 0.38) * 4);
+      const jy = Math.floor(h2 * 3);
+      const pw = Math.min(fw - 1, rw - px - jx);
+      const ph = Math.min(fh - 1, rh - py - jy);
+      if (pw > 1 && ph > 1) {
+        ctx.fillStyle = interpolateSurfaceRgb(baseRgb, accentRgb, highlightRgb, t);
+        ctx.fillRect(rx + px + jx, ry + py + jy, pw, ph);
       }
     }
   }

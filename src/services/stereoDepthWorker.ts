@@ -195,6 +195,8 @@ export function computeSadDisparity(
 
   const bestCost = new Int32Array(n);
   bestCost.fill(0x7fffffff);
+  const secondBestCost = new Int32Array(n);
+  secondBestCost.fill(0x7fffffff);
   const bestDisp = new Int16Array(n);
   const prevCostAtBest = new Int32Array(n);
   const nextCostAtBest = new Int32Array(n);
@@ -204,6 +206,7 @@ export function computeSadDisparity(
   let prevCost = new Int32Array(n);
   let currCost = new Int32Array(n);
   const colSum = new Int32Array(width);
+  const costHistory = new Int32Array((maxD + 1) * n);
 
   for (let d = 0; d <= maxD; d++) {
     for (let y = 0; y < height; y++) {
@@ -260,9 +263,11 @@ export function computeSadDisparity(
     }
 
     const regPenalty = d;
+    const dBase = d * n;
 
     for (let i = 0; i < n; i++) {
       const c = currCost[i] + regPenalty;
+      costHistory[dBase + i] = c;
       if (d > 0 && bestDisp[i] === d - 1) {
         nextCostAtBest[i] = c;
       }
@@ -279,7 +284,20 @@ export function computeSadDisparity(
     currCost = tmp;
   }
 
-  // 3. Subpixel parabolic refinement + validity gating
+  for (let d = 0; d <= maxD; d++) {
+    const dBase = d * n;
+    for (let i = 0; i < n; i++) {
+      const bd = bestDisp[i];
+      if (d - bd >= 2 || bd - d >= 2) {
+        const c = costHistory[dBase + i];
+        if (c < secondBestCost[i]) {
+          secondBestCost[i] = c;
+        }
+      }
+    }
+  }
+
+  // 3. Subpixel parabolic refinement + validity & uniqueness gating
   const rawDisp = new Float32Array(n);
   const maxCostSum = maxMeanSad * winArea;
   let passCount = 0;
@@ -303,6 +321,16 @@ export function computeSadDisparity(
         continue;
       }
       const d = bestDisp[i];
+      // Reject high-disparity false matches in low-uniqueness / flat regions (sky, walls, compression blocks)
+      const cSecond = secondBestCost[i];
+      if (d > 16 && cSecond < 0x7fffffff) {
+        const uniqMargin = (cSecond - cBest) / Math.max(cBest, winArea * 3);
+        const localGrad = leftGrad[i];
+        if (uniqMargin < 0.12 || (localGrad < 4 && uniqMargin < 0.24)) {
+          rawDisp[i] = -1;
+          continue;
+        }
+      }
       let sub = d;
       if (d > 0 && d < maxD) {
         const cPrev = prevCostAtBest[i];
@@ -319,14 +347,15 @@ export function computeSadDisparity(
     }
   }
 
-  // 4. Lightweight 3x3 median filter to suppress isolated speckles
+  // 4. Edge-aware 5x5 strided median + bilateral filter to suppress real-video speckles
   const filtered = new Float32Array(n);
-  const windowVals = new Float32Array(9);
+  const windowVals = new Float32Array(13);
   let validCount = 0;
 
+  const offsetsY = [-2, -2, -2, -1, -1, -1, 0, 0, 0, 1, 1, 1, 2];
+  const offsetsX = [-2, 0, 2, -1, 0, 1, -2, 0, 2, -1, 0, 1, 0];
+
   for (let y = 0; y < height; y++) {
-    const y0 = Math.max(0, y - 1);
-    const y2 = Math.min(height - 1, y + 1);
     for (let x = 0; x < width; x++) {
       const idx = y * width + x;
       const center = rawDisp[idx];
@@ -334,36 +363,50 @@ export function computeSadDisparity(
         filtered[idx] = -1;
         continue;
       }
-      const x0 = Math.max(0, x - 1);
-      const x2 = Math.min(width - 1, x + 1);
       let count = 0;
-      for (let yy = y0; yy <= y2; yy++) {
-        const r = yy * width;
-        for (let xx = x0; xx <= x2; xx++) {
-          const v = rawDisp[r + xx];
-          if (v >= 0) {
-            windowVals[count++] = v;
-          }
+      for (let k = 0; k < 13; k++) {
+        const sy = Math.max(0, Math.min(height - 1, y + offsetsY[k]));
+        const sx = Math.max(0, Math.min(width - 1, x + offsetsX[k]));
+        const v = rawDisp[sy * width + sx];
+        if (v >= 0) {
+          windowVals[count++] = v;
         }
       }
       if (count === 0) {
         filtered[idx] = -1;
-      } else if (count === 1) {
-        filtered[idx] = windowVals[0];
-        validCount++;
-      } else {
-        for (let a = 1; a < count; a++) {
-          const key = windowVals[a];
-          let b = a - 1;
-          while (b >= 0 && windowVals[b] > key) {
-            windowVals[b + 1] = windowVals[b];
-            b--;
-          }
-          windowVals[b + 1] = key;
-        }
-        filtered[idx] = windowVals[count >> 1];
-        validCount++;
+        continue;
       }
+      for (let a = 1; a < count; a++) {
+        const key = windowVals[a];
+        let b = a - 1;
+        while (b >= 0 && windowVals[b] > key) {
+          windowVals[b + 1] = windowVals[b];
+          b--;
+        }
+        windowVals[b + 1] = key;
+      }
+      const med = windowVals[count >> 1];
+      const baseDisp = Math.abs(center - med) > 4.5 ? med : center;
+      const centerGray = leftGray[idx];
+      let wSum = 0;
+      let dSum = 0;
+      for (let dy = -2; dy <= 2; dy++) {
+        const sy = Math.max(0, Math.min(height - 1, y + dy));
+        const rOff = sy * width;
+        for (let dx = -2; dx <= 2; dx++) {
+          const sx = Math.max(0, Math.min(width - 1, x + dx));
+          const nIdx = rOff + sx;
+          const nv = rawDisp[nIdx];
+          if (nv >= 0 && Math.abs(nv - med) <= 5.0) {
+            const gDiff = Math.abs(leftGray[nIdx] - centerGray);
+            const w = 1 / (1 + gDiff * 0.08);
+            wSum += w;
+            dSum += w * nv;
+          }
+        }
+      }
+      filtered[idx] = wSum > 0 ? dSum / wSum : baseDisp;
+      validCount++;
     }
   }
 
@@ -1547,10 +1590,12 @@ fn build_descriptors(@builtin(global_invocation_id) gid: vec3<u32>) {
   let cL = grayLIn[idx];
   let cR = grayRIn[idx];
 
-  let gL = abs(sample_clamped(&grayLIn, ix + 1, iy, w, h) - sample_clamped(&grayLIn, ix - 1, iy, w, h));
-  let gR = abs(sample_clamped(&grayRIn, ix + 1, iy, w, h) - sample_clamped(&grayRIn, ix - 1, iy, w, h));
-  leftGrad[idx] = gL;
-  rightGrad[idx] = gR;
+  let gxL = abs(sample_clamped(&grayLIn, ix + 1, iy, w, h) - sample_clamped(&grayLIn, ix - 1, iy, w, h));
+  let gyL = abs(sample_clamped(&grayLIn, ix, iy + 1, w, h) - sample_clamped(&grayLIn, ix, iy - 1, w, h));
+  let gxR = abs(sample_clamped(&grayRIn, ix + 1, iy, w, h) - sample_clamped(&grayRIn, ix - 1, iy, w, h));
+  let gyR = abs(sample_clamped(&grayRIn, ix, iy + 1, w, h) - sample_clamped(&grayRIn, ix, iy - 1, w, h));
+  leftGrad[idx] = gxL + 0.5 * gyL;
+  rightGrad[idx] = gxR + 0.5 * gyR;
 
   var maskL: u32 = 0u;
   var maskR: u32 = 0u;
@@ -1560,10 +1605,10 @@ fn build_descriptors(@builtin(global_invocation_id) gid: vec3<u32>) {
       if (dx == 0 && dy == 0) {
         continue;
       }
-      if (sample_clamped(&grayLIn, ix + dx, iy + dy, w, h) > cL + 1.0) {
+      if (sample_clamped(&grayLIn, ix + dx, iy + dy, w, h) > cL + 1.25) {
         maskL = maskL | (1u << bit);
       }
-      if (sample_clamped(&grayRIn, ix + dx, iy + dy, w, h) > cR + 1.0) {
+      if (sample_clamped(&grayRIn, ix + dx, iy + dy, w, h) > cR + 1.25) {
         maskR = maskR | (1u << bit);
       }
       bit = bit + 1u;
@@ -1595,12 +1640,26 @@ fn match_disparity(@builtin(global_invocation_id) gid: vec3<u32>) {
 
   var bestD: i32 = 0;
   var bestCost: f32 = 1e20;
+  var secondBestCost: f32 = 1e20;
   var cAtBestMinus1: f32 = 1e20;
   var cAtBestPlus1: f32 = 1e20;
   var prevCost: f32 = 1e20;
 
   let side = r * 2 + 1;
   let sampleCount = f32(side * side);
+
+  var gradSum: f32 = 0.0;
+  for (var ky: i32 = -r; ky <= r; ky = ky + 1) {
+    let sy = clamp(iy + ky, 0, h - 1);
+    let rowBase = sy * w;
+    for (var kx: i32 = -r; kx <= r; kx = kx + 1) {
+      let lx = clamp(ix + kx, 0, w - 1);
+      gradSum = gradSum + mLeftGrad[u32(rowBase + lx)];
+    }
+  }
+  let meanGrad = gradSum / sampleCount;
+
+  var costHist: array<f32, 96>;
 
   for (var d: i32 = 0; d <= maxD; d = d + 1) {
     var accCost: f32 = 0.0;
@@ -1614,13 +1673,16 @@ fn match_disparity(@builtin(global_invocation_id) gid: vec3<u32>) {
         let li = u32(rowBase + lx);
         let ri = u32(rowBase + rx);
         let cDiff = f32(countOneBits(mLeftCensus[li] ^ mRightCensus[ri]));
-        let lDiff = abs(mLeftGray[li] - mRightGray[ri]);
-        let gDiff = abs(mLeftGrad[li] - mRightGrad[ri]);
-        let borderPenalty = select(0.0, 26.0, rxRaw < 0);
-        accCost = accCost + (3.2 * cDiff + 0.22 * lDiff + 0.16 * gDiff + borderPenalty);
+        let lDiff = min(abs(mLeftGray[li] - mRightGray[ri]), 42.0);
+        let gDiff = min(abs(mLeftGrad[li] - mRightGrad[ri]), 36.0);
+        let borderPenalty = select(0.0, 28.0, rxRaw < 0);
+        accCost = accCost + (3.0 * cDiff + 0.24 * lDiff + 0.20 * gDiff + borderPenalty);
       }
     }
-    let totalCost = accCost + 0.08 * f32(d) * sampleCount;
+    let totalCost = accCost + 0.09 * f32(d) * sampleCount;
+    if (d < 96) {
+      costHist[u32(d)] = totalCost;
+    }
     if (d > 0 && bestD == d - 1) {
       cAtBestPlus1 = totalCost;
     }
@@ -1633,9 +1695,30 @@ fn match_disparity(@builtin(global_invocation_id) gid: vec3<u32>) {
     prevCost = totalCost;
   }
 
+  let histLimit = min(maxD, 95);
+  for (var d: i32 = 0; d <= histLimit; d = d + 1) {
+    if (abs(d - bestD) >= 2) {
+      let c = costHist[u32(d)];
+      if (c < secondBestCost) {
+        secondBestCost = c;
+      }
+    }
+  }
+
   let meanCost = bestCost / sampleCount;
   let outIdx = gid.y * params.width + gid.x;
   if (meanCost > params.maxCostNorm) {
+    rawDisp[outIdx] = -1.0;
+    return;
+  }
+
+  // Reject ambiguous high-disparity false peaks in low-texture / compressed real-world footage
+  let uniqRatio = (secondBestCost - bestCost) / max(bestCost, sampleCount * 2.5);
+  if (bestD > 16 && (uniqRatio < 0.11 || (meanGrad < 4.5 && uniqRatio < 0.22))) {
+    rawDisp[outIdx] = -1.0;
+    return;
+  }
+  if (meanGrad < 2.2 && uniqRatio < 0.08 && bestD > 8) {
     rawDisp[outIdx] = -1.0;
     return;
   }
@@ -1653,6 +1736,7 @@ fn match_disparity(@builtin(global_invocation_id) gid: vec3<u32>) {
 
 @group(0) @binding(1) var<storage, read> filtInDisp: array<f32>;
 @group(0) @binding(2) var<storage, read_write> filtOutDisp: array<f32>;
+@group(0) @binding(3) var<storage, read> filtLeftGray: array<f32>;
 
 @compute @workgroup_size(16, 16)
 fn median_filter_3x3(@builtin(global_invocation_id) gid: vec3<u32>) {
@@ -1670,18 +1754,20 @@ fn median_filter_3x3(@builtin(global_invocation_id) gid: vec3<u32>) {
   let h = i32(params.height);
   let ix = i32(gid.x);
   let iy = i32(gid.y);
-  var vals: array<f32, 9>;
-  var cnt: u32 = 0u;
 
-  for (var dy: i32 = -1; dy <= 1; dy = dy + 1) {
-    let sy = clamp(iy + dy, 0, h - 1);
-    for (var dx: i32 = -1; dx <= 1; dx = dx + 1) {
-      let sx = clamp(ix + dx, 0, w - 1);
-      let v = filtInDisp[u32(sy * w + sx)];
-      if (v >= 0.0) {
-        vals[cnt] = v;
-        cnt = cnt + 1u;
-      }
+  // 13-tap 5x5 strided median to reject macroblock speckles + 5x5 edge-aware bilateral average
+  var vals: array<f32, 13>;
+  var cnt: u32 = 0u;
+  let offX = array<i32, 13>(-2, 0, 2, -1, 0, 1, -2, 0, 2, -1, 0, 1, 0);
+  let offY = array<i32, 13>(-2, -2, -2, -1, -1, -1, 0, 0, 0, 1, 1, 1, 2);
+
+  for (var k: u32 = 0u; k < 13u; k = k + 1u) {
+    let sx = clamp(ix + offX[k], 0, w - 1);
+    let sy = clamp(iy + offY[k], 0, h - 1);
+    let v = filtInDisp[u32(sy * w + sx)];
+    if (v >= 0.0) {
+      vals[cnt] = v;
+      cnt = cnt + 1u;
     }
   }
 
@@ -1700,7 +1786,28 @@ fn median_filter_3x3(@builtin(global_invocation_id) gid: vec3<u32>) {
     vals[u32(b + 1)] = key;
   }
 
-  filtOutDisp[idx] = vals[cnt >> 1u];
+  let med = vals[cnt >> 1u];
+  let centerLum = filtLeftGray[idx];
+  var wSum: f32 = 0.0;
+  var dSum: f32 = 0.0;
+
+  for (var dy: i32 = -2; dy <= 2; dy = dy + 1) {
+    let sy = clamp(iy + dy, 0, h - 1);
+    let rBase = sy * w;
+    for (var dx: i32 = -2; dx <= 2; dx = dx + 1) {
+      let sx = clamp(ix + dx, 0, w - 1);
+      let nIdx = u32(rBase + sx);
+      let nv = filtInDisp[nIdx];
+      if (nv >= 0.0 && abs(nv - med) <= 4.5) {
+        let lumDiff = abs(filtLeftGray[nIdx] - centerLum);
+        let weight = exp(-lumDiff * 0.06);
+        wSum = wSum + weight;
+        dSum = dSum + weight * nv;
+      }
+    }
+  }
+
+  filtOutDisp[idx] = select(med, dSum / wSum, wSum > 1e-4);
 }
 `;
 
@@ -1900,6 +2007,7 @@ export async function createWebGpuStereoComputeEngine(): Promise<WebGpuStereoCom
         { binding: 0, resource: { buffer: paramsBuffer } },
         { binding: 1, resource: { buffer: rawDispBuf } },
         { binding: 2, resource: { buffer: outDispBuf } },
+        { binding: 3, resource: { buffer: leftGrayBuf } },
       ],
     });
     allocatedPixels = pixelCount;
@@ -1930,7 +2038,7 @@ export async function createWebGpuStereoComputeEngine(): Promise<WebGpuStereoCom
       const effectiveMeanDiff = Math.abs(meanDiff) >= 2 ? meanDiff : 0;
 
       const maxDisp = Math.max(4, Math.min(width - 2, Math.floor(options.maxDisparity)));
-      const aggRadius = options.windowSize === 9 ? 2 : options.windowSize === 7 ? 2 : 1;
+      const aggRadius = options.windowSize === 9 ? 4 : options.windowSize === 7 ? 3 : 2;
       const confThresh = Math.max(0, Math.min(1, options.confidenceThreshold));
       const maxCostNorm = Math.max(16, 62 - confThresh * 34);
 
@@ -2406,6 +2514,8 @@ export function createStereoWorkerProcessor(
           let results: Record<string, ort.Tensor>;
           try {
             results = await activeSession.run(feeds);
+            // Once the first frame succeeds on WebGPU, free the fallback ONNX byte buffer (10-25MB)
+            activeOnnxBytes = null;
           } catch (runError) {
             if (
               !attemptedWasmFallback &&

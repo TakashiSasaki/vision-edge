@@ -44,11 +44,29 @@ interface Snapshot {
 export class SegFormerEngine implements SegFormerTask {
     private inputCanvas: HTMLCanvasElement | null = null;
     private inputCtx: CanvasRenderingContext2D | null = null;
+    private maskSlots: [HTMLCanvasElement, HTMLCanvasElement] | null = null;
+    private maskSlotIndex = 0;
     private readonly owner: OnnxSessionOwner;
     private readonly snapshots = new WeakMap<DetectedObject[], Snapshot>();
     private accepted: Snapshot | null = null;
     constructor(private readonly session: ort.InferenceSession, public readonly backend: OnnxBackendInfo = unknownOnnxBackend()) { this.owner = new OnnxSessionOwner(session, 'SegFormer'); }
-    close(): Promise<void> { this.clearResult(); this.inputCanvas = null; this.inputCtx = null; return this.owner.close(); }
+    close(): Promise<void> {
+        this.clearResult();
+        if (this.inputCanvas) {
+            this.inputCanvas.width = 0;
+            this.inputCanvas.height = 0;
+        }
+        if (this.maskSlots) {
+            for (const c of this.maskSlots) {
+                c.width = 0;
+                c.height = 0;
+            }
+            this.maskSlots = null;
+        }
+        this.inputCanvas = null;
+        this.inputCtx = null;
+        return this.owner.close();
+    }
     clearResult = () => { this.accepted = null; };
     // Only the engine's generation-checked acceptance publishes an inspector grid.
     acceptResult(objects: DetectedObject[]) { this.accepted = this.owner.closed ? null : this.snapshots.get(objects) ?? null; return this.accepted; }
@@ -97,10 +115,15 @@ export class SegFormerEngine implements SegFormerTask {
                 const values = logits.data as Float32Array;
                 if (!Number.isSafeInteger(width) || width <= 0 || !Number.isSafeInteger(height) || height <= 0 || values.length !== classes * area || !values.every(Number.isFinite))
                     throw new OnnxInferenceError('SegFormer', 'output', 'invalid logits data/dimensions');
-                const maskCanvas = document.createElement('canvas');
-                maskCanvas.width = width;
-                maskCanvas.height = height;
-                const out = maskCanvas.getContext('2d');
+                this.maskSlots ??= [document.createElement('canvas'), document.createElement('canvas')];
+                const candidate = this.maskSlots[this.maskSlotIndex];
+                this.maskSlotIndex = (this.maskSlotIndex + 1) & 1;
+                const maskCanvas = candidate === this.accepted?.maskCanvas ? this.maskSlots[this.maskSlotIndex] : candidate;
+                if (maskCanvas.width !== width || maskCanvas.height !== height) {
+                    maskCanvas.width = width;
+                    maskCanvas.height = height;
+                }
+                const out = maskCanvas.getContext('2d', { willReadFrequently: true });
                 if (!out)
                     throw new OnnxInferenceError('SegFormer', 'output', 'mask context unavailable');
                 const image = out.createImageData(width, height), grid = new Uint8Array(area), scores = new Float32Array(area), counts = new Uint32Array(classes), sums = new Float64Array(classes);

@@ -587,12 +587,15 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
 
       if (stereoVideoSource.kind === 'preset') {
         if (hasDecodedVideoFrame && v) {
-          if (sbsCanvas.width !== v.videoWidth || sbsCanvas.height !== v.videoHeight) {
-            sbsCanvas.width = v.videoWidth;
-            sbsCanvas.height = v.videoHeight;
+          const presetMeta = STEREO_VIDEO_PRESETS[stereoVideoSource.presetId];
+          const targetW = presetMeta ? presetMeta.eyeWidth * 2 : v.videoWidth;
+          const targetH = presetMeta ? presetMeta.eyeHeight : v.videoHeight;
+          if (sbsCanvas.width !== targetW || sbsCanvas.height !== targetH) {
+            sbsCanvas.width = targetW;
+            sbsCanvas.height = targetH;
           }
           const ctx = sbsCanvas.getContext('2d');
-          ctx?.drawImage(v, 0, 0, sbsCanvas.width, sbsCanvas.height);
+          ctx?.drawImage(v, 0, 0, targetW, targetH);
           const refRegions = getStereoVideoReferenceRegions(
             stereoVideoSource.presetId,
             timeSec

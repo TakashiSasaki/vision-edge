@@ -99,18 +99,66 @@ function drawTexturedPanel(
   seed: number,
   label?: string
 ) {
+  const hash2d = (gx: number, gy: number, s: number): number => {
+    let hv =
+      Math.imul(gx ^ 0x27d4eb2d, 0x165667b1) ^
+      Math.imul(gy ^ 0x85ebca6b, 0xc2b2ae35) ^
+      Math.imul(s ^ 0x9e3779b9, 0x27d4eb2f);
+    hv ^= hv >>> 16;
+    hv = Math.imul(hv, 0x85ebca6b);
+    hv ^= hv >>> 13;
+    hv = Math.imul(hv, 0xc2b2ae35);
+    hv ^= hv >>> 16;
+    return (hv >>> 0) / 4294967296;
+  };
+
   ctx.fillStyle = `rgb(${baseRgb[0]}, ${baseRgb[1]}, ${baseRgb[2]})`;
   ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = `rgb(${accentRgb[0]}, ${accentRgb[1]}, ${accentRgb[2]})`;
-  const cell = 10;
-  for (let py = 0; py < h; py += cell) {
-    for (let px = 0; px < w; px += cell) {
-      const hash = ((px * 73 + py * 179 + seed * 31) >>> 0) % 7;
-      if (hash <= 2) {
-        ctx.fillRect(x + px + 1, y + py + 1, cell - 3, cell - 3);
+
+  const cw = 19;
+  const ch = 15;
+  for (let py = 0; py < h; py += ch) {
+    const gy = Math.floor(py / ch);
+    const ny = py / Math.max(1, h);
+    const bh = Math.min(ch, h - py);
+    for (let px = 0; px < w; px += cw) {
+      const gx = Math.floor(px / cw);
+      const nx = px / Math.max(1, w);
+      const bw = Math.min(cw, w - px);
+      const hVal = hash2d(gx, gy, seed);
+      const wave = 0.5 + 0.3 * Math.sin(nx * 4.1 + seed * 0.7) + 0.2 * Math.cos(ny * 3.3 - seed * 0.5);
+      const t = Math.max(0, Math.min(1, 0.55 * wave + 0.45 * hVal));
+      const r = Math.round(baseRgb[0] + (accentRgb[0] - baseRgb[0]) * t);
+      const g = Math.round(baseRgb[1] + (accentRgb[1] - baseRgb[1]) * t);
+      const b = Math.round(baseRgb[2] + (accentRgb[2] - baseRgb[2]) * t);
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+      ctx.fillRect(x + px, y + py, bw, bh);
+    }
+  }
+
+  const fw = 9;
+  const fh = 7;
+  for (let py = 0; py < h; py += fh) {
+    const gy = Math.floor(py / fh);
+    for (let px = 0; px < w; px += fw) {
+      const gx = Math.floor(px / fw);
+      const h1 = hash2d(gx, gy, seed + 79);
+      if (h1 < 0.4) continue;
+      const h2 = hash2d(gx, gy, seed + 193);
+      const jx = Math.floor((h1 - 0.4) * 4);
+      const jy = Math.floor(h2 * 3);
+      const pw = Math.min(fw - 1, w - px - jx);
+      const ph = Math.min(fh - 1, h - py - jy);
+      if (pw > 1 && ph > 1) {
+        const r = Math.round(baseRgb[0] + (accentRgb[0] - baseRgb[0]) * h2);
+        const g = Math.round(baseRgb[1] + (accentRgb[1] - baseRgb[1]) * h2);
+        const b = Math.round(baseRgb[2] + (accentRgb[2] - baseRgb[2]) * h2);
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(x + px + jx, y + py + jy, pw, ph);
       }
     }
   }
+
   ctx.strokeStyle = 'rgba(255,255,255,0.65)';
   ctx.lineWidth = 2;
   ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);

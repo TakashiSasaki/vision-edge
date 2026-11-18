@@ -393,6 +393,67 @@ export function splitSideBySideFrame(
   };
 }
 
+interface StereoCanvasSlot {
+  left: HTMLCanvasElement;
+  right: HTMLCanvasElement;
+  overlay: HTMLCanvasElement;
+}
+
+class StereoCanvasSlotRing {
+  private slots: [StereoCanvasSlot, StereoCanvasSlot] | null = null;
+  private index = 0;
+
+  nextSlot(
+    leftWidth: number,
+    leftHeight: number,
+    overlayWidth = leftWidth,
+    overlayHeight = leftHeight
+  ): StereoCanvasSlot {
+    this.slots ??= [
+      {
+        left: document.createElement('canvas'),
+        right: document.createElement('canvas'),
+        overlay: document.createElement('canvas'),
+      },
+      {
+        left: document.createElement('canvas'),
+        right: document.createElement('canvas'),
+        overlay: document.createElement('canvas'),
+      },
+    ];
+    const slot = this.slots[this.index];
+    this.index = (this.index + 1) & 1;
+    for (const c of [slot.left, slot.right]) {
+      if (c.width !== leftWidth || c.height !== leftHeight) {
+        c.width = leftWidth;
+        c.height = leftHeight;
+      }
+    }
+    if (slot.overlay.width !== overlayWidth || slot.overlay.height !== overlayHeight) {
+      slot.overlay.width = overlayWidth;
+      slot.overlay.height = overlayHeight;
+    }
+    return slot;
+  }
+
+  release(): void {
+    if (!this.slots) return;
+    for (const slot of this.slots) {
+      for (const c of [slot.left, slot.right, slot.overlay]) {
+        c.width = 0;
+        c.height = 0;
+      }
+    }
+    this.slots = null;
+  }
+}
+
+function zeroCanvas(canvas: HTMLCanvasElement | null): void {
+  if (!canvas) return;
+  canvas.width = 0;
+  canvas.height = 0;
+}
+
 function writeRgbaToCanvas(
   rgba: Uint8ClampedArray,
   width: number,
@@ -404,7 +465,7 @@ function writeRgbaToCanvas(
     canvas.width = width;
     canvas.height = height;
   }
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) return canvas;
   const img = ctx.createImageData(width, height);
   img.data.set(rgba);
@@ -568,10 +629,24 @@ function buildDepthMapData(
   };
 }
 
+let rerenderOverlaySlots: [HTMLCanvasElement, HTMLCanvasElement] | null = null;
+let rerenderOverlayIndex = 0;
+
 export function rerenderStereoDepthMap(
   depthMap: StereoDepthMapData,
   options: StereoDepthRunOptions
 ): StereoDepthMapData {
+  rerenderOverlaySlots ??= [
+    document.createElement('canvas'),
+    document.createElement('canvas'),
+  ];
+  const candidate = rerenderOverlaySlots[rerenderOverlayIndex];
+  rerenderOverlayIndex = (rerenderOverlayIndex + 1) & 1;
+  const targetOverlay =
+    candidate === depthMap.overlayCanvas
+      ? rerenderOverlaySlots[rerenderOverlayIndex]
+      : candidate;
+
   return buildDepthMapData(
     depthMap.disparity,
     depthMap.width,
@@ -584,7 +659,8 @@ export function rerenderStereoDepthMap(
       ...options,
       swapLeftRight: options.swapLeftRight ?? depthMap.swapLeftRight,
       rotate180: options.rotate180 ?? depthMap.rotate180,
-    }
+    },
+    targetOverlay
   );
 }
 
@@ -603,6 +679,7 @@ export class StereoSadEngine implements StereoDepthTask {
 
   private leftScratch: HTMLCanvasElement | null = null;
   private rightScratch: HTMLCanvasElement | null = null;
+  private readonly canvasRing = new StereoCanvasSlotRing();
   private closed = false;
 
   estimateForVideo(
@@ -660,26 +737,21 @@ export class StereoSadEngine implements StereoDepthTask {
       sourceDisparity[i] = v >= 0 ? v * dispScaleToSource : -1;
     }
 
-    // Clone scratch canvases so the returned DetectionFrame owns immutable snapshots
-    const leftCopy = document.createElement('canvas');
-    leftCopy.width = targetW;
-    leftCopy.height = targetH;
-    leftCopy.getContext('2d')?.drawImage(leftCanvas, 0, 0);
-
-    const rightCopy = document.createElement('canvas');
-    rightCopy.width = targetW;
-    rightCopy.height = targetH;
-    rightCopy.getContext('2d')?.drawImage(rightCanvas, 0, 0);
+    // Reuse double-buffered slot canvases to avoid per-frame GPU texture allocations
+    const slot = this.canvasRing.nextSlot(targetW, targetH, targetW, targetH);
+    slot.left.getContext('2d', { willReadFrequently: true })?.drawImage(leftCanvas, 0, 0);
+    slot.right.getContext('2d', { willReadFrequently: true })?.drawImage(rightCanvas, 0, 0);
 
     return buildDepthMapData(
       sourceDisparity,
       targetW,
       targetH,
-      leftCopy,
-      rightCopy,
+      slot.left,
+      slot.right,
       sourceEyeW,
       sourceEyeH,
-      options
+      options,
+      slot.overlay
     );
   }
 
@@ -689,8 +761,11 @@ export class StereoSadEngine implements StereoDepthTask {
 
   close(): void {
     this.closed = true;
+    zeroCanvas(this.leftScratch);
+    zeroCanvas(this.rightScratch);
     this.leftScratch = null;
     this.rightScratch = null;
+    this.canvasRing.release();
   }
 }
 
@@ -699,6 +774,7 @@ export class StereoWgslEngine implements StereoDepthTask {
   private wgslEngine: WebGpuStereoComputeEngine | null;
   private leftScratch: HTMLCanvasElement | null = null;
   private rightScratch: HTMLCanvasElement | null = null;
+  private readonly canvasRing = new StereoCanvasSlotRing();
   private closed = false;
 
   private constructor(
@@ -825,25 +901,20 @@ export class StereoWgslEngine implements StereoDepthTask {
       sourceDisparity[i] = v >= 0 ? v * dispScaleToSource : -1;
     }
 
-    const leftCopy = document.createElement('canvas');
-    leftCopy.width = targetW;
-    leftCopy.height = targetH;
-    leftCopy.getContext('2d')?.drawImage(leftCanvas, 0, 0);
-
-    const rightCopy = document.createElement('canvas');
-    rightCopy.width = targetW;
-    rightCopy.height = targetH;
-    rightCopy.getContext('2d')?.drawImage(rightCanvas, 0, 0);
+    const slot = this.canvasRing.nextSlot(targetW, targetH, targetW, targetH);
+    slot.left.getContext('2d', { willReadFrequently: true })?.drawImage(leftCanvas, 0, 0);
+    slot.right.getContext('2d', { willReadFrequently: true })?.drawImage(rightCanvas, 0, 0);
 
     return buildDepthMapData(
       sourceDisparity,
       targetW,
       targetH,
-      leftCopy,
-      rightCopy,
+      slot.left,
+      slot.right,
       sourceEyeW,
       sourceEyeH,
-      options
+      options,
+      slot.overlay
     );
   }
 
@@ -853,8 +924,11 @@ export class StereoWgslEngine implements StereoDepthTask {
 
   close(): void {
     this.closed = true;
+    zeroCanvas(this.leftScratch);
+    zeroCanvas(this.rightScratch);
     this.leftScratch = null;
     this.rightScratch = null;
+    this.canvasRing.release();
     if (this.wgslEngine) {
       this.wgslEngine.destroy();
       this.wgslEngine = null;
@@ -879,6 +953,7 @@ export class StereoOnnxEngine implements StereoDepthTask {
   private attemptedWasmFallback = false;
   private leftScratch: HTMLCanvasElement | null = null;
   private rightScratch: HTMLCanvasElement | null = null;
+  private readonly canvasRing = new StereoCanvasSlotRing();
 
   constructor(
     session: ort.InferenceSession,
@@ -1085,25 +1160,25 @@ export class StereoOnnxEngine implements StereoDepthTask {
           scaledDisparity[i] = v >= 0 ? v * scaleToSource : -1;
         }
 
-        const leftCopy = document.createElement('canvas');
-        leftCopy.width = modelW;
-        leftCopy.height = modelH;
-        leftCopy.getContext('2d')?.drawImage(leftCanvas, 0, 0);
-
-        const rightCopy = document.createElement('canvas');
-        rightCopy.width = modelW;
-        rightCopy.height = modelH;
-        rightCopy.getContext('2d')?.drawImage(rightCanvas, 0, 0);
+        const slot = this.canvasRing.nextSlot(
+          modelW,
+          modelH,
+          extracted.width,
+          extracted.height
+        );
+        slot.left.getContext('2d', { willReadFrequently: true })?.drawImage(leftCanvas, 0, 0);
+        slot.right.getContext('2d', { willReadFrequently: true })?.drawImage(rightCanvas, 0, 0);
 
         return buildDepthMapData(
           scaledDisparity,
           extracted.width,
           extracted.height,
-          leftCopy,
-          rightCopy,
+          slot.left,
+          slot.right,
           sourceEyeW,
           sourceEyeH,
-          options
+          options,
+          slot.overlay
         );
       } finally {
         disposeTensors(createdTensors);
@@ -1116,8 +1191,11 @@ export class StereoOnnxEngine implements StereoDepthTask {
   }
 
   close(): Promise<void> {
+    zeroCanvas(this.leftScratch);
+    zeroCanvas(this.rightScratch);
     this.leftScratch = null;
     this.rightScratch = null;
+    this.canvasRing.release();
     return this.owner.close();
   }
 }
@@ -1181,6 +1259,7 @@ export class StereoWorkerEngine implements StereoDepthTask {
   private closed = false;
   private leftScratch: HTMLCanvasElement | null = null;
   private rightScratch: HTMLCanvasElement | null = null;
+  private readonly canvasRing = new StereoCanvasSlotRing();
   private readonly pendingRequests = new Map<number, PendingStereoWorkerRequest>();
   private inFlightEstimate: Promise<StereoDepthMapData> | null = null;
   private queuedEstimate: {
@@ -1461,15 +1540,9 @@ export class StereoWorkerEngine implements StereoDepthTask {
     const leftImg = leftCtx.getImageData(0, 0, targetW, targetH);
     const rightImg = rightCtx.getImageData(0, 0, targetW, targetH);
 
-    const leftCopy = document.createElement('canvas');
-    leftCopy.width = targetW;
-    leftCopy.height = targetH;
-    leftCopy.getContext('2d')?.drawImage(leftCanvas, 0, 0);
-
-    const rightCopy = document.createElement('canvas');
-    rightCopy.width = targetW;
-    rightCopy.height = targetH;
-    rightCopy.getContext('2d')?.drawImage(rightCanvas, 0, 0);
+    const slot = this.canvasRing.nextSlot(targetW, targetH, targetW, targetH);
+    slot.left.getContext('2d', { willReadFrequently: true })?.drawImage(leftCanvas, 0, 0);
+    slot.right.getContext('2d', { willReadFrequently: true })?.drawImage(rightCanvas, 0, 0);
 
     const requestId = this.nextRequestId++;
     const leftBuffer = leftImg.data.buffer.slice(
@@ -1536,7 +1609,12 @@ export class StereoWorkerEngine implements StereoDepthTask {
     this.backend = response.backend;
     const disparity = new Float32Array(response.disparityBuffer);
     const overlayRgba = new Uint8ClampedArray(response.overlayRgbaBuffer);
-    const overlayCanvas = writeRgbaToCanvas(overlayRgba, response.width, response.height);
+    const overlayCanvas = writeRgbaToCanvas(
+      overlayRgba,
+      response.width,
+      response.height,
+      slot.overlay
+    );
 
     return {
       width: response.width,
@@ -1549,8 +1627,8 @@ export class StereoWorkerEngine implements StereoDepthTask {
       scaleMaxDisparity: response.stats.scaleMaxDisparity,
       validRatio: response.stats.validRatio,
       overlayCanvas,
-      leftCanvas: leftCopy,
-      rightCanvas: rightCopy,
+      leftCanvas: slot.left,
+      rightCanvas: slot.right,
       colormap: options.colormap ?? 'turbo',
       viewMode: options.viewMode ?? 'left-overlay',
       swapLeftRight: options.swapLeftRight ?? false,
@@ -1566,14 +1644,20 @@ export class StereoWorkerEngine implements StereoDepthTask {
   close(): void {
     if (this.closed) return;
     this.closed = true;
+    const wasIdle = this.pendingRequests.size === 0;
+    zeroCanvas(this.leftScratch);
+    zeroCanvas(this.rightScratch);
     this.leftScratch = null;
     this.rightScratch = null;
+    this.canvasRing.release();
     // Reject all in-flight frame requests immediately so VisionEngine / FrameScheduler locks release in < 1ms
     this.rejectAllPending(
       new OnnxInferenceError(`stereo-depth:${this.variantId}`, 'closed', 'task is closed')
     );
-    // Terminate the Web Worker immediately so in-flight WASM session.run() halts at the OS thread level
     try {
+      if (wasIdle) {
+        this.worker.postMessage({ type: 'dispose', id: -1 });
+      }
       this.worker.terminate();
     } catch {
       // Ignore worker termination errors
