@@ -1,0 +1,2932 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HITNet WebGPU 診断・GatherND検証ベンチマーク (F0102)</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1017;
+      --card: #131b26;
+      --border: #273447;
+      --text: #e6edf5;
+      --muted: #93a4b8;
+      --accent: #3b82f6;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --err: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.5;
+    }
+    main { max-width: 1120px; margin: 0 auto; display: grid; gap: 16px; }
+    h1, h2 { margin: 0 0 8px; font-weight: 600; }
+    h1 { font-size: 1.35rem; }
+    h2 { font-size: 1.05rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.secondary { background: #263244; }
+    button.warn-btn { background: #92400e; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+    }
+    pre {
+      margin: 8px 0 0;
+      padding: 12px;
+      background: #070b10;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .kv {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 4px 12px;
+      font-size: 0.88rem;
+    }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; word-break: break-all; }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .err { color: var(--err); }
+    .muted { color: var(--muted); font-size: 0.88rem; }
+    .frames { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+    canvas { border: 1px solid var(--border); border-radius: 4px; background: #000; }
+    select {
+      background: #070b10;
+      color: #e6edf5;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 8px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <div class="row" style="justify-content: space-between;">
+      <h1>HITNet (hitnet-sf) WebGPU 診断・GatherND Cache-Collision 実測ツール</h1>
+      <div class="row">
+        <a href="/" style="color:#93c5fd;font-size:0.9rem;">アプリ本体へ戻る</a>
+      </div>
+    </div>
+    <p class="muted">
+      固定基準: <code>/stereo-videos/bahn-latzen-crossing-sbs.webm</code> Frame <strong>F0102</strong> (PTS <code>4.250s</code>, 960×270 SBS 非入替 L/R → <code>[1, 6, 240, 320]</code> <code>zero-one</code>) と
+      <code>/api/cors-proxy/stereo/hitnet_sceneflow_240x320.onnx</code> (ORT <code>1.30.0</code> / JSEP <code>1.30.0</code> 固定)。
+      すべての実験は直列実行し、セッションとテンソルを毎回解放します。
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>1. 実行コンテキスト &amp; WebGPU 環境確認</h2>
+    <dl id="env-kv" class="kv"></dl>
+    <div class="row" style="margin-top:10px;">
+      <button id="btn-env" class="secondary" type="button">環境を再計測</button>
+      <button id="btn-open-top" class="secondary" type="button">トップレベルURLを表示/コピー</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. モデル &amp; F0102 入力テンソル準備（SHA-256 検証付き）</h2>
+    <div class="row">
+      <button id="btn-prepare" type="button">モデルと F0102 入力を準備・検証</button>
+    </div>
+    <dl id="prep-kv" class="kv" style="margin-top:10px;"></dl>
+    <div class="frames">
+      <div><div class="muted">Left 320×240</div><canvas id="cv-left" width="320" height="240"></canvas></div>
+      <div><div class="muted">Right 320×240</div><canvas id="cv-right" width="320" height="240"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. 独立 Benign Synthetic GPU Controls (H1 &amp; Safe Legacy — 各回 Cold Worker 分離)</h2>
+    <p class="muted">
+      ORT 1.30.0 / JSEP 1.30.0 上で rank-4 範囲の benign な H1 パターン（定数負インデックス・動的インデックス・ArgMin 連携・2分岐共存）および安全対照（S3/S4/S5_Cast）を各回新規 Cold Worker で検証し、WebGPU validation scope (<code>pushErrorScope('validation')</code> / <code>uncapturederror</code>) と未変換 WASM 基準・解析的期待値を同時記録します。
+      <br><strong>安全方針:</strong> 未修復 rank-5 キャッシュ衝突や未修復2サイズ ArgMin 衝突など、既知の不正 GPU パイプラインを誘発する操作は UI 上から意図的に除外しています。
+    </p>
+    <div class="row">
+      <button id="btn-syn-safe-all" type="button">Safe Synthetic 全実行 (S3, S4, S5_Cast, S7a..d)</button>
+      <button id="btn-syn-h1-all" type="button">H1 Synthetics 全実行 (S7a..S7d)</button>
+      <button id="btn-syn-s7a" class="secondary" type="button">S7a: ConstIdx rank-4 GatherND</button>
+      <button id="btn-syn-s7b" class="secondary" type="button">S7b: InputIdx rank-4 GatherND</button>
+      <button id="btn-syn-s7c" class="secondary" type="button">S7c: Dynamic ArgMin→GatherND</button>
+      <button id="btn-syn-s7d" class="secondary" type="button">S7d: Two-Branch (S5_Cast + H1)</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button id="btn-syn-r5-only" class="secondary" type="button">S3: Cold Rank5-Out Only</button>
+      <button id="btn-syn-patched" class="secondary" type="button">S4: Cold Patched Rank4→Rank4</button>
+      <button id="btn-syn-s5-cast" class="secondary" type="button">S5_Cast: Single-Size ArgMin→Reshape→Cast</button>
+    </div>
+    <pre id="syn-log">待機中: Safe Synthetic Controls (S3/S4/S5_Cast/S7a..d) はモデル準備なしでも独立実行できます。</pre>
+  </section>
+
+  <section class="card">
+    <h2>4. 同一 Worker 厳密 A/B 比較・H1 (prop0 GatherND rank4化) &amp; Checkpoint P1〜P6 検証 (ORT 1.30.0・F0102 固定)</h2>
+    <p class="muted">
+      注意: 主比較は Mixed-EP (<code>disable_cpu_ep_fallback=false</code>) で行い、<code>disable_cpu_ep_fallback='1'</code> は別検証に分離しています。診断用 WASM 対照は <code>allowDiagnosticTransformedWasm</code> 付きの診断アーム限定で、既定・フォールバック WASM バイト列は常に未変換 raw です。
+      数値一致判定基準: <code>finite=76800/76800</code>, <code>nonFiniteMismatch=0</code>, <code>maxAbsDiff &lt; 1e-3</code>, <code>p99AbsDiff &lt; 1e-4</code>, <code>meanAbsDiff &lt; 1e-5</code>（両出力）。
+    </p>
+    <div class="row">
+      <button id="btn-ort-131-m1-compare" type="button" class="secondary" disabled>ORT 1.30.0 vs 1.31.1 M1 比較 (opt=basic F0102, GPU + 1.31.1 WASM)</button>
+      <button id="btn-n1-verify-basic" type="button" disabled>N1-Slot0Transpose 検証 (M1 + Transpose perm=[0,3,1,2], ORT 1.30.0 basic F0102 + Pre-Concat)</button>
+      <button id="btn-m1-compare-basic" type="button" class="secondary" disabled>M1-ConstZero2Ch 候補比較 (Raw-WASM-Dis vs M1-WASM-Dis/Basic vs M1-GPU-Basic/All)</button>
+      <button id="btn-m1-profile" type="button" class="secondary" disabled>M1 GPU プロファイル / 配置確認 (計測対象外)</button>
+      <button id="btn-l1-reshape-compare-basic" type="button" class="secondary" disabled>L1-Reshape 比較</button>
+      <button id="btn-l1-reducemin-compare-basic" type="button" class="secondary" disabled>L1-ReduceMin 比較</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button id="btn-h1-wasm-controls" type="button" class="secondary" disabled>H1 WASM 対照群 (Raw Dis/All vs H1-Bytes Dis/All/Basic)</button>
+      <button id="btn-h1-compare-all" type="button" class="secondary" disabled>H1 WebGPU opt=all 比較 (H1 vs H1-WASM vs Raw-WASM)</button>
+      <button id="btn-h1-compare-basic" type="button" class="secondary" disabled>H1 WebGPU opt=basic 比較 (H2 vs H1-WASM-Basic vs Raw-WASM)</button>
+      <button id="btn-h1-profile" type="button" class="secondary" disabled>H1 GPU プロファイル / 配置確認 (計測対象外)</button>
+      <button id="btn-h1-strict" type="button" class="warn-btn" disabled>H1 別検証: strict disable_cpu_ep_fallback='1'</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button id="btn-ckpt-h1-suite" type="button" disabled>Checkpoints P2b→P6 一括 (Raw-WASM vs H1-WebGPU)</button>
+      <button id="btn-ckpt-p1" type="button" class="secondary" disabled>P1 (fe_shared)</button>
+      <button id="btn-ckpt-p2" type="button" class="secondary" disabled>P2 (level_init)</button>
+      <button id="btn-ckpt-p2b" type="button" class="secondary" disabled>P2b (init_to_prop rank5)</button>
+      <button id="btn-ckpt-p3a" type="button" class="secondary" disabled>P3a (strided_slice_3)</button>
+      <button id="btn-ckpt-p3b" type="button" class="secondary" disabled>P3b (warp_1d coords)</button>
+      <button id="btn-ckpt-p3c" type="button" class="secondary" disabled>P3c (prop_warp rank5)</button>
+      <button id="btn-ckpt-p4" type="button" class="secondary" disabled>P4 (prop0 Add rank5)</button>
+      <button id="btn-ckpt-p5" type="button" class="secondary" disabled>P5 (level0 #218 前後)</button>
+      <button id="btn-ckpt-p6" type="button" class="secondary" disabled>P6 (level0_1 #506 前後)</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button id="btn-ckpt-postprop0-suite" type="button" disabled>Post-prop0 Checkpoints P7→P11 一括 (Raw-WASM vs H1-WebGPU)</button>
+      <button id="btn-ckpt-p7" type="button" class="secondary" disabled>P7 (refinement_l0 rank5)</button>
+      <button id="btn-ckpt-p8" type="button" class="secondary" disabled>P8 (l0→l1 Upsample)</button>
+      <button id="btn-ckpt-p9" type="button" class="secondary" disabled>P9 (refinement_l1 rank5)</button>
+      <button id="btn-ckpt-p10" type="button" class="secondary" disabled>P10 (l1→l2 Upsample)</button>
+      <button id="btn-ckpt-p11" type="button" class="secondary" disabled>P11 (refinement_l2/add)</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <label class="muted">Bounded Full-Graph Taps (1ペア2出力/回, 両final維持):
+        <select id="sel-tap-base">
+          <option value="h1" selected>base=H1</option>
+          <option value="m1">base=M1-ConstZero2Ch (m1)</option>
+          <option value="n1">base=N1-Slot0Transpose (n1)</option>
+          <option value="reshape-rank4">base=L1-Reshape (reshape-rank4)</option>
+          <option value="reduce-min">base=L1-ReduceMin (reduce-min)</option>
+        </select>
+        <select id="sel-tap-opt">
+          <option value="basic" selected>opt=basic (推奨既定)</option>
+          <option value="all">opt=all</option>
+        </select>
+      </label>
+      <select id="sel-tap-group">
+        <option value="p2b" selected>In-situ P2b: init_to_prop/ExpandDims + ch0 vs ch1 vs ch2 vs ch3..15 (both)</option>
+        <option value="p2a-concat1-out">In-situ P2a-Concat1-Out: init_to_prop/concat_1 [1,16,60,80] (both)</option>
+        <option value="p2a-concat-out">In-situ P2a-ConcatOut: init_to_prop/concat [1,60,80,49] ch0 vs ch1..48 (both)</option>
+        <option value="p2a-concat-fe">In-situ P2a-ConcatFE: fe_shared_3 / fe_shared_31 [1,60,80,48] (both)</option>
+        <option value="p2a-concat1-leakyrelu">In-situ P2a-LeakyRelu: init_to_prop/LeakyRelu [1,13,60,80] (both)</option>
+        <option value="p2a-concat1-zeros">In-situ P2a-Zeros: Transpose__910:0 / Transpose__1008:0 [1,1,60,80] (pre-M1 only)</option>
+        <option value="p4">In-situ P4: prop0/add inputs to repaired GatherND (both)</option>
+        <option value="p2-gather">In-situ P2-Gather: level_init GatherV2_1 output (both)</option>
+        <option value="p2-argmin">In-situ P2-ArgMin: level_init ArgMin int64 (both)</option>
+        <option value="p2-cast">In-situ P2-Cast: level_init Cast float32 (both)</option>
+        <option value="p2-slot0-reshape">In-situ P2-Slot0-Reshape: Transpose__908:0 / Transpose__1006:0 [1,1,60,80] (both)</option>
+        <option value="p3c">In-situ P3c: prop0 prop_warp Reshape_1 (both)</option>
+        <option value="p5-p6">In-situ P5/P6: prop0 GatherV2 (primary + secondary)</option>
+        <option value="p5-rank4-indices">Optional P5 H1 rank4 singleton indices (both int64)</option>
+        <option value="p5-rank4-io-primary">Optional P5 H1 primary rank4 GatherND data + out</option>
+        <option value="p5-rank4-io-secondary">Optional P5 H1 secondary rank4 GatherND data + out</option>
+        <option value="p7">In-situ P7: refinement_l0 ExpandDims</option>
+        <option value="p8">Midpoint P8: l0→l1 UpsampleHypotheses merged strided_slice_17</option>
+        <option value="p8-slant">P8-slant: l0→l1 UpsampleHypotheses/Reshape</option>
+        <option value="p8-tile">P8-tile: l0→l1 UpsampleHypotheses/Reshape_1</option>
+        <option value="p9">In-situ P9: refinement_l1 ExpandDims</option>
+        <option value="p10">Midpoint P10: l1→l2 UpsampleHypotheses merged strided_slice_17</option>
+        <option value="p10-slant">P10-slant: l1→l2 UpsampleHypotheses/Reshape</option>
+        <option value="p10-tile">P10-tile: l1→l2 UpsampleHypotheses/Reshape_1</option>
+        <option value="p11">Late P11: refinement_l2/add pre-head</option>
+      </select>
+      <button id="btn-tap-m1-disp-source" type="button" disabled>M1 Disparity-Source 3 Taps (p2-argmin → p2-cast → p2-slot0-reshape, ORT 1.30.0 basic F0102)</button>
+      <button id="btn-tap-m1-guided" type="button" class="secondary" disabled>M1 Bounded Taps (P2b(ch1/ch2) → Concat1Out → P3c → P4 → P5/P6)</button>
+      <button id="btn-tap-levelinit-guided" type="button" class="secondary" disabled>level_init/init_to_prop Taps (P2b(ch) → ConcatOut → ConcatFE → P4 → P5/P6)</button>
+      <button id="btn-tap-early-guided" type="button" class="secondary" disabled>Early Taps (Untapped → P4 → P2-Gather → P2-ArgMin → P3c)</button>
+      <button id="btn-tap-rank4-check" type="button" class="secondary" disabled>Optional Rank4 Check (Indices → IO)</button>
+      <button id="btn-tap-guided" type="button" class="secondary" disabled>Post-prop0 Taps (Untapped → P5/P6 → P8 → P10)</button>
+      <button id="btn-tap-selected" type="button" class="secondary" disabled>選択 Tap Group 単独実行</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <button id="btn-wasm-controls" type="button" class="secondary" disabled>Legacy F1 WASM 対照 (Raw vs F1-Bytes)</button>
+      <button id="btn-compare-gathernd" type="button" class="secondary" disabled>F1 比較 (E1 vs F1 vs Raw-WASM opt=all)</button>
+      <button id="btn-compare-gathernd-basic" type="button" class="secondary" disabled>F2 比較 (E2 vs F2 vs Raw-WASM opt=basic)</button>
+      <button id="btn-fetch-compare" type="button" class="secondary" disabled>全出力 vs Primary単一Fetch (Arm H1 診断)</button>
+      <button id="btn-probe-concat32" type="button" class="secondary" disabled>Subgraph 2 (#31→#32→#33)</button>
+      <button id="btn-probe-stem" type="button" class="secondary" disabled>Subgraph 1 (RGB Stem)</button>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <label class="muted" style="display:inline-flex;align-items:center;gap:6px;">
+        <input id="chk-disable-cpu-fallback" type="checkbox">
+        <code>session.disable_cpu_ep_fallback='1'</code>（既定OFF: Mixed-EP比較時はチェックを外したまま実行）
+      </label>
+      <label class="muted" style="display:inline-flex;align-items:center;gap:6px;">
+        <input id="chk-verbose" type="checkbox">
+        ORT verbose / WebGPU profiling（速度計測時はOFF必須）
+      </label>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <label class="muted">単一アーム追加計測:
+        <select id="sel-single-arm">
+          <option value="arm-n1-basic">N1-Slot0Transpose Basic: M1 + Transpose perm=[0,3,1,2] + opt=basic</option>
+          <option value="arm-n1-all">N1-Slot0Transpose All: M1 + Transpose perm=[0,3,1,2] + opt=all</option>
+          <option value="arm-wasm-n1-dis">C-WASM-N1-Dis: N1バイト WASM opt=disabled (診断専用)</option>
+          <option value="arm-wasm-n1-basic">C-WASM-N1-Basic: N1バイト WASM opt=basic (診断専用)</option>
+          <option value="arm-m1-basic">M1-ConstZero2Ch Basic: H1 + 2ch Zero Init + opt=basic</option>
+          <option value="arm-m1-all">M1-ConstZero2Ch All: H1 + 2ch Zero Init + opt=all</option>
+          <option value="arm-wasm-m1-dis">C-WASM-M1-Dis: M1バイト WASM opt=disabled (診断専用)</option>
+          <option value="arm-wasm-m1-basic">C-WASM-M1-Basic: M1バイト WASM opt=basic (診断専用)</option>
+          <option value="arm-wasm-m1-all">C-WASM-M1-All: M1バイト WASM opt=all (診断専用)</option>
+          <option value="arm-l1-reshape-basic">L1-Reshape Basic: H1 + level_init GatherND rank4化 + opt=basic</option>
+          <option value="arm-l1-reshape-all">L1-Reshape All: H1 + level_init GatherND rank4化 + opt=all</option>
+          <option value="arm-wasm-l1-reshape-dis">C-WASM-L1-Reshape-Dis: L1-Reshapeバイト WASM opt=disabled (診断専用)</option>
+          <option value="arm-wasm-l1-reshape-basic">C-WASM-L1-Reshape-Basic: L1-Reshapeバイト WASM opt=basic (診断専用)</option>
+          <option value="arm-l1-reducemin-basic">L1-ReduceMin [診断候補]: H1 + level_init ReduceMin + opt=basic</option>
+          <option value="arm-l1-reducemin-all">L1-ReduceMin [診断候補]: H1 + level_init ReduceMin + opt=all</option>
+          <option value="arm-wasm-l1-reducemin-dis">C-WASM-L1-ReduceMin-Dis: L1-ReduceMinバイト WASM opt=disabled (診断専用)</option>
+          <option value="arm-wasm-l1-reducemin-basic">C-WASM-L1-ReduceMin-Basic: L1-ReduceMinバイト WASM opt=basic (診断専用)</option>
+          <option value="arm-h1">Arm H1: F1 + H1 prop0 GatherND rank4化 + opt=all</option>
+          <option value="arm-h2">Arm H2: F1 + H1 prop0 GatherND rank4化 + opt=basic</option>
+          <option value="arm-h1-g1">Arm H1+G1: H1 + ArgMin keepdims=1 併用 + opt=all</option>
+          <option value="arm-wasm-h1-dis">C-WASM-H1-Dis: H1バイト WASM opt=disabled (診断専用)</option>
+          <option value="arm-wasm-h1-all">C-WASM-H1-All: H1バイト WASM opt=all (診断専用)</option>
+          <option value="arm-wasm-h1-basic">C-WASM-H1-Basic: H1バイト WASM opt=basic (診断専用)</option>
+          <option value="arm-f1">Arm F1: 5D + compact-active + gathernd-rank4 + opt=all</option>
+          <option value="arm-f2">Arm F2: 5D + compact-active + gathernd-rank4 + opt=basic</option>
+          <option value="arm-g1">Arm G1: F1 + argmin-keepdims1 + opt=all</option>
+          <option value="arm-g2">Arm G2: F1 + argmin-keepdims1 + opt=basic</option>
+          <option value="arm-wasm-raw-dis">C-WASM-Raw-Dis: 未変換 WASM opt=disabled</option>
+          <option value="arm-wasm-raw-all">C-WASM-Raw-All: 未変換 WASM opt=all</option>
+          <option value="arm-wasm-f1-dis">C-WASM-F1-Dis: F1バイト WASM opt=disabled (診断専用)</option>
+          <option value="arm-wasm-f1-all">C-WASM-F1-All: F1バイト WASM opt=all (診断専用)</option>
+          <option value="arm-wasm-g1-all">C-WASM-G1-All: G1バイト WASM opt=all (診断専用)</option>
+          <option value="arm-e1">Arm E1: 5D + compact-active + opt=all (GatherND対照)</option>
+          <option value="arm-e2">Arm E2: 5D + compact-active + opt=basic (GatherND対照basic)</option>
+          <option value="arm-c1">Arm C1: 5D-only + opt=basic</option>
+          <option value="arm-c2">Arm C2: 5D + sort-only + opt=basic</option>
+          <option value="arm-d1">Arm D1: 5D-only + opt=disabled</option>
+          <option value="arm-d2">Arm D2: 5D + sort-only + opt=disabled</option>
+          <option value="arm-a">Arm A: 5D-only + opt=all (先頭Conv対照)</option>
+          <option value="arm-b">Arm B: 5D + sort-only + opt=all (#32 Concat対照)</option>
+        </select>
+      </label>
+      <label class="muted">warm回数:
+        <select id="sel-warm-runs">
+          <option value="0">0 (coldのみ)</option>
+          <option value="1" selected>1 (診断用)</option>
+          <option value="3">3 (勝者ベンチ)</option>
+          <option value="5">5 (勝者安定性)</option>
+        </select>
+      </label>
+      <button id="btn-run-single-arm" type="button" class="secondary" disabled>選択アームのみ実行 (+ Raw-WASM対照)</button>
+    </div>
+    <pre id="probe-log">待機中: 先に「モデルと F0102 入力を準備・検証」を実行してください。</pre>
+  </section>
+</main>
+
+<script type="module">
+  const EXPECTED_MODEL_SHA256 = '67df2f91798a169ab8113574f122a07403197e21b9d3dc71029cebd06d96284c';
+  const EXPECTED_INPUT_SHA256 = '0caafb859076cf94c4409db11dff40167cdb4082448f800dbc3393c8927ca2a0';
+  const MODEL_URL = '/api/cors-proxy/stereo/hitnet_sceneflow_240x320.onnx';
+  const VIDEO_URL = '/stereo-videos/bahn-latzen-crossing-sbs.webm';
+  const ORT_CDN_130 = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/';
+  const F0102_PTS = 4.250;
+
+  const state = {
+    rawModelBytes: null,
+    modelSha256: null,
+    convertedMeta: null,
+    inputFloat32: null,
+    inputSha256: null,
+    leftRgbaBuffer: null,
+    rightRgbaBuffer: null,
+    verifiedRank4Indices: false,
+    busy: false,
+  };
+
+  const envKv = document.getElementById('env-kv');
+  const prepKv = document.getElementById('prep-kv');
+  const synLogEl = document.getElementById('syn-log');
+  const logEl = document.getElementById('probe-log');
+
+  const btnPrepare = document.getElementById('btn-prepare');
+  const btnSynSafeAll = document.getElementById('btn-syn-safe-all');
+  const btnSynR5Only = document.getElementById('btn-syn-r5-only');
+  const btnSynPatched = document.getElementById('btn-syn-patched');
+  const btnSynS5Cast = document.getElementById('btn-syn-s5-cast');
+  const btnSynH1All = document.getElementById('btn-syn-h1-all');
+  const btnSynS7a = document.getElementById('btn-syn-s7a');
+  const btnSynS7b = document.getElementById('btn-syn-s7b');
+  const btnSynS7c = document.getElementById('btn-syn-s7c');
+  const btnSynS7d = document.getElementById('btn-syn-s7d');
+
+  const btnOrt131M1Compare = document.getElementById('btn-ort-131-m1-compare');
+  const btnN1VerifyBasic = document.getElementById('btn-n1-verify-basic');
+  const btnM1CompareBasic = document.getElementById('btn-m1-compare-basic');
+  const btnM1Profile = document.getElementById('btn-m1-profile');
+  const btnL1ReshapeCompareBasic = document.getElementById('btn-l1-reshape-compare-basic');
+  const btnL1ReduceMinCompareBasic = document.getElementById('btn-l1-reducemin-compare-basic');
+  const btnH1WasmControls = document.getElementById('btn-h1-wasm-controls');
+  const btnH1CompareAll = document.getElementById('btn-h1-compare-all');
+  const btnH1CompareBasic = document.getElementById('btn-h1-compare-basic');
+  const btnH1Profile = document.getElementById('btn-h1-profile');
+  const btnH1Strict = document.getElementById('btn-h1-strict');
+  const btnCkptH1Suite = document.getElementById('btn-ckpt-h1-suite');
+  const btnCkptP1 = document.getElementById('btn-ckpt-p1');
+  const btnCkptP2 = document.getElementById('btn-ckpt-p2');
+  const btnCkptP2b = document.getElementById('btn-ckpt-p2b');
+  const btnCkptP3a = document.getElementById('btn-ckpt-p3a');
+  const btnCkptP3b = document.getElementById('btn-ckpt-p3b');
+  const btnCkptP3c = document.getElementById('btn-ckpt-p3c');
+  const btnCkptP4 = document.getElementById('btn-ckpt-p4');
+  const btnCkptP5 = document.getElementById('btn-ckpt-p5');
+  const btnCkptP6 = document.getElementById('btn-ckpt-p6');
+  const btnCkptPostProp0Suite = document.getElementById('btn-ckpt-postprop0-suite');
+  const btnCkptP7 = document.getElementById('btn-ckpt-p7');
+  const btnCkptP8 = document.getElementById('btn-ckpt-p8');
+  const btnCkptP9 = document.getElementById('btn-ckpt-p9');
+  const btnCkptP10 = document.getElementById('btn-ckpt-p10');
+  const btnCkptP11 = document.getElementById('btn-ckpt-p11');
+  const selTapBase = document.getElementById('sel-tap-base');
+  const selTapOpt = document.getElementById('sel-tap-opt');
+  const selTapGroup = document.getElementById('sel-tap-group');
+  const btnTapM1DispSource = document.getElementById('btn-tap-m1-disp-source');
+  const btnTapM1Guided = document.getElementById('btn-tap-m1-guided');
+  const btnTapLevelInitGuided = document.getElementById('btn-tap-levelinit-guided');
+  const btnTapEarlyGuided = document.getElementById('btn-tap-early-guided');
+  const btnTapRank4Check = document.getElementById('btn-tap-rank4-check');
+  const btnTapGuided = document.getElementById('btn-tap-guided');
+  const btnTapSelected = document.getElementById('btn-tap-selected');
+
+  const btnWasmControls = document.getElementById('btn-wasm-controls');
+  const btnCompareGatherNd = document.getElementById('btn-compare-gathernd');
+  const btnCompareGatherNdBasic = document.getElementById('btn-compare-gathernd-basic');
+  const btnFetchCompare = document.getElementById('btn-fetch-compare');
+  const btnProbeStem = document.getElementById('btn-probe-stem');
+  const btnProbeConcat32 = document.getElementById('btn-probe-concat32');
+  const btnRunSingleArm = document.getElementById('btn-run-single-arm');
+
+  const ARMS = {
+    'arm-n1-basic': {
+      id: 'arm-n1-basic',
+      label: 'N1-Slot0Transpose Basic [M1 + Transpose perm=[0,3,1,2] (Transpose__908/1006) + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeSlot0ReshapeToTranspose: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-n1-all': {
+      id: 'arm-n1-all',
+      label: 'N1-Slot0Transpose All [M1 + Transpose perm=[0,3,1,2] (Transpose__908/1006) + opt=all]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeSlot0ReshapeToTranspose: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-wasm-n1-dis': {
+      id: 'arm-wasm-n1-dis',
+      label: 'C-WASM-N1-Dis [N1バイト WASM opt=disabled (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeSlot0ReshapeToTranspose: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'disabled',
+      strictWebGpu: false,
+    },
+    'arm-wasm-n1-basic': {
+      id: 'arm-wasm-n1-basic',
+      label: 'C-WASM-N1-Basic [N1バイト WASM opt=basic (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeSlot0ReshapeToTranspose: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: false,
+    },
+    'arm-wasm-n1-all': {
+      id: 'arm-wasm-n1-all',
+      label: 'C-WASM-N1-All [N1バイト WASM opt=all (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeSlot0ReshapeToTranspose: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: false,
+    },
+    'arm-m1-basic': {
+      id: 'arm-m1-basic',
+      label: 'M1-ConstZero2Ch Basic [H1 + 2ch Zero Init (init_to_prop/concat_1) + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-m1-all': {
+      id: 'arm-m1-all',
+      label: 'M1-ConstZero2Ch All [H1 + 2ch Zero Init (init_to_prop/concat_1) + opt=all]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-wasm-m1-dis': {
+      id: 'arm-wasm-m1-dis',
+      label: 'C-WASM-M1-Dis [M1バイト WASM opt=disabled (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'disabled',
+      strictWebGpu: false,
+    },
+    'arm-wasm-m1-basic': {
+      id: 'arm-wasm-m1-basic',
+      label: 'C-WASM-M1-Basic [M1バイト WASM opt=basic (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: false,
+    },
+    'arm-wasm-m1-all': {
+      id: 'arm-wasm-m1-all',
+      label: 'C-WASM-M1-All [M1バイト WASM opt=all (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeInitToPropZeroSlant: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: false,
+    },
+    'arm-l1-reshape-basic': {
+      id: 'arm-l1-reshape-basic',
+      label: 'L1-Reshape Basic [H1 + level_init GatherND rank4化 + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reshape-rank4',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-l1-reshape-all': {
+      id: 'arm-l1-reshape-all',
+      label: 'L1-Reshape All [H1 + level_init GatherND rank4化 + opt=all]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reshape-rank4',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-wasm-l1-reshape-dis': {
+      id: 'arm-wasm-l1-reshape-dis',
+      label: 'C-WASM-L1-Reshape-Dis [L1-Reshapeバイト WASM opt=disabled (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reshape-rank4',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'disabled',
+      strictWebGpu: false,
+    },
+    'arm-wasm-l1-reshape-basic': {
+      id: 'arm-wasm-l1-reshape-basic',
+      label: 'C-WASM-L1-Reshape-Basic [L1-Reshapeバイト WASM opt=basic (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reshape-rank4',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: false,
+    },
+    'arm-wasm-l1-reshape-all': {
+      id: 'arm-wasm-l1-reshape-all',
+      label: 'C-WASM-L1-Reshape-All [L1-Reshapeバイト WASM opt=all (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reshape-rank4',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: false,
+    },
+    'arm-l1-reducemin-basic': {
+      id: 'arm-l1-reducemin-basic',
+      label: 'L1-ReduceMin Basic [診断候補・非既定: H1 + level_init ReduceMin + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reduce-min',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-l1-reducemin-all': {
+      id: 'arm-l1-reducemin-all',
+      label: 'L1-ReduceMin All [診断候補・非既定: H1 + level_init ReduceMin + opt=all]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reduce-min',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-wasm-l1-reducemin-dis': {
+      id: 'arm-wasm-l1-reducemin-dis',
+      label: 'C-WASM-L1-ReduceMin-Dis [L1-ReduceMinバイト WASM opt=disabled (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reduce-min',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'disabled',
+      strictWebGpu: false,
+    },
+    'arm-wasm-l1-reducemin-basic': {
+      id: 'arm-wasm-l1-reducemin-basic',
+      label: 'C-WASM-L1-ReduceMin-Basic [L1-ReduceMinバイト WASM opt=basic (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reduce-min',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: false,
+    },
+    'arm-wasm-l1-reducemin-all': {
+      id: 'arm-wasm-l1-reducemin-all',
+      label: 'C-WASM-L1-ReduceMin-All [L1-ReduceMinバイト WASM opt=all (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'reduce-min',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: false,
+    },
+    'arm-h1': {
+      id: 'arm-h1',
+      label: 'Arm H1 [候補: F1 + H1 prop0 GatherND rank4化 + opt=all]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-h2': {
+      id: 'arm-h2',
+      label: 'Arm H2 [候補: F1 + H1 prop0 GatherND rank4化 + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-h1-g1': {
+      id: 'arm-h1-g1',
+      label: 'Arm H1+G1 [併用比較: H1 + argmin-keepdims1 + opt=all]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      levelInitGatherMode: 'off',
+      normalizeArgMinKeepDims: true,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-a': {
+      id: 'arm-a',
+      label: 'Arm A [5D-only + opt=all (先頭Conv対照)]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'off',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-b': {
+      id: 'arm-b',
+      label: 'Arm B [5D+sort-only + opt=all (#32 Concat対照)]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'sort-only',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-c1': {
+      id: 'arm-c1',
+      label: 'Arm C1 [5D-only + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'off',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-c2': {
+      id: 'arm-c2',
+      label: 'Arm C2 [5D+sort-only + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'sort-only',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-d1': {
+      id: 'arm-d1',
+      label: 'Arm D1 [5D-only + opt=disabled]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'off',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'disabled',
+      strictWebGpu: true,
+    },
+    'arm-d2': {
+      id: 'arm-d2',
+      label: 'Arm D2 [5D+sort-only + opt=disabled]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'sort-only',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'disabled',
+      strictWebGpu: true,
+    },
+    'arm-e1': {
+      id: 'arm-e1',
+      label: 'Arm E1 [対照: 5D+compact-active + gathernd=OFF + opt=all]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-e2': {
+      id: 'arm-e2',
+      label: 'Arm E2 [対照: 5D+compact-active + gathernd=OFF + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-f1': {
+      id: 'arm-f1',
+      label: 'Arm F1 [5D+compact-active + gathernd-rank4 + opt=all]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-f2': {
+      id: 'arm-f2',
+      label: 'Arm F2 [5D+compact-active + gathernd-rank4 + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-g1': {
+      id: 'arm-g1',
+      label: 'Arm G1 [5D+compact-active+gathernd-rank4+argmin-keepdims1 + opt=all]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: true,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: true,
+    },
+    'arm-g2': {
+      id: 'arm-g2',
+      label: 'Arm G2 [5D+compact-active+gathernd-rank4+argmin-keepdims1 + opt=basic]',
+      pref: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: true,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: true,
+    },
+    'arm-wasm-raw-dis': {
+      id: 'arm-wasm-raw-dis',
+      label: 'C-WASM-Raw-Dis [未変換 WASM 基準: opt=disabled]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'off',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'disabled',
+      strictWebGpu: false,
+    },
+    'arm-wasm-raw-all': {
+      id: 'arm-wasm-raw-all',
+      label: 'C-WASM-Raw-All [未変換 WASM 基準: opt=all]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'off',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: false,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: false,
+    },
+    'arm-wasm-h1-dis': {
+      id: 'arm-wasm-h1-dis',
+      label: 'C-WASM-H1-Dis [H1バイト WASM opt=disabled (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'disabled',
+      strictWebGpu: false,
+    },
+    'arm-wasm-h1-all': {
+      id: 'arm-wasm-h1-all',
+      label: 'C-WASM-H1-All [H1バイト WASM opt=all (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: false,
+    },
+    'arm-wasm-h1-basic': {
+      id: 'arm-wasm-h1-basic',
+      label: 'C-WASM-H1-Basic [H1バイト WASM opt=basic (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'basic',
+      strictWebGpu: false,
+    },
+    'arm-wasm-f1-dis': {
+      id: 'arm-wasm-f1-dis',
+      label: 'C-WASM-F1-Dis [F1バイト WASM opt=disabled (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'disabled',
+      strictWebGpu: false,
+    },
+    'arm-wasm-f1-all': {
+      id: 'arm-wasm-f1-all',
+      label: 'C-WASM-F1-All [F1バイト WASM opt=all (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: false,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: false,
+    },
+    'arm-wasm-g1-all': {
+      id: 'arm-wasm-g1-all',
+      label: 'C-WASM-G1-All [G1バイト WASM opt=all (診断専用)]',
+      pref: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: false,
+      normalizeArgMinKeepDims: true,
+      allowDiagnosticTransformedWasm: true,
+      graphOptimizationLevel: 'all',
+      strictWebGpu: false,
+    },
+  };
+
+  function setKv(el, rows) {
+    el.innerHTML = '';
+    for (const [k, v, cls] of rows) {
+      const dt = document.createElement('dt');
+      dt.textContent = k;
+      const dd = document.createElement('dd');
+      dd.textContent = v;
+      if (cls) dd.className = cls;
+      el.append(dt, dd);
+    }
+  }
+
+  function appendLog(line, target = logEl) {
+    target.textContent += (target.textContent ? '\n' : '') + line;
+  }
+
+  async function sha256Hex(bufferOrView) {
+    const u8 = bufferOrView instanceof Uint8Array
+      ? bufferOrView
+      : new Uint8Array(bufferOrView.buffer || bufferOrView, bufferOrView.byteOffset || 0, bufferOrView.byteLength);
+    const digest = await crypto.subtle.digest('SHA-256', u8);
+    return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function inspectEnvironment() {
+    const isTopLevel = window.top === window.self;
+    let gpuPolicyAllowed = 'unsupported-api';
+    let coiPolicyAllowed = 'unsupported-api';
+    const policy = document.permissionsPolicy || document.featurePolicy;
+    if (policy && typeof policy.allowsFeature === 'function') {
+      try { gpuPolicyAllowed = String(policy.allowsFeature('gpu')); } catch (e) { gpuPolicyAllowed = `error: ${e}`; }
+      try { coiPolicyAllowed = String(policy.allowsFeature('cross-origin-isolated')); } catch (e) { coiPolicyAllowed = `error: ${e}`; }
+    }
+
+    let adapterSummary = 'navigator.gpu unavailable';
+    let adapterClass = 'err';
+    if (navigator.gpu && typeof navigator.gpu.requestAdapter === 'function') {
+      try {
+        const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+        if (!adapter) {
+          adapterSummary = 'requestAdapter() returned null';
+          adapterClass = 'err';
+        } else {
+          const info = adapter.info || {};
+          const maxBuffers = adapter.limits ? adapter.limits.maxStorageBuffersPerShaderStage : 'unknown';
+          const hasF16 = adapter.features ? adapter.features.has('shader-f16') : false;
+          const hasTq = adapter.features ? adapter.features.has('timestamp-query') : false;
+          adapterSummary = `vendor=${info.vendor || '-'} arch=${info.architecture || '-'} device=${info.device || '-'} desc=${info.description || '-'} maxStorageBuffersPerShaderStage=${maxBuffers} shader-f16=${hasF16} timestamp-query=${hasTq}`;
+          adapterClass = 'ok';
+        }
+      } catch (e) {
+        adapterSummary = `requestAdapter() threw: ${e instanceof Error ? e.message : String(e)}`;
+      }
+    }
+
+    setKv(envKv, [
+      ['Frame Context', isTopLevel ? 'Top-level window (window.top === window.self)' : 'Iframe (embedded)', isTopLevel ? 'ok' : 'warn'],
+      ['URL', location.href, ''],
+      ['crossOriginIsolated', String(window.crossOriginIsolated), window.crossOriginIsolated ? 'ok' : 'warn'],
+      ['isSecureContext / SharedArrayBuffer', `${window.isSecureContext} / ${typeof SharedArrayBuffer !== 'undefined'}`, ''],
+      ['Permissions-Policy gpu / coi', `gpu=${gpuPolicyAllowed}, cross-origin-isolated=${coiPolicyAllowed}`, ''],
+      ['navigator.gpu Adapter', adapterSummary, adapterClass],
+    ]);
+  }
+
+  function setBusy(busy) {
+    state.busy = busy;
+    btnPrepare.disabled = busy;
+    btnSynSafeAll.disabled = busy;
+    btnSynR5Only.disabled = busy;
+    btnSynPatched.disabled = busy;
+    btnSynS5Cast.disabled = busy;
+    btnSynH1All.disabled = busy;
+    btnSynS7a.disabled = busy;
+    btnSynS7b.disabled = busy;
+    btnSynS7c.disabled = busy;
+    btnSynS7d.disabled = busy;
+    const ready = !busy && Boolean(state.rawModelBytes && state.inputFloat32);
+    btnOrt131M1Compare.disabled = !ready;
+    btnN1VerifyBasic.disabled = !ready;
+    btnM1CompareBasic.disabled = !ready;
+    btnM1Profile.disabled = !ready;
+    btnL1ReshapeCompareBasic.disabled = !ready;
+    btnL1ReduceMinCompareBasic.disabled = !ready;
+    btnH1WasmControls.disabled = !ready;
+    btnH1CompareAll.disabled = !ready;
+    btnH1CompareBasic.disabled = !ready;
+    btnH1Profile.disabled = !ready;
+    btnH1Strict.disabled = !ready;
+    btnCkptH1Suite.disabled = !ready;
+    btnCkptP1.disabled = !ready;
+    btnCkptP2.disabled = !ready;
+    btnCkptP2b.disabled = !ready;
+    btnCkptP3a.disabled = !ready;
+    btnCkptP3b.disabled = !ready;
+    btnCkptP3c.disabled = !ready;
+    btnCkptP4.disabled = !ready;
+    btnCkptP5.disabled = !ready;
+    btnCkptP6.disabled = !ready;
+    btnCkptPostProp0Suite.disabled = !ready;
+    btnCkptP7.disabled = !ready;
+    btnCkptP8.disabled = !ready;
+    btnCkptP9.disabled = !ready;
+    btnCkptP10.disabled = !ready;
+    btnCkptP11.disabled = !ready;
+    btnTapM1DispSource.disabled = !ready;
+    btnTapM1Guided.disabled = !ready;
+    btnTapLevelInitGuided.disabled = !ready;
+    btnTapEarlyGuided.disabled = !ready;
+    btnTapRank4Check.disabled = !ready;
+    btnTapGuided.disabled = !ready;
+    btnTapSelected.disabled = !ready;
+    btnWasmControls.disabled = !ready;
+    btnCompareGatherNd.disabled = !ready;
+    btnCompareGatherNdBasic.disabled = !ready;
+    btnFetchCompare.disabled = !ready;
+    btnProbeStem.disabled = !ready;
+    btnProbeConcat32.disabled = !ready;
+    btnRunSingleArm.disabled = !ready;
+  }
+
+  // --------------------------------------------------------------------------
+  // Section 3: Independent Benign Synthetic Controls (H1 & Safe Legacy)
+  // --------------------------------------------------------------------------
+  async function runColdSyntheticWorker(modelBytes, feeds, executionProviders) {
+    const worker = new Worker('/src/services/hitnetGatherNdSyntheticWorker.ts', { type: 'module' });
+    const reqId = 1;
+    try {
+      const mBuf = modelBytes.slice().buffer;
+      const clonedFeeds = [];
+      const transfers = [mBuf];
+      for (const f of feeds) {
+        const buf = f.typedArray.slice().buffer;
+        clonedFeeds.push({ name: f.name, dtype: f.dtype, dims: f.dims, buffer: buf });
+        transfers.push(buf);
+      }
+      const res = await new Promise((resolve, reject) => {
+        const onMsg = (ev) => {
+          if (ev.data?.id !== reqId) return;
+          worker.removeEventListener('message', onMsg);
+          worker.removeEventListener('error', onErr);
+          resolve(ev.data);
+        };
+        const onErr = (ev) => {
+          worker.removeEventListener('message', onMsg);
+          worker.removeEventListener('error', onErr);
+          reject(new Error(ev.message || 'Synthetic Worker crashed'));
+        };
+        worker.addEventListener('message', onMsg);
+        worker.addEventListener('error', onErr);
+        worker.postMessage({
+          id: reqId,
+          modelBuffer: mBuf,
+          wasmPaths: ORT_CDN_130,
+          executionProviders,
+          graphOptimizationLevel: 'all',
+          disableCpuEpFallback: false,
+          captureGpuValidationErrors: executionProviders.includes('webgpu'),
+          feeds: clonedFeeds,
+        }, transfers);
+      });
+      return res;
+    } finally {
+      worker.terminate();
+    }
+  }
+
+  async function runSafeSyntheticControls(controlKeys) {
+    const diagMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const gndSuite = diagMod.buildSyntheticGatherNdControlModels();
+    const argMinSuite = diagMod.buildSyntheticArgMinControlModels();
+    const h1Suite = diagMod.buildSyntheticPropGatherNdControlModels();
+
+    const feedData = { name: 'data', dtype: 'float32', dims: gndSuite.dataDims, typedArray: gndSuite.dataF32 };
+    const feedIdx4 = { name: 'idx4', dtype: 'int64', dims: gndSuite.idx4Dims, typedArray: gndSuite.idx4I64 };
+    const feedIdx5 = { name: 'idx5', dtype: 'int64', dims: gndSuite.idx5Dims, typedArray: gndSuite.idx5I64 };
+
+    const feedH1Data4 = { name: 'data4', dtype: 'float32', dims: h1Suite.dataDims4, typedArray: h1Suite.dataF32 };
+    const feedH1Idx4 = { name: 'idx4', dtype: 'int64', dims: h1Suite.idxDims4, typedArray: h1Suite.idxI64 };
+    const feedCost4 = { name: 'cost4', dtype: 'float32', dims: h1Suite.cost4Dims, typedArray: h1Suite.cost4F32 };
+    const feedCost8 = { name: 'cost8', dtype: 'float32', dims: h1Suite.cost8Dims, typedArray: h1Suite.cost8F32 };
+
+    const specs = {
+      'S3': {
+        title: 'S3: Cold Rank5-Out Only (batch_dims=2, no cache collision)',
+        modelBytes: gndSuite.models.rank5Only,
+        wasmRefBytes: gndSuite.models.rank5Only,
+        feeds: [feedData, feedIdx5],
+        expectedByOutput: {},
+      },
+      'S4': {
+        title: 'S4: Cold Patched Rank4 -> Patched Rank4',
+        modelBytes: gndSuite.models.rank4ThenPatchedRank5,
+        wasmRefBytes: gndSuite.models.rank4ThenRank5,
+        feeds: [feedData, feedIdx4, feedIdx5],
+        expectedByOutput: {},
+      },
+      'S5_Cast': {
+        title: 'S5_Cast: Single-Size ArgMin(axis=3,keepdims=0)->Reshape->Cast',
+        modelBytes: argMinSuite.models.singleSizeCast,
+        wasmRefBytes: argMinSuite.models.singleSizeCast,
+        feeds: [feedCost8],
+        expectedByOutput: { out_cast: argMinSuite.expectedCastIndices },
+      },
+      'S7a_ConstIdx': {
+        title: 'S7a_ConstIdx: H1 merged rank-4 GatherND(batch_dims=2) + const int64 [-4..2]->Reshape[1,2,3,1,2]',
+        modelBytes: h1Suite.models.s7aConstIdx,
+        wasmRefBytes: h1Suite.models.s7aConstIdx,
+        feeds: [feedH1Data4],
+        expectedByOutput: { out_s7a: h1Suite.expectedConstOrInputOut },
+      },
+      'S7b_InputIdx': {
+        title: 'S7b_InputIdx: H1 merged rank-4 GatherND(batch_dims=2) + graph-input int64 [-4..2]->Reshape[1,2,3,1,2]',
+        modelBytes: h1Suite.models.s7bInputIdx,
+        wasmRefBytes: h1Suite.models.s7bInputIdx,
+        feeds: [feedH1Data4, feedH1Idx4],
+        expectedByOutput: { out_s7b: h1Suite.expectedConstOrInputOut },
+      },
+      'S7c_DynamicArgMin': {
+        title: 'S7c_DynamicArgMin: cost4->ArgMin->Reshape[1,6,1,1]->GatherND(batch_dims=2)->Reshape[1,2,3,1,2]',
+        modelBytes: h1Suite.models.s7cDynamicArgMin,
+        wasmRefBytes: h1Suite.models.s7cDynamicArgMin,
+        feeds: [feedCost4, feedH1Data4],
+        expectedByOutput: { out_s7c: h1Suite.expectedDynamicArgMinOut },
+      },
+      'S7d_TwoBranch': {
+        title: 'S7d_TwoBranch: Branch1(S5_Cast keepdims=0) + Branch2(ArgMin keepdims=1 -> H1 rank-4 GatherND)',
+        modelBytes: h1Suite.models.s7dTwoBranch,
+        wasmRefBytes: h1Suite.models.s7dTwoBranch,
+        feeds: [feedCost8, feedCost4, feedH1Data4],
+        expectedByOutput: {
+          out_cast: h1Suite.expectedCastOut,
+          out_gathernd: h1Suite.expectedDynamicArgMinOut,
+        },
+      },
+    };
+
+    synLogEl.textContent =
+      `=== Safe Synthetic WebGPU Controls (ORT 1.30.0 Cold Workers, Validation-Scope Enabled) ===\n` +
+      `[Safety] Unpatched defective rank-5 / cache-colliding GPU pipelines are NOT dispatched.`;
+
+    for (const key of controlKeys) {
+      const spec = specs[key];
+      if (!spec) continue;
+      appendLog(`\n[${spec.title}]`, synLogEl);
+
+      const wasmRes = await runColdSyntheticWorker(spec.wasmRefBytes, spec.feeds, ['wasm']);
+      if (!wasmRes.ok) {
+        appendLog(`  OBSERVED WASM Control ERROR [${wasmRes.stage}]: ${wasmRes.message}`, synLogEl);
+        continue;
+      }
+      const wasmOutMap = new Map(wasmRes.outputs.map((o) => [o.name, new Float32Array(o.buffer)]));
+
+      const gpuRes = await runColdSyntheticWorker(spec.modelBytes, spec.feeds, ['webgpu']);
+      const valList = gpuRes.gpuValidationErrors || [];
+      const valText = valList.length > 0 ? valList.join(' | ') : 'none';
+      if (!gpuRes.ok) {
+        appendLog(
+          `  OBSERVED WebGPU ERROR [stage=${gpuRes.stage}] | gpuValidation=${valText} | adapter=${gpuRes.workerGpuAdapter || 'n/a'}\n` +
+          `    verbatim: ${gpuRes.message}`,
+          synLogEl
+        );
+      } else {
+        const parities = gpuRes.outputs.map((o) => {
+          const gpuArr = new Float32Array(o.buffer);
+          const wasmArr = wasmOutMap.get(o.name);
+          const expArr = spec.expectedByOutput[o.name];
+          const sWasm = diagMod.summarizeRawTensorAndParity(gpuArr, wasmArr);
+          const sExp = expArr ? diagMod.summarizeRawTensorAndParity(gpuArr, expArr) : null;
+          return `${o.name}(dtype=${o.dataType || 'float32'} dims=${JSON.stringify(o.dims)} vsWasmMax=${sWasm.maxAbsDiff.toExponential(3)} vsExpectedMax=${sExp ? sExp.maxAbsDiff.toExponential(3) : 'n/a'})`;
+        });
+        appendLog(
+          `  OBSERVED WebGPU OK [PERF: create=${gpuRes.createMs.toFixed(1)}ms run=${gpuRes.runMs.toFixed(1)}ms] | gpuValidation=${valText} | adapter=${gpuRes.workerGpuAdapter || 'n/a'}\n` +
+          `    [PARITY]: ${parities.join(' ; ')}`,
+          synLogEl
+        );
+      }
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Section 2: Model & F0102 preparation
+  // --------------------------------------------------------------------------
+  async function extractF0102Rgba() {
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    video.muted = true;
+    video.playsInline = true;
+    video.src = VIDEO_URL;
+
+    await new Promise((resolve, reject) => {
+      const onErr = () => reject(new Error(`Video load failed: ${video.error?.message || 'unknown'}`));
+      video.addEventListener('loadeddata', () => {
+        video.removeEventListener('error', onErr);
+        resolve();
+      }, { once: true });
+      video.addEventListener('error', onErr, { once: true });
+    });
+
+    await new Promise((resolve, reject) => {
+      const onSeeked = () => resolve();
+      const onErr = () => reject(new Error('Video seek failed'));
+      video.addEventListener('seeked', onSeeked, { once: true });
+      video.addEventListener('error', onErr, { once: true });
+      video.currentTime = F0102_PTS;
+    });
+
+    const eyeW = Math.floor(video.videoWidth / 2);
+    const eyeH = video.videoHeight;
+    if (eyeW !== 480 || eyeH !== 270) {
+      throw new Error(`Unexpected video eye dims: ${eyeW}x${eyeH} (expected 480x270)`);
+    }
+
+    const cvL = document.getElementById('cv-left');
+    const cvR = document.getElementById('cv-right');
+    const ctxL = cvL.getContext('2d', { willReadFrequently: true });
+    const ctxR = cvR.getContext('2d', { willReadFrequently: true });
+    ctxL.drawImage(video, 0, 0, eyeW, eyeH, 0, 0, 320, 240);
+    ctxR.drawImage(video, eyeW, 0, eyeW, eyeH, 0, 0, 320, 240);
+
+    const actualTime = video.currentTime;
+    const imgL = ctxL.getImageData(0, 0, 320, 240);
+    const imgR = ctxR.getImageData(0, 0, 320, 240);
+    video.removeAttribute('src');
+    video.load();
+
+    const pixelCount = 320 * 240;
+    const tensor = new Float32Array(6 * pixelCount);
+    const inv255 = 1 / 255;
+    for (let i = 0; i < pixelCount; i++) {
+      const o = i * 4;
+      tensor[i] = imgL.data[o] * inv255;
+      tensor[pixelCount + i] = imgL.data[o + 1] * inv255;
+      tensor[pixelCount * 2 + i] = imgL.data[o + 2] * inv255;
+      tensor[pixelCount * 3 + i] = imgR.data[o] * inv255;
+      tensor[pixelCount * 4 + i] = imgR.data[o + 1] * inv255;
+      tensor[pixelCount * 5 + i] = imgR.data[o + 2] * inv255;
+    }
+
+    return {
+      currentTime: actualTime,
+      leftRgba: new Uint8ClampedArray(imgL.data),
+      rightRgba: new Uint8ClampedArray(imgR.data),
+      tensor,
+    };
+  }
+
+  async function transformWithAppModule(rawBytes) {
+    const mod = await import('/src/services/stereoDepthWorker.ts');
+    const split = mod.splitLargeOnnxConcatNodes(rawBytes, 4);
+    const afterSplit = split.splitCount > 0 ? split.bytes : mod.stripOnnxGraphValueInfo(rawBytes);
+    const dec = mod.decomposeOnnx5dConvNodesForWebGpu(afterSplit);
+    const afterConv3d = dec.decomposedCount > 0 ? dec.bytes : afterSplit;
+    const sliceCompact = mod.normalizeNonAscendingSliceAxesForWebGpu(afterConv3d, { mode: 'compact-active' });
+    const gatherNdNorm = mod.normalizeHitnetGatherNdRankForWebGpu(sliceCompact.bytes, {
+      variantId: 'hitnet-sf',
+      backendPreference: 'webgpu',
+      requireHitnetContract: true,
+    });
+    const propGatherNdNorm = mod.normalizeHitnetPropGatherNdRankForWebGpu(gatherNdNorm.bytes, {
+      variantId: 'hitnet-sf',
+      backendPreference: 'webgpu',
+      requireHitnetContract: true,
+    });
+    const rawSha256 = await sha256Hex(rawBytes);
+    const h1Sha256 = await sha256Hex(propGatherNdNorm.bytes);
+    const m1ZeroSlantNorm = mod.normalizeHitnetInitToPropZeroSlantForWebGpu(propGatherNdNorm.bytes, {
+      variantId: 'hitnet-sf',
+      backendPreference: 'webgpu',
+      requireHitnetContract: true,
+      rawModelSha256: rawSha256,
+      h1ModelSha256: h1Sha256,
+    });
+    const m1Sha256 = await sha256Hex(m1ZeroSlantNorm.bytes);
+    const n1Slot0Norm = mod.normalizeHitnetSlot0ReshapeToTransposeForWebGpu(m1ZeroSlantNorm.bytes, {
+      variantId: 'hitnet-sf',
+      backendPreference: 'webgpu',
+      requireHitnetContract: true,
+      rawModelSha256: rawSha256,
+      m1ModelSha256: m1Sha256,
+    });
+    const n1Sha256 = await sha256Hex(n1Slot0Norm.bytes);
+    const l1ReshapeNorm = mod.normalizeHitnetLevelInitGatherNdRankForWebGpu(propGatherNdNorm.bytes, {
+      variantId: 'hitnet-sf',
+      backendPreference: 'webgpu',
+      requireHitnetContract: true,
+    });
+    const l1ReduceMinNorm = mod.normalizeHitnetLevelInitReduceMinForWebGpu(propGatherNdNorm.bytes, {
+      variantId: 'hitnet-sf',
+      backendPreference: 'webgpu',
+      requireHitnetContract: true,
+    });
+    const compatBefore = mod.inspectStereoOnnxWebGpuCompatibility(rawBytes);
+    const compatAfter = mod.inspectStereoOnnxWebGpuCompatibility(propGatherNdNorm.bytes);
+    const validAfter = mod.validateOnnxGraphNodeInputs(propGatherNdNorm.bytes);
+    const inferAfter = mod.inferOnnxStaticTensorMeta(propGatherNdNorm.bytes);
+    const compatAfterM1 = mod.inspectStereoOnnxWebGpuCompatibility(m1ZeroSlantNorm.bytes);
+    const validAfterM1 = mod.validateOnnxGraphNodeInputs(m1ZeroSlantNorm.bytes);
+    const inferAfterM1 = mod.inferOnnxStaticTensorMeta(m1ZeroSlantNorm.bytes);
+    const compatAfterN1 = mod.inspectStereoOnnxWebGpuCompatibility(n1Slot0Norm.bytes);
+    const validAfterN1 = mod.validateOnnxGraphNodeInputs(n1Slot0Norm.bytes);
+    const inferAfterN1 = mod.inferOnnxStaticTensorMeta(n1Slot0Norm.bytes);
+    const validAfterL1Reshape = mod.validateOnnxGraphNodeInputs(l1ReshapeNorm.bytes);
+    const inferAfterL1Reshape = mod.inferOnnxStaticTensorMeta(l1ReshapeNorm.bytes);
+    const validAfterL1ReduceMin = mod.validateOnnxGraphNodeInputs(l1ReduceMinNorm.bytes);
+    const inferAfterL1ReduceMin = mod.inferOnnxStaticTensorMeta(l1ReduceMinNorm.bytes);
+    return {
+      meta: {
+        splitCount: split.splitCount,
+        decomposedCount: dec.decomposedCount,
+        decomposedNodeNames: dec.decomposedNodeNames,
+        sliceCompact,
+        gatherNdNorm,
+        propGatherNdNorm,
+        h1Sha256,
+        m1ZeroSlantNorm,
+        m1Sha256,
+        n1Slot0Norm,
+        n1Sha256,
+        l1ReshapeNorm,
+        l1ReduceMinNorm,
+        compatBefore,
+        compatAfter,
+        validAfter,
+        inferAfter,
+        compatAfterM1,
+        validAfterM1,
+        inferAfterM1,
+        compatAfterN1,
+        validAfterN1,
+        inferAfterN1,
+        validAfterL1Reshape,
+        inferAfterL1Reshape,
+        validAfterL1ReduceMin,
+        inferAfterL1ReduceMin,
+      },
+    };
+  }
+
+  // --------------------------------------------------------------------------
+  // Section 4: Same-Worker HITNet Comparison & Diagnostics
+  // --------------------------------------------------------------------------
+  async function runWorkerArm(armConfig, warmRuns, overrides = {}) {
+    const profile = {
+      variantId: 'hitnet-sf',
+      tier: 'lightweight',
+      engineType: 'onnx',
+      fileName: 'hitnet_sceneflow_240x320.onnx',
+      defaultWidth: 320,
+      defaultHeight: 240,
+      inputLayout: 'stacked',
+      normalization: 'zero-one',
+      preferWebGpu: true,
+      license: 'Apache-2.0',
+      licenseNote: 'HITNet diagnostic',
+      upstreamUrl: '',
+      onlineDelivery: 'cors-proxy',
+    };
+
+    const disableCpuEpFallback =
+      overrides.disableCpuEpFallback !== undefined
+        ? Boolean(overrides.disableCpuEpFallback)
+        : armConfig.pref === 'webgpu' && Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+    const enableWebGpuProfiling =
+      overrides.enableWebGpuProfiling !== undefined
+        ? Boolean(overrides.enableWebGpuProfiling)
+        : Boolean(document.getElementById('chk-verbose')?.checked);
+    const fetchPrimaryOutputOnly = Boolean(overrides.fetchPrimaryOutputOnly);
+    const diagnosticTapOutputs = Array.isArray(overrides.diagnosticTapOutputs)
+      ? overrides.diagnosticTapOutputs
+      : undefined;
+
+    const worker = new Worker('/src/services/stereoDepthWorker.ts', { type: 'module' });
+    let nextId = 1;
+    const call = (payload, transfer = []) => new Promise((resolve, reject) => {
+      const id = nextId++;
+      const onMsg = (ev) => {
+        if (ev.data?.id !== id) return;
+        worker.removeEventListener('message', onMsg);
+        worker.removeEventListener('error', onErr);
+        if (ev.data.ok === false) reject(new Error(`${ev.data.stage || 'worker'}: ${ev.data.message}`));
+        else resolve(ev.data);
+      };
+      const onErr = (ev) => {
+        worker.removeEventListener('message', onMsg);
+        worker.removeEventListener('error', onErr);
+        reject(new Error(ev.message || 'Worker error'));
+      };
+      worker.addEventListener('message', onMsg);
+      worker.addEventListener('error', onErr);
+      worker.postMessage({ ...payload, id }, transfer);
+    });
+
+    try {
+      const t0 = performance.now();
+      const onnxCopy = state.rawModelBytes.slice().buffer;
+      const initRes = await call({
+        type: 'init-onnx',
+        profile,
+        onnxBuffer: onnxCopy,
+        wasmPrimaryUrl: ORT_CDN_130,
+        wasmFallbackUrl: null,
+        backendPreference: armConfig.pref,
+        normalizeSliceAxes: armConfig.normalizeSliceAxes,
+        normalizeGatherNdRank: Boolean(armConfig.normalizeGatherNdRank),
+        normalizePropGatherNdRank: Boolean(armConfig.normalizePropGatherNdRank),
+        levelInitGatherMode: armConfig.levelInitGatherMode || 'off',
+        normalizeInitToPropZeroSlant: Boolean(armConfig.normalizeInitToPropZeroSlant),
+        normalizeSlot0ReshapeToTranspose: Boolean(armConfig.normalizeSlot0ReshapeToTranspose),
+        normalizeArgMinKeepDims: Boolean(armConfig.normalizeArgMinKeepDims),
+        allowDiagnosticTransformedWasm: Boolean(armConfig.allowDiagnosticTransformedWasm),
+        ...(diagnosticTapOutputs ? { diagnosticTapOutputs } : {}),
+        strictWebGpu: armConfig.strictWebGpu,
+        graphOptimizationLevel: armConfig.graphOptimizationLevel,
+        disableCpuEpFallback,
+        enableWebGpuProfiling,
+      }, [onnxCopy]);
+      const initTotalWallMs = performance.now() - t0;
+
+      const captureGpuValidation = armConfig.pref === 'webgpu';
+      const runOne = async () => {
+        const lCopy = state.leftRgbaBuffer.slice().buffer;
+        const rCopy = state.rightRgbaBuffer.slice().buffer;
+        const r0 = performance.now();
+        const est = await call({
+          type: 'estimate',
+          width: 320,
+          height: 240,
+          sourceEyeWidth: 480,
+          sourceEyeHeight: 270,
+          leftRgbaBuffer: lCopy,
+          rightRgbaBuffer: rCopy,
+          options: { autoNormalizeDisparity: true, colormap: 'turbo' },
+          includeRawTensorOutputs: true,
+          fetchPrimaryOutputOnly,
+          captureGpuValidationErrors: captureGpuValidation,
+        }, [lCopy, rCopy]);
+        const wallMs = performance.now() - r0;
+        const rawOutMap = {};
+        if (Array.isArray(est.rawOutputs)) {
+          for (const ro of est.rawOutputs) {
+            rawOutMap[ro.name] = {
+              dims: ro.dims,
+              dataType: ro.dataType || 'float32',
+              data: new Float32Array(ro.buffer),
+              exactInt64Data: ro.exactInt64Buffer ? new BigInt64Array(ro.exactInt64Buffer) : null,
+            };
+          }
+        }
+        return { wallMs, est, rawOutMap };
+      };
+
+      const cold = await runOne();
+      let last = cold;
+      const warmRunsData = [];
+      for (let i = 0; i < warmRuns; i++) {
+        last = await runOne();
+        warmRunsData.push(last);
+      }
+      await call({ type: 'dispose' }).catch(() => {});
+
+      const epLabel =
+        last.est.backend.configuredProviders.includes('webgpu') && !disableCpuEpFallback
+          ? 'mixed-EP (webgpu + ORT-internal CPU fallback allowed)'
+          : last.est.backend.configuredProviders.join('+');
+
+      const manifest = {
+        arm: armConfig.id,
+        status: 'OK',
+        epModeLabel: epLabel,
+        fetchPrimaryOutputOnly,
+        profilingEnabled: enableWebGpuProfiling,
+        rawInputModelSha256: initRes.rawInputModelSha256 || state.modelSha256,
+        baseSessionModelSha256: initRes.baseSessionModelSha256 || null,
+        sessionModelSha256: initRes.sessionModelSha256 || null,
+        tappedOutputs: initRes.tappedOutputs || null,
+        sessionModelDiffersFromRaw:
+          Boolean(initRes.sessionModelSha256 && initRes.rawInputModelSha256 && initRes.sessionModelSha256 !== initRes.rawInputModelSha256),
+        feedSha256s: last.est.feedSha256s || null,
+        expectedInputSha256: state.inputSha256,
+        ortVersions: initRes.ortVersions || null,
+        adapter: initRes.workerGpuAdapter || 'n/a',
+        sessionOptionsApplied: initRes.sessionOptionsApplied || null,
+        requestedProvider: initRes.backend.requestedProvider,
+        initConfiguredEP: initRes.backend.configuredProviders,
+        finalEP: last.est.backend.configuredProviders,
+        fallbackReason: last.est.backend.fallbackReason || initRes.backend.fallbackReason || null,
+        transformStats: initRes.transformStats || {},
+        gatherNdStats: initRes.gatherNdStats || {},
+        propGatherNdStats: initRes.propGatherNdStats || {},
+        levelInitGatherStats: initRes.levelInitGatherStats || {},
+        initToPropZeroSlantStats: initRes.initToPropZeroSlantStats || {},
+        slot0ReshapeToTransposeStats: initRes.slot0ReshapeToTransposeStats || {},
+        argMinStats: initRes.argMinStats || {},
+        gpuValidationErrors: captureGpuValidation ? (last.est.gpuValidationErrors || []) : null,
+        fetchedOutputNames: last.est.fetchedOutputNames || [],
+        rawOutputMeta: Object.entries(last.rawOutMap).map(([name, t]) => ({
+          name,
+          dataType: t.dataType,
+          dims: t.dims,
+        })),
+        perfNotParity: {
+          prepMs: Number((initRes.initTiming?.prepMs ?? 0).toFixed(1)),
+          initSessionMs: Number((initRes.initTiming?.sessionCreateMs ?? initTotalWallMs).toFixed(1)),
+          initTotalWallMs: Number(initTotalWallMs.toFixed(1)),
+          coldRunMs: Number((cold.est.estimateTiming?.runMs ?? cold.wallMs).toFixed(1)),
+          coldPreprocessMs: Number((cold.est.estimateTiming?.preprocessMs ?? 0).toFixed(1)),
+          coldPostprocessMs: Number((cold.est.estimateTiming?.postprocessMs ?? 0).toFixed(1)),
+          coldWallMs: Number(cold.wallMs.toFixed(1)),
+          warmRunMs: warmRunsData.map((w) => Number((w.est.estimateTiming?.runMs ?? w.wallMs).toFixed(1))),
+          warmWallMs: warmRunsData.map((w) => Number(w.wallMs.toFixed(1))),
+        },
+        gpuKernelProfileSummary: last.est.gpuKernelProfileSummary || null,
+      };
+      appendLog(`${armConfig.label}${enableWebGpuProfiling ? ' [PROFILING — NOT FOR TIMING]' : ''}\n  MANIFEST=${JSON.stringify(manifest)}`);
+      return { ok: true, armConfig, manifest, cold, last };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const failManifest = {
+        arm: armConfig.id,
+        status: 'FAILED',
+        rawInputModelSha256: state.modelSha256,
+        inputSha256: state.inputSha256,
+        sliceMode: armConfig.normalizeSliceAxes,
+        normalizeGatherNdRank: Boolean(armConfig.normalizeGatherNdRank),
+        normalizePropGatherNdRank: Boolean(armConfig.normalizePropGatherNdRank),
+        levelInitGatherMode: armConfig.levelInitGatherMode || 'off',
+        normalizeInitToPropZeroSlant: Boolean(armConfig.normalizeInitToPropZeroSlant),
+        normalizeSlot0ReshapeToTranspose: Boolean(armConfig.normalizeSlot0ReshapeToTranspose),
+        normalizeArgMinKeepDims: Boolean(armConfig.normalizeArgMinKeepDims),
+        allowDiagnosticTransformedWasm: Boolean(armConfig.allowDiagnosticTransformedWasm),
+        graphOptimizationLevel: armConfig.graphOptimizationLevel,
+        disableCpuEpFallback,
+        error: msg,
+      };
+      appendLog(`${armConfig.label}\n  MANIFEST=${JSON.stringify(failManifest)}`);
+      return { ok: false, armConfig, error: msg };
+    } finally {
+      worker.terminate();
+    }
+  }
+
+  async function compareRawOutputsAgainstWasm(armResults, wasmRefResult) {
+    if (!wasmRefResult?.ok) return;
+    const diagMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    appendLog('\n--- [PARITY ONLY] Raw Disparity Parity BEFORE Display Conversion (Unmodified WASM opt=disabled Reference) ---');
+    appendLog('  Thresholds: finite=76800/76800, nonFiniteMismatch=0, maxAbsDiff<1e-3, p99AbsDiff<1e-4, meanAbsDiff<1e-5');
+    appendLog(`  [WASM-Ref] sessionModelSha256=${wasmRefResult.manifest.sessionModelSha256} feedSha256s=${JSON.stringify(wasmRefResult.manifest.feedSha256s)}`);
+    const wasmOutNames = Object.keys(wasmRefResult.last.rawOutMap);
+    for (const outName of wasmOutNames) {
+      const refTensor = wasmRefResult.last.rawOutMap[outName];
+      const refStats = diagMod.summarizeRawTensorAndParity(refTensor.data, null);
+      appendLog(
+        `  [WASM-Ref Raw] ${outName}: dtype=${refTensor.dataType} dims=${JSON.stringify(refTensor.dims)} finite=${refStats.finiteCount}/${refStats.length} range=[${refStats.min.toFixed(4)}, ${refStats.max.toFixed(4)}]`
+      );
+    }
+
+    for (const r of armResults) {
+      if (!r.ok || r.armConfig.id === wasmRefResult.armConfig.id) continue;
+      for (const outName of Object.keys(r.last.rawOutMap)) {
+        const candTensor = r.last.rawOutMap[outName];
+        const refTensor = wasmRefResult.last.rawOutMap[outName];
+        if (!refTensor) continue;
+        const s = diagMod.summarizeRawTensorAndParity(candTensor.data, refTensor.data);
+        const passed =
+          s.finiteCount === 76800 &&
+          s.finiteCount === candTensor.data.length &&
+          s.nonFiniteMismatchCount === 0 &&
+          s.maxAbsDiff < 1e-3 &&
+          s.p99AbsDiff < 1e-4 &&
+          s.meanAbsDiff < 1e-5;
+        appendLog(
+          `  Parity [${r.armConfig.id}] @ ${outName}: ${passed ? 'PASS' : 'FAIL'} | dtype=${candTensor.dataType} dims=${JSON.stringify(candTensor.dims)} finite=${s.finiteCount}/${s.length} range=[${s.min.toFixed(4)}, ${s.max.toFixed(4)}] maxAbsDiff=${s.maxAbsDiff.toExponential(3)} p99AbsDiff=${s.p99AbsDiff.toExponential(3)} meanAbsDiff=${s.meanAbsDiff.toExponential(3)} rmsDiff=${s.rmsDiff.toExponential(3)} nonFiniteMismatch=${s.nonFiniteMismatchCount}`
+        );
+      }
+    }
+  }
+
+  async function runArmComparison(armList, warmRuns, title, overrides = {}) {
+    appendLog(
+      `\n=== ${title} (1 cold + ${warmRuns} warm, ORT 1.30.0) ===\n` +
+      `rawInputModelSHA256=${state.modelSha256}\ninputSHA256=${state.inputSha256}`
+    );
+    const results = [];
+    let wasmRef = null;
+    for (const arm of armList) {
+      const res = await runWorkerArm(arm, warmRuns, overrides);
+      results.push(res);
+      if (arm.id === 'arm-wasm-raw-dis' && res.ok) {
+        wasmRef = res;
+      }
+    }
+    if (!wasmRef) {
+      wasmRef = await runWorkerArm(ARMS['arm-wasm-raw-dis'], 0, {
+        disableCpuEpFallback: false,
+        enableWebGpuProfiling: false,
+      });
+    }
+
+    await compareRawOutputsAgainstWasm(results, wasmRef);
+    return { results, wasmRef };
+  }
+
+  // Per-arm checkpoint / subgraph extraction using shared TypeScript extractor + independent static shape inference
+  async function runSubgraphProbe(mode, variant = 'h1') {
+    appendLog(`\n=== Checkpoint / Subgraph Probe [${mode}] (variant=${variant}, ORT 1.30.0) ===`);
+    const diagMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const disableCpuFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+    try {
+      const arms = diagMod.prepareHitnetSubgraphArms(state.rawModelBytes, mode, { variant });
+      appendLog(`  [LIMITATION] ${arms.limitationNote}`);
+      appendLog(
+        `  Full-Rewrite-Counts=${JSON.stringify(arms.fullRewriteCounts)} | RawNodes=${arms.rawArm.nodeCount} | CandidateNodes=${arms.candidateArm.nodeCount}`
+      );
+      appendLog(`  RawArm OutputMeta=${JSON.stringify(arms.rawArm.outputMeta)}`);
+      appendLog(`  CandidateArm OutputMeta=${JSON.stringify(arms.candidateArm.outputMeta)}`);
+
+      const ort = await import(/* @vite-ignore */ `${ORT_CDN_130}ort.webgpu.min.mjs`);
+      ort.env.wasm.numThreads = 1;
+      ort.env.wasm.proxy = false;
+      ort.env.wasm.wasmPaths = ORT_CDN_130;
+      const feedSha = await sha256Hex(state.inputFloat32);
+
+      const runSub = async (label, bytes, eps, optLevel, expectedOutputs, disableCpuEp) => {
+        let sess = null;
+        let xTensor = null;
+        const gpuValidationErrors = [];
+        const gpuDevice = eps.includes('webgpu') ? ort.env?.webgpu?.device : null;
+        const onUncaptured = (ev) => {
+          const m = ev?.error?.message;
+          if (m) gpuValidationErrors.push(`uncaptured: ${m}`);
+        };
+        let pushedScope = false;
+        try {
+          const opts = {
+            executionProviders: eps,
+            graphOptimizationLevel: optLevel,
+            enableCpuMemArena: eps[0] !== 'wasm',
+            enableMemPattern: eps[0] !== 'wasm',
+            logSeverityLevel: 2,
+          };
+          if (disableCpuEp && eps[0] === 'webgpu') opts.extra = { session: { disable_cpu_ep_fallback: '1' } };
+          const sessSha = await sha256Hex(bytes);
+          sess = await ort.InferenceSession.create(bytes, opts);
+          const activeDev = eps.includes('webgpu') ? (ort.env?.webgpu?.device || gpuDevice) : null;
+          if (activeDev) {
+            try {
+              activeDev.addEventListener?.('uncapturederror', onUncaptured);
+              activeDev.pushErrorScope?.('validation');
+              pushedScope = typeof activeDev.popErrorScope === 'function';
+            } catch {
+              pushedScope = false;
+            }
+          }
+          xTensor = new ort.Tensor('float32', state.inputFloat32, [1, 6, 240, 320]);
+          const t0 = performance.now();
+          let res;
+          try {
+            res = await sess.run({ [sess.inputNames[0]]: xTensor });
+          } finally {
+            if (pushedScope && activeDev?.popErrorScope) {
+              try {
+                const scopedErr = await activeDev.popErrorScope();
+                if (scopedErr?.message) {
+                  gpuValidationErrors.push(`validation-scope: ${scopedErr.message}`);
+                }
+              } catch {}
+            }
+            if (activeDev) {
+              try {
+                activeDev.removeEventListener?.('uncapturederror', onUncaptured);
+              } catch {}
+            }
+          }
+          const runMs = performance.now() - t0;
+          const outMap = new Map();
+          for (const [k, t] of Object.entries(res)) {
+            outMap.set(k, {
+              dims: Array.from(t.dims),
+              dataType: t.type,
+              data: t.data instanceof BigInt64Array ? Float32Array.from(t.data, Number) : new Float32Array(t.data),
+            });
+            t.dispose?.();
+          }
+          const valText = eps.includes('webgpu')
+            ? ` gpuValidation=${gpuValidationErrors.length ? gpuValidationErrors.join('|') : 'none'}`
+            : '';
+          appendLog(`  ${label}: OK [run=${runMs.toFixed(1)}ms]${valText} sessSha=${sessSha.slice(0, 12)}... feedSha=${feedSha.slice(0, 12)}... outputs=${expectedOutputs.join(',')}`);
+          return { ok: true, outMap, gpuValidationErrors };
+        } catch (e) {
+          const valText = gpuValidationErrors.length ? ` gpuValidation=${gpuValidationErrors.join('|')}` : '';
+          appendLog(`  ${label}: FAILED (${e instanceof Error ? e.message : String(e)})${valText}`);
+          return { ok: false, outMap: null, gpuValidationErrors };
+        } finally {
+          xTensor?.dispose?.();
+          await sess?.release().catch(() => {});
+        }
+      };
+
+      const wasmRes = await runSub(`${mode} Raw WASM opt=disabled`, arms.rawArm.bytes, ['wasm'], 'disabled', arms.rawArm.targetOutputs, false);
+      const gpuRes = await runSub(`${mode} ${variant.toUpperCase()} WebGPU opt=all`, arms.candidateArm.bytes, ['webgpu'], 'all', arms.candidateArm.targetOutputs, disableCpuFallback);
+      if (wasmRes.ok && gpuRes.ok) {
+        for (const outName of arms.rawArm.targetOutputs) {
+          const wOut = wasmRes.outMap.get(outName);
+          const gOut = gpuRes.outMap.get(outName);
+          if (!wOut || !gOut) continue;
+          const s = diagMod.summarizeRawTensorAndParity(gOut.data, wOut.data);
+          const wStats = diagMod.summarizeRawTensorAndParity(wOut.data, null);
+          const pass =
+            s.finiteCount === s.length &&
+            s.nonFiniteMismatchCount === 0 &&
+            s.maxAbsDiff < 1e-3 &&
+            s.p99AbsDiff < 1e-4 &&
+            s.meanAbsDiff < 1e-5;
+          appendLog(
+            `  Checkpoint Parity [${mode}] @ ${outName}: ${pass ? 'PASS' : 'FAIL'} | dtype=${gOut.dataType} dims=${JSON.stringify(gOut.dims)} finite=${s.finiteCount}/${s.length} rangeGPU=[${s.min.toFixed(4)}, ${s.max.toFixed(4)}] rangeWASM=[${wStats.min.toFixed(4)}, ${wStats.max.toFixed(4)}] maxAbsDiff=${s.maxAbsDiff.toExponential(3)} p99=${s.p99AbsDiff.toExponential(3)} mean=${s.meanAbsDiff.toExponential(3)}`
+          );
+        }
+      }
+    } catch (err) {
+      appendLog(`Subgraph probe FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  async function runBoundedTapLocalization(groupIds, optLevel, options = {}) {
+    const diagMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const baseMode =
+      options.baseMode === 'm1' ||
+      options.baseMode === 'n1' ||
+      options.baseMode === 'reshape-rank4' ||
+      options.baseMode === 'reduce-min'
+        ? options.baseMode
+        : 'h1';
+    const armPairByBase = {
+      'h1': {
+        gpu: optLevel === 'all' ? ARMS['arm-h1'] : ARMS['arm-h2'],
+        wasm: optLevel === 'all' ? ARMS['arm-wasm-h1-all'] : ARMS['arm-wasm-h1-basic'],
+        label: 'H1',
+      },
+      'm1': {
+        gpu: optLevel === 'all' ? ARMS['arm-m1-all'] : ARMS['arm-m1-basic'],
+        wasm: optLevel === 'all' ? ARMS['arm-wasm-m1-all'] : ARMS['arm-wasm-m1-basic'],
+        label: 'M1-ConstZero2Ch',
+      },
+      'n1': {
+        gpu: optLevel === 'all' ? ARMS['arm-n1-all'] : ARMS['arm-n1-basic'],
+        wasm: optLevel === 'all' ? ARMS['arm-wasm-n1-all'] : ARMS['arm-wasm-n1-basic'],
+        label: 'N1-Slot0Transpose',
+      },
+      'reshape-rank4': {
+        gpu: optLevel === 'all' ? ARMS['arm-l1-reshape-all'] : ARMS['arm-l1-reshape-basic'],
+        wasm: optLevel === 'all' ? ARMS['arm-wasm-l1-reshape-all'] : ARMS['arm-wasm-l1-reshape-basic'],
+        label: 'L1-Reshape',
+      },
+      'reduce-min': {
+        gpu: optLevel === 'all' ? ARMS['arm-l1-reducemin-all'] : ARMS['arm-l1-reducemin-basic'],
+        wasm: optLevel === 'all' ? ARMS['arm-wasm-l1-reducemin-all'] : ARMS['arm-wasm-l1-reducemin-basic'],
+        label: 'L1-ReduceMin',
+      },
+    };
+    const gpuBaseArm = armPairByBase[baseMode].gpu;
+    const wasmBaseArm = armPairByBase[baseMode].wasm;
+    const baseLabel = armPairByBase[baseMode].label;
+    const FINAL_OUTS = ['reference_output_disparity', 'secondary_output_disparity'];
+    const isParityPass = (s) =>
+      s.length > 0 &&
+      s.finiteCount === s.length &&
+      s.nonFiniteMismatchCount === 0 &&
+      s.maxAbsDiff < 1e-3 &&
+      s.p99AbsDiff < 1e-4 &&
+      s.meanAbsDiff < 1e-5;
+
+    const expectedBaseSha = typeof options.verifyExactBaseSha256 === 'string' && options.verifyExactBaseSha256.length > 0
+      ? options.verifyExactBaseSha256
+      : null;
+
+    appendLog(
+      `\n=== ${options.titleOverride || `Bounded Full-Graph Taps Localization (base=${baseLabel}, opt=${optLevel}, ORT 1.30.0, same Worker & F0102)`} ===\n` +
+      `rawInputModelSHA256=${state.modelSha256} | expectedBaseSHA256=${expectedBaseSha || 'n/a'} | inputSHA256=${state.inputSha256} | tapGroups=${groupIds.join(', ')}`
+    );
+
+    const rawWasmRef = options.prefetchedRawWasmRef?.ok
+      ? options.prefetchedRawWasmRef
+      : await runWorkerArm(ARMS['arm-wasm-raw-dis'], 0, {
+          disableCpuEpFallback: false,
+          enableWebGpuProfiling: false,
+        });
+    if (!rawWasmRef.ok) {
+      appendLog(`  [ABORT] Raw-WASM disabled reference failed: ${rawWasmRef.error}`);
+      return;
+    }
+
+    const untappedGpu = options.prefetchedUntappedGpu?.ok
+      ? options.prefetchedUntappedGpu
+      : await runWorkerArm(gpuBaseArm, 0, {
+          disableCpuEpFallback: false,
+          enableWebGpuProfiling: false,
+          fetchPrimaryOutputOnly: false,
+        });
+    if (!untappedGpu.ok) {
+      appendLog(`  [ABORT] Untapped ${baseLabel} WebGPU (${optLevel}) failed: ${untappedGpu.error}`);
+      return;
+    }
+    if (expectedBaseSha && untappedGpu.manifest.baseSessionModelSha256 !== expectedBaseSha) {
+      appendLog(
+        `  [ABORT] Base model SHA mismatch on untapped ${baseLabel}-GPU: expected=${expectedBaseSha} got=${untappedGpu.manifest.baseSessionModelSha256}`
+      );
+      return;
+    }
+
+    const untappedVsRaw = {};
+    appendLog(
+      `\n  [Baselines (1 run each, no warm timing)] Raw-WASM-Dis(modelSha=${rawWasmRef.manifest.sessionModelSha256}, feedSha=${JSON.stringify(rawWasmRef.manifest.feedSha256s)}) | ` +
+      `Untapped-${baseLabel}-GPU-${optLevel}(modelSha=${untappedGpu.manifest.baseSessionModelSha256}, feedSha=${JSON.stringify(untappedGpu.manifest.feedSha256s)}, EP=${untappedGpu.manifest.finalEP.join('+')}, gpuValidationErrors=${untappedGpu.manifest.gpuValidationErrors?.length || 0})`
+    );
+    for (const fOut of FINAL_OUTS) {
+      const g = untappedGpu.last.rawOutMap[fOut];
+      const r = rawWasmRef.last.rawOutMap[fOut];
+      const s = diagMod.summarizeRawTensorAndParity(g.data, r.data);
+      const rStats = diagMod.summarizeRawTensorAndParity(r.data, null);
+      untappedVsRaw[fOut] = s;
+      appendLog(
+        `    ${fOut}: ${isParityPass(s) ? 'PASS' : 'FAIL'} | finiteGPU=${s.finiteCount}/${s.length}(nonFin=${s.nonFiniteCount}) finiteRef=${rStats.finiteCount}/${rStats.length} | ` +
+        `GPU[min=${s.min.toFixed(4)}, max=${s.max.toFixed(4)}, mean=${s.mean.toFixed(4)}] vs RawWASM[min=${rStats.min.toFixed(4)}, max=${rStats.max.toFixed(4)}, mean=${rStats.mean.toFixed(4)}] | ` +
+        `maxAbsDiff=${s.maxAbsDiff.toExponential(3)} p99=${s.p99AbsDiff.toExponential(3)} meanAbsDiff=${s.meanAbsDiff.toExponential(3)} nonFinMismatch=${s.nonFiniteMismatchCount}`
+      );
+    }
+
+    const m1DispSourceSummary = [];
+
+    for (const gid of groupIds) {
+      const spec = diagMod.getHitnetFullGraphTapGroup(gid);
+      if ((baseMode === 'm1' || baseMode === 'n1') && spec.id === 'p2a-concat1-zeros') {
+        appendLog(`  [SKIP ${spec.id}]: Transpose__910/1008 are removed dead nodes in M1/N1; use p2a-concat1-out or p2b.`);
+        continue;
+      }
+      if (options.requireVerifiedIndicesForIo && spec.isRank4GatherIoPair && !state.verifiedRank4Indices) {
+        appendLog(`  [SKIP ${spec.id}]: normal zero indices not verified on p5-rank4-indices; skipping identity comparison.`);
+        continue;
+      }
+
+      appendLog(`\n  --- Tap Group [${spec.id}]: ${spec.label} (${spec.stageNote}) ---`);
+      appendLog(`    requestedTaps=${JSON.stringify(spec.outputs)} (max 2 added outputs retained alongside both finals)`);
+
+      const tappedWasm = await runWorkerArm(wasmBaseArm, 0, {
+        disableCpuEpFallback: false,
+        enableWebGpuProfiling: false,
+        diagnosticTapOutputs: spec.outputs,
+        fetchPrimaryOutputOnly: false,
+      });
+      const tappedGpu = await runWorkerArm(gpuBaseArm, 0, {
+        disableCpuEpFallback: false,
+        enableWebGpuProfiling: false,
+        diagnosticTapOutputs: spec.outputs,
+        fetchPrimaryOutputOnly: false,
+      });
+
+      if (!tappedWasm.ok || !tappedGpu.ok) {
+        appendLog(`    [GROUP FAILED] tappedWasm=${tappedWasm.ok ? 'OK' : tappedWasm.error} tappedGpu=${tappedGpu.ok ? 'OK' : tappedGpu.error}`);
+        continue;
+      }
+      if (
+        expectedBaseSha &&
+        (tappedGpu.manifest.baseSessionModelSha256 !== expectedBaseSha ||
+          tappedWasm.manifest.baseSessionModelSha256 !== expectedBaseSha)
+      ) {
+        appendLog(
+          `    [ABORT GROUP] M1 base SHA mismatch: expected=${expectedBaseSha} gpuBase=${tappedGpu.manifest.baseSessionModelSha256} wasmBase=${tappedWasm.manifest.baseSessionModelSha256}`
+        );
+        continue;
+      }
+
+      const usedWebGpu = tappedGpu.manifest.finalEP.includes('webgpu');
+      const valErrors = tappedGpu.manifest.gpuValidationErrors || [];
+      const gpuValCount = valErrors.length;
+      appendLog(
+        `    [Verification] base=${baseLabel} baseSha=${tappedGpu.manifest.baseSessionModelSha256} tappedGpuSha=${tappedGpu.manifest.sessionModelSha256} tappedWasmSha=${tappedWasm.manifest.sessionModelSha256}\n` +
+        `      feedShaGPU=${JSON.stringify(tappedGpu.manifest.feedSha256s)} | feedShaWASM=${JSON.stringify(tappedWasm.manifest.feedSha256s)}\n` +
+        `      usedWebGpu=${usedWebGpu} (no app fallback, EP=${tappedGpu.manifest.finalEP.join('+')}) | gpuValidationErrors=${gpuValCount}${gpuValCount > 0 ? ` [${valErrors.join(' | ')}]` : ''}`
+      );
+
+      let maxShiftAcrossFinals = 0;
+      const finalCheckSummaries = [];
+      for (const fOut of FINAL_OUTS) {
+        const wTap = tappedWasm.last.rawOutMap[fOut];
+        const rRef = rawWasmRef.last.rawOutMap[fOut];
+        const gTap = tappedGpu.last.rawOutMap[fOut];
+        const gUntap = untappedGpu.last.rawOutMap[fOut];
+
+        const sWasmVsRaw = diagMod.summarizeRawTensorAndParity(wTap.data, rRef.data);
+        const sGpuTapVsRaw = diagMod.summarizeRawTensorAndParity(gTap.data, rRef.data);
+        const sGpuTapVsUntap = diagMod.summarizeRawTensorAndParity(gTap.data, gUntap.data);
+        const baseSig = untappedVsRaw[fOut];
+        const deltaMean = sGpuTapVsRaw.meanAbsDiff - baseSig.meanAbsDiff;
+        const deltaMax = sGpuTapVsRaw.maxAbsDiff - baseSig.maxAbsDiff;
+        const shiftedFinal = sGpuTapVsUntap.maxAbsDiff > 1e-4;
+        if (sGpuTapVsUntap.maxAbsDiff > maxShiftAcrossFinals) {
+          maxShiftAcrossFinals = sGpuTapVsUntap.maxAbsDiff;
+        }
+        finalCheckSummaries.push({ fOut, sWasmVsRaw, sGpuTapVsRaw, sGpuTapVsUntap, shiftedFinal });
+
+        appendLog(
+          `    [Final-Check] ${fOut}: Tapped${baseLabel}-WASM vs Raw-WASM=${isParityPass(sWasmVsRaw) ? 'PASS' : 'FAIL'}(finite=${sWasmVsRaw.finiteCount}/${sWasmVsRaw.length}, max=${sWasmVsRaw.maxAbsDiff.toExponential(2)}) | ` +
+          `Tapped${baseLabel}-GPU vs Raw-WASM finite=${sGpuTapVsRaw.finiteCount}/${sGpuTapVsRaw.length}(nonFin=${sGpuTapVsRaw.nonFiniteCount}, nonFinMis=${sGpuTapVsRaw.nonFiniteMismatchCount}) max=${sGpuTapVsRaw.maxAbsDiff.toExponential(3)} p99=${sGpuTapVsRaw.p99AbsDiff.toExponential(3)} mean=${sGpuTapVsRaw.meanAbsDiff.toExponential(3)} range=[${sGpuTapVsRaw.min.toFixed(4)}, ${sGpuTapVsRaw.max.toFixed(4)}] | ` +
+          `vsUntappedGPU maxDiff=${sGpuTapVsUntap.maxAbsDiff.toExponential(3)} meanDiff=${sGpuTapVsUntap.meanAbsDiff.toExponential(3)} deltaVsRaw(max=${deltaMax >= 0 ? '+' : ''}${deltaMax.toFixed(3)}, mean=${deltaMean >= 0 ? '+' : ''}${deltaMean.toFixed(3)}) ` +
+          `${shiftedFinal ? '[PERTURBED: tapping altered final outputs]' : '[INVARIANT: BOTH FINALS UNCHANGED UNDER TAP]'}`
+        );
+      }
+
+      let allIndicesNormalZero = spec.id === 'p5-rank4-indices';
+      const tapBranchSummaries = [];
+      for (let tapIdx = 0; tapIdx < spec.outputs.length; tapIdx++) {
+        const tapName = spec.outputs[tapIdx];
+        const gTensor = tappedGpu.last.rawOutMap[tapName];
+        const wTensor = tappedWasm.last.rawOutMap[tapName];
+        if (!gTensor || !wTensor) {
+          appendLog(`    [Causal-Proof] ${tapName}: MISSING in fetched outputs`);
+          if (spec.id === 'p5-rank4-indices') allIndicesNormalZero = false;
+          continue;
+        }
+        const sTap = diagMod.summarizeRawTensorAndParity(gTensor.data, wTensor.data);
+        const wStats = diagMod.summarizeRawTensorAndParity(wTensor.data, null);
+        let tapPassed = spec.isIntegerTensor
+          ? (sTap.length > 0 && sTap.finiteCount === sTap.length && sTap.nonFiniteMismatchCount === 0 && sTap.maxAbsDiff === 0)
+          : isParityPass(sTap);
+        let idxStats = null;
+        if (spec.isIntegerTensor) {
+          idxStats = diagMod.summarizeExactInt64IndexComparison(
+            gTensor.exactInt64Data || gTensor.data,
+            wTensor.exactInt64Data || wTensor.data,
+            spec.id === 'p2-argmin' ? { minInclusive: 0, maxInclusive: 319 } : { minInclusive: 0, maxInclusive: 0 }
+          );
+          tapPassed =
+            idxStats.length > 0 &&
+            idxStats.mismatchCount === 0 &&
+            idxStats.outOfRangeCount === 0 &&
+            sTap.finiteCount === sTap.length &&
+            sTap.nonFiniteMismatchCount === 0;
+        }
+        tapBranchSummaries.push({ tapName, tapIdx, tapPassed, sTap, wStats, idxStats });
+        appendLog(
+          `    [Causal-Proof] ${tapName}: ${tapPassed ? 'PASS' : 'FAIL'} (${tapPassed ? `tapped tensor matches Tapped ${baseLabel}-WASM` : 'DIVERGES IN TAP'}) | ` +
+          `dtype=${gTensor.dataType} dims=${JSON.stringify(gTensor.dims)} finite=${sTap.finiteCount}/${sTap.length}(nonFin=${sTap.nonFiniteCount}, nonFinMis=${sTap.nonFiniteMismatchCount}) ` +
+          `rangeGPU=[${sTap.min.toFixed(4)}, ${sTap.max.toFixed(4)}] meanGPU=${sTap.mean.toFixed(4)} | rangeWASM=[${wStats.min.toFixed(4)}, ${wStats.max.toFixed(4)}] meanWASM=${wStats.mean.toFixed(4)} | ` +
+          `maxAbsDiff=${sTap.maxAbsDiff.toExponential(3)} p99=${sTap.p99AbsDiff.toExponential(3)} meanAbsDiff=${sTap.meanAbsDiff.toExponential(3)}`
+        );
+        if (idxStats) {
+          appendLog(
+            `    [Exact-Int64-Index-Check] ${tapName}: exactInt64(GPU=${idxStats.hasExactInt64Candidate}, WASM=${idxStats.hasExactInt64Reference}) | ` +
+            `exactMatch=${idxStats.exactMatchCount}/${idxStats.length} mismatch=${idxStats.mismatchCount} outOfRange=${idxStats.outOfRangeCount} (refOut=${idxStats.referenceOutOfRangeCount}) | ` +
+            `GPU=[${idxStats.min}, ${idxStats.max}] mean=${idxStats.mean.toFixed(4)} WASM=[${idxStats.referenceMin}, ${idxStats.referenceMax}] mean=${idxStats.referenceMean?.toFixed(4)} | ` +
+            `exactMaxAbsDiff=${idxStats.maxAbsDiff} meanAbsDiff=${idxStats.meanAbsDiff.toExponential(3)}` +
+            `${idxStats.sampleMismatches.length > 0 ? ` samples=${JSON.stringify(idxStats.sampleMismatches)}` : ''}`
+          );
+        }
+        if (spec.id === 'p2-slot0-reshape') {
+          const branchLabel = tapIdx === 0 ? 'primary_level0 (pre-concat_1 slot0)' : 'secondary_level0_1 (pre-concat_1 slot0)';
+          appendLog(
+            `    [P2-Slot0-Reshape (pre-Concat1, separate from Concat1 ch0)] ${branchLabel} [${tapName}]: ` +
+            `finite=${sTap.finiteCount}/${sTap.length} | GPU_slot0=[${sTap.min.toFixed(4)}, ${sTap.max.toFixed(4)}] mean=${sTap.mean.toFixed(4)} | ` +
+            `WASM_slot0=[${wStats.min.toFixed(4)}, ${wStats.max.toFixed(4)}] mean=${wStats.mean.toFixed(4)} | ` +
+            `deltaVsWASM(maxAbsDiff=${sTap.maxAbsDiff.toExponential(3)}, p99=${sTap.p99AbsDiff.toExponential(3)}, meanAbsDiff=${sTap.meanAbsDiff.toExponential(3)})`
+          );
+        }
+
+        if (spec.id === 'p2b' || spec.id === 'p2a-concat1-out') {
+          const chSplit =
+            spec.id === 'p2b'
+              ? diagMod.summarizeP2bChannelwiseParity(gTensor.data, wTensor.data)
+              : diagMod.summarizeInitToPropConcat1OutSplit(gTensor.data, wTensor.data);
+          const tag = spec.id === 'p2b' ? 'P2b-ChannelSplit' : 'P2a-Concat1OutSplit';
+          let worstChIdx = 0;
+          let worstChMax = -1;
+          chSplit.channels.forEach((cStats, idx) => {
+            if (cStats.maxAbsDiff > worstChMax) {
+              worstChMax = cStats.maxAbsDiff;
+              worstChIdx = idx;
+            }
+          });
+          appendLog(
+            `    [${tag}] ${tapName}: ` +
+            `ch0(disp) max=${chSplit.ch0Disp.maxAbsDiff.toExponential(3)} p99=${chSplit.ch0Disp.p99AbsDiff.toExponential(3)} mean=${chSplit.ch0Disp.meanAbsDiff.toExponential(3)} | ` +
+            `ch1..2 max=${chSplit.ch1_2Zeros.maxAbsDiff.toExponential(3)} (ch1=${chSplit.ch1VsRef.maxAbsDiff.toExponential(3)}, ch2=${chSplit.ch2VsRef.maxAbsDiff.toExponential(3)}) | ` +
+            `ch3..15(LeakyRelu) max=${chSplit.ch3_15Features.maxAbsDiff.toExponential(3)} p99=${chSplit.ch3_15Features.p99AbsDiff.toExponential(3)} mean=${chSplit.ch3_15Features.meanAbsDiff.toExponential(3)} | ` +
+            `worstCh=ch${worstChIdx}(max=${worstChMax.toExponential(3)}, mean=${chSplit.channels[worstChIdx].meanAbsDiff.toExponential(3)})`
+          );
+          const g1 = chSplit.ch1CandidateDist;
+          const g2 = chSplit.ch2CandidateDist;
+          const w1 = chSplit.ch1ReferenceDist;
+          const w2 = chSplit.ch2ReferenceDist;
+          appendLog(
+            `    [${tag}-SlantZeroDist] ${tapName}: ` +
+            `GPU_ch1(zero=${g1.zeroCount}/${g1.length}, nonZero=${g1.nonZeroCount}, min=${g1.min.toExponential(3)}, max=${g1.max.toExponential(3)}) ` +
+            `GPU_ch2(zero=${g2.zeroCount}/${g2.length}, nonZero=${g2.nonZeroCount}, min=${g2.min.toExponential(3)}, max=${g2.max.toExponential(3)}) ` +
+            `GPU_ch1VsCh2Max=${chSplit.ch1VsCh2CandidateMaxAbsDiff.toExponential(3)} | ` +
+            `WASM_ch1(zero=${w1?.zeroCount ?? '-'}/${w1?.length ?? '-'}, nonZero=${w1?.nonZeroCount ?? '-'}, min=${w1 ? w1.min.toExponential(3) : '-'}, max=${w1 ? w1.max.toExponential(3) : '-'}) ` +
+            `WASM_ch2(zero=${w2?.zeroCount ?? '-'}/${w2?.length ?? '-'}, nonZero=${w2?.nonZeroCount ?? '-'}, min=${w2 ? w2.min.toExponential(3) : '-'}, max=${w2 ? w2.max.toExponential(3) : '-'}) ` +
+            `WASM_ch1VsCh2Max=${chSplit.ch1VsCh2ReferenceMaxAbsDiff !== null ? chSplit.ch1VsCh2ReferenceMaxAbsDiff.toExponential(3) : '-'}`
+          );
+        }
+
+        if (spec.id === 'p2a-concat-out') {
+          const cSplit = diagMod.summarizeInitToPropConcatOutSplit(gTensor.data, wTensor.data);
+          appendLog(
+            `    [P2a-ConcatOutSplit] ${tapName}: ` +
+            `ch0(costMin) max=${cSplit.ch0CostMin.maxAbsDiff.toExponential(3)} p99=${cSplit.ch0CostMin.p99AbsDiff.toExponential(3)} mean=${cSplit.ch0CostMin.meanAbsDiff.toExponential(3)} | ` +
+            `ch1..48(fe_shared) max=${cSplit.ch1_48Features.maxAbsDiff.toExponential(3)} p99=${cSplit.ch1_48Features.p99AbsDiff.toExponential(3)} mean=${cSplit.ch1_48Features.meanAbsDiff.toExponential(3)}`
+          );
+        }
+
+        if (spec.id === 'p5-rank4-indices') {
+          const gIdxChk = diagMod.verifySingletonZeroIndices(gTensor.data);
+          const wIdxChk = diagMod.verifySingletonZeroIndices(wTensor.data);
+          const idxOk = gIdxChk.ok && wIdxChk.ok;
+          if (!idxOk) allIndicesNormalZero = false;
+          appendLog(
+            `    [Index-Verify] ${tapName}: normalZero=${idxOk} | GPU(finite=${gIdxChk.finiteCount}/${gIdxChk.length}, nonZero=${gIdxChk.nonZeroCount}, min=${gIdxChk.min}, max=${gIdxChk.max}) | WASM(finite=${wIdxChk.finiteCount}/${wIdxChk.length}, nonZero=${wIdxChk.nonZeroCount}, min=${wIdxChk.min}, max=${wIdxChk.max})`
+          );
+        }
+      }
+
+      if (spec.id === 'p5-rank4-indices') {
+        state.verifiedRank4Indices = allIndicesNormalZero;
+        appendLog(
+          `    [Rank4-Index-Gate] verifiedRank4Indices=${state.verifiedRank4Indices}`
+        );
+      }
+
+      if (spec.isRank4GatherIoPair) {
+        const dataName = spec.outputs[0];
+        const outName = spec.outputs[1];
+        if (!state.verifiedRank4Indices) {
+          appendLog(
+            `    [Identity-Check DEFERRED] Run 'p5-rank4-indices' first to verify normal zero index values before comparing '${outName}' to '${dataName}' as identity.`
+          );
+        } else {
+          const gData = tappedGpu.last.rawOutMap[dataName]?.data;
+          const gOut = tappedGpu.last.rawOutMap[outName]?.data;
+          const wData = tappedWasm.last.rawOutMap[dataName]?.data;
+          const wOut = tappedWasm.last.rawOutMap[outName]?.data;
+          if (gData && gOut && wData && wOut) {
+            const sGpuId = diagMod.summarizeRawTensorAndParity(gOut, gData);
+            const sWasmId = diagMod.summarizeRawTensorAndParity(wOut, wData);
+            appendLog(
+              `    [Identity-Check (after verified 0 indices)] GPU(out_4d vs data_4d): maxAbsDiff=${sGpuId.maxAbsDiff.toExponential(3)} p99=${sGpuId.p99AbsDiff.toExponential(3)} mean=${sGpuId.meanAbsDiff.toExponential(3)} | ` +
+              `WASM(out_4d vs data_4d): maxAbsDiff=${sWasmId.maxAbsDiff.toExponential(3)}`
+            );
+          }
+        }
+      }
+      if (options.reportM1DisparitySourceVerdict) {
+        m1DispSourceSummary.push({
+          id: spec.id,
+          usedWebGpu,
+          gpuValCount,
+          finalsInvariant: maxShiftAcrossFinals <= 1e-4,
+          maxShiftAcrossFinals,
+          tapBranchSummaries,
+        });
+      }
+    }
+
+    if (options.reportM1DisparitySourceVerdict && m1DispSourceSummary.length > 0) {
+      appendLog('\n  === [M1 Disparity-Source Discrimination Summary (pre-Concat1 slot0 vs Concat1 ch0)] ===');
+      for (const row of m1DispSourceSummary) {
+        const branchesDesc = row.tapBranchSummaries
+          .map((b) =>
+            `${b.tapName}:${b.tapPassed ? 'MATCH' : 'DIVERGE'}(gpu=[${b.sTap.min.toFixed(3)},${b.sTap.max.toFixed(3)}],deltaMax=${b.sTap.maxAbsDiff.toExponential(2)},meanDiff=${b.sTap.meanAbsDiff.toExponential(2)})`
+          )
+          .join(' | ');
+        appendLog(
+          `    ${row.id}: finalsInvariant=${row.finalsInvariant} (vsUntappedMax=${row.maxShiftAcrossFinals.toExponential(3)}) gpuVal=${row.gpuValCount} webgpu=${row.usedWebGpu} | ${branchesDesc}`
+        );
+      }
+      const slot0Row = m1DispSourceSummary.find((r) => r.id === 'p2-slot0-reshape');
+      const castRow = m1DispSourceSummary.find((r) => r.id === 'p2-cast');
+      const argminRow = m1DispSourceSummary.find((r) => r.id === 'p2-argmin');
+      if (slot0Row && castRow && argminRow) {
+        const slot0Diverges = slot0Row.tapBranchSummaries.some((b) => !b.tapPassed);
+        const castDiverges = castRow.tapBranchSummaries.some((b) => !b.tapPassed);
+        const argminDiverges = argminRow.tapBranchSummaries.some((b) => !b.tapPassed);
+        if (argminDiverges && argminRow.finalsInvariant) {
+          appendLog('    [VERDICT] Divergence ALREADY present at level_init/ArgMin under invariant finals.');
+        } else if (castDiverges && castRow.finalsInvariant) {
+          appendLog('    [VERDICT] ArgMin exact, divergence enters at level_init/Cast under invariant finals.');
+        } else if (slot0Diverges && slot0Row.finalsInvariant) {
+          appendLog('    [VERDICT] Source tensor Transpose__908:0/1006:0 ALREADY diverges BEFORE init_to_prop/concat_1 under invariant finals.');
+        } else if (!slot0Row.finalsInvariant || !castRow.finalsInvariant) {
+          appendLog(
+            `    [VERDICT] Tapping p2-cast or p2-slot0-reshape PERTURBED final GPU outputs (castInvariant=${castRow.finalsInvariant}, slot0Invariant=${slot0Row.finalsInvariant}) — points directly to JSEP buffer lifetime / zero-copy Reshape aliasing across GatherV2_1.`
+          );
+        } else if (!argminDiverges && !castDiverges && !slot0Diverges && slot0Row.finalsInvariant) {
+          appendLog('    [VERDICT] All three upstream sources (ArgMin, Cast, Transpose__908/1006 slot0) match WASM under invariant finals — points to downstream init_to_prop/concat_1.');
+        }
+      }
+    }
+  }
+
+  document.getElementById('btn-env').addEventListener('click', () => void inspectEnvironment());
+  document.getElementById('btn-open-top').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(location.href); } catch {}
+    appendLog(`Top-level diagnostic URL: ${location.href}`);
+  });
+
+  btnSynSafeAll.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try {
+      await runSafeSyntheticControls(['S3', 'S4', 'S5_Cast', 'S7a_ConstIdx', 'S7b_InputIdx', 'S7c_DynamicArgMin', 'S7d_TwoBranch']);
+    } finally { setBusy(false); }
+  });
+  btnSynR5Only.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try { await runSafeSyntheticControls(['S3']); } finally { setBusy(false); }
+  });
+  btnSynPatched.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try { await runSafeSyntheticControls(['S4']); } finally { setBusy(false); }
+  });
+  btnSynS5Cast.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try { await runSafeSyntheticControls(['S5_Cast']); } finally { setBusy(false); }
+  });
+  btnSynH1All.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try { await runSafeSyntheticControls(['S7a_ConstIdx', 'S7b_InputIdx', 'S7c_DynamicArgMin', 'S7d_TwoBranch']); } finally { setBusy(false); }
+  });
+  btnSynS7a.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try { await runSafeSyntheticControls(['S7a_ConstIdx']); } finally { setBusy(false); }
+  });
+  btnSynS7b.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try { await runSafeSyntheticControls(['S7b_InputIdx']); } finally { setBusy(false); }
+  });
+  btnSynS7c.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try { await runSafeSyntheticControls(['S7c_DynamicArgMin']); } finally { setBusy(false); }
+  });
+  btnSynS7d.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try { await runSafeSyntheticControls(['S7d_TwoBranch']); } finally { setBusy(false); }
+  });
+
+  btnPrepare.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try {
+      logEl.textContent = '準備中: HITNet ONNX と F0102 フレームを読み込んでいます…';
+      const resp = await fetch(MODEL_URL, { method: 'GET' });
+      if (!resp.ok) throw new Error(`Model fetch HTTP ${resp.status}`);
+      const rawBytes = new Uint8Array(await resp.arrayBuffer());
+      const modelSha = await sha256Hex(rawBytes);
+
+      const frame = await extractF0102Rgba();
+      const inputSha = await sha256Hex(frame.tensor);
+      const conv = await transformWithAppModule(rawBytes);
+
+      state.rawModelBytes = rawBytes;
+      state.modelSha256 = modelSha;
+      state.convertedMeta = conv.meta;
+      state.inputFloat32 = frame.tensor;
+      state.inputSha256 = inputSha;
+      state.leftRgbaBuffer = frame.leftRgba;
+      state.rightRgbaBuffer = frame.rightRgba;
+
+      const sCompact = conv.meta.sliceCompact;
+      const gNorm = conv.meta.gatherNdNorm;
+      const pNorm = conv.meta.propGatherNdNorm;
+      const m1Z = conv.meta.m1ZeroSlantNorm;
+      const n1S = conv.meta.n1Slot0Norm;
+      const l1R = conv.meta.l1ReshapeNorm;
+      const l1M = conv.meta.l1ReduceMinNorm;
+      setKv(prepKv, [
+        ['Model SHA-256', `${modelSha} (${modelSha === EXPECTED_MODEL_SHA256 ? 'MATCH' : 'DIFF'})`, modelSha === EXPECTED_MODEL_SHA256 ? 'ok' : 'warn'],
+        ['Video currentTime', `${frame.currentTime.toFixed(4)} s (target ${F0102_PTS.toFixed(3)} s)`, ''],
+        ['Input [1,6,240,320] SHA-256', `${inputSha} (${inputSha === EXPECTED_INPUT_SHA256 ? 'EXACT MATCH' : 'DIFF'})`, inputSha === EXPECTED_INPUT_SHA256 ? 'ok' : 'warn'],
+        ['5D + Slice compact-active', `5d=${conv.meta.decomposedCount}, sliceNorm=${sCompact.normalizedCount}, sliceCompacted=${sCompact.compactedCount}`, sCompact.normalizedCount === 68 ? 'ok' : 'warn'],
+        ['F1 warp_1d GatherND (opt-in)', `total=${gNorm.totalGatherNdCount}, patched=${gNorm.normalizedCount} (${gNorm.normalizedNodeNames.join(', ')})`, gNorm.normalizedCount === 4 ? 'ok' : 'err'],
+        ['H1 prop0 GatherND rank4 (opt-in)', `total=${pNorm.totalGatherNdCount}, patched=${pNorm.normalizedCount} sha=${conv.meta.h1Sha256.slice(0, 12)}...`, pNorm.normalizedCount === 2 && conv.meta.validAfter.valid && conv.meta.inferAfter.valid ? 'ok' : 'err'],
+        ['M1-ConstZero2Ch (opt-in on H1)', `patched=${m1Z.normalizedCount}, deadNodes=${m1Z.removedDeadNodeNames.length}, deadInit=[${m1Z.removedDeadInitializerNames.join(',')}], added=${m1Z.addedInitializerName}${JSON.stringify(m1Z.addedInitializerDims)}, sha=${conv.meta.m1Sha256.slice(0, 12)}..., graphValid=${conv.meta.validAfterM1.valid}, inferValid=${conv.meta.inferAfterM1.valid}`, m1Z.normalizedCount === 2 && m1Z.removedDeadNodeNames.length === 8 && m1Z.verifiedH1Provenance && conv.meta.validAfterM1.valid && conv.meta.inferAfterM1.valid ? 'ok' : 'err'],
+        ['N1-Slot0Transpose (opt-in on M1)', `patched=${n1S.normalizedCount} (${n1S.normalizedNodeNames.join(', ')}), verifiedM1=${n1S.verifiedM1Provenance}, verifiedRaw=${n1S.verifiedRawIdentity}, sha=${conv.meta.n1Sha256}, compat=${conv.meta.compatAfterN1.compatible}, graphValid=${conv.meta.validAfterN1.valid}, inferValid=${conv.meta.inferAfterN1.valid}`, n1S.normalizedCount === 2 && n1S.verifiedM1Provenance && n1S.verifiedRawIdentity && conv.meta.compatAfterN1.compatible && conv.meta.validAfterN1.valid && conv.meta.inferAfterN1.valid ? 'ok' : 'err'],
+        ['L1-Reshape level_init GatherND (opt-in)', `patched=${l1R.normalizedCount}/${l1R.totalGatherNdCount}, graphValid=${conv.meta.validAfterL1Reshape.valid}, inferValid=${conv.meta.inferAfterL1Reshape.valid}`, l1R.normalizedCount === 2 && conv.meta.validAfterL1Reshape.valid && conv.meta.inferAfterL1Reshape.valid ? 'ok' : 'err'],
+        ['L1-ReduceMin level_init [診断候補・非既定]', `patched=${l1M.normalizedCount}, costLineage=${l1M.verifiedCostLineageCount}/2, graphValid=${conv.meta.validAfterL1ReduceMin.valid}, inferValid=${conv.meta.inferAfterL1ReduceMin.valid}`, l1M.normalizedCount === 2 && conv.meta.validAfterL1ReduceMin.valid && conv.meta.inferAfterL1ReduceMin.valid ? 'ok' : 'err'],
+        ['Static Compat & Inference After N1/M1', `n1Compat=${conv.meta.compatAfterN1.compatible}, m1Compat=${conv.meta.compatAfterM1.compatible}, dups=${conv.meta.inferAfterN1.duplicateOutputs.length}`, conv.meta.compatAfterN1.compatible && conv.meta.validAfterN1.valid && conv.meta.inferAfterN1.valid ? 'ok' : 'err'],
+      ]);
+      logEl.textContent = '準備完了。「N1-Slot0Transpose 検証」を実行できます。';
+    } catch (err) {
+      logEl.textContent = `準備エラー: ${err instanceof Error ? err.message : String(err)}`;
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  async function runDedicatedOrtWorkerArm(workerUrl, expectedOrtVersion, m1Bytes, feedFloat32, opts = {}) {
+    const provider = opts.provider === 'wasm' ? 'wasm' : 'webgpu';
+    const graphOptimizationLevel = opts.graphOptimizationLevel === 'disabled' ? 'disabled' : 'basic';
+    const warmRuns = Math.max(0, Math.min(5, Math.trunc(opts.warmRuns ?? 1)));
+    const timeoutMs = Math.max(5000, Math.trunc(opts.timeoutMs ?? 120000));
+    const worker = new Worker(workerUrl, { type: 'module' });
+    const reqId = 1;
+    let timerId = null;
+
+    try {
+      const modelBuffer = m1Bytes.slice().buffer;
+      const feedBuffer = feedFloat32.slice().buffer;
+      const res = await new Promise((resolve) => {
+        let settled = false;
+        const finish = (payload) => {
+          if (settled) return;
+          settled = true;
+          if (timerId !== null) clearTimeout(timerId);
+          worker.removeEventListener('message', onMsg);
+          worker.removeEventListener('error', onErr);
+          resolve(payload);
+        };
+        const onMsg = (ev) => {
+          if (ev.data?.id !== reqId) return;
+          finish(ev.data);
+        };
+        const onErr = (ev) => {
+          finish({
+            id: reqId,
+            ok: false,
+            stage: 'init',
+            message: ev?.message || 'Dedicated ORT diagnostic worker crashed',
+            pinnedOrtVersion: expectedOrtVersion,
+            entryModuleUrl: 'worker-error',
+            wasmPaths: 'worker-error',
+            ortVersions: null,
+            loadedOrtResources: [],
+            foreignOrtResources: [],
+            provider,
+            configuredProviders: [provider],
+            fallbackBehavior: 'no-fallback-explicit-error',
+            graphOptimizationLevel,
+          });
+        };
+        timerId = setTimeout(() => {
+          try {
+            worker.terminate();
+          } catch {}
+          finish({
+            id: reqId,
+            ok: false,
+            stage: 'timeout',
+            message: `Worker timed out after ${timeoutMs}ms (${expectedOrtVersion} ${provider} opt=${graphOptimizationLevel})`,
+            pinnedOrtVersion: expectedOrtVersion,
+            entryModuleUrl: 'timeout',
+            wasmPaths: 'timeout',
+            ortVersions: null,
+            loadedOrtResources: [],
+            foreignOrtResources: [],
+            provider,
+            configuredProviders: [provider],
+            fallbackBehavior: 'no-fallback-explicit-error',
+            graphOptimizationLevel,
+          });
+        }, timeoutMs);
+        worker.addEventListener('message', onMsg);
+        worker.addEventListener('error', onErr);
+        worker.postMessage(
+          {
+            id: reqId,
+            expectedOrtVersion,
+            modelBuffer,
+            feedBuffer,
+            feedName: 'input',
+            feedDims: [1, 6, 240, 320],
+            provider,
+            graphOptimizationLevel,
+            warmRuns,
+            disableCpuEpFallback: false,
+            captureGpuValidationErrors: provider === 'webgpu',
+          },
+          [modelBuffer, feedBuffer]
+        );
+      });
+      return res;
+    } finally {
+      if (timerId !== null) clearTimeout(timerId);
+      worker.terminate();
+    }
+  }
+
+  async function runOrt130Vs131M1Comparison() {
+    const diagMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const FINAL_OUTS = ['reference_output_disparity', 'secondary_output_disparity'];
+    const EXPECTED_F0102_LIVE_FEED_SHA256 = '49427b336f1f946db75fbf67402c9a7a217698890e4a8cc04ea75f481029ba29';
+    const isParityPass = (s) =>
+      s.length > 0 &&
+      s.finiteCount === s.length &&
+      s.nonFiniteMismatchCount === 0 &&
+      s.maxAbsDiff < 1e-3 &&
+      s.p99AbsDiff < 1e-4 &&
+      s.meanAbsDiff < 1e-5;
+
+    const rawSha = await sha256Hex(state.rawModelBytes);
+    const feedSha = await sha256Hex(state.inputFloat32);
+    const m1Prep = diagMod.prepareHitnetM1FullGraphBytes(state.rawModelBytes, {
+      rawModelSha256: EXPECTED_MODEL_SHA256,
+    });
+    const m1Sha = await sha256Hex(m1Prep.bytes);
+    if (m1Sha !== diagMod.HITNET_M1_FULL_GRAPH_SHA256) {
+      throw new Error(
+        `M1 SHA mismatch: expected=${diagMod.HITNET_M1_FULL_GRAPH_SHA256} actual=${m1Sha}`
+      );
+    }
+
+    appendLog(
+      `\n=== Isolated ORT 1.30.0 vs 1.31.1 Comparison on Exact M1 (F0102, GPU opt=basic, no fallback, 1 cold + 1 warm) ===\n` +
+      `rawInputModelSHA256=${rawSha} (expected=${EXPECTED_MODEL_SHA256}, match=${rawSha === EXPECTED_MODEL_SHA256})\n` +
+      `m1ModelSHA256=${m1Sha} (expected=${diagMod.HITNET_M1_FULL_GRAPH_SHA256}, match=${m1Sha === diagMod.HITNET_M1_FULL_GRAPH_SHA256})\n` +
+      `feedInputSHA256=${feedSha} (tufa15LiveF0102=${EXPECTED_F0102_LIVE_FEED_SHA256}, matchTufa15=${feedSha === EXPECTED_F0102_LIVE_FEED_SHA256}, stateInputSha=${state.inputSha256})`
+    );
+
+    const rawWasmRef = await runWorkerArm(ARMS['arm-wasm-raw-dis'], 0, {
+      disableCpuEpFallback: false,
+      enableWebGpuProfiling: false,
+    });
+    if (!rawWasmRef.ok) {
+      appendLog(`  [ABORT] Raw WASM disabled (1.30.0) baseline failed: ${rawWasmRef.error}`);
+      return;
+    }
+    const rawRefFeedSha = rawWasmRef.manifest.feedSha256s?.input || null;
+    if (rawRefFeedSha !== feedSha || rawWasmRef.manifest.sessionModelSha256 !== EXPECTED_MODEL_SHA256) {
+      appendLog(
+        `  [ABORT] Raw WASM baseline identity mismatch: modelSha=${rawWasmRef.manifest.sessionModelSha256} feedSha=${rawRefFeedSha} expectedFeed=${feedSha}`
+      );
+      return;
+    }
+
+    const armsSpec = [
+      {
+        label: 'ORT 1.30.0 Dedicated — M1 WebGPU (opt=basic)',
+        workerUrl: '/src/services/hitnetOrt130DiagnosticWorker.ts',
+        expectedVersion: '1.30.0',
+        provider: 'webgpu',
+        opt: 'basic',
+        warmRuns: 1,
+      },
+      {
+        label: 'ORT 1.31.1 Dedicated — M1 WebGPU (opt=basic)',
+        workerUrl: '/src/services/hitnetOrt131DiagnosticWorker.ts',
+        expectedVersion: '1.31.1',
+        provider: 'webgpu',
+        opt: 'basic',
+        warmRuns: 1,
+      },
+      {
+        label: 'ORT 1.31.1 Dedicated — M1 WASM (opt=disabled)',
+        workerUrl: '/src/services/hitnetOrt131DiagnosticWorker.ts',
+        expectedVersion: '1.31.1',
+        provider: 'wasm',
+        opt: 'disabled',
+        warmRuns: 1,
+      },
+    ];
+
+    const armResults = [];
+    for (const spec of armsSpec) {
+      const res = await runDedicatedOrtWorkerArm(
+        spec.workerUrl,
+        spec.expectedVersion,
+        m1Prep.bytes,
+        state.inputFloat32,
+        {
+          provider: spec.provider,
+          graphOptimizationLevel: spec.opt,
+          warmRuns: spec.warmRuns,
+          timeoutMs: 120000,
+        }
+      );
+      armResults.push({ spec, res });
+
+      const manifestLog = {
+        status: res.ok ? 'OK' : `FAILED(${res.stage})`,
+        pinnedOrtVersion: res.pinnedOrtVersion,
+        ortVersions: res.ortVersions,
+        entryModuleUrl: res.entryModuleUrl,
+        wasmPaths: res.wasmPaths,
+        loadedOrtResources: res.loadedOrtResources,
+        foreignOrtResources: res.foreignOrtResources,
+        configuredProviders: res.configuredProviders,
+        fallbackBehavior: res.fallbackBehavior,
+        graphOptimizationLevel: res.graphOptimizationLevel,
+        modelSha256: res.modelSha256 || null,
+        m1ShaMatch: res.modelSha256 ? res.modelSha256 === m1Sha : false,
+        feedSha256: res.feedSha256 || null,
+        feedShaMatch: res.feedSha256 ? res.feedSha256 === feedSha : false,
+        workerGpuAdapter: res.workerGpuAdapter || null,
+        gpuValidationErrors: res.gpuValidationErrors ?? null,
+        ...(res.ok
+          ? {
+              createMs: Number(res.createMs.toFixed(1)),
+              coldRunMs: Number(res.coldRunMs.toFixed(1)),
+              warmRunMs: res.warmRunMs.map((v) => Number(v.toFixed(1))),
+            }
+          : { error: res.message }),
+      };
+      appendLog(`\n  [${spec.label}]\n    MANIFEST=${JSON.stringify(manifestLog)}`);
+    }
+
+    appendLog('\n  --- Final Tensor Parity vs Raw WASM 1.30.0 (opt=disabled) ---');
+    appendLog('  Thresholds: finite=76800/76800, nonFiniteMismatch=0, maxAbsDiff<1e-3, p99AbsDiff<1e-4, meanAbsDiff<1e-5');
+    for (const fOut of FINAL_OUTS) {
+      const refTensor = rawWasmRef.last.rawOutMap[fOut];
+      const refStats = diagMod.summarizeRawTensorAndParity(refTensor.data, null);
+      appendLog(
+        `    [Raw-WASM-1.30.0-Dis] ${fOut}: finite=${refStats.finiteCount}/${refStats.length} range=[${refStats.min.toFixed(4)}, ${refStats.max.toFixed(4)}] mean=${refStats.mean.toFixed(4)}`
+      );
+    }
+
+    const outMapByIdx = [];
+    for (const { spec, res } of armResults) {
+      if (!res.ok) {
+        appendLog(`    [${spec.label}] NO PARITY RESULT — FAILED at stage=${res.stage}: ${res.message}`);
+        outMapByIdx.push(null);
+        continue;
+      }
+      if (res.modelSha256 !== m1Sha || res.feedSha256 !== feedSha) {
+        appendLog(
+          `    [${spec.label}] SHA VERIFICATION FAILED: modelSha=${res.modelSha256} (expected ${m1Sha}) feedSha=${res.feedSha256} (expected ${feedSha})`
+        );
+        outMapByIdx.push(null);
+        continue;
+      }
+      const outMap = {};
+      for (const o of res.outputs) {
+        outMap[o.name] = {
+          dims: o.dims,
+          dataType: o.dataType,
+          data: new Float32Array(o.buffer),
+        };
+      }
+      outMapByIdx.push(outMap);
+      for (const fOut of FINAL_OUTS) {
+        const cand = outMap[fOut];
+        const ref = rawWasmRef.last.rawOutMap[fOut];
+        if (!cand || !ref) {
+          appendLog(`    [${spec.label}] @ ${fOut}: MISSING`);
+          continue;
+        }
+        const s = diagMod.summarizeRawTensorAndParity(cand.data, ref.data);
+        const passed = isParityPass(s) && cand.data.length === 76800;
+        appendLog(
+          `    [${spec.label}] @ ${fOut}: ${passed ? 'PASS' : 'FAIL'} | dtype=${cand.dataType} dims=${JSON.stringify(cand.dims)} finite=${s.finiteCount}/${s.length} range=[${s.min.toFixed(4)}, ${s.max.toFixed(4)}] mean=${s.mean.toFixed(4)} | vsRaw maxAbsDiff=${s.maxAbsDiff.toExponential(3)} p99AbsDiff=${s.p99AbsDiff.toExponential(3)} meanAbsDiff=${s.meanAbsDiff.toExponential(3)} rmsDiff=${s.rmsDiff.toExponential(3)} nonFiniteMismatch=${s.nonFiniteMismatchCount}`
+        );
+      }
+    }
+
+    if (outMapByIdx[0] && outMapByIdx[1]) {
+      appendLog('\n  --- Direct Delta: M1 WebGPU 1.31.1 (basic) vs M1 WebGPU 1.30.0 (basic) ---');
+      for (const fOut of FINAL_OUTS) {
+        const t130 = outMapByIdx[0][fOut];
+        const t131 = outMapByIdx[1][fOut];
+        if (t130 && t131) {
+          const d = diagMod.summarizeRawTensorAndParity(t131.data, t130.data);
+          appendLog(
+            `    ${fOut}: maxAbsDiff=${d.maxAbsDiff.toExponential(3)} p99AbsDiff=${d.p99AbsDiff.toExponential(3)} meanAbsDiff=${d.meanAbsDiff.toExponential(3)} rmsDiff=${d.rmsDiff.toExponential(3)}`
+          );
+        }
+      }
+    }
+  }
+
+  btnOrt131M1Compare.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runOrt130Vs131M1Comparison();
+    } catch (err) {
+      appendLog(`ORT 1.30.0 vs 1.31.1 M1 Comparison FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnN1VerifyBasic.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try {
+      const { results, wasmRef } = await runArmComparison(
+        [
+          ARMS['arm-wasm-raw-dis'],
+          ARMS['arm-wasm-n1-dis'],
+          ARMS['arm-wasm-n1-basic'],
+          ARMS['arm-n1-basic'],
+        ],
+        0,
+        'N1-Slot0Transpose Verification (exact M1 + Transpose perm=[0,3,1,2] on Transpose__908/1006): Raw-WASM-Dis vs Same-Bytes N1-WASM-Dis/Basic vs N1-WebGPU-Basic (ORT/JSEP 1.30.0, F0102)'
+      );
+      const n1GpuRes = results.find((r) => r.armConfig.id === 'arm-n1-basic');
+      const expectedN1Sha = state.convertedMeta?.n1Sha256;
+      if (n1GpuRes?.ok) {
+        const epOk = Array.isArray(n1GpuRes.manifest.finalEP) && n1GpuRes.manifest.finalEP.includes('webgpu');
+        const shaOk = !expectedN1Sha || n1GpuRes.manifest.sessionModelSha256 === expectedN1Sha;
+        appendLog(
+          `\n  [N1-Gate] expectedN1Sha=${expectedN1Sha || 'n/a'} actualN1Sha=${n1GpuRes.manifest.sessionModelSha256} shaMatch=${shaOk} finalEP=${JSON.stringify(n1GpuRes.manifest.finalEP)} usedWebGpu=${epOk} fallbackReason=${n1GpuRes.manifest.fallbackReason ?? 'none'} gpuValidationErrors=${JSON.stringify(n1GpuRes.manifest.gpuValidationErrors ?? [])}`
+        );
+      }
+      await runBoundedTapLocalization(
+        ['p2-slot0-reshape', 'p2a-concat1-out'],
+        'basic',
+        {
+          baseMode: 'n1',
+          verifyExactBaseSha256: expectedN1Sha,
+          prefetchedRawWasmRef: wasmRef,
+          prefetchedUntappedGpu: n1GpuRes,
+          titleOverride: 'N1 Pre-Concat Taps & Final Invariance Check (p2-slot0-reshape, p2a-concat1-out; ORT/JSEP 1.30.0, basic, F0102)',
+        }
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnM1CompareBasic.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const warmRuns = Math.max(0, Math.min(5, Number(document.getElementById('sel-warm-runs').value) || 0));
+    setBusy(true);
+    try {
+      await runArmComparison(
+        [
+          ARMS['arm-wasm-raw-dis'],
+          ARMS['arm-wasm-m1-dis'],
+          ARMS['arm-wasm-m1-basic'],
+          ARMS['arm-m1-basic'],
+          ARMS['arm-m1-all'],
+        ],
+        warmRuns,
+        'M1-ConstZero2Ch Candidate Comparison (H1 + 2ch Zero Init): Raw-WASM-Dis vs Same-Bytes M1-WASM-Dis/Basic vs M1-WebGPU-Basic/All'
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnM1Profile.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try {
+      appendLog('\n=== M1 GPU プロファイル / 配置確認 (Arm M1-Basic, profiling=true — DO NOT USE FOR TIMING) ===');
+      await runWorkerArm(ARMS['arm-m1-basic'], 0, { disableCpuEpFallback: false, enableWebGpuProfiling: true });
+    } finally { setBusy(false); }
+  });
+
+  btnL1ReshapeCompareBasic.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const warmRuns = Math.max(0, Math.min(5, Number(document.getElementById('sel-warm-runs').value) || 0));
+    setBusy(true);
+    try {
+      await runArmComparison(
+        [
+          ARMS['arm-l1-reshape-basic'],
+          ARMS['arm-l1-reshape-all'],
+          ARMS['arm-wasm-l1-reshape-basic'],
+          ARMS['arm-wasm-l1-reshape-dis'],
+          ARMS['arm-wasm-raw-dis'],
+        ],
+        warmRuns,
+        'L1-Reshape Candidate Comparison (level_init GatherND batch (60,80)->4800): GPU opt=basic/all vs Same-Bytes WASM vs Raw-WASM'
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnL1ReduceMinCompareBasic.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const warmRuns = Math.max(0, Math.min(5, Number(document.getElementById('sel-warm-runs').value) || 0));
+    setBusy(true);
+    try {
+      await runArmComparison(
+        [
+          ARMS['arm-l1-reducemin-basic'],
+          ARMS['arm-l1-reducemin-all'],
+          ARMS['arm-wasm-l1-reducemin-basic'],
+          ARMS['arm-wasm-l1-reducemin-dis'],
+          ARMS['arm-wasm-raw-dis'],
+        ],
+        warmRuns,
+        'L1-ReduceMin [Diagnostic Only] Candidate Comparison (level_init ReduceMin axes=[3] keepdims=1): GPU opt=basic/all vs Same-Bytes WASM vs Raw-WASM'
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnH1WasmControls.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try {
+      await runArmComparison(
+        [
+          ARMS['arm-wasm-raw-dis'],
+          ARMS['arm-wasm-raw-all'],
+          ARMS['arm-wasm-h1-dis'],
+          ARMS['arm-wasm-h1-all'],
+          ARMS['arm-wasm-h1-basic'],
+        ],
+        0,
+        'Same-App-Worker Same-F0102 H1 WASM Controls (Raw Dis/All vs Exact H1-Bytes Dis/All/Basic)'
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnH1CompareAll.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const warmRuns = Math.max(0, Math.min(5, Number(document.getElementById('sel-warm-runs').value) || 0));
+    setBusy(true);
+    try {
+      await runArmComparison(
+        [
+          ARMS['arm-h1'],
+          ARMS['arm-wasm-h1-all'],
+          ARMS['arm-wasm-raw-all'],
+          ARMS['arm-wasm-raw-dis'],
+        ],
+        warmRuns,
+        'H1 WebGPU Candidate Comparison [opt=all]: H1-WebGPU vs H1-WASM-All vs Raw-WASM-All vs Raw-WASM-Dis'
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnH1CompareBasic.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const warmRuns = Math.max(0, Math.min(5, Number(document.getElementById('sel-warm-runs').value) || 0));
+    setBusy(true);
+    try {
+      await runArmComparison(
+        [
+          ARMS['arm-h2'],
+          ARMS['arm-wasm-h1-basic'],
+          ARMS['arm-wasm-raw-dis'],
+        ],
+        warmRuns,
+        'H1 WebGPU Candidate Comparison [opt=basic]: H2 (H1 opt=basic) vs H1-WASM-Basic vs Raw-WASM-Dis'
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnH1Profile.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try {
+      appendLog('\n=== H1 GPU プロファイル / 配置確認 (Arm H1, profiling=true — DO NOT USE FOR TIMING) ===');
+      await runWorkerArm(ARMS['arm-h1'], 0, { disableCpuEpFallback: false, enableWebGpuProfiling: true });
+    } finally { setBusy(false); }
+  });
+
+  btnH1Strict.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try {
+      appendLog('\n=== 別検証: Strict disable_cpu_ep_fallback="1" Check (Arm H1) ===');
+      await runWorkerArm(ARMS['arm-h1'], 0, { disableCpuEpFallback: true, enableWebGpuProfiling: false });
+    } finally { setBusy(false); }
+  });
+
+  btnCkptH1Suite.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try {
+      for (const m of ['p2b', 'p3a', 'p3b', 'p3c', 'p4', 'p5', 'p6']) {
+        await runSubgraphProbe(m, 'h1');
+      }
+    } finally { setBusy(false); }
+  });
+  btnCkptP1.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p1', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP2.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p2', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP2b.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p2b', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP3a.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p3a', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP3b.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p3b', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP3c.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p3c', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP4.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p4', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP5.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p5', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP6.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p6', 'h1'); } finally { setBusy(false); } } });
+  btnCkptPostProp0Suite.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try {
+      for (const m of ['p7', 'p8', 'p9', 'p10', 'p11']) {
+        await runSubgraphProbe(m, 'h1');
+      }
+    } finally { setBusy(false); }
+  });
+  btnCkptP7.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p7', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP8.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p8', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP9.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p9', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP10.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p10', 'h1'); } finally { setBusy(false); } } });
+  btnCkptP11.addEventListener('click', async () => { if (!state.busy && state.rawModelBytes) { setBusy(true); try { await runSubgraphProbe('p11', 'h1'); } finally { setBusy(false); } } });
+
+  const getSelectedTapBase = () => {
+    const v = selTapBase?.value;
+    return v === 'm1' || v === 'n1' || v === 'reshape-rank4' || v === 'reduce-min' ? v : 'h1';
+  };
+
+  btnTapM1DispSource.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    if (selTapBase) selTapBase.value = 'm1';
+    if (selTapOpt) selTapOpt.value = 'basic';
+    setBusy(true);
+    try {
+      await runBoundedTapLocalization(
+        ['p2-argmin', 'p2-cast', 'p2-slot0-reshape'],
+        'basic',
+        {
+          baseMode: 'm1',
+          verifyExactBaseSha256: state.convertedMeta?.m1Sha256,
+          reportM1DisparitySourceVerdict: true,
+          titleOverride: 'M1 Disparity-Source Comparison Taps (p2-argmin, p2-cast, p2-slot0-reshape; ORT/JSEP 1.30.0, basic, F0102)',
+        }
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnTapM1Guided.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    if (selTapBase) selTapBase.value = 'm1';
+    const optLevel = selTapOpt.value === 'all' ? 'all' : 'basic';
+    setBusy(true);
+    try {
+      await runBoundedTapLocalization(
+        ['p2b', 'p2a-concat1-out', 'p3c', 'p4', 'p5-p6'],
+        optLevel,
+        { baseMode: 'm1' }
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnTapLevelInitGuided.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const optLevel = selTapOpt.value === 'all' ? 'all' : 'basic';
+    const baseMode = getSelectedTapBase();
+    setBusy(true);
+    try {
+      await runBoundedTapLocalization(
+        ['p2b', 'p2a-concat-out', 'p2a-concat-fe', 'p4', 'p5-p6'],
+        optLevel,
+        { baseMode }
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnTapEarlyGuided.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const optLevel = selTapOpt.value === 'all' ? 'all' : 'basic';
+    const baseMode = getSelectedTapBase();
+    setBusy(true);
+    try {
+      await runBoundedTapLocalization(['p4', 'p2-gather', 'p2-argmin', 'p3c', 'p2b', 'p2-cast'], optLevel, { baseMode });
+    } finally { setBusy(false); }
+  });
+
+  btnTapRank4Check.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const optLevel = selTapOpt.value === 'all' ? 'all' : 'basic';
+    const baseMode = getSelectedTapBase();
+    setBusy(true);
+    try {
+      state.verifiedRank4Indices = false;
+      await runBoundedTapLocalization(
+        ['p5-rank4-indices', 'p5-rank4-io-primary', 'p5-rank4-io-secondary'],
+        optLevel,
+        { baseMode, requireVerifiedIndicesForIo: true }
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnTapGuided.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const optLevel = selTapOpt.value === 'all' ? 'all' : 'basic';
+    const baseMode = getSelectedTapBase();
+    setBusy(true);
+    try {
+      await runBoundedTapLocalization(['p5-p6', 'p8', 'p10'], optLevel, { baseMode });
+    } finally { setBusy(false); }
+  });
+
+  btnTapSelected.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const optLevel = selTapOpt.value === 'all' ? 'all' : 'basic';
+    const baseMode = getSelectedTapBase();
+    const gid = selTapGroup.value;
+    if (!gid) return;
+    setBusy(true);
+    try {
+      await runBoundedTapLocalization([gid], optLevel, { baseMode });
+    } finally { setBusy(false); }
+  });
+
+  btnWasmControls.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try {
+      await runArmComparison(
+        [
+          ARMS['arm-wasm-raw-dis'],
+          ARMS['arm-wasm-raw-all'],
+          ARMS['arm-wasm-f1-dis'],
+          ARMS['arm-wasm-f1-all'],
+        ],
+        0,
+        'Same-App-Worker Same-F0102 Legacy F1 WASM Controls (Original Raw Dis/All vs Exact F1-Bytes Dis/All)'
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnCompareGatherNd.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const warmRuns = Math.max(0, Math.min(5, Number(document.getElementById('sel-warm-runs').value) || 0));
+    setBusy(true);
+    try {
+      await runArmComparison(
+        [ARMS['arm-e1'], ARMS['arm-f1']],
+        warmRuns,
+        'Targeted HITNet Comparison: E1 (5D+compact-active) vs F1 (+gathernd-rank4) vs Unmodified WASM [opt=all, mixed-EP]'
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnCompareGatherNdBasic.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const warmRuns = Math.max(0, Math.min(5, Number(document.getElementById('sel-warm-runs').value) || 0));
+    setBusy(true);
+    try {
+      await runArmComparison(
+        [ARMS['arm-e2'], ARMS['arm-f2']],
+        warmRuns,
+        'Targeted HITNet Comparison: E2 (5D+compact-active) vs F2 (+gathernd-rank4) vs Unmodified WASM [opt=basic, mixed-EP]'
+      );
+    } finally { setBusy(false); }
+  });
+
+  btnFetchCompare.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const warmRuns = Math.max(1, Math.min(5, Number(document.getElementById('sel-warm-runs').value) || 1));
+    setBusy(true);
+    try {
+      appendLog('\n=== [PERF DIAGNOSTIC] All-Outputs vs Primary-Only Fetch Comparison (Arm H1) ===');
+      const rAll = await runWorkerArm(ARMS['arm-h1'], warmRuns, { disableCpuEpFallback: false, enableWebGpuProfiling: false, fetchPrimaryOutputOnly: false });
+      const rPrimary = await runWorkerArm(ARMS['arm-h1'], warmRuns, { disableCpuEpFallback: false, enableWebGpuProfiling: false, fetchPrimaryOutputOnly: true });
+      if (rAll.ok && rPrimary.ok) {
+        appendLog(
+          `  Summary All-Outputs vs Primary-Only [PERF ONLY]: all(cold=${rAll.manifest.perfNotParity.coldRunMs}ms, warm=${JSON.stringify(rAll.manifest.perfNotParity.warmRunMs)}) vs primaryOnly(cold=${rPrimary.manifest.perfNotParity.coldRunMs}ms, warm=${JSON.stringify(rPrimary.manifest.perfNotParity.warmRunMs)})`
+        );
+      }
+    } finally { setBusy(false); }
+  });
+
+  btnRunSingleArm.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    const armId = document.getElementById('sel-single-arm').value;
+    const warmRuns = Math.max(0, Math.min(5, Number(document.getElementById('sel-warm-runs').value) || 0));
+    const arm = ARMS[armId];
+    if (!arm) return;
+    setBusy(true);
+    try {
+      await runArmComparison([arm], warmRuns, `Single Arm Run: ${arm.id}`);
+    } finally { setBusy(false); }
+  });
+
+  btnProbeConcat32.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try { await runSubgraphProbe('concat32', 'h1'); } finally { setBusy(false); }
+  });
+
+  btnProbeStem.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes) return;
+    setBusy(true);
+    try { await runSubgraphProbe('stem', 'h1'); } finally { setBusy(false); }
+  });
+
+  void inspectEnvironment();
+</script>
+</body>
+</html>

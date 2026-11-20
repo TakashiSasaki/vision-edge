@@ -5,6 +5,7 @@
 .dockerignore
 .github/
 .agents/
+.aistudio/
 .vscode/
 .idea/
 
@@ -16,6 +17,8 @@ node_modules/
 
 # Exclude historical test/verification reports, archives, and documentation (33 MB+)
 docs/
+README.md
+AGENTS.md
 
 # Exclude build output and test coverage/results
 dist/
@@ -25,14 +28,23 @@ test-results/
 playwright-report/
 blob-report/
 
-# Exclude test suites and offline verification scripts
+# Exclude test suites, unit tests, and offline verification scripts
 e2e/
 e2e-real-sdk/
 scripts/mirage/
 scripts/testing/
 scripts/real-sdk/
+public/assets/aistudio/
 pyproject.toml
 requirements-mirage.txt
+playwright.config.ts
+playwright.real-sdk.config.ts
+vitest.config.ts
+vite.real-sdk.config.ts
+eslint.config.js
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
 
 # Exclude binary cache/model files and archives
 *.onnx
@@ -48,4 +60,3 @@ requirements-mirage.txt
 Thumbs.db
 bun.lock
 bun.lockb
-

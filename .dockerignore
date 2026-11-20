@@ -4,6 +4,7 @@
 .dockerignore
 .github/
 .agents/
+.aistudio/
 .vscode/
 .idea/
 
@@ -21,8 +22,20 @@ e2e-real-sdk/
 scripts/mirage/
 scripts/testing/
 scripts/real-sdk/
+public/assets/aistudio/
 pyproject.toml
 requirements-mirage.txt
+playwright.config.ts
+playwright.real-sdk.config.ts
+vitest.config.ts
+vite.real-sdk.config.ts
+eslint.config.js
+README.md
+AGENTS.md
+
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
 
 *.onnx
 *.onnx.gz
@@ -36,4 +49,3 @@ requirements-mirage.txt
 Thumbs.db
 bun.lock
 bun.lockb
-

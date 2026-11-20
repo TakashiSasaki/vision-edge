@@ -190,6 +190,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
   const videoTimeRef = useRef<number>(0);
   const stereoVideoInFlightRef = useRef<boolean>(false);
   const pendingStereoVideoEvalRef = useRef<number | null>(null);
+  const lastNotifiedRegionsKeyRef = useRef<string | null>(null);
   const stereoVideoMetricsRef = useRef<PerformanceMetrics>(new PerformanceMetrics());
   const videoTransportRef = useRef({
     videoDuration,
@@ -390,6 +391,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     drawnFrameRef.current = null;
     stereoVideoInFlightRef.current = false;
     pendingStereoVideoEvalRef.current = null;
+    lastNotifiedRegionsKeyRef.current = null;
     stereoVideoMetricsRef.current = new PerformanceMetrics();
     setCustomSourceInferring(false);
     engine.clearDetections();
@@ -574,6 +576,26 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     renderCustomSourceFrame,
   ]);
 
+  const notifyStereoVideoRegionsIfChanged = useCallback(
+    (regions: StereoVideoGroundTruthRegion[]) => {
+      const cb = latest.current.onStereoVideoRegions;
+      if (!cb) return;
+      const key =
+        regions.length === 0
+          ? 'empty'
+          : regions
+              .map(
+                (r) =>
+                  `${r.id}:${r.normX.toFixed(4)},${r.normY.toFixed(4)},${r.disparityPx.toFixed(2)}`
+              )
+              .join('|');
+      if (lastNotifiedRegionsKeyRef.current === key) return;
+      lastNotifiedRegionsKeyRef.current = key;
+      cb(regions);
+    },
+    []
+  );
+
   // Populate stereoVideoCanvasRef at given timeSec
   const prepareStereoVideoFrameCanvas = useCallback(
     (timeSec: number): HTMLCanvasElement | null => {
@@ -600,7 +622,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
             stereoVideoSource.presetId,
             timeSec
           );
-          latest.current.onStereoVideoRegions?.(refRegions);
+          notifyStereoVideoRegionsIfChanged(refRegions);
           return sbsCanvas;
         }
         const rendered = renderStereoVideoPresetFrame(
@@ -608,7 +630,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
           timeSec,
           sbsCanvas
         );
-        latest.current.onStereoVideoRegions?.(rendered.regions);
+        notifyStereoVideoRegionsIfChanged(rendered.regions);
         return rendered.canvas;
       }
 
@@ -621,10 +643,10 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       }
       const ctx = sbsCanvas.getContext('2d');
       ctx?.drawImage(v, 0, 0, sbsCanvas.width, sbsCanvas.height);
-      latest.current.onStereoVideoRegions?.([]);
+      notifyStereoVideoRegionsIfChanged([]);
       return sbsCanvas;
     },
-    [stereoVideoSource, uploadedVideoReady]
+    [stereoVideoSource, uploadedVideoReady, notifyStereoVideoRegionsIfChanged]
   );
 
   // Shared Stereo Video Frame Evaluator (persists across Play/Pause transitions so in-flight
@@ -792,6 +814,7 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
     }
 
     let lastUiTimeUpdateMs = -Infinity;
+    let lastPreviewFrameIdx = -1;
 
     const tick = (nowMs: number) => {
       if (cancelled) return;
@@ -838,9 +861,15 @@ export const VisionCanvas: React.FC<VisionCanvasProps> = ({
       const frameIdx = Math.floor(nextTime * curFps + 1e-4);
       if (frameIdx !== lastEvaluatedFrameIdx && !stereoVideoInFlightRef.current) {
         lastEvaluatedFrameIdx = frameIdx;
+        lastPreviewFrameIdx = frameIdx;
         void evaluateStereoVideoFrame(nextTime);
-      } else if (stereoVideoInFlightRef.current && !drawnFrameRef.current) {
-        // Keep single-eye video preview live while the very first heavy ONNX depth frame computes
+      } else if (
+        stereoVideoInFlightRef.current &&
+        !drawnFrameRef.current &&
+        frameIdx !== lastPreviewFrameIdx
+      ) {
+        // Keep single-eye video preview live when video frame advances while first depth frame computes
+        lastPreviewFrameIdx = frameIdx;
         const currentSbs = prepareStereoVideoFrameCanvas(nextTime);
         if (currentSbs) {
           renderCustomSourceFrame(currentSbs, null);

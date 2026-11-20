@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type * as ort from 'onnxruntime-web';
 import {
@@ -9,14 +11,20 @@ import {
   createStereoDepthTask,
   createStereoWorkerProcessor,
   createWebGpuStereoComputeEngine,
+  decomposeOnnx5dConvNodesForWebGpu,
   disparityToDepthMeters,
   exceedsWebGpuStorageBufferLimit,
   extractDisparityFromOrtTensor,
   getColormapLut,
   getLocalStereoOnnxInfo,
+  inferOnnxStaticTensorMeta,
   inspectDisparityMapAtPoint,
   inspectStereoOnnxWebGpuCompatibility,
   isWebGpuRuntimeKernelError,
+  normalizeHitnetArgMinKeepDimsForWebGpu,
+  normalizeHitnetGatherNdRankForWebGpu,
+  normalizeHitnetPropGatherNdRankForWebGpu,
+  normalizeNonAscendingSliceAxesForWebGpu,
   registerLocalStereoOnnxBytes,
   resolveStereoOrtDelegate,
   resolveStereoOrtSessionOptions,
@@ -26,11 +34,19 @@ import {
   StereoOnnxEngine,
   StereoSadEngine,
   stripOnnxGraphValueInfo,
+  validateOnnxGraphNodeInputs,
   type StereoWorkerLike,
   type StereoWorkerRequest,
   type StereoWorkerResponse,
 } from './stereoDepthService';
 import * as onnxSessionModule from './onnxSession';
+import {
+  HITNET_H1_FULL_GRAPH_SHA256,
+  HITNET_M1_FULL_GRAPH_SHA256,
+  HITNET_RAW_MODEL_SHA256,
+  normalizeHitnetInitToPropZeroSlantForWebGpu,
+  normalizeHitnetSlot0ReshapeToTransposeForWebGpu,
+} from './stereoDepthWorker';
 import { VisionEngine, type VisionTaskFactory } from './visionEngine';
 import type { StereoDepthMapData } from '../types/vision';
 
@@ -405,7 +421,7 @@ describe('stereoDepthService', () => {
       },
     });
 
-    // 1. MobileStereoNet-2D downloads via same-origin stateless CORS proxy (Google Drive blocks cross-site browser Sec-Fetch-Mode: cors) and runs on WASM (5D Conv3d cost aggregation)
+    // 1. MobileStereoNet-2D downloads via same-origin stateless CORS proxy (Google Drive blocks cross-site browser Sec-Fetch-Mode: cors) and runs on WebGPU after 5D Conv3D -> 2D Conv decomposition
     const msTask = await createStereoDepthTask({
       variantId: 'mobilestereonet-2d',
       fetchImpl: mockFetch,
@@ -413,7 +429,7 @@ describe('stereoDepthService', () => {
     expect(mockFetch.mock.calls[0][0]).toBe(
       STEREO_MODEL_PROFILES['mobilestereonet-2d'].corsProxyUrl
     );
-    expect(createSpy.mock.calls[0][1]).toBe('WASM');
+    expect(createSpy.mock.calls[0][1]).toBe('WebGPU');
     await msTask.close();
 
     // 2. HITNet & CREStereo download from same-origin stateless /api/cors-proxy/stereo/
@@ -469,13 +485,114 @@ describe('stereoDepthService', () => {
     });
     expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['custom-onnx'], conv2dProto)).toBe('WebGPU');
 
-    const conv3dProto = makeConvProto([16, 1, 8, 3, 3], 'Conv_16834');
+    const conv3dProto = makeConvProto([2, 1, 3, 3, 3], 'Conv_16834');
     expect(inspectStereoOnnxWebGpuCompatibility(conv3dProto)).toMatchObject({
       compatible: false,
       hasConv3d: true,
       conv3dNodeName: 'Conv_16834',
     });
     expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['custom-onnx'], conv3dProto)).toBe('WASM');
+
+    // Decomposing 5D Conv3D nodes rewrites them into WebGPU-compatible 4D Conv2D subgraphs
+    // and must keep every synthesized node input resolvable (regression test for Conv_1005__x4d_shape)
+    const decomposed = decomposeOnnx5dConvNodesForWebGpu(conv3dProto);
+    expect(decomposed.decomposedCount).toBe(1);
+    expect(decomposed.decomposedNodeNames).toEqual(['Conv_16834']);
+    const decomposedValidation = validateOnnxGraphNodeInputs(decomposed.bytes);
+    expect(
+      decomposedValidation.missingInputs.filter((m) => m.inputName !== 'x')
+    ).toEqual([]);
+    expect(inspectStereoOnnxWebGpuCompatibility(decomposed.bytes)).toMatchObject({
+      compatible: true,
+      hasConv3d: false,
+    });
+    expect(
+      resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['mobilestereonet-2d'], decomposed.bytes)
+    ).toBe('WebGPU');
+
+    // Also verify kD = 1 fast-path 5D Conv decomposition
+    const conv3dKd1Proto = makeConvProto([4, 2, 1, 3, 3], 'Conv_kd1');
+    const decomposedKd1 = decomposeOnnx5dConvNodesForWebGpu(conv3dKd1Proto);
+    expect(decomposedKd1.decomposedCount).toBe(1);
+    const decomposedKd1Validation = validateOnnxGraphNodeInputs(decomposedKd1.bytes);
+    expect(
+      decomposedKd1Validation.missingInputs.filter((m) => m.inputName !== 'x')
+    ).toEqual([]);
+    expect(inspectStereoOnnxWebGpuCompatibility(decomposedKd1.bytes)).toMatchObject({
+      compatible: true,
+      hasConv3d: false,
+    });
+
+    // Worker init-onnx must fall back cleanly to untransformed ONNX bytes on WASM if the
+    // decomposed graph fails session creation, and skip 5D decomposition in explicit WASM mode.
+    const sessionCalls: Array<{ delegate: 'WebGPU' | 'WASM'; hasConv3d: boolean }> = [];
+    const fallbackWorkerProcessor = createStereoWorkerProcessor(async (onnxBytes, delegate) => {
+      const hasConv3d = inspectStereoOnnxWebGpuCompatibility(onnxBytes).hasConv3d;
+      sessionCalls.push({ delegate, hasConv3d });
+      if (delegate === 'WebGPU' && !hasConv3d) {
+        throw new Error('Simulated WebGPU session creation failure on decomposed graph');
+      }
+      return {
+        session: {
+          inputNames: ['left', 'right'],
+          outputNames: ['disp'],
+          run: vi.fn(),
+          release: vi.fn(async () => {}),
+        } as unknown as ort.InferenceSession,
+        backend: {
+          runtime: 'onnxruntime-web',
+          requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+          configuredProviders: [delegate === 'WebGPU' ? 'webgpu' : 'wasm'],
+          fallbackReason: null,
+          actualBackend: 'unmeasured',
+        },
+        wasmSourceUsed: 'primary',
+      };
+    });
+    const workerResponses: StereoWorkerResponse[] = [];
+    await fallbackWorkerProcessor.handleMessage(
+      {
+        type: 'init-onnx',
+        id: 77,
+        profile: STEREO_MODEL_PROFILES['mobilestereonet-2d'],
+        onnxBuffer: conv3dProto.slice().buffer,
+        wasmPrimaryUrl: 'https://example.invalid/ort/',
+        wasmFallbackUrl: null,
+        backendPreference: 'auto',
+      },
+      (res) => workerResponses.push(res)
+    );
+    expect(sessionCalls).toEqual([
+      { delegate: 'WebGPU', hasConv3d: false },
+      { delegate: 'WASM', hasConv3d: true },
+    ]);
+    expect(workerResponses[0]).toMatchObject({
+      type: 'init-result',
+      id: 77,
+      ok: true,
+    });
+
+    sessionCalls.length = 0;
+    workerResponses.length = 0;
+    await fallbackWorkerProcessor.handleMessage(
+      {
+        type: 'init-onnx',
+        id: 78,
+        profile: STEREO_MODEL_PROFILES['mobilestereonet-2d'],
+        onnxBuffer: conv3dProto.slice().buffer,
+        wasmPrimaryUrl: 'https://example.invalid/ort/',
+        wasmFallbackUrl: null,
+        backendPreference: 'wasm',
+      },
+      (res) => workerResponses.push(res)
+    );
+    expect(sessionCalls).toEqual([{ delegate: 'WASM', hasConv3d: true }]);
+    expect(workerResponses[0]).toMatchObject({
+      type: 'init-result',
+      id: 78,
+      ok: true,
+    });
+    await fallbackWorkerProcessor.handleMessage({ type: 'dispose', id: 79 }, () => {});
 
     expect(isWebGpuRuntimeKernelError(new Error("Non-zero status code returned while running Conv node. Name:'Conv_16834_token_966' Status Message: Failed to run JSEP kernel"))).toBe(true);
 
@@ -574,6 +691,184 @@ describe('stereoDepthService', () => {
 
     await task.close();
     expect(wasmRelease).toHaveBeenCalledTimes(1);
+  });
+
+  it('enables WebGPU for hitnet-sf via trailing-unit-axis 5D ConvTranspose decomposition and falls back safely to unmodified WASM', async () => {
+    const encoder = new TextEncoder();
+    const encodeVarint = (val: number): number[] => {
+      const out: number[] = [];
+      let v = val >>> 0;
+      while (v >= 0x80) {
+        out.push((v & 0x7f) | 0x80);
+        v >>>= 7;
+      }
+      out.push(v);
+      return out;
+    };
+    const lenField = (fn: number, payload: number[]) => [
+      (fn << 3) | 2,
+      ...encodeVarint(payload.length),
+      ...payload,
+    ];
+    const strField = (fn: number, s: string) => lenField(fn, Array.from(encoder.encode(s)));
+    const intAttr = (name: string, vals: number[]) =>
+      lenField(5, [
+        ...strField(1, name),
+        ...vals.flatMap((v) => [(8 << 3) | 0, ...encodeVarint(v)]),
+        (20 << 3) | 0,
+        7,
+      ]);
+
+    const makeConvTransposeProto = (weightDims: number[], strides: number[]): Uint8Array => {
+      const tensorParts: number[] = [];
+      for (const d of weightDims) {
+        tensorParts.push(0x08, d);
+      }
+      tensorParts.push((2 << 3) | 0, 1); // FLOAT
+      tensorParts.push(...strField(8, 'ct_w'));
+      const nodeParts = [
+        ...strField(1, 'x'),
+        ...strField(1, 'ct_w'),
+        ...strField(2, 'y'),
+        ...strField(3, 'level0/shared/prop0/WarpImageWithHypotheses/get_warp1d_coordinates_from_tile_hypotheses/get_warp_disparity'),
+        ...strField(4, 'ConvTranspose'),
+        ...intAttr('kernel_shape', weightDims.slice(2)),
+        ...intAttr('strides', strides),
+        ...intAttr('pads', [0, 0, 0, 0, 0, 0]),
+      ];
+      const graphParts = [
+        ...lenField(1, nodeParts),
+        ...lenField(5, tensorParts),
+        ...strField(2, 'hitnet_ct_graph'),
+      ];
+      const opsetParts = [...strField(1, ''), (2 << 3) | 0, 12];
+      return new Uint8Array([
+        0x08,
+        0x07,
+        ...lenField(7, graphParts),
+        ...lenField(8, opsetParts),
+      ]);
+    };
+
+    const compatibleCtProto = makeConvTransposeProto([3, 1, 4, 4, 1], [4, 4, 1]);
+    expect(inspectStereoOnnxWebGpuCompatibility(compatibleCtProto)).toMatchObject({
+      compatible: false,
+      hasConv3d: true,
+    });
+    expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['hitnet-sf'], compatibleCtProto)).toBe('WASM');
+
+    const decomposed = decomposeOnnx5dConvNodesForWebGpu(compatibleCtProto);
+    expect(decomposed.decomposedCount).toBe(1);
+    expect(inspectStereoOnnxWebGpuCompatibility(decomposed.bytes)).toMatchObject({
+      compatible: true,
+      hasConv3d: false,
+    });
+    expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['hitnet-sf'], decomposed.bytes)).toBe('WebGPU');
+
+    const incompatibleCtProto = makeConvTransposeProto([3, 1, 4, 4, 2], [4, 4, 1]);
+    const untouched = decomposeOnnx5dConvNodesForWebGpu(incompatibleCtProto);
+    expect(untouched.decomposedCount).toBe(0);
+    expect(untouched.bytes).toBe(incompatibleCtProto);
+    expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['hitnet-sf'], untouched.bytes)).toBe('WASM');
+
+    // Runtime JSEP failure on decomposed graph must fall back cleanly to original unmodified bytes on WASM
+    const sessionCalls: Array<{ delegate: 'WebGPU' | 'WASM'; hasConv3d: boolean }> = [];
+    const webgpuRun = vi.fn(async () => {
+      throw new Error('Failed to run JSEP kernel on ConvTranspose');
+    });
+    const wasmRun = vi.fn(async () => ({
+      reference_output_disparity: {
+        dims: [1, 240, 320, 1],
+        data: new Float32Array(240 * 320).fill(3.5),
+        dispose: vi.fn(),
+      } as unknown as ort.Tensor,
+    }));
+    const workerProcessor = createStereoWorkerProcessor(async (onnxBytes, delegate) => {
+      const hasConv3d = inspectStereoOnnxWebGpuCompatibility(onnxBytes).hasConv3d;
+      sessionCalls.push({ delegate, hasConv3d });
+      return {
+        session: {
+          inputNames: ['input'],
+          outputNames: ['reference_output_disparity'],
+          inputMetadata: [{ shape: [1, 6, 240, 320] }],
+          run: delegate === 'WebGPU' ? webgpuRun : wasmRun,
+          release: vi.fn(async () => {}),
+        } as unknown as ort.InferenceSession,
+        backend: {
+          runtime: 'onnxruntime-web',
+          requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+          configuredProviders: [delegate === 'WebGPU' ? 'webgpu' : 'wasm'],
+          fallbackReason: null,
+          actualBackend: 'unmeasured',
+        },
+        wasmSourceUsed: 'primary',
+      };
+    });
+
+    const responses: StereoWorkerResponse[] = [];
+    await workerProcessor.handleMessage(
+      {
+        type: 'init-onnx',
+        id: 1,
+        profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+        onnxBuffer: compatibleCtProto.slice().buffer,
+        wasmPrimaryUrl: 'https://example.invalid/ort/',
+        wasmFallbackUrl: null,
+        backendPreference: 'auto',
+      },
+      (res) => responses.push(res)
+    );
+    expect(sessionCalls).toEqual([{ delegate: 'WebGPU', hasConv3d: false }]);
+    expect(responses[0]).toMatchObject({
+      type: 'init-result',
+      id: 1,
+      ok: true,
+      backend: { configuredProviders: ['webgpu'] },
+    });
+
+    const rgbaBytes = 320 * 240 * 4;
+    await workerProcessor.handleMessage(
+      {
+        type: 'estimate',
+        id: 2,
+        width: 320,
+        height: 240,
+        sourceEyeWidth: 480,
+        sourceEyeHeight: 270,
+        leftRgbaBuffer: new Uint8ClampedArray(rgbaBytes).fill(100).buffer,
+        rightRgbaBuffer: new Uint8ClampedArray(rgbaBytes).fill(100).buffer,
+        options: {},
+      },
+      (res) => responses.push(res)
+    );
+
+    expect(sessionCalls).toEqual([
+      { delegate: 'WebGPU', hasConv3d: false },
+      { delegate: 'WASM', hasConv3d: true },
+    ]);
+    expect(responses[1]).toMatchObject({
+      type: 'estimate-result',
+      id: 2,
+      ok: true,
+      backend: { configuredProviders: ['wasm'] },
+    });
+
+    // Explicit WASM mode must skip 5D ConvTranspose conversion altogether
+    sessionCalls.length = 0;
+    await workerProcessor.handleMessage(
+      {
+        type: 'init-onnx',
+        id: 3,
+        profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+        onnxBuffer: compatibleCtProto.slice().buffer,
+        wasmPrimaryUrl: 'https://example.invalid/ort/',
+        wasmFallbackUrl: null,
+        backendPreference: 'wasm',
+      },
+      (res) => responses.push(res)
+    );
+    expect(sessionCalls).toEqual([{ delegate: 'WASM', hasConv3d: true }]);
+    await workerProcessor.handleMessage({ type: 'dispose', id: 4 }, () => {});
   });
 
   it('runs StereoOnnxEngine with dual/stacked/4-input ONNX sessions and disposes all tensors cleanly', async () => {
@@ -999,15 +1294,19 @@ describe('stereoDepthService', () => {
     expect(centerDisp).toBeLessThanOrEqual(12.0);
   });
 
-  it('disables ORT graph constant folding on stereo WASM sessions to prevent multi-GB OOM crashes', () => {
+  it('disables ORT graph constant folding and memory arenas on stereo WASM sessions to prevent multi-GB OOM crashes', () => {
     expect(resolveStereoOrtSessionOptions(['wasm'])).toEqual({
       executionProviders: ['wasm'],
       graphOptimizationLevel: 'disabled',
+      enableCpuMemArena: false,
+      enableMemPattern: false,
       logSeverityLevel: 3,
     });
     expect(resolveStereoOrtSessionOptions(['webgpu', 'wasm'])).toEqual({
       executionProviders: ['webgpu', 'wasm'],
       graphOptimizationLevel: 'all',
+      enableCpuMemArena: true,
+      enableMemPattern: true,
       logSeverityLevel: 3,
     });
   });
@@ -1137,7 +1436,8 @@ describe('stereoDepthService', () => {
     const tinyOnnx = new Uint8Array([1, 2, 3, 4]);
     expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['lightstereo-s'], tinyOnnx, 8, 'auto')).toBe('WebGPU');
     expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['lightstereo-s'], tinyOnnx, 8, 'wasm')).toBe('WASM');
-    expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['mobilestereonet-2d'], tinyOnnx, 8, 'auto')).toBe('WASM');
+    expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['mobilestereonet-2d'], tinyOnnx, 8, 'auto')).toBe('WebGPU');
+    expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['mobilestereonet-2d'], tinyOnnx, 8, 'wasm')).toBe('WASM');
     expect(resolveStereoOrtDelegate(STEREO_MODEL_PROFILES['mobilestereonet-2d'], tinyOnnx, 8, 'webgpu')).toBe('WebGPU');
 
     const mockSession = {
@@ -1453,4 +1753,1542 @@ describe('stereoDepthService', () => {
     expect(rerendered.rotate180).toBe(true);
     sadEngine.close();
   });
+
+  it('supports A/B normalizeSliceAxes toggle and strictWebGpu no-fallback mode in createStereoWorkerProcessor while keeping unmodified WASM reference', async () => {
+    const te = new TextEncoder();
+    const uVarint = (val: number): Uint8Array => {
+      const b: number[] = [];
+      let v = val >>> 0;
+      while (v >= 0x80) {
+        b.push((v & 0x7f) | 0x80);
+        v >>>= 7;
+      }
+      b.push(v);
+      return new Uint8Array(b);
+    };
+    const cat = (parts: readonly Uint8Array[]): Uint8Array => {
+      const out = new Uint8Array(parts.reduce((acc, p) => acc + p.byteLength, 0));
+      let off = 0;
+      for (const p of parts) {
+        out.set(p, off);
+        off += p.byteLength;
+      }
+      return out;
+    };
+    const lf = (fn: number, payload: Uint8Array) =>
+      cat([uVarint((fn << 3) | 2), uVarint(payload.byteLength), payload]);
+    const vf = (fn: number, val: number) => cat([uVarint((fn << 3) | 0), uVarint(val)]);
+    const sf = (fn: number, s: string) => lf(fn, te.encode(s));
+    const attrInts = (name: string, vals: number[]) =>
+      lf(5, cat([sf(1, name), ...vals.map((v) => vf(8, v)), vf(20, 7)]));
+    const int64Init = (name: string, vals: number[]) => {
+      const raw = new Uint8Array(vals.length * 8);
+      const dv = new DataView(raw.buffer);
+      vals.forEach((v, i) => dv.setBigInt64(i * 8, BigInt(v), true));
+      return lf(5, cat([vf(1, vals.length), vf(2, 7), sf(8, name), lf(9, raw)]));
+    };
+    const floatInit = (name: string, dims: number[]) => {
+      const len = dims.reduce((a, b) => a * b, 1);
+      return lf(
+        5,
+        cat([...dims.map((d) => vf(1, d)), vf(2, 1), sf(8, name), lf(9, new Uint8Array(len * 4))])
+      );
+    };
+    const valueInfo = (name: string, dims: number[]) =>
+      lf(
+        1,
+        cat([
+          vf(1, 1),
+          lf(2, cat(dims.map((d) => lf(1, vf(1, d))))),
+        ])
+      );
+    const hitnetLikeOnnx = cat([
+      vf(1, 7),
+      lf(
+        7,
+        cat([
+          lf(1, cat([sf(1, 'input'), sf(1, 's'), sf(1, 'e'), sf(1, 'a_unsorted'), sf(2, 'sliced'), sf(3, 'Slice_0'), sf(4, 'Slice')])),
+          lf(
+            1,
+            cat([
+              sf(1, 'sliced'),
+              sf(1, 'w5d'),
+              sf(2, 'output'),
+              sf(3, 'ConvT_0'),
+              sf(4, 'ConvTranspose'),
+              attrInts('kernel_shape', [4, 4, 1]),
+              attrInts('strides', [4, 4, 1]),
+              attrInts('pads', [0, 0, 0, 0, 0, 0]),
+            ])
+          ),
+          sf(2, 'worker_ab_graph'),
+          int64Init('s', [0, 0, 0, 0]),
+          int64Init('e', [1, 16, 16, 3]),
+          int64Init('a_unsorted', [0, 2, 3, 1]),
+          floatInit('w5d', [3, 1, 4, 4, 1]),
+          lf(11, cat([sf(1, 'input'), lf(2, valueInfo('input', [1, 6, 16, 16]))])),
+          lf(12, cat([sf(1, 'output'), lf(2, valueInfo('output', [1, 1, 16, 16]))])),
+        ])
+      ),
+      lf(8, cat([sf(1, ''), vf(2, 12)])),
+    ]);
+
+    const sendMsg = (
+      processor: ReturnType<typeof createStereoWorkerProcessor>,
+      msg: StereoWorkerRequest
+    ): Promise<StereoWorkerResponse> =>
+      new Promise((resolve) => {
+        void processor.handleMessage(msg, (res) => resolve(res));
+      });
+
+    const estimatePayload = (): StereoWorkerRequest => {
+      const left = new Uint8ClampedArray(16 * 16 * 4).buffer;
+      const right = new Uint8ClampedArray(16 * 16 * 4).buffer;
+      return {
+        type: 'estimate',
+        id: 2,
+        width: 16,
+        height: 16,
+        sourceEyeWidth: 16,
+        sourceEyeHeight: 16,
+        leftRgbaBuffer: left,
+        rightRgbaBuffer: right,
+        options: { colormap: 'turbo' },
+      };
+    };
+
+    const calls: Array<{
+      bytes: Uint8Array;
+      delegate: 'WebGPU' | 'WASM';
+      strictWebGpu: boolean | undefined;
+    }> = [];
+    let shouldFailRun = false;
+
+    const processor = createStereoWorkerProcessor(async (onnxBytes, delegate, _p, _f, strictWebGpu) => {
+      calls.push({ bytes: new Uint8Array(onnxBytes), delegate, strictWebGpu });
+      const mockSession = {
+        inputNames: ['input'],
+        outputNames: ['output'],
+        inputMetadata: [{ shape: [1, 6, 16, 16] }],
+        run: vi.fn(async () => {
+          if (shouldFailRun) {
+            throw new Error(
+              '[WebGPU] Kernel [Conv] fe_shared/conv_down_1_0/BiasAdd failed: FILTER_IN_CHANNEL should be equal to DATA_CHANNEL'
+            );
+          }
+          return {
+            output: {
+              dims: [1, 1, 16, 16],
+              data: new Float32Array(16 * 16).fill(4),
+              dispose: vi.fn(),
+            } as unknown as ort.Tensor,
+          };
+        }),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+      return {
+        session: mockSession,
+        backend: {
+          runtime: 'onnxruntime-web',
+          requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+          configuredProviders: delegate === 'WebGPU' ? ['webgpu'] : ['wasm'],
+          fallbackReason: null,
+          actualBackend: 'unmeasured',
+        },
+        wasmSourceUsed: 'primary',
+      };
+    });
+
+    // A) Original (5D ConvTranspose decomposed only, normalizeSliceAxes: false, strictWebGpu: true)
+    shouldFailRun = true;
+    const initA = await sendMsg(processor, {
+      type: 'init-onnx',
+      id: 1,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: hitnetLikeOnnx.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: false,
+      strictWebGpu: true,
+    });
+    expect(initA.type).toBe('init-result');
+    if (initA.type === 'init-result') {
+      expect(initA.transformStats).toMatchObject({
+        splitCount: 0,
+        decomposed5dCount: 1,
+        sliceNormalizedCount: 0,
+      });
+    }
+    expect(calls[0].delegate).toBe('WebGPU');
+    expect(calls[0].strictWebGpu).toBe(true);
+    expect(inspectStereoOnnxWebGpuCompatibility(calls[0].bytes).hasConv3d).toBe(false);
+    // Unsorted Slice must still be present in Arm A bytes
+    expect(normalizeNonAscendingSliceAxesForWebGpu(calls[0].bytes).normalizedCount).toBe(1);
+
+    // Strict WebGPU must NOT silently fall back to WASM when kernel fails
+    const estA = await sendMsg(processor, estimatePayload());
+    expect(estA.type).toBe('error');
+    expect(calls).toHaveLength(1);
+
+    // B) Tuple-sorted (5D ConvTranspose + normalizeSliceAxes: true, strictWebGpu: true)
+    shouldFailRun = false;
+    const initB = await sendMsg(processor, {
+      type: 'init-onnx',
+      id: 3,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: hitnetLikeOnnx.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: true,
+      strictWebGpu: true,
+    });
+    expect(initB.type).toBe('init-result');
+    if (initB.type === 'init-result') {
+      expect(initB.transformStats).toMatchObject({
+        splitCount: 0,
+        decomposed5dCount: 1,
+        sliceNormalizedCount: 1,
+      });
+    }
+    expect(calls[1].delegate).toBe('WebGPU');
+    expect(calls[1].strictWebGpu).toBe(true);
+    expect(inspectStereoOnnxWebGpuCompatibility(calls[1].bytes).hasConv3d).toBe(false);
+    expect(normalizeNonAscendingSliceAxesForWebGpu(calls[1].bytes).normalizedCount).toBe(0);
+
+    // C) Non-strict Auto fallback still recovers to UNMODIFIED WASM bytes when WebGPU kernel throws
+    let remainingKernelFailures = 1;
+    const autoProcessor = createStereoWorkerProcessor(
+      async (onnxBytes, delegate, _p, _f, strictWebGpu) => {
+        calls.push({ bytes: new Uint8Array(onnxBytes), delegate, strictWebGpu });
+        const mockSession = {
+          inputNames: ['input'],
+          outputNames: ['output'],
+          inputMetadata: [{ shape: [1, 6, 16, 16] }],
+          run: vi.fn(async () => {
+            if (remainingKernelFailures > 0) {
+              remainingKernelFailures--;
+              throw new Error(
+                '[WebGPU] Kernel [Conv] fe_shared/conv_down_1_0/BiasAdd failed: FILTER_IN_CHANNEL should be equal to DATA_CHANNEL'
+              );
+            }
+            return {
+              output: {
+                dims: [1, 1, 16, 16],
+                data: new Float32Array(16 * 16).fill(4),
+                dispose: vi.fn(),
+              } as unknown as ort.Tensor,
+            };
+          }),
+          release: vi.fn(async () => {}),
+        } as unknown as ort.InferenceSession;
+        return {
+          session: mockSession,
+          backend: {
+            runtime: 'onnxruntime-web',
+            requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+            configuredProviders: delegate === 'WebGPU' ? ['webgpu'] : ['wasm'],
+            fallbackReason: null,
+            actualBackend: 'unmeasured',
+          },
+          wasmSourceUsed: 'primary',
+        };
+      }
+    );
+    await sendMsg(autoProcessor, {
+      type: 'init-onnx',
+      id: 4,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: hitnetLikeOnnx.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'auto',
+      normalizeSliceAxes: true,
+      strictWebGpu: false,
+    });
+    const estAuto = await sendMsg(autoProcessor, estimatePayload());
+    expect(estAuto.type).toBe('estimate-result');
+    if (estAuto.type === 'estimate-result') {
+      expect(estAuto.backend.configuredProviders).toEqual(['wasm']);
+      expect(estAuto.backend.fallbackReason).toContain('fell back to WASM');
+    }
+    const recoveredWasmCall = calls[calls.length - 1];
+    expect(recoveredWasmCall.delegate).toBe('WASM');
+    expect(inspectStereoOnnxWebGpuCompatibility(recoveredWasmCall.bytes).hasConv3d).toBe(true);
+    expect(normalizeNonAscendingSliceAxesForWebGpu(recoveredWasmCall.bytes).normalizedCount).toBe(1);
+    await sendMsg(autoProcessor, { type: 'dispose', id: 40 });
+
+    // D) Omitting normalizeSliceAxes in production defaults to OFF (no unverified Slice rewrite)
+    const initDefaultOff = await sendMsg(processor, {
+      type: 'init-onnx',
+      id: 41,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: hitnetLikeOnnx.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      strictWebGpu: true,
+    });
+    expect(initDefaultOff.type).toBe('init-result');
+    if (initDefaultOff.type === 'init-result') {
+      expect(initDefaultOff.transformStats?.sliceNormalizedCount).toBe(0);
+      expect(initDefaultOff.sessionOptionsApplied?.sliceNormalizeMode).toBe('off');
+    }
+
+    // E) Non-HITNet variant NEVER rewrites Slice nodes even when compact-active is passed
+    const initOtherModel = await sendMsg(processor, {
+      type: 'init-onnx',
+      id: 42,
+      profile: STEREO_MODEL_PROFILES['lightstereo-s'],
+      onnxBuffer: hitnetLikeOnnx.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      strictWebGpu: true,
+    });
+    expect(initOtherModel.type).toBe('init-result');
+    if (initOtherModel.type === 'init-result') {
+      expect(initOtherModel.transformStats?.sliceNormalizedCount).toBe(0);
+      expect(initOtherModel.sessionOptionsApplied?.sliceNormalizeMode).toBe('off');
+    }
+
+    // F) compact-active + graphOptimizationLevel + disableCpuEpFallback plumbing on hitnet-sf
+    const optOverridesSeen: unknown[] = [];
+    const strictMatrixProcessor = createStereoWorkerProcessor(
+      async (onnxBytes, delegate, _p, _f, strictWebGpu, overrides) => {
+        calls.push({ bytes: new Uint8Array(onnxBytes), delegate, strictWebGpu });
+        optOverridesSeen.push(overrides);
+        const mockSession = {
+          inputNames: ['input'],
+          outputNames: ['output'],
+          inputMetadata: [{ shape: [1, 6, 16, 16] }],
+          run: vi.fn(async () => ({
+            output: {
+              dims: [1, 1, 16, 16],
+              data: new Float32Array(16 * 16).fill(4),
+              dispose: vi.fn(),
+            } as unknown as ort.Tensor,
+          })),
+          release: vi.fn(async () => {}),
+        } as unknown as ort.InferenceSession;
+        return {
+          session: mockSession,
+          backend: {
+            runtime: 'onnxruntime-web',
+            requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+            configuredProviders: delegate === 'WebGPU' ? ['webgpu'] : ['wasm'],
+            fallbackReason: null,
+            actualBackend: 'unmeasured',
+          },
+          wasmSourceUsed: 'primary',
+        };
+      }
+    );
+    const initCompact = await sendMsg(strictMatrixProcessor, {
+      type: 'init-onnx',
+      id: 43,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: hitnetLikeOnnx.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      strictWebGpu: true,
+      graphOptimizationLevel: 'basic',
+      disableCpuEpFallback: true,
+    });
+    expect(initCompact.type).toBe('init-result');
+    if (initCompact.type === 'init-result') {
+      expect(initCompact.transformStats).toMatchObject({
+        decomposed5dCount: 1,
+        sliceNormalizedCount: 1,
+        sliceCompactedCount: 1,
+      });
+      expect(initCompact.sessionOptionsApplied).toMatchObject({
+        graphOptimizationLevel: 'basic',
+        disableCpuEpFallback: true,
+        sliceNormalizeMode: 'compact-active',
+      });
+    }
+    expect(optOverridesSeen[0]).toMatchObject({
+      graphOptimizationLevel: 'basic',
+      disableCpuEpFallback: true,
+    });
+    expect(
+      resolveStereoOrtSessionOptions(['webgpu'], {
+        graphOptimizationLevel: 'basic',
+        disableCpuEpFallback: true,
+      })
+    ).toMatchObject({
+      executionProviders: ['webgpu'],
+      graphOptimizationLevel: 'basic',
+      extra: { session: { disable_cpu_ep_fallback: '1' } },
+    });
+    await sendMsg(strictMatrixProcessor, { type: 'dispose', id: 44 });
+
+    // G) Explicit backendPreference: 'wasm' skips BOTH 5D decomposition and Slice normalization
+    const initWasm = await sendMsg(processor, {
+      type: 'init-onnx',
+      id: 5,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: hitnetLikeOnnx.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'wasm',
+    });
+    expect(initWasm.type).toBe('init-result');
+    if (initWasm.type === 'init-result') {
+      expect(initWasm.transformStats).toEqual({
+        splitCount: 0,
+        decomposed5dCount: 0,
+        sliceNormalizedCount: 0,
+        sliceCompactedCount: 0,
+        sliceSkippedDynamicCount: 0,
+        sliceSkippedInvalidOrUnprovenCount: 0,
+      });
+    }
+    const lastCall = calls[calls.length - 1];
+    expect(lastCall.delegate).toBe('WASM');
+    expect(inspectStereoOnnxWebGpuCompatibility(lastCall.bytes).hasConv3d).toBe(true);
+    expect(normalizeNonAscendingSliceAxesForWebGpu(lastCall.bytes).normalizedCount).toBe(1);
+
+    await sendMsg(processor, { type: 'dispose', id: 6 });
+  });
+
+  it('gates normalizeGatherNdRank as opt-in on hitnet-sf, preserves raw WASM fallback bytes, and returns pre-conversion rawOutputs when requested', async () => {
+    const calls: Array<{ bytes: Uint8Array; delegate: 'WebGPU' | 'WASM'; strictWebGpu: boolean }> = [];
+    const seenFetches: Array<readonly string[] | undefined> = [];
+
+    const processor = createStereoWorkerProcessor(
+      async (onnxBytes, delegate, _p, _f, strictWebGpu) => {
+        calls.push({ bytes: new Uint8Array(onnxBytes), delegate, strictWebGpu: Boolean(strictWebGpu) });
+        const mockSession = {
+          inputNames: ['input'],
+          outputNames: ['reference_output_disparity', 'secondary_output_disparity'],
+          inputMetadata: [{ shape: [1, 6, 16, 16] }],
+          run: vi.fn(async (_feeds, fetches?: readonly string[]) => {
+            seenFetches.push(fetches);
+            const rawRef = new Float32Array(16 * 16).fill(1.25);
+            rawRef[0] = 3.25;
+            rawRef[1] = -2.5;
+            const rawSec = new Float32Array(16 * 16).fill(1.75);
+            const full = {
+              reference_output_disparity: {
+                dims: [1, 16, 16, 1],
+                data: rawRef,
+                dispose: vi.fn(),
+              } as unknown as ort.Tensor,
+              secondary_output_disparity: {
+                dims: [1, 16, 16, 1],
+                data: rawSec,
+                dispose: vi.fn(),
+              } as unknown as ort.Tensor,
+            };
+            if (fetches && fetches.length === 1 && fetches[0] === 'reference_output_disparity') {
+              return { reference_output_disparity: full.reference_output_disparity };
+            }
+            return full;
+          }),
+          release: vi.fn(async () => {}),
+        } as unknown as ort.InferenceSession;
+        return {
+          session: mockSession,
+          backend: {
+            runtime: 'onnxruntime-web',
+            requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+            configuredProviders: delegate === 'WebGPU' ? ['webgpu'] : ['wasm'],
+            fallbackReason: null,
+            actualBackend: 'unmeasured',
+          },
+          wasmSourceUsed: 'primary',
+        };
+      }
+    );
+
+    const sendMsg = (req: StereoWorkerRequest) =>
+      new Promise<StereoWorkerResponse>((resolve) => {
+        void processor.handleMessage(req, (res) => resolve(res));
+      });
+
+    // Minimal valid ONNX header bytes suffice to verify worker default-off & rawOutputs contract
+    const rawOnnx = new Uint8Array([0x08, 0x07]);
+    const initDefault = await sendMsg({
+      type: 'init-onnx',
+      id: 100,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawOnnx.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      strictWebGpu: true,
+    });
+    expect(initDefault.type).toBe('init-result');
+    if (initDefault.type === 'init-result') {
+      expect(initDefault.sessionOptionsApplied?.gatherNdRankNormalized).toBe(false);
+      expect(initDefault.gatherNdStats?.normalizedCount).toBe(0);
+      expect(initDefault.initTiming?.totalInitMs).toBeGreaterThanOrEqual(0);
+    }
+
+    const rgba = new Uint8Array(16 * 16 * 4);
+    // Request raw pre-conversion outputs (preserving negative disparity -2.5 & unscaled 3.25 before display scaling!)
+    const estAll = await sendMsg({
+      type: 'estimate',
+      id: 101,
+      leftRgbaBuffer: rgba.slice().buffer,
+      rightRgbaBuffer: rgba.slice().buffer,
+      width: 16,
+      height: 16,
+      sourceEyeWidth: 32,
+      sourceEyeHeight: 16,
+      options: { autoNormalizeDisparity: true, colormap: 'turbo' },
+      includeRawTensorOutputs: true,
+    });
+    expect(estAll.type).toBe('estimate-result');
+    if (estAll.type === 'estimate-result') {
+      expect(seenFetches[0]).toBeUndefined();
+      expect(estAll.fetchedOutputNames).toEqual([
+        'reference_output_disparity',
+        'secondary_output_disparity',
+      ]);
+      expect(estAll.rawOutputs).toHaveLength(2);
+      const rawRefArr = new Float32Array(estAll.rawOutputs![0].buffer);
+      // Unclamped and unscaled raw model values preserved
+      expect(rawRefArr[0]).toBeCloseTo(3.25, 5);
+      expect(rawRefArr[1]).toBeCloseTo(-2.5, 5);
+      // Display buffer is clamped (<0 -> -1) and scaled by sourceEyeWidth / width = 2
+      const dispArr = new Float32Array(estAll.disparityBuffer);
+      expect(dispArr[0]).toBeCloseTo(6.5, 5);
+      expect(dispArr[1]).toBe(-1);
+      expect(estAll.estimateTiming?.runMs).toBeGreaterThanOrEqual(0);
+    }
+
+    // Diagnostic-only fetchPrimaryOutputOnly skips secondary output cleanly without altering production defaults
+    const estPrimary = await sendMsg({
+      type: 'estimate',
+      id: 102,
+      leftRgbaBuffer: rgba.slice().buffer,
+      rightRgbaBuffer: rgba.slice().buffer,
+      width: 16,
+      height: 16,
+      sourceEyeWidth: 32,
+      sourceEyeHeight: 16,
+      options: {},
+      includeRawTensorOutputs: true,
+      fetchPrimaryOutputOnly: true,
+    });
+    expect(estPrimary.type).toBe('estimate-result');
+    if (estPrimary.type === 'estimate-result') {
+      expect(seenFetches[1]).toEqual(['reference_output_disparity']);
+      expect(estPrimary.fetchedOutputNames).toEqual(['reference_output_disparity']);
+      expect(estPrimary.rawOutputs).toHaveLength(1);
+    }
+
+    await sendMsg({ type: 'dispose', id: 103 });
+
+    // Real cached HITNet worker plumbing verification: opt-in only, non-HITNet blocked, and unmodified WASM fallback
+    const hitnetPath = '/tmp/hitnet_sceneflow_240x320.onnx';
+    if (existsSync(hitnetPath)) {
+      const hitnetBytes = new Uint8Array(readFileSync(hitnetPath));
+
+      // Non-HITNet variant must NOT run GatherND rewrite
+      const initOther = await sendMsg({
+        type: 'init-onnx',
+        id: 104,
+        profile: STEREO_MODEL_PROFILES['lightstereo-s'],
+        onnxBuffer: hitnetBytes.slice().buffer,
+        wasmPrimaryUrl: 'https://example.test/ort/',
+        wasmFallbackUrl: null,
+        backendPreference: 'webgpu',
+        normalizeSliceAxes: 'compact-active',
+        normalizeGatherNdRank: true,
+        strictWebGpu: true,
+      });
+      expect(initOther.type).toBe('init-result');
+      if (initOther.type === 'init-result') {
+        expect(initOther.gatherNdStats?.normalizedCount).toBe(0);
+        expect(initOther.sessionOptionsApplied?.gatherNdRankNormalized).toBe(false);
+      }
+
+      // HITNet-SF with opt-in normalizeGatherNdRank: true rewrites exact 4 nodes and still preserves unmodified WASM fallback
+      const shouldThrowWebGpuRun = true;
+      const fallbackCalls: Array<{ bytes: Uint8Array; delegate: 'WebGPU' | 'WASM' }> = [];
+      const fallbackProcessor = createStereoWorkerProcessor(
+        async (onnxBytes, delegate) => {
+          fallbackCalls.push({ bytes: new Uint8Array(onnxBytes), delegate });
+          const mockSession = {
+            inputNames: ['input'],
+            outputNames: ['reference_output_disparity', 'secondary_output_disparity'],
+            inputMetadata: [{ shape: [1, 6, 240, 320] }],
+            run: vi.fn(async () => {
+              if (delegate === 'WebGPU' && shouldThrowWebGpuRun) {
+                throw new Error('[WebGPU] Kernel [GatherND] simulated runtime error');
+              }
+              return {
+                reference_output_disparity: {
+                  dims: [1, 240, 320, 1],
+                  data: new Float32Array(240 * 320).fill(1.5),
+                  dispose: vi.fn(),
+                } as unknown as ort.Tensor,
+              };
+            }),
+            release: vi.fn(async () => {}),
+          } as unknown as ort.InferenceSession;
+          return {
+            session: mockSession,
+            backend: {
+              runtime: 'onnxruntime-web',
+              requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+              configuredProviders: delegate === 'WebGPU' ? ['webgpu'] : ['wasm'],
+              fallbackReason: null,
+              actualBackend: 'unmeasured',
+            },
+            wasmSourceUsed: 'primary',
+          };
+        }
+      );
+
+      const sendFb = (req: StereoWorkerRequest) =>
+        new Promise<StereoWorkerResponse>((resolve) => {
+          void fallbackProcessor.handleMessage(req, (res) => resolve(res));
+        });
+
+      const initHitnetOptIn = await sendFb({
+        type: 'init-onnx',
+        id: 105,
+        profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+        onnxBuffer: hitnetBytes.slice().buffer,
+        wasmPrimaryUrl: 'https://example.test/ort/',
+        wasmFallbackUrl: null,
+        backendPreference: 'auto',
+        normalizeSliceAxes: 'compact-active',
+        normalizeGatherNdRank: true,
+        strictWebGpu: false,
+      });
+      expect(initHitnetOptIn.type).toBe('init-result');
+      if (initHitnetOptIn.type === 'init-result') {
+        expect(initHitnetOptIn.gatherNdStats?.normalizedCount).toBe(4);
+        expect(initHitnetOptIn.sessionOptionsApplied?.gatherNdRankNormalized).toBe(true);
+      }
+
+      const rgbHit = new Uint8Array(320 * 240 * 4);
+      const estRecovered = await sendFb({
+        type: 'estimate',
+        id: 106,
+        leftRgbaBuffer: rgbHit.slice().buffer,
+        rightRgbaBuffer: rgbHit.slice().buffer,
+        width: 320,
+        height: 240,
+        sourceEyeWidth: 480,
+        sourceEyeHeight: 270,
+        options: {},
+      });
+      expect(estRecovered.type).toBe('estimate-result');
+      expect(fallbackCalls).toHaveLength(2);
+      expect(fallbackCalls[0].delegate).toBe('WebGPU');
+      expect(fallbackCalls[1].delegate).toBe('WASM');
+      // Fallback WASM session must receive UNMODIFIED raw model bytes (exact raw HITNet bytes with 5D Conv3D & unnormalized GatherND)
+      expect(fallbackCalls[1].bytes.byteLength).toBe(hitnetBytes.byteLength);
+      expect(Buffer.compare(fallbackCalls[1].bytes, hitnetBytes)).toBe(0);
+      expect(inspectStereoOnnxWebGpuCompatibility(fallbackCalls[1].bytes).hasConv3d).toBe(true);
+      const fbDecomposed = decomposeOnnx5dConvNodesForWebGpu(fallbackCalls[1].bytes);
+      const fbSliced = normalizeNonAscendingSliceAxesForWebGpu(fbDecomposed.bytes, { mode: 'compact-active' });
+      expect(
+        normalizeHitnetGatherNdRankForWebGpu(fbSliced.bytes, {
+          variantId: 'hitnet-sf',
+          backendPreference: 'webgpu',
+        }).normalizedCount
+      ).toBe(4);
+
+      await sendFb({ type: 'dispose', id: 107 });
+    }
+  }, 30000);
+
+  it('gates normalizeArgMinKeepDims & allowDiagnosticTransformedWasm, logs sessionModelSha256 & feedSha256s, and preserves raw explicit/fallback WASM bytes', async () => {
+    const calls: Array<{
+      bytes: Uint8Array;
+      delegate: 'WebGPU' | 'WASM';
+      sha256: string;
+    }> = [];
+    const seenFeedData: Array<Float32Array> = [];
+
+    const processor = createStereoWorkerProcessor(
+      async (onnxBytes, delegate) => {
+        const copy = new Uint8Array(onnxBytes);
+        const sha256 = createHash('sha256').update(copy).digest('hex');
+        calls.push({ bytes: copy, delegate, sha256 });
+        const mockSession = {
+          inputNames: ['input'],
+          outputNames: ['reference_output_disparity', 'secondary_output_disparity'],
+          inputMetadata: [{ shape: [1, 6, 240, 320] }],
+          run: vi.fn(async (feeds: Record<string, ort.Tensor>) => {
+            const inp = feeds.input;
+            seenFeedData.push(new Float32Array(inp.data as Float32Array));
+            if (delegate === 'WebGPU' && calls.length === 4) {
+              throw new Error('[WebGPU] Kernel [ArgMin] simulated runtime failure');
+            }
+            return {
+              reference_output_disparity: {
+                type: 'float32',
+                dims: [1, 240, 320, 1],
+                data: new Float32Array(240 * 320).fill(1.5),
+                dispose: vi.fn(),
+              } as unknown as ort.Tensor,
+              secondary_output_disparity: {
+                type: 'float32',
+                dims: [1, 240, 320, 1],
+                data: new Float32Array(240 * 320).fill(1.0),
+                dispose: vi.fn(),
+              } as unknown as ort.Tensor,
+            };
+          }),
+          release: vi.fn(async () => {}),
+        } as unknown as ort.InferenceSession;
+        return {
+          session: mockSession,
+          backend: {
+            runtime: 'onnxruntime-web',
+            requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+            configuredProviders: delegate === 'WebGPU' ? ['webgpu'] : ['wasm'],
+            fallbackReason: null,
+            actualBackend: 'unmeasured',
+          },
+          wasmSourceUsed: 'primary',
+        };
+      }
+    );
+
+    const sendMsg = (req: StereoWorkerRequest) =>
+      new Promise<StereoWorkerResponse>((resolve) => {
+        void processor.handleMessage(req, (res) => resolve(res));
+      });
+
+    const hitnetPath = '/tmp/hitnet_sceneflow_240x320.onnx';
+    if (!existsSync(hitnetPath)) {
+      return;
+    }
+    const rawBytes = new Uint8Array(readFileSync(hitnetPath));
+    const rawSha = createHash('sha256').update(rawBytes).digest('hex');
+
+    // 1) Default WebGPU init keeps argMinKeepDims OFF
+    const initDefault = await sendMsg({
+      type: 'init-onnx',
+      id: 201,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      strictWebGpu: true,
+    });
+    expect(initDefault.type).toBe('init-result');
+    if (initDefault.type === 'init-result') {
+      expect(initDefault.rawInputModelSha256).toBe(rawSha);
+      expect(initDefault.sessionModelSha256).toBe(calls[0].sha256);
+      expect(initDefault.sessionModelSha256).not.toBe(rawSha);
+      expect(initDefault.sessionOptionsApplied?.argMinKeepDimsNormalized).toBe(false);
+      expect(initDefault.sessionOptionsApplied?.allowDiagnosticTransformedWasm).toBe(false);
+      expect(initDefault.argMinStats?.normalizedCount).toBe(0);
+    }
+
+    // 2) Explicit WASM WITHOUT allowDiagnosticTransformedWasm ignores transform flags and sends exact raw bytes
+    const initExplicitWasm = await sendMsg({
+      type: 'init-onnx',
+      id: 202,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizeArgMinKeepDims: true,
+      allowDiagnosticTransformedWasm: false,
+    });
+    expect(initExplicitWasm.type).toBe('init-result');
+    if (initExplicitWasm.type === 'init-result') {
+      expect(initExplicitWasm.rawInputModelSha256).toBe(rawSha);
+      expect(initExplicitWasm.sessionModelSha256).toBe(rawSha);
+      expect(calls[1].sha256).toBe(rawSha);
+      expect(Buffer.compare(calls[1].bytes, rawBytes)).toBe(0);
+      expect(initExplicitWasm.argMinStats?.normalizedCount).toBe(0);
+      expect(initExplicitWasm.sessionOptionsApplied?.allowDiagnosticTransformedWasm).toBe(false);
+    }
+
+    // 3) Explicit WASM WITH allowDiagnosticTransformedWasm=true (diagnostic control only) transforms cleanly to F1/G1 bytes
+    const initDiagWasmG1 = await sendMsg({
+      type: 'init-onnx',
+      id: 203,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizeArgMinKeepDims: true,
+      allowDiagnosticTransformedWasm: true,
+    });
+    expect(initDiagWasmG1.type).toBe('init-result');
+    if (initDiagWasmG1.type === 'init-result') {
+      expect(initDiagWasmG1.rawInputModelSha256).toBe(rawSha);
+      expect(initDiagWasmG1.sessionModelSha256).toBe(calls[2].sha256);
+      expect(initDiagWasmG1.sessionModelSha256).not.toBe(rawSha);
+      expect(initDiagWasmG1.argMinStats).toMatchObject({
+        normalizedCount: 2,
+        totalArgMinCount: 4,
+        ortCacheKeyBefore: 'ArgMin[3;false;0]:false:1;4',
+        ortCacheKeyAfter: 'ArgMin[3;true;0]:false:1;4',
+      });
+      expect(initDiagWasmG1.sessionOptionsApplied?.argMinKeepDimsNormalized).toBe(true);
+      expect(initDiagWasmG1.sessionOptionsApplied?.allowDiagnosticTransformedWasm).toBe(true);
+    }
+
+    const rgba = new Uint8Array(320 * 240 * 4).fill(120);
+    const estDiag = await sendMsg({
+      type: 'estimate',
+      id: 204,
+      leftRgbaBuffer: rgba.slice().buffer,
+      rightRgbaBuffer: rgba.slice().buffer,
+      width: 320,
+      height: 240,
+      sourceEyeWidth: 480,
+      sourceEyeHeight: 270,
+      options: {},
+      includeRawTensorOutputs: true,
+    });
+    expect(estDiag.type).toBe('estimate-result');
+    if (estDiag.type === 'estimate-result') {
+      const expectedFeedSha = createHash('sha256')
+        .update(new Uint8Array(seenFeedData[0].buffer, seenFeedData[0].byteOffset, seenFeedData[0].byteLength))
+        .digest('hex');
+      expect(estDiag.feedSha256s).toEqual({ input: expectedFeedSha });
+      expect(estDiag.rawOutputs?.[0].dataType).toBe('float32');
+      expect(estDiag.rawOutputs?.[1].dataType).toBe('float32');
+    }
+
+    // 4) Auto mode with G1 enabled: WebGPU gets G1 bytes, fallback WASM gets EXACT untouched raw bytes
+    const initAutoG1 = await sendMsg({
+      type: 'init-onnx',
+      id: 205,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'auto',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizeArgMinKeepDims: true,
+      strictWebGpu: false,
+    });
+    expect(initAutoG1.type).toBe('init-result');
+    if (initAutoG1.type === 'init-result') {
+      expect(initAutoG1.sessionModelSha256).toBe(calls[3].sha256);
+      expect(initAutoG1.sessionModelSha256).toBe(calls[2].sha256);
+    }
+
+    const estFallback = await sendMsg({
+      type: 'estimate',
+      id: 206,
+      leftRgbaBuffer: rgba.slice().buffer,
+      rightRgbaBuffer: rgba.slice().buffer,
+      width: 320,
+      height: 240,
+      sourceEyeWidth: 480,
+      sourceEyeHeight: 270,
+      options: {},
+    });
+    expect(estFallback.type).toBe('estimate-result');
+    expect(calls).toHaveLength(5);
+    expect(calls[3].delegate).toBe('WebGPU');
+    expect(calls[4].delegate).toBe('WASM');
+    expect(calls[4].sha256).toBe(rawSha);
+    expect(Buffer.compare(calls[4].bytes, rawBytes)).toBe(0);
+    // Double-check the helper directly still sees 2 unpatched prop0 ArgMin nodes after stripping nothing on raw
+    expect(
+      normalizeHitnetArgMinKeepDimsForWebGpu(calls[4].bytes, {
+        variantId: 'hitnet-sf',
+        backendPreference: 'webgpu',
+      }).normalizedCount
+    ).toBe(2);
+
+    await sendMsg({ type: 'dispose', id: 207 });
+  }, 30000);
+
+  it('gates normalizePropGatherNdRank (H1) as opt-in on hitnet-sf, fails closed on missing preconditions, and preserves raw explicit/fallback WASM bytes', async () => {
+    const calls: Array<{ bytes: Uint8Array; delegate: 'WebGPU' | 'WASM'; sha256: string }> = [];
+    const processor = createStereoWorkerProcessor(async (onnxBytes, delegate) => {
+      const copy = new Uint8Array(onnxBytes);
+      const sha256 = createHash('sha256').update(copy).digest('hex');
+      calls.push({ bytes: copy, delegate, sha256 });
+      const mockSession = {
+        inputNames: ['input'],
+        outputNames: ['reference_output_disparity', 'secondary_output_disparity'],
+        inputMetadata: [{ shape: [1, 6, 240, 320] }],
+        run: vi.fn(async () => {
+          if (delegate === 'WebGPU' && calls.length >= 4) {
+            throw new Error('[WebGPU] Kernel [GatherND] simulated H1 fallback trigger');
+          }
+          return {
+            reference_output_disparity: {
+              type: 'float32',
+              dims: [1, 240, 320, 1],
+              data: new Float32Array(240 * 320).fill(1.25),
+              dispose: vi.fn(),
+            } as unknown as ort.Tensor,
+            secondary_output_disparity: {
+              type: 'float32',
+              dims: [1, 240, 320, 1],
+              data: new Float32Array(240 * 320).fill(0.75),
+              dispose: vi.fn(),
+            } as unknown as ort.Tensor,
+          };
+        }),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+      return {
+        session: mockSession,
+        backend: {
+          runtime: 'onnxruntime-web',
+          requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+          configuredProviders: delegate === 'WebGPU' ? ['webgpu'] : ['wasm'],
+          fallbackReason: null,
+          actualBackend: 'unmeasured',
+        },
+        wasmSourceUsed: 'primary',
+      };
+    });
+
+    const sendMsg = (req: StereoWorkerRequest) =>
+      new Promise<StereoWorkerResponse>((resolve) => {
+        void processor.handleMessage(req, (res) => resolve(res));
+      });
+
+    const hitnetPath = '/tmp/hitnet_sceneflow_240x320.onnx';
+    if (!existsSync(hitnetPath)) {
+      return;
+    }
+    const rawBytes = new Uint8Array(readFileSync(hitnetPath));
+    const rawSnapshot = rawBytes.slice();
+    const rawSha = createHash('sha256').update(rawBytes).digest('hex');
+
+    // Direct helper fail-closed guards & non-mutation
+    expect(
+      normalizeHitnetPropGatherNdRankForWebGpu(rawBytes, {
+        variantId: 'lightstereo-s',
+        backendPreference: 'webgpu',
+      }).normalizedCount
+    ).toBe(0);
+    expect(
+      normalizeHitnetPropGatherNdRankForWebGpu(rawBytes, {
+        variantId: 'hitnet-sf',
+        backendPreference: 'wasm',
+      }).normalizedCount
+    ).toBe(0);
+    expect(Buffer.compare(rawBytes, rawSnapshot)).toBe(0);
+    expect(inferOnnxStaticTensorMeta(rawBytes)).toMatchObject({
+      valid: true,
+      irVersion: 7,
+      defaultOpset: 12,
+      duplicateOutputs: [],
+    });
+
+    // 1) Missing F1 preconditions under strictWebGpu must fail closed with error
+    const missingPrecond = await sendMsg({
+      type: 'init-onnx',
+      id: 301,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'off',
+      normalizeGatherNdRank: false,
+      normalizePropGatherNdRank: true,
+      strictWebGpu: true,
+    });
+    expect(missingPrecond.type).toBe('error');
+
+    // 2) Full F1 + H1 opt-in rewrites exact 2 prop0 nodes, keeps ArgMin keepdims=1 OFF
+    const initH1 = await sendMsg({
+      type: 'init-onnx',
+      id: 302,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      strictWebGpu: true,
+    });
+    expect(initH1.type).toBe('init-result');
+    if (initH1.type === 'init-result') {
+      expect(initH1.sessionOptionsApplied?.propGatherNdRankNormalized).toBe(true);
+      expect(initH1.sessionOptionsApplied?.argMinKeepDimsNormalized).toBe(false);
+      expect(initH1.propGatherNdStats).toMatchObject({
+        normalizedCount: 2,
+        totalGatherNdCount: 10,
+        skippedInvalidOrUnprovenCount: 0,
+      });
+      expect(initH1.propGatherNdStats?.normalizedNodeNames).toEqual([
+        'level0/shared/prop0/GatherV2;level0/level_init/GatherV2_1/axis',
+        'level0_1/shared/prop0/GatherV2;level0/level_init/GatherV2_1/axis',
+      ]);
+      expect(initH1.sessionModelSha256).toBe(calls[0].sha256);
+    }
+
+    // 3) Diagnostic H1 WASM matches exact H1 WebGPU session bytes
+    const initDiagWasmH1 = await sendMsg({
+      type: 'init-onnx',
+      id: 303,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      allowDiagnosticTransformedWasm: true,
+    });
+    expect(initDiagWasmH1.type).toBe('init-result');
+    if (initDiagWasmH1.type === 'init-result') {
+      expect(initDiagWasmH1.sessionModelSha256).toBe(calls[0].sha256);
+      expect(initDiagWasmH1.sessionOptionsApplied?.propGatherNdRankNormalized).toBe(true);
+    }
+
+    // 4) Non-HITNet variant ignores normalizePropGatherNdRank cleanly
+    const initOther = await sendMsg({
+      type: 'init-onnx',
+      id: 304,
+      profile: STEREO_MODEL_PROFILES['lightstereo-s'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      strictWebGpu: true,
+    });
+    expect(initOther.type).toBe('init-result');
+    if (initOther.type === 'init-result') {
+      expect(initOther.propGatherNdStats?.normalizedCount).toBe(0);
+      expect(initOther.sessionOptionsApplied?.propGatherNdRankNormalized).toBe(false);
+    }
+
+    // 5) Auto mode with H1 falls back on runtime error to EXACT raw untouched WASM bytes
+    await sendMsg({
+      type: 'init-onnx',
+      id: 305,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'auto',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      strictWebGpu: false,
+    });
+    const rgba = new Uint8Array(320 * 240 * 4).fill(90);
+    const estH1Fallback = await sendMsg({
+      type: 'estimate',
+      id: 306,
+      leftRgbaBuffer: rgba.slice().buffer,
+      rightRgbaBuffer: rgba.slice().buffer,
+      width: 320,
+      height: 240,
+      sourceEyeWidth: 480,
+      sourceEyeHeight: 270,
+      options: {},
+      captureGpuValidationErrors: true,
+    });
+    expect(estH1Fallback.type).toBe('estimate-result');
+    const fallbackCall = calls[calls.length - 1];
+    expect(fallbackCall.delegate).toBe('WASM');
+    expect(fallbackCall.sha256).toBe(rawSha);
+    expect(Buffer.compare(fallbackCall.bytes, rawBytes)).toBe(0);
+
+    await sendMsg({ type: 'dispose', id: 307 });
+  }, 30000);
+
+  it('gates normalizeInitToPropZeroSlant (M1-ConstZero2Ch) strictly on H1 hitnet-sf, fails closed on L1/G1/WASM, and preserves raw fallback bytes', async () => {
+    const calls: Array<{ bytes: Uint8Array; delegate: 'WebGPU' | 'WASM'; sha256: string }> = [];
+    const processor = createStereoWorkerProcessor(async (onnxBytes, delegate) => {
+      const copy = new Uint8Array(onnxBytes);
+      const sha256 = createHash('sha256').update(copy).digest('hex');
+      calls.push({ bytes: copy, delegate, sha256 });
+      const mockSession = {
+        inputNames: ['input'],
+        outputNames: ['reference_output_disparity', 'secondary_output_disparity'],
+        inputMetadata: [{ shape: [1, 6, 240, 320] }],
+        run: vi.fn(async () => {
+          if (delegate === 'WebGPU' && calls.length >= 4) {
+            throw new Error('[WebGPU] Kernel [Concat] simulated M1 fallback trigger');
+          }
+          return {
+            reference_output_disparity: {
+              type: 'float32',
+              dims: [1, 240, 320, 1],
+              data: new Float32Array(240 * 320).fill(1.0),
+              dispose: vi.fn(),
+            } as unknown as ort.Tensor,
+            secondary_output_disparity: {
+              type: 'float32',
+              dims: [1, 240, 320, 1],
+              data: new Float32Array(240 * 320).fill(0.5),
+              dispose: vi.fn(),
+            } as unknown as ort.Tensor,
+          };
+        }),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+      return {
+        session: mockSession,
+        backend: {
+          runtime: 'onnxruntime-web',
+          requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+          configuredProviders: delegate === 'WebGPU' ? ['webgpu'] : ['wasm'],
+          fallbackReason: null,
+          actualBackend: 'unmeasured',
+        },
+        wasmSourceUsed: 'primary',
+      };
+    });
+
+    const sendMsg = (req: StereoWorkerRequest) =>
+      new Promise<StereoWorkerResponse>((resolve) => {
+        void processor.handleMessage(req, (res) => resolve(res));
+      });
+
+    const hitnetPath = '/tmp/hitnet_sceneflow_240x320.onnx';
+    if (!existsSync(hitnetPath)) {
+      return;
+    }
+    const rawBytes = new Uint8Array(readFileSync(hitnetPath));
+    const rawSha = createHash('sha256').update(rawBytes).digest('hex');
+    expect(rawSha).toBe(HITNET_RAW_MODEL_SHA256);
+
+    // 1) Missing H1, L1 conflict, or G1 conflict must fail closed
+    for (const badReq of [
+      {
+        normalizeSliceAxes: 'compact-active' as const,
+        normalizeGatherNdRank: true,
+        normalizePropGatherNdRank: false,
+      },
+      {
+        normalizeSliceAxes: 'compact-active' as const,
+        normalizeGatherNdRank: true,
+        normalizePropGatherNdRank: true,
+        levelInitGatherMode: 'reshape-rank4' as const,
+      },
+      {
+        normalizeSliceAxes: 'compact-active' as const,
+        normalizeGatherNdRank: true,
+        normalizePropGatherNdRank: true,
+        normalizeArgMinKeepDims: true,
+      },
+    ]) {
+      const errRes = await sendMsg({
+        type: 'init-onnx',
+        id: 401,
+        profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+        onnxBuffer: rawBytes.slice().buffer,
+        wasmPrimaryUrl: 'https://example.test/ort/',
+        wasmFallbackUrl: null,
+        backendPreference: 'webgpu',
+        ...badReq,
+        normalizeInitToPropZeroSlant: true,
+        strictWebGpu: true,
+      });
+      expect(errRes.type).toBe('error');
+    }
+
+    // 2) Production-like default (normalizeInitToPropZeroSlant omitted) keeps M1 OFF even on H1
+    const initDefaultOff = await sendMsg({
+      type: 'init-onnx',
+      id: 402,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      strictWebGpu: true,
+    });
+    expect(initDefaultOff.type).toBe('init-result');
+    if (initDefaultOff.type === 'init-result') {
+      expect(initDefaultOff.sessionModelSha256).toBe(HITNET_H1_FULL_GRAPH_SHA256);
+      expect(initDefaultOff.initToPropZeroSlantStats?.normalizedCount).toBe(0);
+      expect(initDefaultOff.sessionOptionsApplied?.initToPropZeroSlantNormalized).toBe(false);
+    }
+
+    // 3) Opt-in M1 on H1 succeeds cleanly and verifies H1/raw provenance + 8 dead nodes + zero__310
+    const initM1WebGpu = await sendMsg({
+      type: 'init-onnx',
+      id: 403,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeInitToPropZeroSlant: true,
+      strictWebGpu: true,
+    });
+    expect(initM1WebGpu.type).toBe('init-result');
+    let m1Sha = '';
+    if (initM1WebGpu.type === 'init-result') {
+      m1Sha = initM1WebGpu.sessionModelSha256 ?? '';
+      expect(m1Sha).not.toBe(HITNET_H1_FULL_GRAPH_SHA256);
+      expect(initM1WebGpu.initToPropZeroSlantStats).toMatchObject({
+        normalizedCount: 2,
+        removedDeadInitializerNames: ['zero__310'],
+        addedInitializerName: '__webgpu_m1_init_to_prop_zero_slant_2ch',
+        addedInitializerDims: [1, 2, 60, 80],
+        verifiedH1Provenance: true,
+        verifiedRawIdentity: true,
+        skippedInvalidOrUnprovenCount: 0,
+      });
+      expect(initM1WebGpu.initToPropZeroSlantStats?.removedDeadNodeNames).toHaveLength(8);
+      expect(initM1WebGpu.sessionOptionsApplied?.initToPropZeroSlantNormalized).toBe(true);
+    }
+
+    // 4) Explicit WASM without allowDiagnosticTransformedWasm leaves rawBytes untouched;
+    //    diagnostic transformed WASM receives EXACT M1 bytes matching WebGPU.
+    const initExplicitWasm = await sendMsg({
+      type: 'init-onnx',
+      id: 404,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeInitToPropZeroSlant: true,
+      allowDiagnosticTransformedWasm: false,
+    });
+    expect(initExplicitWasm.type).toBe('init-result');
+    if (initExplicitWasm.type === 'init-result') {
+      expect(initExplicitWasm.sessionModelSha256).toBe(rawSha);
+      expect(initExplicitWasm.initToPropZeroSlantStats?.normalizedCount).toBe(0);
+    }
+
+    const initDiagWasmM1 = await sendMsg({
+      type: 'init-onnx',
+      id: 405,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeInitToPropZeroSlant: true,
+      allowDiagnosticTransformedWasm: true,
+    });
+    expect(initDiagWasmM1.type).toBe('init-result');
+    if (initDiagWasmM1.type === 'init-result') {
+      expect(initDiagWasmM1.sessionModelSha256).toBe(m1Sha);
+      expect(initDiagWasmM1.sessionOptionsApplied?.initToPropZeroSlantNormalized).toBe(true);
+    }
+
+    // 5) Auto mode runtime fallback still uses exact raw untouched WASM bytes
+    await sendMsg({
+      type: 'init-onnx',
+      id: 406,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'auto',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeInitToPropZeroSlant: true,
+      strictWebGpu: false,
+    });
+    const rgba = new Uint8Array(320 * 240 * 4).fill(90);
+    const estFallback = await sendMsg({
+      type: 'estimate',
+      id: 407,
+      leftRgbaBuffer: rgba.slice().buffer,
+      rightRgbaBuffer: rgba.slice().buffer,
+      width: 320,
+      height: 240,
+      sourceEyeWidth: 480,
+      sourceEyeHeight: 270,
+      options: {},
+    });
+    expect(estFallback.type).toBe('estimate-result');
+    const lastCall = calls[calls.length - 1];
+    expect(lastCall.delegate).toBe('WASM');
+    expect(lastCall.sha256).toBe(rawSha);
+    expect(Buffer.compare(lastCall.bytes, rawBytes)).toBe(0);
+    expect(
+      normalizeHitnetInitToPropZeroSlantForWebGpu(lastCall.bytes, {
+        variantId: 'hitnet-sf',
+        backendPreference: 'webgpu',
+      }).normalizedCount
+    ).toBe(0);
+
+    await sendMsg({ type: 'dispose', id: 408 });
+  }, 30000);
+
+  it('gates normalizeSlot0ReshapeToTranspose (N1-Slot0Transpose) strictly on exact M1 hitnet-sf, fails closed without M1 or on L1/G1/WASM, and preserves raw fallback bytes', async () => {
+    const calls: Array<{ bytes: Uint8Array; delegate: 'WebGPU' | 'WASM'; sha256: string }> = [];
+    const processor = createStereoWorkerProcessor(async (onnxBytes, delegate) => {
+      const copy = new Uint8Array(onnxBytes);
+      const sha256 = createHash('sha256').update(copy).digest('hex');
+      calls.push({ bytes: copy, delegate, sha256 });
+      const mockSession = {
+        inputNames: ['input'],
+        outputNames: ['reference_output_disparity', 'secondary_output_disparity'],
+        inputMetadata: [{ shape: [1, 6, 240, 320] }],
+        run: vi.fn(async () => {
+          if (delegate === 'WebGPU' && calls.length >= 4) {
+            throw new Error('[WebGPU] Kernel [Transpose] simulated N1 fallback trigger');
+          }
+          return {
+            reference_output_disparity: {
+              type: 'float32',
+              dims: [1, 240, 320, 1],
+              data: new Float32Array(240 * 320).fill(1.0),
+              dispose: vi.fn(),
+            } as unknown as ort.Tensor,
+            secondary_output_disparity: {
+              type: 'float32',
+              dims: [1, 240, 320, 1],
+              data: new Float32Array(240 * 320).fill(0.5),
+              dispose: vi.fn(),
+            } as unknown as ort.Tensor,
+          };
+        }),
+        release: vi.fn(async () => {}),
+      } as unknown as ort.InferenceSession;
+      return {
+        session: mockSession,
+        backend: {
+          runtime: 'onnxruntime-web',
+          requestedProvider: delegate === 'WebGPU' ? 'webgpu' : 'wasm',
+          configuredProviders: delegate === 'WebGPU' ? ['webgpu'] : ['wasm'],
+          fallbackReason: null,
+          actualBackend: 'unmeasured',
+        },
+        wasmSourceUsed: 'primary',
+      };
+    });
+
+    const sendMsg = (req: StereoWorkerRequest) =>
+      new Promise<StereoWorkerResponse>((resolve) => {
+        void processor.handleMessage(req, (res) => resolve(res));
+      });
+
+    const hitnetPath = '/tmp/hitnet_sceneflow_240x320.onnx';
+    if (!existsSync(hitnetPath)) {
+      return;
+    }
+    const rawBytes = new Uint8Array(readFileSync(hitnetPath));
+    const rawSha = createHash('sha256').update(rawBytes).digest('hex');
+    expect(rawSha).toBe(HITNET_RAW_MODEL_SHA256);
+
+    // 1) Missing M1, missing H1, L1 conflict, or G1 conflict must fail closed
+    for (const badReq of [
+      {
+        normalizeSliceAxes: 'compact-active' as const,
+        normalizeGatherNdRank: true,
+        normalizePropGatherNdRank: true,
+        normalizeInitToPropZeroSlant: false,
+      },
+      {
+        normalizeSliceAxes: 'compact-active' as const,
+        normalizeGatherNdRank: true,
+        normalizePropGatherNdRank: false,
+        normalizeInitToPropZeroSlant: false,
+      },
+      {
+        normalizeSliceAxes: 'compact-active' as const,
+        normalizeGatherNdRank: true,
+        normalizePropGatherNdRank: true,
+        normalizeInitToPropZeroSlant: true,
+        levelInitGatherMode: 'reshape-rank4' as const,
+      },
+      {
+        normalizeSliceAxes: 'compact-active' as const,
+        normalizeGatherNdRank: true,
+        normalizePropGatherNdRank: true,
+        normalizeInitToPropZeroSlant: true,
+        normalizeArgMinKeepDims: true,
+      },
+    ]) {
+      const errRes = await sendMsg({
+        type: 'init-onnx',
+        id: 501,
+        profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+        onnxBuffer: rawBytes.slice().buffer,
+        wasmPrimaryUrl: 'https://example.test/ort/',
+        wasmFallbackUrl: null,
+        backendPreference: 'webgpu',
+        ...badReq,
+        normalizeSlot0ReshapeToTranspose: true,
+        strictWebGpu: true,
+      });
+      expect(errRes.type).toBe('error');
+    }
+
+    // 2) Production-like default (normalizeSlot0ReshapeToTranspose omitted) keeps N1 OFF even on M1
+    const initDefaultOff = await sendMsg({
+      type: 'init-onnx',
+      id: 502,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeInitToPropZeroSlant: true,
+      strictWebGpu: true,
+    });
+    expect(initDefaultOff.type).toBe('init-result');
+    if (initDefaultOff.type === 'init-result') {
+      expect(initDefaultOff.sessionModelSha256).toBe(HITNET_M1_FULL_GRAPH_SHA256);
+      expect(initDefaultOff.slot0ReshapeToTransposeStats?.normalizedCount).toBe(0);
+      expect(initDefaultOff.sessionOptionsApplied?.slot0ReshapeToTransposeNormalized).toBe(false);
+    }
+
+    // 3) Opt-in N1 on exact M1 succeeds cleanly
+    const initN1WebGpu = await sendMsg({
+      type: 'init-onnx',
+      id: 503,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'webgpu',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeInitToPropZeroSlant: true,
+      normalizeSlot0ReshapeToTranspose: true,
+      strictWebGpu: true,
+    });
+    expect(initN1WebGpu.type).toBe('init-result');
+    let n1Sha = '';
+    if (initN1WebGpu.type === 'init-result') {
+      n1Sha = initN1WebGpu.sessionModelSha256 ?? '';
+      expect(n1Sha).not.toBe(HITNET_M1_FULL_GRAPH_SHA256);
+      expect(n1Sha).not.toBe(HITNET_H1_FULL_GRAPH_SHA256);
+      expect(initN1WebGpu.slot0ReshapeToTransposeStats).toMatchObject({
+        normalizedCount: 2,
+        normalizedNodeNames: ['Transpose__908', 'Transpose__1006'],
+        verifiedM1Provenance: true,
+        verifiedRawIdentity: true,
+        skippedInvalidOrUnprovenCount: 0,
+      });
+      expect(initN1WebGpu.sessionOptionsApplied?.slot0ReshapeToTransposeNormalized).toBe(true);
+    }
+
+    // 4) Explicit WASM without allowDiagnosticTransformedWasm leaves rawBytes untouched;
+    //    diagnostic transformed WASM receives EXACT N1 bytes matching WebGPU.
+    const initExplicitWasm = await sendMsg({
+      type: 'init-onnx',
+      id: 504,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeInitToPropZeroSlant: true,
+      normalizeSlot0ReshapeToTranspose: true,
+      allowDiagnosticTransformedWasm: false,
+    });
+    expect(initExplicitWasm.type).toBe('init-result');
+    if (initExplicitWasm.type === 'init-result') {
+      expect(initExplicitWasm.sessionModelSha256).toBe(rawSha);
+      expect(initExplicitWasm.slot0ReshapeToTransposeStats?.normalizedCount).toBe(0);
+    }
+
+    const initDiagWasmN1 = await sendMsg({
+      type: 'init-onnx',
+      id: 505,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'wasm',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeInitToPropZeroSlant: true,
+      normalizeSlot0ReshapeToTranspose: true,
+      allowDiagnosticTransformedWasm: true,
+    });
+    expect(initDiagWasmN1.type).toBe('init-result');
+    if (initDiagWasmN1.type === 'init-result') {
+      expect(initDiagWasmN1.sessionModelSha256).toBe(n1Sha);
+      expect(initDiagWasmN1.sessionOptionsApplied?.slot0ReshapeToTransposeNormalized).toBe(true);
+    }
+
+    // 5) Auto mode runtime fallback still uses exact raw untouched WASM bytes
+    await sendMsg({
+      type: 'init-onnx',
+      id: 506,
+      profile: STEREO_MODEL_PROFILES['hitnet-sf'],
+      onnxBuffer: rawBytes.slice().buffer,
+      wasmPrimaryUrl: 'https://example.test/ort/',
+      wasmFallbackUrl: null,
+      backendPreference: 'auto',
+      normalizeSliceAxes: 'compact-active',
+      normalizeGatherNdRank: true,
+      normalizePropGatherNdRank: true,
+      normalizeInitToPropZeroSlant: true,
+      normalizeSlot0ReshapeToTranspose: true,
+      strictWebGpu: false,
+    });
+    const rgba = new Uint8Array(320 * 240 * 4).fill(90);
+    const estFallback = await sendMsg({
+      type: 'estimate',
+      id: 507,
+      leftRgbaBuffer: rgba.slice().buffer,
+      rightRgbaBuffer: rgba.slice().buffer,
+      width: 320,
+      height: 240,
+      sourceEyeWidth: 480,
+      sourceEyeHeight: 270,
+      options: {},
+    });
+    expect(estFallback.type).toBe('estimate-result');
+    const lastCall = calls[calls.length - 1];
+    expect(lastCall.delegate).toBe('WASM');
+    expect(lastCall.sha256).toBe(rawSha);
+    expect(Buffer.compare(lastCall.bytes, rawBytes)).toBe(0);
+    expect(
+      normalizeHitnetSlot0ReshapeToTransposeForWebGpu(lastCall.bytes, {
+        variantId: 'hitnet-sf',
+        backendPreference: 'webgpu',
+      }).normalizedCount
+    ).toBe(0);
+
+    await sendMsg({ type: 'dispose', id: 508 });
+  }, 30000);
 });
+
+

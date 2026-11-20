@@ -25,16 +25,23 @@ import {
 import { fetchModelBytesWithBrowserCache, STEREO_CORS_PROXY_PREFIX } from './browserModelCache';
 import {
   computeDisparityStats,
+  computeOrtArgMinCacheAttributesKey,
   computeSadDisparity,
   createStereoWorkerProcessor,
   createWebGpuStereoComputeEngine,
+  decomposeOnnx5dConvNodesForWebGpu,
   DEFAULT_WEBGPU_MAX_STORAGE_BUFFERS_PER_STAGE,
   downscaleRgbaBuffer,
   exceedsWebGpuStorageBufferLimit,
   extractDisparityFromOrtTensor,
   getColormapLut,
+  inferOnnxStaticTensorMeta,
   inspectStereoOnnxWebGpuCompatibility,
   isWebGpuRuntimeKernelError,
+  normalizeHitnetArgMinKeepDimsForWebGpu,
+  normalizeHitnetGatherNdRankForWebGpu,
+  normalizeHitnetPropGatherNdRankForWebGpu,
+  normalizeNonAscendingSliceAxesForWebGpu,
   renderDisparityColormapToRgba,
   resolveStereoOrtDelegate,
   resolveStereoOrtSessionOptions,
@@ -42,14 +49,29 @@ import {
   splitLargeOnnxConcatNodes,
   STEREO_WGSL_SHADER,
   stripOnnxGraphValueInfo,
+  validateOnnxGraphNodeInputs,
   type DisparityStatsResult,
+  type GpuKernelProfileSummary,
+  type NormalizeArgMinKeepDimsOptions,
+  type NormalizeGatherNdRankOptions,
+  type NormalizeSliceAxesOptions,
+  type OnnxArgMinKeepDimsNormalizeResult,
   type OnnxConcatSplitResult,
+  type OnnxConv3dDecomposeResult,
+  type OnnxGatherNdRankNormalizeResult,
+  type OnnxGraphValidationResult,
+  type OnnxSliceAxesNormalizeResult,
+  type OnnxStaticInferenceResult,
+  type OrtGraphOptimizationLevel,
   type SadComputeOptions,
   type SadDisparityOutput,
+  type SliceAxesNormalizeMode,
   type StereoInputLayout,
   type StereoModelProfile,
   type StereoNormalizationMode,
   type StereoOnlineDeliveryMode,
+  type StereoOrtSessionOptionOverrides,
+  type StereoSessionOptionsApplied,
   type StereoWorkerEstimateOptions,
   type StereoWorkerRequest,
   type StereoWorkerResponse,
@@ -61,30 +83,52 @@ import {
 
 export {
   computeDisparityStats,
+  computeOrtArgMinCacheAttributesKey,
   computeSadDisparity,
   createStereoWorkerProcessor,
   createWebGpuStereoComputeEngine,
+  decomposeOnnx5dConvNodesForWebGpu,
   DEFAULT_WEBGPU_MAX_STORAGE_BUFFERS_PER_STAGE,
   downscaleRgbaBuffer,
   exceedsWebGpuStorageBufferLimit,
   extractDisparityFromOrtTensor,
   getColormapLut,
+  inferOnnxStaticTensorMeta,
   inspectStereoOnnxWebGpuCompatibility,
   isWebGpuRuntimeKernelError,
+  normalizeHitnetArgMinKeepDimsForWebGpu,
+  normalizeHitnetGatherNdRankForWebGpu,
+  normalizeHitnetPropGatherNdRankForWebGpu,
+  normalizeNonAscendingSliceAxesForWebGpu,
   renderDisparityColormapToRgba,
   resolveStereoOrtDelegate,
   resolveStereoOrtSessionOptions,
   splitLargeOnnxConcatNodes,
   STEREO_WGSL_SHADER,
   stripOnnxGraphValueInfo,
+  validateOnnxGraphNodeInputs,
   type DisparityStatsResult,
+  type GpuKernelProfileSummary,
+  type NormalizeArgMinKeepDimsOptions,
+  type NormalizeGatherNdRankOptions,
+  type NormalizeSliceAxesOptions,
+  type OnnxArgMinKeepDimsNormalizeResult,
   type OnnxConcatSplitResult,
+  type OnnxConv3dDecomposeResult,
+  type OnnxGatherNdRankNormalizeResult,
+  type OnnxGraphValidationResult,
+  type OnnxSliceAxesNormalizeResult,
+  type OnnxStaticInferenceResult,
+  type OrtGraphOptimizationLevel,
   type SadComputeOptions,
   type SadDisparityOutput,
+  type SliceAxesNormalizeMode,
   type StereoInputLayout,
   type StereoModelProfile,
   type StereoNormalizationMode,
   type StereoOnlineDeliveryMode,
+  type StereoOrtSessionOptionOverrides,
+  type StereoSessionOptionsApplied,
   type StereoWorkerEstimateOptions,
   type StereoWorkerRequest,
   type StereoWorkerResponse,
@@ -154,9 +198,9 @@ export const STEREO_MODEL_PROFILES: Record<StereoDepthVariantId, StereoModelProf
     defaultHeight: 240,
     inputLayout: 'dual',
     normalization: 'imagenet',
-    preferWebGpu: false,
+    preferWebGpu: true,
     license: 'MIT',
-    licenseNote: 'MobileStereoNet-2D (Shamsafar et al. / ONNX-MobileStereoNet) / MIT（3D畳み込み集約ノードのため自動時はWASM構成 · 240×528 · 手動でWebGPU強制試行可能）',
+    licenseNote: 'MobileStereoNet-2D (Shamsafar et al. / ONNX-MobileStereoNet) / MIT（5D Conv3D→WebGPU互換2D Conv自動グラフ変換によるWebGPU高速実行 + WASMフォールバック対応 · 240×528）',
     upstreamUrl: 'https://github.com/ibaiGorordo/ONNX-MobileStereoNet',
     onlineDelivery: 'cors-proxy',
     onlineSourceLabel: 'Google Drive (CORS中継 + ブラウザキャッシュ)',
@@ -1224,6 +1268,13 @@ export interface StereoWorkerInitConfig {
   primarySource?: AssetDeliverySource;
   recordAssetSource?: AssetSourceRecorder;
   workerFactory?: () => StereoWorkerLike;
+  normalizeSliceAxes?: boolean | SliceAxesNormalizeMode;
+  normalizeGatherNdRank?: boolean;
+  normalizeArgMinKeepDims?: boolean;
+  strictWebGpu?: boolean;
+  graphOptimizationLevel?: OrtGraphOptimizationLevel;
+  disableCpuEpFallback?: boolean;
+  enableWebGpuProfiling?: boolean;
 }
 
 let activeInitController: AbortController | null = null;
@@ -1384,6 +1435,13 @@ export class StereoWorkerEngine implements StereoDepthTask {
                 wasmPrimaryUrl,
                 wasmFallbackUrl,
                 backendPreference: config.backendPreference,
+                normalizeSliceAxes: config.normalizeSliceAxes,
+                normalizeGatherNdRank: config.normalizeGatherNdRank,
+                normalizeArgMinKeepDims: config.normalizeArgMinKeepDims,
+                strictWebGpu: config.strictWebGpu,
+                graphOptimizationLevel: config.graphOptimizationLevel,
+                disableCpuEpFallback: config.disableCpuEpFallback,
+                enableWebGpuProfiling: config.enableWebGpuProfiling,
               },
               [copy.buffer]
             );
@@ -1699,6 +1757,13 @@ export interface StereoDepthTaskOptions {
   fetchImpl?: typeof fetch;
   useWorker?: boolean;
   workerFactory?: () => StereoWorkerLike;
+  normalizeSliceAxes?: boolean | SliceAxesNormalizeMode;
+  normalizeGatherNdRank?: boolean;
+  normalizeArgMinKeepDims?: boolean;
+  strictWebGpu?: boolean;
+  graphOptimizationLevel?: OrtGraphOptimizationLevel;
+  disableCpuEpFallback?: boolean;
+  enableWebGpuProfiling?: boolean;
 }
 
 function shouldUseStereoWorkerByDefault(options: StereoDepthTaskOptions): boolean {
@@ -1773,30 +1838,168 @@ export async function createStereoDepthTask(
         primarySource,
         recordAssetSource: options.recordAssetSource,
         workerFactory: options.workerFactory,
+        normalizeSliceAxes: options.normalizeSliceAxes,
+        normalizeGatherNdRank: options.normalizeGatherNdRank,
+        normalizeArgMinKeepDims: options.normalizeArgMinKeepDims,
+        strictWebGpu: options.strictWebGpu,
+        graphOptimizationLevel: options.graphOptimizationLevel,
+        disableCpuEpFallback: options.disableCpuEpFallback,
+        enableWebGpuProfiling: options.enableWebGpuProfiling,
       });
     }
     const splitResult = splitLargeOnnxConcatNodes(onnxBytes, 4);
-    const preparedBytes = splitResult.splitCount > 0 ? splitResult.bytes : onnxBytes;
+    const afterSplitBytes = splitResult.splitCount > 0 ? splitResult.bytes : onnxBytes;
+    const conv3dResult =
+      backendPreference === 'wasm'
+        ? { bytes: afterSplitBytes, decomposedCount: 0, decomposedNodeNames: [] }
+        : decomposeOnnx5dConvNodesForWebGpu(afterSplitBytes);
+    const afterConv3dBytes =
+      conv3dResult.decomposedCount > 0 ? conv3dResult.bytes : afterSplitBytes;
+    const requestedSliceMode: SliceAxesNormalizeMode =
+      options.normalizeSliceAxes === 'compact-active'
+        ? 'compact-active'
+        : options.normalizeSliceAxes === 'sort-only' || options.normalizeSliceAxes === true
+          ? 'sort-only'
+          : 'off';
+    const sliceNormalizeMode: SliceAxesNormalizeMode =
+      backendPreference !== 'wasm' && profile.variantId === 'hitnet-sf'
+        ? requestedSliceMode
+        : 'off';
+    const sliceNormResult =
+      sliceNormalizeMode !== 'off'
+        ? normalizeNonAscendingSliceAxesForWebGpu(afterConv3dBytes, { mode: sliceNormalizeMode })
+        : {
+            bytes: afterConv3dBytes,
+            normalizedCount: 0,
+            normalizedNodeNames: [],
+            skippedDynamicCount: 0,
+            skippedInvalidOrUnprovenCount: 0,
+            compactedCount: 0,
+            mode: sliceNormalizeMode,
+          };
+    const afterSliceBytes =
+      sliceNormResult.normalizedCount > 0 ? sliceNormResult.bytes : afterConv3dBytes;
+    const gatherNdRankEnabled =
+      Boolean(options.normalizeGatherNdRank) &&
+      backendPreference !== 'wasm' &&
+      profile.variantId === 'hitnet-sf';
+    const gatherNdResult = gatherNdRankEnabled
+      ? normalizeHitnetGatherNdRankForWebGpu(afterSliceBytes, {
+          variantId: profile.variantId,
+          backendPreference,
+          requireHitnetContract: true,
+        })
+      : {
+          bytes: afterSliceBytes,
+          normalizedCount: 0,
+          normalizedNodeNames: [],
+          skippedDynamicCount: 0,
+          skippedInvalidOrUnprovenCount: 0,
+          totalGatherNdCount: 0,
+        };
+    const afterGatherNdBytes =
+      gatherNdResult.normalizedCount > 0 ? gatherNdResult.bytes : afterSliceBytes;
+    const argMinKeepDimsEnabled =
+      Boolean(options.normalizeArgMinKeepDims) &&
+      backendPreference !== 'wasm' &&
+      profile.variantId === 'hitnet-sf';
+    const argMinResult = argMinKeepDimsEnabled
+      ? normalizeHitnetArgMinKeepDimsForWebGpu(afterGatherNdBytes, {
+          variantId: profile.variantId,
+          backendPreference,
+          requireHitnetContract: true,
+        })
+      : {
+          bytes: afterGatherNdBytes,
+          normalizedCount: 0,
+          normalizedNodeNames: [],
+          untouchedNodeNames: [],
+          totalArgMinCount: 0,
+          skippedDynamicCount: 0,
+          skippedInvalidOrUnprovenCount: 0,
+          updatedValueInfoCount: 0,
+          ortCacheKeyBefore: null,
+          ortCacheKeyAfter: null,
+        };
+    const preparedBytes =
+      argMinResult.normalizedCount > 0 ? argMinResult.bytes : afterGatherNdBytes;
     const delegate = resolveStereoOrtDelegate(
       profile,
       preparedBytes,
       DEFAULT_WEBGPU_MAX_STORAGE_BUFFERS_PER_STAGE,
       backendPreference
     );
-    const { session, backend } = await createOrtSession(preparedBytes, delegate, {
-      recordAssetSource: options.recordAssetSource,
-      modelId: 'stereo-depth',
-      primarySource,
-      variantId: profile.variantId,
-      graphOptimizationLevel: delegate === 'WASM' ? 'disabled' : 'all',
-    });
+    let session: ort.InferenceSession;
+    let backend: OnnxBackendInfo;
+    let transformFallbackReason: string | null = null;
+    try {
+      const created = await createOrtSession(preparedBytes, delegate, {
+        recordAssetSource: options.recordAssetSource,
+        modelId: 'stereo-depth',
+        primarySource,
+        variantId: profile.variantId,
+        graphOptimizationLevel:
+          options.graphOptimizationLevel ?? (delegate === 'WASM' ? 'disabled' : 'all'),
+      });
+      session = created.session;
+      backend = created.backend;
+    } catch (primaryInitErr) {
+      if (
+        (conv3dResult.decomposedCount > 0 ||
+          sliceNormResult.normalizedCount > 0 ||
+          gatherNdResult.normalizedCount > 0 ||
+          argMinResult.normalizedCount > 0) &&
+        preparedBytes !== afterSplitBytes
+      ) {
+        const errMsg =
+          primaryInitErr instanceof Error ? primaryInitErr.message : String(primaryInitErr);
+        const recovered = await createOrtSession(afterSplitBytes, 'WASM', {
+          recordAssetSource: options.recordAssetSource,
+          modelId: 'stereo-depth',
+          primarySource,
+          variantId: profile.variantId,
+          graphOptimizationLevel: 'disabled',
+        });
+        session = recovered.session;
+        backend = recovered.backend;
+        transformFallbackReason = `WebGPU互換グラフ変換後セッション初期化失敗 (${errMsg}); 未変換ONNXでWASMへ安全フォールバック`;
+      } else {
+        throw primaryInitErr;
+      }
+    }
     const staticCompat =
       backendPreference === 'auto' && delegate === 'WASM' && profile.preferWebGpu
         ? inspectStereoOnnxWebGpuCompatibility(preparedBytes)
         : null;
-    const concatNote =
-      splitResult.splitCount > 0 && backend.configuredProviders.includes('webgpu')
-        ? `Concat分割(${splitResult.splitCount}箇所・最大${splitResult.originalMaxConcatInputs}→4入力ツリー化)でWebGPU有効化`
+    const transformNotes: string[] = [];
+    if (splitResult.splitCount > 0) {
+      transformNotes.push(
+        `Concat分割(${splitResult.splitCount}箇所・最大${splitResult.originalMaxConcatInputs}→4入力ツリー化)`
+      );
+    }
+    if (conv3dResult.decomposedCount > 0 && !transformFallbackReason) {
+      transformNotes.push(
+        `5D Conv3D分解(${conv3dResult.decomposedCount}箇所→2D Conv化)`
+      );
+    }
+    if (sliceNormResult.normalizedCount > 0 && !transformFallbackReason) {
+      transformNotes.push(
+        `Slice軸順正規化(${sliceNormResult.normalizedCount}箇所)`
+      );
+    }
+    if (gatherNdResult.normalizedCount > 0 && !transformFallbackReason) {
+      transformNotes.push(
+        `GatherNDランク正規化(${gatherNdResult.normalizedCount}箇所)`
+      );
+    }
+    if (argMinResult.normalizedCount > 0 && !transformFallbackReason) {
+      transformNotes.push(
+        `ArgMin keepdims=1分離(${argMinResult.normalizedCount}箇所)`
+      );
+    }
+    const graphTransformNote =
+      transformNotes.length > 0 && backend.configuredProviders.includes('webgpu')
+        ? `${transformNotes.join('＋')}でWebGPU有効化`
         : null;
     const adjustedBackend: OnnxBackendInfo = {
       ...backend,
@@ -1806,12 +2009,16 @@ export async function createStereoDepthTask(
           : backendPreference === 'webgpu'
             ? 'webgpu'
             : backend.requestedProvider,
-      fallbackReason: backend.fallbackReason ?? staticCompat?.reason ?? concatNote,
+      fallbackReason:
+        transformFallbackReason ??
+        backend.fallbackReason ??
+        staticCompat?.reason ??
+        graphTransformNote,
     };
     const fallbackToWasm: StereoWasmRecoveryFactory | undefined =
       delegate === 'WebGPU' && adjustedBackend.configuredProviders.includes('webgpu')
         ? () =>
-            createOrtSession(preparedBytes, 'WASM', {
+            createOrtSession(afterSplitBytes, 'WASM', {
               recordAssetSource: options.recordAssetSource,
               modelId: 'stereo-depth',
               primarySource,
@@ -1920,9 +2127,15 @@ export async function createStereoDepthTask(
     );
   }
 
-  if (!options.modelUrl) {
+  // Only retain in-memory `remoteStereoOnnxCache` when Browser CacheStorage API is unavailable
+  // or when the model binary is small (<= 4MB), avoiding pinning a redundant 16.5MB buffer in
+  // main-thread RAM alongside the Worker and Cache API on mobile devices.
+  const hasPersistentCacheApi = typeof caches !== 'undefined';
+  if (!options.modelUrl && (!hasPersistentCacheApi || loadedBytes.byteLength <= 4 * 1024 * 1024)) {
     remoteStereoOnnxCache.clear();
     remoteStereoOnnxCache.set(profile.variantId, loadedBytes);
+  } else {
+    remoteStereoOnnxCache.clear();
   }
 
   return buildStereoEngine(loadedBytes, resolvedSource);

@@ -215,7 +215,7 @@ export const STEREO_DEPTH_MODEL: ModelMetadata = {
     {
       id: 'mobilestereonet-2d',
       name: 'MobileStereoNet-2D (ONNX・モバイル軽量)',
-      description: '省メモリ・軽量ステレオONNX (240×528 · 5D Conv3d含むためWASM推奨 · オンライン自動取得対応)。ローカル .onnx での上書きも可能です。',
+      description: '省メモリ・軽量ステレオONNX (240×528 · 5D Conv3D→2D Conv自動グラフ変換WebGPU優先 · オンライン自動取得対応)。ローカル .onnx での上書きも可能です。',
       fileName: STEREO_VARIANT_CATALOG['stereo-depth:mobilestereonet-2d'].file,
       upstreamUrl: STEREO_VARIANT_CATALOG['stereo-depth:mobilestereonet-2d'].upstreamUrl,
       localUrl: STEREO_VARIANT_CATALOG['stereo-depth:mobilestereonet-2d'].localUrl,

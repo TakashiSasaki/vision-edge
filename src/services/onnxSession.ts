@@ -86,9 +86,16 @@ async function createOrtSessionWithUrl(
     const create = (executionProviders: string[]) => {
         const isWasmOnly = executionProviders.length > 0 && executionProviders.every(ep => ep === 'wasm');
         const resolvedOptLevel = graphOptimizationLevel ?? (isWasmOnly && delegate === 'WASM' ? 'disabled' : 'all');
+        const sessionOptions: ort.InferenceSession.SessionOptions = {
+            executionProviders,
+            graphOptimizationLevel: resolvedOptLevel,
+            enableCpuMemArena: !isWasmOnly,
+            enableMemPattern: !isWasmOnly,
+            logSeverityLevel: 3,
+        };
         return typeof targetUrlOrBytes === 'string'
-            ? ort.InferenceSession.create(targetUrlOrBytes, { executionProviders, graphOptimizationLevel: resolvedOptLevel, logSeverityLevel: 3 })
-            : ort.InferenceSession.create(targetUrlOrBytes, { executionProviders, graphOptimizationLevel: resolvedOptLevel, logSeverityLevel: 3 });
+            ? ort.InferenceSession.create(targetUrlOrBytes, sessionOptions)
+            : ort.InferenceSession.create(targetUrlOrBytes, sessionOptions);
     };
     try {
         return { session: await create(providers), backend };

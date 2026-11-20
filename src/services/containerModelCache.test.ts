@@ -1,9 +1,12 @@
 import { Buffer } from 'node:buffer';
 import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createProductionServer } from '../../server';
 import {
   MODEL_CACHE_NAME,
   clearBrowserModelCache,
@@ -273,5 +276,51 @@ describe('Browser Model Cache, Service Worker Rules & Stateless Stereo CORS Prox
     expect(html).toContain('https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite');
     expect(html).toContain('https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/yolov8n-seg.onnx');
     expect(html).toContain('/api/cors-proxy/stereo/hitnet_sceneflow_240x320.onnx');
+  });
+
+  it('zero-dependency server.ts serves dist assets, byte Range requests, SPA fallback, and stereo CORS proxy', async () => {
+    const tmpDist = await mkdtemp(path.join(os.tmpdir(), 'vision-studio-dist-'));
+    await writeFile(path.join(tmpDist, 'index.html'), '<!doctype html><html><body>OK</body></html>');
+    await writeFile(path.join(tmpDist, 'sample.mp4'), Buffer.from('0123456789abcdef'));
+
+    const mockUpstreamBytes = new Uint8Array([0x08, 0x09, 0x0a, 0x0b]);
+    const mockFetch = vi.fn(async () => new Response(mockUpstreamBytes, { status: 200 }));
+    const server = createProductionServer({
+      distDir: tmpDist,
+      fetchImpl: mockFetch as unknown as typeof fetch,
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address() as AddressInfo;
+    const base = `http://127.0.0.1:${port}`;
+
+    try {
+      const rootRes = await fetch(`${base}/`);
+      expect(rootRes.status).toBe(200);
+      expect(rootRes.headers.get('content-type')).toContain('text/html');
+      expect(await rootRes.text()).toContain('OK');
+
+      const spaRes = await fetch(`${base}/some/client/route`);
+      expect(spaRes.status).toBe(200);
+      expect(await spaRes.text()).toContain('OK');
+
+      const rangeRes = await fetch(`${base}/sample.mp4`, {
+        headers: { Range: 'bytes=4-9' },
+      });
+      expect(rangeRes.status).toBe(206);
+      expect(rangeRes.headers.get('content-range')).toBe('bytes 4-9/16');
+      expect(await rangeRes.text()).toBe('456789');
+
+      const proxyRes = await fetch(`${base}${STEREO_CORS_PROXY_PREFIX}hitnet_sceneflow_240x320.onnx`);
+      expect(proxyRes.status).toBe(200);
+      expect(proxyRes.headers.get('x-proxy-cache')).toBe('stateless-stream');
+      expect(new Uint8Array(await proxyRes.arrayBuffer())).toEqual(mockUpstreamBytes);
+
+      const unknownApiRes = await fetch(`${base}/api/unknown`);
+      expect(unknownApiRes.status).toBe(404);
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await rm(tmpDist, { recursive: true, force: true });
+    }
   });
 });
