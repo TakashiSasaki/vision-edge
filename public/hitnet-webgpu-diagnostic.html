@@ -152,8 +152,24 @@
       数値一致判定基準: <code>finite=76800/76800</code>, <code>nonFiniteMismatch=0</code>, <code>maxAbsDiff &lt; 1e-3</code>, <code>p99AbsDiff &lt; 1e-4</code>, <code>meanAbsDiff &lt; 1e-5</code>（両出力）。
     </p>
     <div class="row">
+      <button id="btn-dev-middlebury-no-pad-ladder" type="button">[DEV-ONLY] HITNet Motorcycle Q 無パディング・スケール階段検証 (1.0x / 0.75x / 0.50x + 1.0xシフト対照, 非JSEP ORT 1.30.0 M1)</button>
+      <button id="btn-dev-middlebury-padding-ablation" type="button">[DEV-ONLY] HITNet Motorcycle 固定活性画素パディング対照 (黒 vs 端複製 vs 鏡像反射, 320/741, 非JSEP ORT 1.30.0 M1)</button>
+      <button id="btn-dev-middlebury-scale-context" type="button">[DEV-ONLY] HITNet Motorcycle Native-Q 320x240 スケール/文脈統制比較 (1:1 vs 320/741, 非JSEP ORT 1.30.0 M1)</button>
+      <button id="btn-dev-middlebury-raw-and-gt" type="button">[DEV-ONLY] HITNet Middlebury Raw公開モデル vs M1 &amp; ソースGT整合診断 (Motorcycle + Teddy, ORT 1.30.0 WASM opt=basic)</button>
+      <button id="btn-dev-middlebury-factorial" type="button">[DEV-ONLY] HITNet Middlebury RGB/BGR × 幾何(G0/G1) 要因分解診断 (Motorcycle + Teddy, 非JSEP ORT 1.30.0 M1 未タップ)</button>
+      <button id="btn-dev-middlebury-eval3" type="button">[DEV-ONLY] HITNet Middlebury Eval3 Q 公的ステレオ精度テスト (Motorcycle + Teddy, 非JSEP ORT 1.30.0 M1 未タップ)</button>
+      <button id="btn-dev-synthetic-gt-d16-d32" type="button">[DEV-ONLY] HITNet 既知正解合成テスト (D16/D32 モデルpx, 非JSEP ORT 1.30.0 M1 未タップ)</button>
+      <button id="btn-dev-f0126-secondary-outlier" type="button" disabled>[DEV-ONLY] HITNet F0126 #9 輸送同一性ゲート &amp; Secondary 外れ値原因特定 (非JSEP ORT 1.30.0 opt=disabled)</button>
+      <button id="btn-dev-conv9-blocked-injection" type="button" disabled>[DEV-ONLY] HITNet #9 ブロック累積検証 &amp; 実用置換比較 (非JSEP ORT 1.30.0, F0102/F0126 + D16/D32)</button>
+      <button id="btn-dev-post-conv7-tap-replay" type="button" disabled>[DEV-ONLY] HITNet Post-#7 (#8/#9) ペアTap &amp; 1-Op再現 (非JSEP ORT 1.30.0 opt=disabled, F0102/F0126)</button>
+      <button id="btn-dev-conv7-substitution" type="button" disabled>[DEV-ONLY] HITNet #7 Conv 出力置換 因果検証 (非JSEP ORT 1.30.0 opt=disabled, F0102/F0126)</button>
+      <button id="btn-dev-stem-first-nonzero-replay" type="button" disabled>[DEV-ONLY] HITNet RGB-Stem 最初非ゼロ局在化 &amp; 単一Op同一入力再現 (非JSEP ORT 1.30.0 opt=disabled, F0102)</button>
+      <button id="btn-dev-residual-localization" type="button" disabled>[DEV-ONLY] HITNet 残差局在化診断 (非JSEP ORT 1.30.0: basic vs disabled + F0102/F0126 段階タップ)</button>
+      <button id="btn-dev-app-worker-nonjsep" type="button" disabled>[DEV-ONLY] 実アプリWorker 非JSEP WebGPU 比較 (ort.webgpu.min.mjs: M1 + F0102/F0126 vs M1-WASM &amp; Standalone C)</button>
+      <button id="btn-ort-130-c-vs-d-jsep" type="button" class="secondary" disabled>同一ハーネス C(Asyncify) vs D(JSEP) 対照 (ORT 1.30.0 M1 + B=M1-WASM + F0126 B制御, 既定変更なし)</button>
+      <button id="btn-ort-standalone-m1-verify" type="button" class="secondary" disabled>Standalone M1 詳細検証 (Kernel実測 + Warm Repeat + 第2実写フレーム, 既定変更なし)</button>
       <button id="btn-ort-131-m1-compare" type="button" class="secondary" disabled>ORT 1.30.0 vs 1.31.1 M1 比較 (opt=basic F0102, GPU + 1.31.1 WASM)</button>
-      <button id="btn-n1-verify-basic" type="button" disabled>N1-Slot0Transpose 検証 (M1 + Transpose perm=[0,3,1,2], ORT 1.30.0 basic F0102 + Pre-Concat)</button>
+      <button id="btn-n1-verify-basic" type="button" class="secondary" disabled>N1-Slot0Transpose 検証 (M1 + Transpose perm=[0,3,1,2], ORT 1.30.0 basic F0102 + Pre-Concat)</button>
       <button id="btn-m1-compare-basic" type="button" class="secondary" disabled>M1-ConstZero2Ch 候補比較 (Raw-WASM-Dis vs M1-WASM-Dis/Basic vs M1-GPU-Basic/All)</button>
       <button id="btn-m1-profile" type="button" class="secondary" disabled>M1 GPU プロファイル / 配置確認 (計測対象外)</button>
       <button id="btn-l1-reshape-compare-basic" type="button" class="secondary" disabled>L1-Reshape 比較</button>
@@ -348,6 +364,22 @@
   const btnSynS7c = document.getElementById('btn-syn-s7c');
   const btnSynS7d = document.getElementById('btn-syn-s7d');
 
+  const btnDevMiddleburyNoPadLadder = document.getElementById('btn-dev-middlebury-no-pad-ladder');
+  const btnDevMiddleburyPaddingAblation = document.getElementById('btn-dev-middlebury-padding-ablation');
+  const btnDevMiddleburyScaleContext = document.getElementById('btn-dev-middlebury-scale-context');
+  const btnDevMiddleburyRawAndGt = document.getElementById('btn-dev-middlebury-raw-and-gt');
+  const btnDevMiddleburyFactorial = document.getElementById('btn-dev-middlebury-factorial');
+  const btnDevMiddleburyEval3 = document.getElementById('btn-dev-middlebury-eval3');
+  const btnDevSyntheticGtD16D32 = document.getElementById('btn-dev-synthetic-gt-d16-d32');
+  const btnDevF0126SecondaryOutlier = document.getElementById('btn-dev-f0126-secondary-outlier');
+  const btnDevConv9BlockedInjection = document.getElementById('btn-dev-conv9-blocked-injection');
+  const btnDevPostConv7TapReplay = document.getElementById('btn-dev-post-conv7-tap-replay');
+  const btnDevConv7Substitution = document.getElementById('btn-dev-conv7-substitution');
+  const btnDevStemFirstNonZeroReplay = document.getElementById('btn-dev-stem-first-nonzero-replay');
+  const btnDevResidualLocalization = document.getElementById('btn-dev-residual-localization');
+  const btnDevAppWorkerNonJsep = document.getElementById('btn-dev-app-worker-nonjsep');
+  const btnOrt130CvsDJsep = document.getElementById('btn-ort-130-c-vs-d-jsep');
+  const btnOrtStandaloneM1Verify = document.getElementById('btn-ort-standalone-m1-verify');
   const btnOrt131M1Compare = document.getElementById('btn-ort-131-m1-compare');
   const btnN1VerifyBasic = document.getElementById('btn-n1-verify-basic');
   const btnM1CompareBasic = document.getElementById('btn-m1-compare-basic');
@@ -1029,6 +1061,22 @@
     btnSynS7c.disabled = busy;
     btnSynS7d.disabled = busy;
     const ready = !busy && Boolean(state.rawModelBytes && state.inputFloat32);
+    btnDevMiddleburyNoPadLadder.disabled = busy;
+    btnDevMiddleburyPaddingAblation.disabled = busy;
+    btnDevMiddleburyScaleContext.disabled = busy;
+    btnDevMiddleburyRawAndGt.disabled = busy;
+    btnDevMiddleburyFactorial.disabled = busy;
+    btnDevMiddleburyEval3.disabled = busy;
+    btnDevSyntheticGtD16D32.disabled = busy;
+    btnDevF0126SecondaryOutlier.disabled = !ready;
+    btnDevConv9BlockedInjection.disabled = !ready;
+    btnDevPostConv7TapReplay.disabled = !ready;
+    btnDevConv7Substitution.disabled = !ready;
+    btnDevStemFirstNonZeroReplay.disabled = !ready;
+    btnDevResidualLocalization.disabled = !ready;
+    btnDevAppWorkerNonJsep.disabled = !ready;
+    btnOrt130CvsDJsep.disabled = !ready;
+    btnOrtStandaloneM1Verify.disabled = !ready;
     btnOrt131M1Compare.disabled = !ready;
     btnN1VerifyBasic.disabled = !ready;
     btnM1CompareBasic.disabled = !ready;
@@ -1234,7 +1282,7 @@
   // --------------------------------------------------------------------------
   // Section 2: Model & F0102 preparation
   // --------------------------------------------------------------------------
-  async function extractF0102Rgba() {
+  async function extractStereoVideoFrameRgba(ptsSeconds, drawPreview = false) {
     const video = document.createElement('video');
     video.preload = 'auto';
     video.muted = true;
@@ -1255,7 +1303,7 @@
       const onErr = () => reject(new Error('Video seek failed'));
       video.addEventListener('seeked', onSeeked, { once: true });
       video.addEventListener('error', onErr, { once: true });
-      video.currentTime = F0102_PTS;
+      video.currentTime = ptsSeconds;
     });
 
     const eyeW = Math.floor(video.videoWidth / 2);
@@ -1264,14 +1312,21 @@
       throw new Error(`Unexpected video eye dims: ${eyeW}x${eyeH} (expected 480x270)`);
     }
 
-    const cvL = document.getElementById('cv-left');
-    const cvR = document.getElementById('cv-right');
+    const cvL = drawPreview ? document.getElementById('cv-left') : document.createElement('canvas');
+    const cvR = drawPreview ? document.getElementById('cv-right') : document.createElement('canvas');
+    if (!drawPreview) {
+      cvL.width = 320;
+      cvL.height = 240;
+      cvR.width = 320;
+      cvR.height = 240;
+    }
     const ctxL = cvL.getContext('2d', { willReadFrequently: true });
     const ctxR = cvR.getContext('2d', { willReadFrequently: true });
     ctxL.drawImage(video, 0, 0, eyeW, eyeH, 0, 0, 320, 240);
     ctxR.drawImage(video, eyeW, 0, eyeW, eyeH, 0, 0, 320, 240);
 
     const actualTime = video.currentTime;
+    const durationSec = video.duration;
     const imgL = ctxL.getImageData(0, 0, 320, 240);
     const imgR = ctxR.getImageData(0, 0, 320, 240);
     video.removeAttribute('src');
@@ -1292,10 +1347,15 @@
 
     return {
       currentTime: actualTime,
+      durationSec,
       leftRgba: new Uint8ClampedArray(imgL.data),
       rightRgba: new Uint8ClampedArray(imgR.data),
       tensor,
     };
+  }
+
+  async function extractF0102Rgba() {
+    return extractStereoVideoFrameRgba(F0102_PTS, true);
   }
 
   async function transformWithAppModule(rawBytes) {
@@ -1471,9 +1531,11 @@
       const initTotalWallMs = performance.now() - t0;
 
       const captureGpuValidation = armConfig.pref === 'webgpu';
+      const leftSrc = overrides.leftRgbaBuffer || state.leftRgbaBuffer;
+      const rightSrc = overrides.rightRgbaBuffer || state.rightRgbaBuffer;
       const runOne = async () => {
-        const lCopy = state.leftRgbaBuffer.slice().buffer;
-        const rCopy = state.rightRgbaBuffer.slice().buffer;
+        const lCopy = leftSrc.slice().buffer;
+        const rCopy = rightSrc.slice().buffer;
         const r0 = performance.now();
         const est = await call({
           type: 'estimate',
@@ -1530,7 +1592,12 @@
         sessionModelDiffersFromRaw:
           Boolean(initRes.sessionModelSha256 && initRes.rawInputModelSha256 && initRes.sessionModelSha256 !== initRes.rawInputModelSha256),
         feedSha256s: last.est.feedSha256s || null,
-        expectedInputSha256: state.inputSha256,
+        expectedInputSha256:
+          typeof overrides.expectedInputSha256 === 'string' && overrides.expectedInputSha256.length > 0
+            ? overrides.expectedInputSha256
+            : (overrides.leftRgbaBuffer || overrides.rightRgbaBuffer)
+              ? (last.est.feedSha256s?.input || null)
+              : state.inputSha256,
         ortVersions: initRes.ortVersions || null,
         adapter: initRes.workerGpuAdapter || 'n/a',
         sessionOptionsApplied: initRes.sessionOptionsApplied || null,
@@ -2255,9 +2322,11 @@
 
   async function runDedicatedOrtWorkerArm(workerUrl, expectedOrtVersion, m1Bytes, feedFloat32, opts = {}) {
     const provider = opts.provider === 'wasm' ? 'wasm' : 'webgpu';
+    const runtimeAssetFamily = opts.runtimeAssetFamily === 'jsep' ? 'jsep' : 'asyncify';
     const graphOptimizationLevel = opts.graphOptimizationLevel === 'disabled' ? 'disabled' : 'basic';
     const warmRuns = Math.max(0, Math.min(5, Math.trunc(opts.warmRuns ?? 1)));
     const timeoutMs = Math.max(5000, Math.trunc(opts.timeoutMs ?? 120000));
+    const disableCpuEpFallback = Boolean(opts.disableCpuEpFallback) && provider === 'webgpu';
     const worker = new Worker(workerUrl, { type: 'module' });
     const reqId = 1;
     let timerId = null;
@@ -2286,11 +2355,13 @@
             stage: 'init',
             message: ev?.message || 'Dedicated ORT diagnostic worker crashed',
             pinnedOrtVersion: expectedOrtVersion,
+            runtimeAssetFamily,
             entryModuleUrl: 'worker-error',
             wasmPaths: 'worker-error',
             ortVersions: null,
             loadedOrtResources: [],
             foreignOrtResources: [],
+            loadedAssetProvenance: [],
             provider,
             configuredProviders: [provider],
             fallbackBehavior: 'no-fallback-explicit-error',
@@ -2305,13 +2376,15 @@
             id: reqId,
             ok: false,
             stage: 'timeout',
-            message: `Worker timed out after ${timeoutMs}ms (${expectedOrtVersion} ${provider} opt=${graphOptimizationLevel})`,
+            message: `Worker timed out after ${timeoutMs}ms (${expectedOrtVersion} ${runtimeAssetFamily} ${provider} opt=${graphOptimizationLevel})`,
             pinnedOrtVersion: expectedOrtVersion,
+            runtimeAssetFamily,
             entryModuleUrl: 'timeout',
             wasmPaths: 'timeout',
             ortVersions: null,
             loadedOrtResources: [],
             foreignOrtResources: [],
+            loadedAssetProvenance: [],
             provider,
             configuredProviders: [provider],
             fallbackBehavior: 'no-fallback-explicit-error',
@@ -2324,6 +2397,7 @@
           {
             id: reqId,
             expectedOrtVersion,
+            runtimeAssetFamily,
             modelBuffer,
             feedBuffer,
             feedName: 'input',
@@ -2331,7 +2405,9 @@
             provider,
             graphOptimizationLevel,
             warmRuns,
-            disableCpuEpFallback: false,
+            compareColdVsWarmRepeat: Boolean(opts.compareColdVsWarmRepeat),
+            enableWebGpuProfiling: Boolean(opts.enableWebGpuProfiling),
+            disableCpuEpFallback,
             captureGpuValidationErrors: provider === 'webgpu',
           },
           [modelBuffer, feedBuffer]
@@ -2343,6 +2419,1779 @@
       worker.terminate();
     }
   }
+
+  async function runStandaloneM1Verification() {
+    const diagMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const FINAL_OUTS = ['reference_output_disparity', 'secondary_output_disparity'];
+    const FRAME2_PTS = 5.250; // 24fps frame F0126 in 6.083s bahn-latzen-crossing-sbs.webm
+    const isParityPass = (s) =>
+      s.length > 0 &&
+      s.finiteCount === s.length &&
+      s.nonFiniteMismatchCount === 0 &&
+      s.maxAbsDiff < 1e-3 &&
+      s.p99AbsDiff < 1e-4 &&
+      s.meanAbsDiff < 1e-5;
+
+    const rawSha = await sha256Hex(state.rawModelBytes);
+    if (rawSha !== EXPECTED_MODEL_SHA256) {
+      throw new Error(`Raw model SHA mismatch: expected=${EXPECTED_MODEL_SHA256} actual=${rawSha}`);
+    }
+    const frame1Sha = await sha256Hex(state.inputFloat32);
+    const m1Prep = diagMod.prepareHitnetM1FullGraphBytes(state.rawModelBytes, {
+      rawModelSha256: EXPECTED_MODEL_SHA256,
+    });
+    const m1Sha = await sha256Hex(m1Prep.bytes);
+    if (m1Sha !== diagMod.HITNET_M1_FULL_GRAPH_SHA256) {
+      throw new Error(`M1 SHA mismatch: expected=${diagMod.HITNET_M1_FULL_GRAPH_SHA256} actual=${m1Sha}`);
+    }
+
+    appendLog(
+      `\n=== Standalone M1 Detailed Verification (ORT 1.30.0 Dedicated, Kernel Proof + Warm Repeat + 2nd Real Frame, No App Change) ===\n` +
+      `rawModelByteLength=${state.rawModelBytes.byteLength} rawModelSHA256=${rawSha} (UNCHANGED=${rawSha === EXPECTED_MODEL_SHA256})\n` +
+      `m1ModelByteLength=${m1Prep.bytes.byteLength} m1ModelSHA256=${m1Sha} (MATCH=${m1Sha === diagMod.HITNET_M1_FULL_GRAPH_SHA256})\n` +
+      `[App-Path vs Standalone Static Wiring Summary (no rerun of known faulty app path)]\n` +
+      `  AppWorker(stereoDepthWorker.ts): import 'onnxruntime-web' -> ort.bundle.min.mjs -> ort-wasm-simd-threaded.jsep.mjs/.wasm | normApp opts=['webgpu','wasm'], opt='all' | diag arm-m1-basic=['webgpu'], opt='basic', observed meanAbsDiff=34.67/37.28\n` +
+      `  Standalone(hitnetOrt130DiagnosticWorker.ts): import '.../ort.webgpu.min.mjs' -> ort-wasm-simd-threaded.asyncify.mjs/.wasm | opts=['webgpu'] (no fallback), opt='basic', prebuilt [1,6,240,320] float32 feed | prior F0102 meanAbsDiff=9.943e-5/6.394e-5\n` +
+      `  Still confounded: (1) runtime build & WASM target (ort.bundle/jsep vs ort.webgpu/asyncify + Vite worker bundle vs CDN ESM), (2) worker lifecycle & session options, (3) normal app pre/post-processing wrapper`
+    );
+
+    const verifyDedicatedIdentity = (res, expectedFeedSha) => {
+      if (!res.ok) return `FAILED(${res.stage}): ${res.message}`;
+      if (res.modelSha256 !== m1Sha || res.modelByteLength !== m1Prep.bytes.byteLength) {
+        return `MODEL_MISMATCH(sha=${res.modelSha256}, bytes=${res.modelByteLength})`;
+      }
+      if (res.feedSha256 !== expectedFeedSha) {
+        return `FEED_SHA_MISMATCH(got=${res.feedSha256}, expected=${expectedFeedSha})`;
+      }
+      if (
+        res.feedTensorDataType !== 'float32' ||
+        JSON.stringify(res.feedTensorShape) !== JSON.stringify([1, 6, 240, 320])
+      ) {
+        return `FEED_META_MISMATCH(dtype=${res.feedTensorDataType}, shape=${JSON.stringify(res.feedTensorShape)})`;
+      }
+      if (res.foreignOrtResources.length > 0) {
+        return `FOREIGN_ASSETS(${res.foreignOrtResources.join(',')})`;
+      }
+      return null;
+    };
+
+    const logOutputsParity = (label, outputsArr, refRawMap) => {
+      const map = {};
+      for (const o of outputsArr) {
+        map[o.name] = { dims: o.dims, dataType: o.dataType, data: new Float32Array(o.buffer) };
+      }
+      for (const fOut of FINAL_OUTS) {
+        const cand = map[fOut];
+        const ref = refRawMap[fOut];
+        if (!cand || !ref) {
+          appendLog(`    [${label}] @ ${fOut}: MISSING`);
+          continue;
+        }
+        const s = diagMod.summarizeRawTensorAndParity(cand.data, ref.data);
+        const passed = isParityPass(s) && cand.data.length === 76800 && cand.dataType === 'float32';
+        appendLog(
+          `    [${label}] @ ${fOut}: ${passed ? 'PASS' : 'FAIL'} | dtype=${cand.dataType} dims=${JSON.stringify(cand.dims)} finite=${s.finiteCount}/${s.length} range=[${s.min.toFixed(4)}, ${s.max.toFixed(4)}] mean=${s.mean.toFixed(4)} | vsRaw maxAbsDiff=${s.maxAbsDiff.toExponential(3)} p99AbsDiff=${s.p99AbsDiff.toExponential(3)} meanAbsDiff=${s.meanAbsDiff.toExponential(3)} rmsDiff=${s.rmsDiff.toExponential(3)} nonFiniteMismatch=${s.nonFiniteMismatchCount}`
+        );
+      }
+      return map;
+    };
+
+    // --- Step 1: Frame 1 (F0102) Raw WASM 1.30.0 disabled + Safe Warm Repeat (1 cold + 2 warm) ---
+    appendLog(`\n  [1/3 Frame 1: F0102 PTS=${F0102_PTS.toFixed(3)}s | feedSha256=${frame1Sha} shape=[1,6,240,320] dtype=float32]`);
+    const rawWasmF1 = await runWorkerArm(ARMS['arm-wasm-raw-dis'], 0, {
+      disableCpuEpFallback: false,
+      enableWebGpuProfiling: false,
+    });
+    if (!rawWasmF1.ok) {
+      appendLog(`    [ABORT] F0102 Raw WASM baseline failed: ${rawWasmF1.error}`);
+      return;
+    }
+    if (
+      rawWasmF1.manifest.sessionModelSha256 !== EXPECTED_MODEL_SHA256 ||
+      rawWasmF1.manifest.feedSha256s?.input !== frame1Sha
+    ) {
+      appendLog(
+        `    [ABORT] F0102 Raw WASM verification failed: modelSha=${rawWasmF1.manifest.sessionModelSha256} feedSha=${rawWasmF1.manifest.feedSha256s?.input}`
+      );
+      return;
+    }
+
+    const gpuF1Repeat = await runDedicatedOrtWorkerArm(
+      '/src/services/hitnetOrt130DiagnosticWorker.ts',
+      '1.30.0',
+      m1Prep.bytes,
+      state.inputFloat32,
+      {
+        provider: 'webgpu',
+        graphOptimizationLevel: 'basic',
+        warmRuns: 2,
+        compareColdVsWarmRepeat: true,
+        enableWebGpuProfiling: false,
+        timeoutMs: 120000,
+      }
+    );
+    const idErr1 = verifyDedicatedIdentity(gpuF1Repeat, frame1Sha);
+    appendLog(
+      `    [Standalone 1.30.0 M1 WebGPU (1 cold + 2 warm, profiling=OFF)]\n` +
+      `      MANIFEST=${JSON.stringify({
+        status: gpuF1Repeat.ok ? (idErr1 ? `VERIFY_ERR(${idErr1})` : 'OK') : `FAILED(${gpuF1Repeat.stage})`,
+        pinnedOrtVersion: gpuF1Repeat.pinnedOrtVersion,
+        ortVersions: gpuF1Repeat.ortVersions,
+        entryModuleUrl: gpuF1Repeat.entryModuleUrl,
+        wasmPaths: gpuF1Repeat.wasmPaths,
+        loadedOrtResources: gpuF1Repeat.loadedOrtResources,
+        foreignOrtResources: gpuF1Repeat.foreignOrtResources,
+        configuredProviders: gpuF1Repeat.configuredProviders,
+        fallbackBehavior: gpuF1Repeat.fallbackBehavior,
+        graphOptimizationLevel: gpuF1Repeat.graphOptimizationLevel,
+        modelByteLength: gpuF1Repeat.modelByteLength,
+        modelSha256: gpuF1Repeat.modelSha256,
+        feedSha256: gpuF1Repeat.feedSha256,
+        feedTensorName: gpuF1Repeat.feedTensorName,
+        feedTensorShape: gpuF1Repeat.feedTensorShape,
+        feedTensorDataType: gpuF1Repeat.feedTensorDataType,
+        sessionInputNames: gpuF1Repeat.sessionInputNames,
+        sessionOutputNames: gpuF1Repeat.sessionOutputNames,
+        workerGpuAdapter: gpuF1Repeat.workerGpuAdapter,
+        gpuValidationErrors: gpuF1Repeat.gpuValidationErrors,
+        ...(gpuF1Repeat.ok
+          ? {
+              createMs: Number(gpuF1Repeat.createMs.toFixed(1)),
+              coldRunMs: Number(gpuF1Repeat.coldRunMs.toFixed(1)),
+              warmRunMs: gpuF1Repeat.warmRunMs.map((v) => Number(v.toFixed(1))),
+            }
+          : { error: gpuF1Repeat.message }),
+      })}`
+    );
+    if (gpuF1Repeat.ok && !idErr1) {
+      const warmMap = logOutputsParity('F0102 Standalone-1.30.0-Warm2 vs Raw-WASM', gpuF1Repeat.outputs, rawWasmF1.last.rawOutMap);
+      if (gpuF1Repeat.coldOutputs) {
+        const coldMap = logOutputsParity('F0102 Standalone-1.30.0-Cold vs Raw-WASM', gpuF1Repeat.coldOutputs, rawWasmF1.last.rawOutMap);
+        for (const fOut of FINAL_OUTS) {
+          if (coldMap[fOut] && warmMap[fOut]) {
+            const rep = diagMod.summarizeRawTensorAndParity(warmMap[fOut].data, coldMap[fOut].data);
+            appendLog(
+              `    [F0102 Warm-Repeat Stability (Warm2 vs Cold)] @ ${fOut}: maxAbsDiff=${rep.maxAbsDiff.toExponential(3)} p99AbsDiff=${rep.p99AbsDiff.toExponential(3)} meanAbsDiff=${rep.meanAbsDiff.toExponential(3)} nonFiniteMismatch=${rep.nonFiniteMismatchCount}`
+            );
+          }
+        }
+      }
+    }
+
+    // --- Step 2: Separate Non-Timing WebGPU Kernel Execution Profile ---
+    appendLog('\n  [2/3 Frame 1 Kernel Execution Evidence: Separate Worker with Profiling ON (NON-TIMING)]');
+    const gpuF1Profile = await runDedicatedOrtWorkerArm(
+      '/src/services/hitnetOrt130DiagnosticWorker.ts',
+      '1.30.0',
+      m1Prep.bytes,
+      state.inputFloat32,
+      {
+        provider: 'webgpu',
+        graphOptimizationLevel: 'basic',
+        warmRuns: 0,
+        enableWebGpuProfiling: true,
+        timeoutMs: 120000,
+      }
+    );
+    const idErrProf = verifyDedicatedIdentity(gpuF1Profile, frame1Sha);
+    appendLog(
+      `    [Standalone 1.30.0 M1 WebGPU Profiled (DO NOT USE FOR TIMING)]\n` +
+      `      KERNEL_EVIDENCE=${JSON.stringify({
+        status: gpuF1Profile.ok ? (idErrProf ? `VERIFY_ERR(${idErrProf})` : 'OK') : `FAILED(${gpuF1Profile.stage})`,
+        configuredProviders: gpuF1Profile.configuredProviders,
+        fallbackBehavior: gpuF1Profile.fallbackBehavior,
+        workerGpuAdapter: gpuF1Profile.workerGpuAdapter,
+        gpuValidationErrors: gpuF1Profile.gpuValidationErrors,
+        gpuKernelProfileSummary: gpuF1Profile.gpuKernelProfileSummary || null,
+        ...(!gpuF1Profile.ok ? { error: gpuF1Profile.message } : {}),
+      })}`
+    );
+
+    // --- Step 3: Frame 2 (F0126, PTS=5.250s) Ordinary Real Video Frame + Matching Raw WASM Baseline ---
+    const EXPECTED_F0126_INPUT_SHA256 = '7b91b078655e9be0e2460dff5146337de6124b05a0562b3696d7069fe6810e93';
+    const frame2 = await extractStereoVideoFrameRgba(FRAME2_PTS, false);
+    const frame2Sha = await sha256Hex(frame2.tensor);
+    appendLog(
+      `\n  [3/3 Frame 2: F0126 requestedPTS=${FRAME2_PTS.toFixed(3)}s actualTime=${frame2.currentTime.toFixed(4)}s/${frame2.durationSec.toFixed(3)}s | feedSha256=${frame2Sha} (expectedF0126=${EXPECTED_F0126_INPUT_SHA256}, match=${frame2Sha === EXPECTED_F0126_INPUT_SHA256}, distinctFromF0102=${frame2Sha !== frame1Sha}) shape=[1,6,240,320] dtype=float32]`
+    );
+    if (frame2Sha === frame1Sha) {
+      appendLog('    [ABORT] Frame 2 feed SHA matched Frame 1; did not obtain distinct second frame.');
+      return;
+    }
+
+    const rawWasmF2 = await runWorkerArm(ARMS['arm-wasm-raw-dis'], 0, {
+      disableCpuEpFallback: false,
+      enableWebGpuProfiling: false,
+      leftRgbaBuffer: frame2.leftRgba,
+      rightRgbaBuffer: frame2.rightRgba,
+      expectedInputSha256: frame2Sha,
+    });
+    if (!rawWasmF2.ok) {
+      appendLog(`    [ABORT] F0126 Raw WASM baseline failed: ${rawWasmF2.error}`);
+      return;
+    }
+    if (
+      rawWasmF2.manifest.sessionModelSha256 !== EXPECTED_MODEL_SHA256 ||
+      rawWasmF2.manifest.feedSha256s?.input !== frame2Sha
+    ) {
+      appendLog(
+        `    [ABORT] F0126 Raw WASM verification failed: modelSha=${rawWasmF2.manifest.sessionModelSha256} feedSha=${rawWasmF2.manifest.feedSha256s?.input} expectedFeed=${frame2Sha}`
+      );
+      return;
+    }
+
+    const gpuF2 = await runDedicatedOrtWorkerArm(
+      '/src/services/hitnetOrt130DiagnosticWorker.ts',
+      '1.30.0',
+      m1Prep.bytes,
+      frame2.tensor,
+      {
+        provider: 'webgpu',
+        graphOptimizationLevel: 'basic',
+        warmRuns: 1,
+        compareColdVsWarmRepeat: true,
+        enableWebGpuProfiling: false,
+        timeoutMs: 120000,
+      }
+    );
+    const idErr2 = verifyDedicatedIdentity(gpuF2, frame2Sha);
+    appendLog(
+      `    [Standalone 1.30.0 M1 WebGPU on F0126 (1 cold + 1 warm, profiling=OFF)]\n` +
+      `      MANIFEST=${JSON.stringify({
+        status: gpuF2.ok ? (idErr2 ? `VERIFY_ERR(${idErr2})` : 'OK') : `FAILED(${gpuF2.stage})`,
+        pinnedOrtVersion: gpuF2.pinnedOrtVersion,
+        ortVersions: gpuF2.ortVersions,
+        loadedOrtResources: gpuF2.loadedOrtResources,
+        foreignOrtResources: gpuF2.foreignOrtResources,
+        loadedAssetProvenance: gpuF2.loadedAssetProvenance,
+        configuredProviders: gpuF2.configuredProviders,
+        fallbackBehavior: gpuF2.fallbackBehavior,
+        modelByteLength: gpuF2.modelByteLength,
+        modelSha256: gpuF2.modelSha256,
+        feedSha256: gpuF2.feedSha256,
+        feedTensorName: gpuF2.feedTensorName,
+        feedTensorShape: gpuF2.feedTensorShape,
+        feedTensorDataType: gpuF2.feedTensorDataType,
+        gpuValidationErrors: gpuF2.gpuValidationErrors,
+        ...(gpuF2.ok
+          ? {
+              createMs: Number(gpuF2.createMs.toFixed(1)),
+              coldRunMs: Number(gpuF2.coldRunMs.toFixed(1)),
+              warmRunMs: gpuF2.warmRunMs.map((v) => Number(v.toFixed(1))),
+            }
+          : { error: gpuF2.message }),
+      })}`
+    );
+    if (gpuF2.ok && !idErr2) {
+      const f2WarmMap = logOutputsParity('F0126 Standalone-1.30.0-Warm1 vs Raw-WASM-F0126', gpuF2.outputs, rawWasmF2.last.rawOutMap);
+      if (gpuF2.coldOutputs) {
+        const f2ColdMap = logOutputsParity('F0126 Standalone-1.30.0-Cold vs Raw-WASM-F0126', gpuF2.coldOutputs, rawWasmF2.last.rawOutMap);
+        for (const fOut of FINAL_OUTS) {
+          if (f2ColdMap[fOut] && f2WarmMap[fOut]) {
+            const rep = diagMod.summarizeRawTensorAndParity(f2WarmMap[fOut].data, f2ColdMap[fOut].data);
+            appendLog(
+              `    [F0126 Warm-Repeat Stability (Warm1 vs Cold)] @ ${fOut}: maxAbsDiff=${rep.maxAbsDiff.toExponential(3)} p99AbsDiff=${rep.p99AbsDiff.toExponential(3)} meanAbsDiff=${rep.meanAbsDiff.toExponential(3)} nonFiniteMismatch=${rep.nonFiniteMismatchCount}`
+            );
+          }
+        }
+      }
+    }
+  }
+
+  async function runDevOnlyAppWorkerNonJsepComparison() {
+    const diagMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+    const FINAL_OUTS = ['reference_output_disparity', 'secondary_output_disparity'];
+    const FRAME2_PTS = 5.250;
+    const isParityPass = (s) =>
+      s.length > 0 &&
+      s.finiteCount === s.length &&
+      s.nonFiniteMismatchCount === 0 &&
+      s.maxAbsDiff < 1e-3 &&
+      s.p99AbsDiff < 1e-4 &&
+      s.meanAbsDiff < 1e-5;
+
+    const rawSha = await sha256Hex(state.rawModelBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw model SHA mismatch: expected=${spec.expectedRawSha256} actual=${rawSha}`);
+    }
+    const m1Prep = diagMod.prepareHitnetM1FullGraphBytes(state.rawModelBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+    const m1Sha = await sha256Hex(m1Prep.bytes);
+    if (m1Prep.bytes.byteLength !== spec.expectedM1ByteLength || m1Sha !== spec.expectedM1Sha256) {
+      throw new Error(
+        `Exact M1 verification failed: bytes=${m1Prep.bytes.byteLength} (expected ${spec.expectedM1ByteLength}), sha=${m1Sha} (expected ${spec.expectedM1Sha256})`
+      );
+    }
+
+    const frame1Sha = await sha256Hex(state.inputFloat32);
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+
+    appendLog(
+      `\n=== [DEV-ONLY] Real App HITNet Worker Non-JSEP WebGPU Test (onnxruntime-web@1.30.0/webgpu -> ort.webgpu.min.mjs + asyncify) ===\n` +
+      `spec=${JSON.stringify({
+        pinnedOrtVersion: spec.pinnedOrtVersion,
+        packageExport: spec.packageExport,
+        entryFile: spec.entryFile,
+        emscriptenMjsFile: spec.emscriptenMjsFile,
+        wasmFile: spec.wasmFile,
+        rawModelSha256: rawSha,
+        m1ModelByteLength: m1Prep.bytes.byteLength,
+        m1ModelSha256: m1Sha,
+        graphOptimizationLevel: 'basic',
+        disableCpuEpFallback,
+        strictWebGpu: true,
+        productionDefaultsUnchanged: true,
+      })}\n` +
+      `[Provenance Note] Emscripten .asyncify.mjs loads via ORT native dynamic import(httpsUrl); its sha256 stays null on performance-resource-entry, while entry ort.webgpu.min.mjs and .asyncify.wasm hashes are verified at runtime boundary.`
+    );
+
+    const toStandaloneOutMap = (outputsArr) => {
+      const map = {};
+      for (const o of outputsArr || []) {
+        map[o.name] = { dims: o.dims, dataType: o.dataType, data: new Float32Array(o.buffer) };
+      }
+      return map;
+    };
+
+    const logOutputComparison = (label, candMap, refMap, checkGate = true) => {
+      for (const fOut of FINAL_OUTS) {
+        const cand = candMap[fOut];
+        const ref = refMap[fOut];
+        if (!cand || !ref) {
+          appendLog(`    [${label}] @ ${fOut}: MISSING`);
+          continue;
+        }
+        const s = diagMod.summarizeRawTensorAndParity(cand.data, ref.data);
+        const shapeOk = JSON.stringify(cand.dims) === JSON.stringify([1, 240, 320, 1]) && cand.dataType === 'float32';
+        const pass = isParityPass(s) && cand.data.length === 76800 && shapeOk;
+        appendLog(
+          `    [${label}] @ ${fOut}: ${checkGate ? (pass ? 'PASS' : 'FAIL') : 'DELTA'} | dtype=${cand.dataType} dims=${JSON.stringify(cand.dims)} finite=${s.finiteCount}/${s.length} range=[${s.min.toFixed(4)}, ${s.max.toFixed(4)}] mean=${s.mean.toFixed(4)} | maxAbsDiff=${s.maxAbsDiff.toExponential(3)} p99AbsDiff=${s.p99AbsDiff.toExponential(3)} meanAbsDiff=${s.meanAbsDiff.toExponential(3)} rmsDiff=${s.rmsDiff.toExponential(3)} nonFiniteMismatch=${s.nonFiniteMismatchCount}`
+        );
+      }
+    };
+
+    const runFrame = async (frameLabel, frameData, expectedFeedSha) => {
+      appendLog(
+        `\n--- ${frameLabel} (PTS=${frameData.currentTime.toFixed(3)}s): feedSha256=${frameData.feedSha} (expected=${expectedFeedSha}, match=${frameData.feedSha === expectedFeedSha}) ---`
+      );
+      if (frameData.feedSha !== expectedFeedSha) {
+        appendLog(`  [ABORT] ${frameLabel} feed SHA mismatch.`);
+        return null;
+      }
+
+      // 1. Fresh Exact M1 WASM (opt=basic) via real app worker
+      const m1Wasm = await runWorkerArm(ARMS['arm-wasm-m1-basic'], 0, {
+        disableCpuEpFallback: false,
+        enableWebGpuProfiling: false,
+        leftRgbaBuffer: frameData.leftRgba,
+        rightRgbaBuffer: frameData.rightRgba,
+        expectedInputSha256: frameData.feedSha,
+      });
+      if (
+        !m1Wasm.ok ||
+        m1Wasm.manifest.sessionModelSha256 !== m1Sha ||
+        m1Wasm.manifest.feedSha256s?.input !== frameData.feedSha ||
+        m1Wasm.manifest.finalEP.join(',') !== 'wasm'
+      ) {
+        appendLog(
+          `  [ABORT] ${frameLabel} Exact M1 WASM (opt=basic) reference failed verification: ok=${m1Wasm.ok}, modelSha=${m1Wasm.manifest?.sessionModelSha256}, feedSha=${m1Wasm.manifest?.feedSha256s?.input}, EP=${JSON.stringify(m1Wasm.manifest?.finalEP)}, err=${m1Wasm.error || 'none'}`
+        );
+        return null;
+      }
+
+      // 2. DEV-ONLY Real App Worker (non-JSEP ort.webgpu.min.mjs, opt=basic, profiling=OFF, cold + warm1)
+      const devRes = await fixtureMod.runDevOnlyHitnetAppWorkerFixture({
+        m1Bytes: m1Prep.bytes,
+        leftRgbaBuffer: frameData.leftRgba,
+        rightRgbaBuffer: frameData.rightRgba,
+        expectedM1Sha256: m1Sha,
+        expectedFeedSha256: frameData.feedSha,
+        warmRuns: 1,
+        enableWebGpuProfiling: false,
+        disableCpuEpFallback,
+        timeoutMs: 120000,
+      });
+
+      appendLog(
+        `\n  [${frameLabel} DEV Real App Worker (non-JSEP, profiling=OFF)]\n    MANIFEST=${JSON.stringify(
+          devRes.ok
+            ? {
+                status: 'OK',
+                pinnedOrtVersion: devRes.pinnedOrtVersion,
+                runtimeAssetFamily: devRes.runtimeAssetFamily,
+                entryModuleUrl: devRes.entryModuleUrl,
+                wasmPaths: devRes.wasmPaths,
+                ortVersions: devRes.ortVersions,
+                loadedOrtResources: devRes.loadedOrtResources,
+                foreignOrtResources: devRes.foreignOrtResources,
+                loadedAssetProvenance: devRes.loadedAssetProvenance,
+                workerGpuAdapter: devRes.workerGpuAdapter,
+                configuredProviders: devRes.configuredProviders,
+                fallbackReason: devRes.fallbackReason,
+                modelByteLength: devRes.modelByteLength,
+                sessionModelByteLength: devRes.sessionModelByteLength,
+                pretransformedExactM1SkipConcatSplit: devRes.pretransformedExactM1SkipConcatSplit,
+                splitCount: devRes.splitCount,
+                rawInputModelSha256: devRes.rawInputModelSha256,
+                baseSessionModelSha256: devRes.baseSessionModelSha256,
+                sessionModelSha256: devRes.sessionModelSha256,
+                feedSha256s: devRes.lastRun.feedSha256s,
+                feedMetadata: devRes.lastRun.feedMetadata,
+                gpuValidationErrors: devRes.lastRun.gpuValidationErrors,
+                initSessionCreateMs: Number(devRes.initSessionCreateMs.toFixed(1)),
+                coldRunMs: Number(devRes.coldRun.runMs.toFixed(1)),
+                warmRunMs: devRes.warmRuns.map((r) => Number(r.runMs.toFixed(1))),
+              }
+            : {
+                status: `FAILED(${devRes.stage})`,
+                error: devRes.message,
+                ortVersions: devRes.ortVersions ?? null,
+                configuredProviders: devRes.configuredProviders ?? null,
+                fallbackReason: devRes.fallbackReason ?? null,
+                foreignOrtResources: devRes.foreignOrtResources ?? null,
+                loadedAssetProvenance: devRes.loadedAssetProvenance ?? null,
+              }
+        )}`
+      );
+
+      // 3. Fresh Standalone C (hitnetOrt130DiagnosticWorker.ts asyncify webgpu opt=basic warm1)
+      const standaloneC = await runDedicatedOrtWorkerArm(
+        '/src/services/hitnetOrt130DiagnosticWorker.ts',
+        '1.30.0',
+        m1Prep.bytes,
+        frameData.tensor,
+        {
+          runtimeAssetFamily: 'asyncify',
+          provider: 'webgpu',
+          graphOptimizationLevel: 'basic',
+          warmRuns: 1,
+          compareColdVsWarmRepeat: true,
+          enableWebGpuProfiling: false,
+          disableCpuEpFallback,
+          timeoutMs: 120000,
+        }
+      );
+      const standaloneOk =
+        standaloneC.ok &&
+        standaloneC.modelSha256 === m1Sha &&
+        standaloneC.feedSha256 === frameData.feedSha &&
+        standaloneC.foreignOrtResources.length === 0 &&
+        standaloneC.runtimeAssetFamily === 'asyncify';
+      appendLog(
+        `\n  [${frameLabel} Standalone C (asyncify, profiling=OFF)]\n    MANIFEST=${JSON.stringify(
+          standaloneC.ok
+            ? {
+                status: standaloneOk ? 'OK' : 'VERIFY_ERR',
+                ortVersions: standaloneC.ortVersions,
+                loadedAssetProvenance: standaloneC.loadedAssetProvenance,
+                foreignOrtResources: standaloneC.foreignOrtResources,
+                configuredProviders: standaloneC.configuredProviders,
+                modelSha256: standaloneC.modelSha256,
+                feedSha256: standaloneC.feedSha256,
+                gpuValidationErrors: standaloneC.gpuValidationErrors,
+                coldRunMs: Number(standaloneC.coldRunMs.toFixed(1)),
+                warmRunMs: standaloneC.warmRunMs.map((v) => Number(v.toFixed(1))),
+              }
+            : { status: `FAILED(${standaloneC.stage})`, error: standaloneC.message }
+        )}`
+      );
+
+      const standaloneWarmMap = standaloneOk ? toStandaloneOutMap(standaloneC.outputs) : null;
+      if (devRes.ok) {
+        appendLog(`\n  --- ${frameLabel} Parity & Delta Comparisons ---`);
+        logOutputComparison(
+          `${frameLabel} DEV App Worker (Cold) vs Exact M1 WASM (basic)`,
+          devRes.coldRun.outputs,
+          m1Wasm.last.rawOutMap,
+          true
+        );
+        logOutputComparison(
+          `${frameLabel} DEV App Worker (Warm1) vs Exact M1 WASM (basic)`,
+          devRes.lastRun.outputs,
+          m1Wasm.last.rawOutMap,
+          true
+        );
+        logOutputComparison(
+          `${frameLabel} DEV App Worker Warm1 vs Cold Repeat`,
+          devRes.lastRun.outputs,
+          devRes.coldRun.outputs,
+          false
+        );
+        if (standaloneWarmMap) {
+          logOutputComparison(
+            `${frameLabel} Standalone C (Warm1) vs Exact M1 WASM (basic)`,
+            standaloneWarmMap,
+            m1Wasm.last.rawOutMap,
+            true
+          );
+          logOutputComparison(
+            `${frameLabel} Direct DEV App Worker (Warm1) vs Standalone C (Warm1)`,
+            devRes.lastRun.outputs,
+            standaloneWarmMap,
+            false
+          );
+        }
+      }
+      return devRes;
+    };
+
+    await runFrame(
+      'F0102',
+      {
+        currentTime: F0102_PTS,
+        feedSha: frame1Sha,
+        leftRgba: state.leftRgbaBuffer,
+        rightRgba: state.rightRgbaBuffer,
+        tensor: state.inputFloat32,
+      },
+      spec.expectedF0102FeedSha256
+    );
+
+    // Separate NON-TIMING profiled DEV-ONLY Real App Worker run on F0102 to capture actual WebGPU dispatch counts
+    appendLog('\n--- Separate NON-TIMING WebGPU Dispatch Profile on DEV Real App Worker (F0102, Profiling=ON, warmRuns=0) ---');
+    const devProfRes = await fixtureMod.runDevOnlyHitnetAppWorkerFixture({
+      m1Bytes: m1Prep.bytes,
+      leftRgbaBuffer: state.leftRgbaBuffer,
+      rightRgbaBuffer: state.rightRgbaBuffer,
+      expectedM1Sha256: m1Sha,
+      expectedFeedSha256: frame1Sha,
+      warmRuns: 0,
+      enableWebGpuProfiling: true,
+      disableCpuEpFallback,
+      timeoutMs: 120000,
+    });
+    appendLog(
+      `  [DEV Real App Worker Profiled (DO NOT USE FOR TIMING)] ${JSON.stringify(
+        devProfRes.ok
+          ? {
+              status: 'OK',
+              configuredProviders: devProfRes.configuredProviders,
+              fallbackReason: devProfRes.fallbackReason,
+              workerGpuAdapter: devProfRes.workerGpuAdapter,
+              gpuValidationErrors: devProfRes.lastRun.gpuValidationErrors,
+              loadedAssetProvenance: devProfRes.loadedAssetProvenance,
+              gpuKernelProfileSummary: devProfRes.lastRun.gpuKernelProfileSummary,
+            }
+          : { status: `FAILED(${devProfRes.stage})`, error: devProfRes.message }
+      )}`
+    );
+
+    // Frame 2: F0126 (5.250s)
+    const frame2 = await extractStereoVideoFrameRgba(FRAME2_PTS, false);
+    const frame2Sha = await sha256Hex(frame2.tensor);
+    if (frame2Sha === frame1Sha) {
+      appendLog('\n[ABORT] F0126 feed SHA matched F0102; skipping F0126.');
+      return;
+    }
+    await runFrame(
+      'F0126',
+      {
+        currentTime: frame2.currentTime,
+        feedSha: frame2Sha,
+        leftRgba: frame2.leftRgba,
+        rightRgba: frame2.rightRgba,
+        tensor: frame2.tensor,
+      },
+      spec.expectedF0126FeedSha256
+    );
+  }
+
+  async function runSameHarnessCvsDJsepControl() {
+    const diagMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const ortCmpMod = await import('/src/services/hitnetOrtComparisonHelper.ts');
+    const FINAL_OUTS = ['reference_output_disparity', 'secondary_output_disparity'];
+    const EXPECTED_F0102_FEED_SHA256 = '49427b336f1f946db75fbf67402c9a7a217698890e4a8cc04ea75f481029ba29';
+    const EXPECTED_F0126_FEED_SHA256 = '7b91b078655e9be0e2460dff5146337de6124b05a0562b3696d7069fe6810e93';
+    const EXPECTED_M1_BYTE_LENGTH = 8888846;
+    const FRAME2_PTS = 5.250;
+    const isParityPass = (s) =>
+      s.length > 0 &&
+      s.finiteCount === s.length &&
+      s.nonFiniteMismatchCount === 0 &&
+      s.maxAbsDiff < 1e-3 &&
+      s.p99AbsDiff < 1e-4 &&
+      s.meanAbsDiff < 1e-5;
+
+    const rawSha = await sha256Hex(state.rawModelBytes);
+    if (rawSha !== EXPECTED_MODEL_SHA256) {
+      throw new Error(`Raw model SHA mismatch: expected=${EXPECTED_MODEL_SHA256} actual=${rawSha}`);
+    }
+    const frame1Sha = await sha256Hex(state.inputFloat32);
+    const m1Prep = diagMod.prepareHitnetM1FullGraphBytes(state.rawModelBytes, {
+      rawModelSha256: EXPECTED_MODEL_SHA256,
+    });
+    const m1Sha = await sha256Hex(m1Prep.bytes);
+    if (m1Sha !== diagMod.HITNET_M1_FULL_GRAPH_SHA256) {
+      throw new Error(`M1 SHA mismatch: expected=${diagMod.HITNET_M1_FULL_GRAPH_SHA256} actual=${m1Sha}`);
+    }
+
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+    appendLog(
+      `\n=== Same-Harness ORT 1.30.0 C (Asyncify) vs D (JSEP) Control + B (Exact M1 WASM) & A (Raw WASM) ===\n` +
+      `rawModel: bytes=${state.rawModelBytes.byteLength} sha256=${rawSha} (MATCH=${rawSha === EXPECTED_MODEL_SHA256})\n` +
+      `m1Model: bytes=${m1Prep.bytes.byteLength} (expectedBytes=${EXPECTED_M1_BYTE_LENGTH}, byteMatch=${m1Prep.bytes.byteLength === EXPECTED_M1_BYTE_LENGTH}) sha256=${m1Sha} (MATCH=${m1Sha === diagMod.HITNET_M1_FULL_GRAPH_SHA256})\n` +
+      `F0102 input [1,6,240,320] float32 sha256=${frame1Sha} (expectedF0102=${EXPECTED_F0102_FEED_SHA256}, match=${frame1Sha === EXPECTED_F0102_FEED_SHA256})\n` +
+      `[Verified ORT 1.30.0 Artifact Families (node_modules/onnxruntime-web@1.30.0/dist/)]\n` +
+      `  Arm C (Asyncify): ${JSON.stringify(ortCmpMod.HITNET_ORT_130_FAMILY_PROFILES.asyncify)}\n` +
+      `  Arm D (JSEP, real app export "onnxruntime-web" default -> ort.bundle.min.mjs): ${JSON.stringify(ortCmpMod.HITNET_ORT_130_FAMILY_PROFILES.jsep)}\n` +
+      `[Historical Note on Arm E (stereoDepthWorker.ts)] Prior F0102 arm-m1-basic (Vite-bundled ort.bundle.min.mjs + in-worker wrapper) observed meanAbsDiff=34.67/37.28; treat E as historical until matched D/E comparison.\n` +
+      `[Shared Options] pinnedVersion=1.30.0, opt=basic, disable_cpu_ep_fallback=${disableCpuEpFallback ? '1' : '0/default'}, fallbackBehavior=no-fallback-explicit-error, cameraFree=true`
+    );
+
+    const checkWorkerIdentity = (res, expectedFeedSha, expectedFamily) => {
+      if (!res.ok) return `FAILED(${res.stage}): ${res.message}`;
+      if (res.modelSha256 !== m1Sha || res.modelByteLength !== m1Prep.bytes.byteLength) {
+        return `MODEL_MISMATCH(sha=${res.modelSha256}, bytes=${res.modelByteLength})`;
+      }
+      if (res.feedSha256 !== expectedFeedSha) {
+        return `FEED_SHA_MISMATCH(got=${res.feedSha256}, expected=${expectedFeedSha})`;
+      }
+      if (
+        res.feedTensorDataType !== 'float32' ||
+        JSON.stringify(res.feedTensorShape) !== JSON.stringify([1, 6, 240, 320])
+      ) {
+        return `FEED_META_MISMATCH(dtype=${res.feedTensorDataType}, shape=${JSON.stringify(res.feedTensorShape)})`;
+      }
+      if (res.runtimeAssetFamily !== expectedFamily) {
+        return `FAMILY_MISMATCH(got=${res.runtimeAssetFamily}, expected=${expectedFamily})`;
+      }
+      if (res.foreignOrtResources.length > 0) {
+        return `FOREIGN_ASSETS(${res.foreignOrtResources.join(',')})`;
+      }
+      return null;
+    };
+
+    const toOutMap = (outputsArr) => {
+      const map = {};
+      for (const o of outputsArr || []) {
+        map[o.name] = { dims: o.dims, dataType: o.dataType, data: new Float32Array(o.buffer) };
+      }
+      return map;
+    };
+
+    const logPairwiseParity = (label, candMap, refMap, checkGate = true) => {
+      for (const fOut of FINAL_OUTS) {
+        const cand = candMap[fOut];
+        const ref = refMap[fOut];
+        if (!cand || !ref) {
+          appendLog(`    [${label}] @ ${fOut}: MISSING`);
+          continue;
+        }
+        const s = diagMod.summarizeRawTensorAndParity(cand.data, ref.data);
+        const shapeOk = JSON.stringify(cand.dims) === JSON.stringify([1, 240, 320, 1]) && cand.dataType === 'float32';
+        const pass = isParityPass(s) && cand.data.length === 76800 && shapeOk;
+        appendLog(
+          `    [${label}] @ ${fOut}: ${checkGate ? (pass ? 'PASS' : 'FAIL') : 'DELTA'} | dtype=${cand.dataType} dims=${JSON.stringify(cand.dims)} finite=${s.finiteCount}/${s.length} range=[${s.min.toFixed(4)}, ${s.max.toFixed(4)}] mean=${s.mean.toFixed(4)} | maxAbsDiff=${s.maxAbsDiff.toExponential(3)} p99AbsDiff=${s.p99AbsDiff.toExponential(3)} meanAbsDiff=${s.meanAbsDiff.toExponential(3)} rmsDiff=${s.rmsDiff.toExponential(3)} nonFiniteMismatch=${s.nonFiniteMismatchCount}`
+        );
+      }
+    };
+
+    const logDedicatedManifest = (armName, res, idErr) => {
+      appendLog(
+        `\n  [${armName}]\n    MANIFEST=${JSON.stringify({
+          status: res.ok ? (idErr ? `VERIFY_ERR(${idErr})` : 'OK') : `FAILED(${res.stage})`,
+          pinnedOrtVersion: res.pinnedOrtVersion,
+          runtimeAssetFamily: res.runtimeAssetFamily,
+          ortVersions: res.ortVersions,
+          entryModuleUrl: res.entryModuleUrl,
+          wasmPaths: res.wasmPaths,
+          loadedOrtResources: res.loadedOrtResources,
+          foreignOrtResources: res.foreignOrtResources,
+          loadedAssetProvenance: res.loadedAssetProvenance,
+          configuredProviders: res.configuredProviders,
+          fallbackBehavior: res.fallbackBehavior,
+          sessionOptionsApplied: res.sessionOptionsApplied || null,
+          modelByteLength: res.modelByteLength,
+          modelSha256: res.modelSha256,
+          feedSha256: res.feedSha256,
+          feedTensorName: res.feedTensorName,
+          feedTensorShape: res.feedTensorShape,
+          feedTensorDataType: res.feedTensorDataType,
+          sessionInputNames: res.sessionInputNames || null,
+          sessionOutputNames: res.sessionOutputNames || null,
+          workerGpuAdapter: res.workerGpuAdapter || null,
+          gpuValidationErrors: res.gpuValidationErrors ?? null,
+          ...(res.ok
+            ? {
+                createMs: Number(res.createMs.toFixed(1)),
+                coldRunMs: Number(res.coldRunMs.toFixed(1)),
+                warmRunMs: res.warmRunMs.map((v) => Number(v.toFixed(1))),
+              }
+            : { error: res.message, failingStage: res.stage }),
+        })}`
+      );
+    };
+
+    // --- F0102: Arm A (Separate Raw WASM Reference) ---
+    appendLog('\n--- F0102 (4.250s): Arm A (Separate Raw Reference), Arm B (Exact M1 WASM opt=basic), Arm C (Asyncify GPU), Arm D (JSEP GPU) ---');
+    const armAF1 = await runWorkerArm(ARMS['arm-wasm-raw-dis'], 0, {
+      disableCpuEpFallback: false,
+      enableWebGpuProfiling: false,
+      expectedInputSha256: frame1Sha,
+    });
+    if (!armAF1.ok) {
+      appendLog(`  [ABORT] F0102 Arm A (Raw WASM disabled) failed: ${armAF1.error}`);
+      return;
+    }
+    if (armAF1.manifest.sessionModelSha256 !== EXPECTED_MODEL_SHA256 || armAF1.manifest.feedSha256s?.input !== frame1Sha) {
+      appendLog(`  [ABORT] F0102 Arm A boundary mismatch: modelSha=${armAF1.manifest.sessionModelSha256} feedSha=${armAF1.manifest.feedSha256s?.input}`);
+      return;
+    }
+
+    // --- F0102: Arm B (Exact M1 WASM opt=basic in SAME harness) ---
+    const armBF1 = await runDedicatedOrtWorkerArm(
+      '/src/services/hitnetOrt130DiagnosticWorker.ts',
+      '1.30.0',
+      m1Prep.bytes,
+      state.inputFloat32,
+      {
+        runtimeAssetFamily: 'jsep',
+        provider: 'wasm',
+        graphOptimizationLevel: 'basic',
+        warmRuns: 0,
+        enableWebGpuProfiling: false,
+        timeoutMs: 120000,
+      }
+    );
+    const idErrBF1 = checkWorkerIdentity(armBF1, frame1Sha, 'jsep');
+    logDedicatedManifest('F0102 Arm B: Exact M1 WASM (same harness, opt=basic, jsep wasm build)', armBF1, idErrBF1);
+    const mapBF1 = armBF1.ok && !idErrBF1 ? toOutMap(armBF1.outputs) : null;
+    if (mapBF1) {
+      logPairwiseParity('F0102 Arm B (Exact M1 WASM basic) vs Arm A (Raw WASM dis)', mapBF1, armAF1.last.rawOutMap, true);
+    }
+
+    // --- F0102: Arm C (Dedicated Asyncify WebGPU opt=basic) ---
+    const armCF1 = await runDedicatedOrtWorkerArm(
+      '/src/services/hitnetOrt130DiagnosticWorker.ts',
+      '1.30.0',
+      m1Prep.bytes,
+      state.inputFloat32,
+      {
+        runtimeAssetFamily: 'asyncify',
+        provider: 'webgpu',
+        graphOptimizationLevel: 'basic',
+        warmRuns: 1,
+        compareColdVsWarmRepeat: true,
+        enableWebGpuProfiling: false,
+        disableCpuEpFallback,
+        timeoutMs: 120000,
+      }
+    );
+    const idErrCF1 = checkWorkerIdentity(armCF1, frame1Sha, 'asyncify');
+    logDedicatedManifest('F0102 Arm C: Exact M1 WebGPU Dedicated Asyncify (ort.webgpu.min.mjs, opt=basic)', armCF1, idErrCF1);
+    const mapCF1Warm = armCF1.ok && !idErrCF1 ? toOutMap(armCF1.outputs) : null;
+    const mapCF1Cold = armCF1.ok && !idErrCF1 && armCF1.coldOutputs ? toOutMap(armCF1.coldOutputs) : null;
+
+    // --- F0102: Arm D (Dedicated JSEP WebGPU opt=basic) ---
+    const armDF1 = await runDedicatedOrtWorkerArm(
+      '/src/services/hitnetOrt130DiagnosticWorker.ts',
+      '1.30.0',
+      m1Prep.bytes,
+      state.inputFloat32,
+      {
+        runtimeAssetFamily: 'jsep',
+        provider: 'webgpu',
+        graphOptimizationLevel: 'basic',
+        warmRuns: 1,
+        compareColdVsWarmRepeat: true,
+        enableWebGpuProfiling: false,
+        disableCpuEpFallback,
+        timeoutMs: 120000,
+      }
+    );
+    const idErrDF1 = checkWorkerIdentity(armDF1, frame1Sha, 'jsep');
+    logDedicatedManifest('F0102 Arm D: Exact M1 WebGPU Dedicated JSEP (ort.bundle.min.mjs, opt=basic)', armDF1, idErrDF1);
+    const mapDF1Warm = armDF1.ok && !idErrDF1 ? toOutMap(armDF1.outputs) : null;
+    const mapDF1Cold = armDF1.ok && !idErrDF1 && armDF1.coldOutputs ? toOutMap(armDF1.coldOutputs) : null;
+
+    appendLog('\n  --- F0102 Parity & Direct Asyncify vs JSEP Comparisons ---');
+    if (mapCF1Warm && mapBF1) {
+      logPairwiseParity('F0102 Arm C (Asyncify Warm1) vs Arm B (Exact M1 WASM basic)', mapCF1Warm, mapBF1, true);
+    }
+    if (mapCF1Cold && mapCF1Warm) {
+      logPairwiseParity('F0102 Arm C Warm1 vs Cold Repeat', mapCF1Warm, mapCF1Cold, false);
+    }
+    if (mapDF1Warm && mapBF1) {
+      logPairwiseParity('F0102 Arm D (JSEP Warm1) vs Arm B (Exact M1 WASM basic)', mapDF1Warm, mapBF1, true);
+    }
+    if (mapDF1Cold && mapDF1Warm) {
+      logPairwiseParity('F0102 Arm D Warm1 vs Cold Repeat', mapDF1Warm, mapDF1Cold, false);
+    }
+    if (mapCF1Warm && mapDF1Warm) {
+      logPairwiseParity('F0102 Direct Arm D (JSEP Warm1) vs Arm C (Asyncify Warm1)', mapDF1Warm, mapCF1Warm, false);
+    }
+    if (mapCF1Warm) {
+      logPairwiseParity('F0102 Arm C (Asyncify Warm1) vs Arm A (Separate Raw WASM dis)', mapCF1Warm, armAF1.last.rawOutMap, true);
+    }
+    if (mapDF1Warm) {
+      logPairwiseParity('F0102 Arm D (JSEP Warm1) vs Arm A (Separate Raw WASM dis)', mapDF1Warm, armAF1.last.rawOutMap, true);
+    }
+
+    // --- Separate Non-Timing GPU Kernel Profiling on C & D ---
+    appendLog('\n--- Separate Non-Timing WebGPU Kernel Execution Profile (F0102, Profiling ON, warmRuns=0) ---');
+    for (const fam of ['asyncify', 'jsep']) {
+      const profRes = await runDedicatedOrtWorkerArm(
+        '/src/services/hitnetOrt130DiagnosticWorker.ts',
+        '1.30.0',
+        m1Prep.bytes,
+        state.inputFloat32,
+        {
+          runtimeAssetFamily: fam,
+          provider: 'webgpu',
+          graphOptimizationLevel: 'basic',
+          warmRuns: 0,
+          enableWebGpuProfiling: true,
+          disableCpuEpFallback,
+          timeoutMs: 120000,
+        }
+      );
+      appendLog(
+        `  [Profiled ${fam.toUpperCase()} (NON-TIMING)] ${JSON.stringify({
+          status: profRes.ok ? 'OK' : `FAILED(${profRes.stage})`,
+          runtimeAssetFamily: profRes.runtimeAssetFamily,
+          configuredProviders: profRes.configuredProviders,
+          fallbackBehavior: profRes.fallbackBehavior,
+          workerGpuAdapter: profRes.workerGpuAdapter || null,
+          gpuValidationErrors: profRes.gpuValidationErrors ?? null,
+          loadedAssetProvenance: profRes.loadedAssetProvenance,
+          gpuKernelProfileSummary: profRes.gpuKernelProfileSummary || null,
+          ...(!profRes.ok ? { error: profRes.message } : {}),
+        })}`
+      );
+    }
+
+    // --- F0126 (5.250s): Arm A (Raw WASM) + Arm B (Exact M1 WASM opt=basic) Control ---
+    const frame2 = await extractStereoVideoFrameRgba(FRAME2_PTS, false);
+    const frame2Sha = await sha256Hex(frame2.tensor);
+    appendLog(
+      `\n--- F0126 (5.250s) Control: Arm A (Raw WASM dis) vs Arm B (Exact M1 WASM opt=basic) ---\n` +
+      `  actualTime=${frame2.currentTime.toFixed(4)}s/${frame2.durationSec.toFixed(3)}s | feedSha256=${frame2Sha} (expectedF0126=${EXPECTED_F0126_FEED_SHA256}, match=${frame2Sha === EXPECTED_F0126_FEED_SHA256}, distinctFromF0102=${frame2Sha !== frame1Sha})`
+    );
+    if (frame2Sha === frame1Sha) {
+      appendLog('  [ABORT] F0126 feed SHA matched F0102; skipping F0126 control.');
+      return;
+    }
+
+    const armAF2 = await runWorkerArm(ARMS['arm-wasm-raw-dis'], 0, {
+      disableCpuEpFallback: false,
+      enableWebGpuProfiling: false,
+      leftRgbaBuffer: frame2.leftRgba,
+      rightRgbaBuffer: frame2.rightRgba,
+      expectedInputSha256: frame2Sha,
+    });
+    if (!armAF2.ok || armAF2.manifest.feedSha256s?.input !== frame2Sha || armAF2.manifest.sessionModelSha256 !== EXPECTED_MODEL_SHA256) {
+      appendLog(
+        `  [ABORT] F0126 Arm A failed or mismatched: ok=${armAF2.ok} feedSha=${armAF2.manifest?.feedSha256s?.input} expected=${frame2Sha} err=${armAF2.error || 'none'}`
+      );
+      return;
+    }
+
+    const armBF2 = await runDedicatedOrtWorkerArm(
+      '/src/services/hitnetOrt130DiagnosticWorker.ts',
+      '1.30.0',
+      m1Prep.bytes,
+      frame2.tensor,
+      {
+        runtimeAssetFamily: 'jsep',
+        provider: 'wasm',
+        graphOptimizationLevel: 'basic',
+        warmRuns: 0,
+        enableWebGpuProfiling: false,
+        timeoutMs: 120000,
+      }
+    );
+    const idErrBF2 = checkWorkerIdentity(armBF2, frame2Sha, 'jsep');
+    logDedicatedManifest('F0126 Arm B: Exact M1 WASM (same harness, opt=basic, jsep wasm build)', armBF2, idErrBF2);
+    if (armBF2.ok && !idErrBF2) {
+      logPairwiseParity('F0126 Arm B (Exact M1 WASM basic) vs Arm A (Raw WASM dis)', toOutMap(armBF2.outputs), armAF2.last.rawOutMap, true);
+    }
+  }
+
+  async function runDevOnlyResidualLocalization() {
+    const locMod = await import('/src/services/hitnetResidualLocalization.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    let f0102Tensor = state.inputFloat32;
+    let f0102Sha = await sha256Hex(f0102Tensor);
+    if (f0102Sha !== spec.expectedF0102FeedSha256) {
+      const f1Fresh = await extractStereoVideoFrameRgba(F0102_PTS, false);
+      f0102Tensor = f1Fresh.tensor;
+      f0102Sha = await sha256Hex(f0102Tensor);
+    }
+
+    const FRAME2_PTS = 5.250;
+    const frame2 = await extractStereoVideoFrameRgba(FRAME2_PTS, false);
+    const frame2Sha = await sha256Hex(frame2.tensor);
+    if (frame2Sha === f0102Sha) {
+      throw new Error('F0126 feed SHA unexpectedly matches F0102');
+    }
+
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+    const report = await locMod.runHitnetResidualLocalizationDiagnostic({
+      rawModelBytes: state.rawModelBytes,
+      f0102FeedFloat32: f0102Tensor,
+      f0126FeedFloat32: frame2.tensor,
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetResidualLocalizationLast = {
+      ok: report.ok,
+      abortReason: report.abortReason,
+      pinnedOrtVersion: report.pinnedOrtVersion,
+      runtimeAssetFamily: report.runtimeAssetFamily,
+      m1ByteLength: report.m1ByteLength,
+      m1Sha256: report.m1Sha256,
+      f0102FeedSha256: report.f0102FeedSha256,
+      f0126FeedSha256: report.f0126FeedSha256,
+      frames: {
+        F0102: {
+          comparisons: report.frames.F0102.comparisons,
+          residualAndDepthBasic: report.frames.F0102.residualAndDepthBasic,
+          residualAndDepthDisabled: report.frames.F0102.residualAndDepthDisabled,
+          nonTimingDispatchProfiles: {
+            webgpuBasic: report.frames.F0102.nonTimingDispatchProfiles.webgpuBasic?.ok
+              ? {
+                  configuredProviders: report.frames.F0102.nonTimingDispatchProfiles.webgpuBasic.configuredProviders,
+                  gpuValidationErrors: report.frames.F0102.nonTimingDispatchProfiles.webgpuBasic.gpuValidationErrors,
+                  dispatch: report.frames.F0102.nonTimingDispatchProfiles.webgpuBasic.gpuKernelProfileSummary,
+                }
+              : null,
+            webgpuDisabled: report.frames.F0102.nonTimingDispatchProfiles.webgpuDisabled?.ok
+              ? {
+                  configuredProviders: report.frames.F0102.nonTimingDispatchProfiles.webgpuDisabled.configuredProviders,
+                  gpuValidationErrors: report.frames.F0102.nonTimingDispatchProfiles.webgpuDisabled.gpuValidationErrors,
+                  dispatch: report.frames.F0102.nonTimingDispatchProfiles.webgpuDisabled.gpuKernelProfileSummary,
+                }
+              : null,
+          },
+        },
+        F0126: report.frames.F0126
+          ? {
+              comparisons: report.frames.F0126.comparisons,
+              residualAndDepthBasic: report.frames.F0126.residualAndDepthBasic,
+              residualAndDepthDisabled: report.frames.F0126.residualAndDepthDisabled,
+              nonTimingDispatchProfiles: {
+                webgpuBasic: report.frames.F0126.nonTimingDispatchProfiles.webgpuBasic?.ok
+                  ? {
+                      configuredProviders: report.frames.F0126.nonTimingDispatchProfiles.webgpuBasic.configuredProviders,
+                      gpuValidationErrors: report.frames.F0126.nonTimingDispatchProfiles.webgpuBasic.gpuValidationErrors,
+                      dispatch: report.frames.F0126.nonTimingDispatchProfiles.webgpuBasic.gpuKernelProfileSummary,
+                    }
+                  : null,
+                webgpuDisabled: report.frames.F0126.nonTimingDispatchProfiles.webgpuDisabled?.ok
+                  ? {
+                      configuredProviders: report.frames.F0126.nonTimingDispatchProfiles.webgpuDisabled.configuredProviders,
+                      gpuValidationErrors: report.frames.F0126.nonTimingDispatchProfiles.webgpuDisabled.gpuValidationErrors,
+                      dispatch: report.frames.F0126.nonTimingDispatchProfiles.webgpuDisabled.gpuKernelProfileSummary,
+                    }
+                  : null,
+              },
+            }
+          : null,
+      },
+      localization: report.localization
+        ? {
+            executed: report.localization.executed,
+            reasonSkipped: report.localization.reasonSkipped,
+            selectedOptLevel: report.localization.selectedOptLevel,
+            abortedByFinalPerturbation: report.localization.abortedByFinalPerturbation,
+            perturbationStopMessage: report.localization.perturbationStopMessage,
+            earliestNonZeroTap: report.localization.earliestNonZeroTap,
+            firstGateBreachingTap: report.localization.firstGateBreachingTap,
+            coarseStagesCount: report.localization.coarseLadderRecords.length,
+            bisectionStepsCount: report.localization.bisectionRecords.length,
+            suspectedOperator: report.localization.suspectedOperator,
+          }
+        : null,
+    };
+    appendLog('\n[DONE] Saved compact localization summary to window.__hitnetResidualLocalizationLast (in-memory only).');
+  }
+
+  async function runDevOnlyStemFirstNonZeroReplay() {
+    const stemMod = await import('/src/services/hitnetRgbStemFirstNonZero.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    const rawSha = await sha256Hex(state.rawModelBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(state.rawModelBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+
+    let f0102Tensor = state.inputFloat32;
+    let f0102Sha = await sha256Hex(f0102Tensor);
+    if (f0102Sha !== spec.expectedF0102FeedSha256) {
+      const f1Fresh = await extractStereoVideoFrameRgba(F0102_PTS, false);
+      f0102Tensor = f1Fresh.tensor;
+      f0102Sha = await sha256Hex(f0102Tensor);
+    }
+
+    const FRAME2_PTS = 5.250;
+    const frame2 = await extractStereoVideoFrameRgba(FRAME2_PTS, false);
+    const frame2Sha = await sha256Hex(frame2.tensor);
+    if (frame2Sha === f0102Sha) {
+      throw new Error('F0126 feed SHA unexpectedly matches F0102');
+    }
+
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+    const report = await stemMod.runHitnetRgbStemFirstNonZeroDiagnostic({
+      m1Bytes: m1Prep.bytes,
+      f0102FeedFloat32: f0102Tensor,
+      f0126FeedFloat32: frame2.tensor,
+      confirmF0126Candidate: true,
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetRgbStemFirstNonZeroLast = {
+      ok: report.ok,
+      abortReason: report.abortReason,
+      pinnedOrtVersion: report.pinnedOrtVersion,
+      runtimeAssetFamily: report.runtimeAssetFamily,
+      graphOptimizationLevel: report.graphOptimizationLevel,
+      m1ByteLength: report.m1ByteLength,
+      m1Sha256: report.m1Sha256,
+      f0102FeedSha256: report.f0102FeedSha256,
+      closure: {
+        seedNodeIdx: report.closure.seedNodeIdx,
+        seedOutputTensor: report.closure.seedOutputTensor,
+        totalClosureNodes: report.closure.totalClosureNodes,
+        closureNodeIndices: report.closure.closureNodeIndices,
+        omittedInterleavedIndices: report.closure.omittedInterleavedIndices,
+        topologicalOrderVerified: report.closure.topologicalOrderVerified,
+        ancestryVerified: report.closure.ancestryVerified,
+      },
+      untappedBaseline: {
+        primary: report.untappedBaseline.primary,
+        secondary: report.untappedBaseline.secondary,
+        gpuDispatchProfile: report.untappedBaseline.gpuDispatchProfile?.ok
+          ? report.untappedBaseline.gpuDispatchProfile.gpuKernelProfileSummary
+          : null,
+      },
+      negativeControlsBitIdentical: report.negativeControlsBitIdentical,
+      earliestBitDiffNode: report.earliestBitDiffNode
+        ? {
+            nodeIdx: report.earliestBitDiffNode.nodeIdx,
+            opType: report.earliestBitDiffNode.opType,
+            outputTensor: report.earliestBitDiffNode.outputTensor,
+            classification: report.earliestBitDiffNode.comparison.classification,
+            bitDiffCount: report.earliestBitDiffNode.comparison.bitDiffCount,
+            signedZeroOnlyCount: report.earliestBitDiffNode.comparison.signedZeroOnlyCount,
+            nonZeroNumericDiffCount: report.earliestBitDiffNode.comparison.nonZeroNumericDiffCount,
+            maxAbsDiff: report.earliestBitDiffNode.comparison.stats.maxAbsDiff,
+            allImmediateInputsByteEqual: report.earliestBitDiffNode.allImmediateInputsByteEqual,
+          }
+        : null,
+      earliestSignedZeroOnlyNode: report.earliestSignedZeroOnlyNode
+        ? {
+            nodeIdx: report.earliestSignedZeroOnlyNode.nodeIdx,
+            opType: report.earliestSignedZeroOnlyNode.opType,
+            outputTensor: report.earliestSignedZeroOnlyNode.outputTensor,
+            signedZeroOnlyCount: report.earliestSignedZeroOnlyNode.comparison.signedZeroOnlyCount,
+          }
+        : null,
+      earliestNonZeroNumericNode: report.earliestNonZeroNumericNode
+        ? {
+            nodeIdx: report.earliestNonZeroNumericNode.nodeIdx,
+            opType: report.earliestNonZeroNumericNode.opType,
+            outputTensor: report.earliestNonZeroNumericNode.outputTensor,
+            classification: report.earliestNonZeroNumericNode.comparison.classification,
+            stats: report.earliestNonZeroNumericNode.comparison.stats,
+            firstNonZeroNumericDiff: report.earliestNonZeroNumericNode.comparison.firstNonZeroNumericDiff,
+            maxAbsDiffLocation: report.earliestNonZeroNumericNode.comparison.maxAbsDiffLocation,
+            allImmediateInputsByteEqual: report.earliestNonZeroNumericNode.allImmediateInputsByteEqual,
+            inputBlockers: report.earliestNonZeroNumericNode.inputBlockers,
+          }
+        : null,
+      singleOpReplay: report.singleOpReplay
+        ? {
+            executed: report.singleOpReplay.executed,
+            blockerReason: report.singleOpReplay.blockerReason,
+            targetNodeIdx: report.singleOpReplay.targetNodeIdx,
+            targetOpType: report.singleOpReplay.targetOpType,
+            targetOutputTensor: report.singleOpReplay.targetOutputTensor,
+            submodelByteLength: report.singleOpReplay.submodelByteLength,
+            submodelSha256: report.singleOpReplay.submodelSha256,
+            webgpuKernelDispatchObserved: report.singleOpReplay.webgpuKernelDispatchObserved,
+            replayGpuVsReplayWasm: report.singleOpReplay.replayGpuVsReplayWasm,
+            replayGpuVsFullM1Gpu: report.singleOpReplay.replayGpuVsFullM1Gpu,
+            replayWasmVsFullM1Wasm: report.singleOpReplay.replayWasmVsFullM1Wasm,
+            reproducesFullM1GpuBits: report.singleOpReplay.reproducesFullM1GpuBits,
+            reproducesFullM1WasmBits: report.singleOpReplay.reproducesFullM1WasmBits,
+            reproducesFullM1Diff: report.singleOpReplay.reproducesFullM1Diff,
+            float64Reference: report.singleOpReplay.float64Reference,
+            interpretationNote: report.singleOpReplay.interpretationNote,
+          }
+        : null,
+      f0126Confirmation: report.f0126Confirmation,
+    };
+    appendLog('\n[DONE] Saved compact summary to window.__hitnetRgbStemFirstNonZeroLast (in-memory only).');
+  }
+
+  async function runDevOnlyConv7Substitution() {
+    const subMod = await import('/src/services/hitnetConv7ActivationSubstitution.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    const rawSha = await sha256Hex(state.rawModelBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(state.rawModelBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+
+    let f0102Tensor = state.inputFloat32;
+    let f0102Sha = await sha256Hex(f0102Tensor);
+    if (f0102Sha !== spec.expectedF0102FeedSha256) {
+      const f1Fresh = await extractStereoVideoFrameRgba(F0102_PTS, false);
+      f0102Tensor = f1Fresh.tensor;
+      f0102Sha = await sha256Hex(f0102Tensor);
+    }
+
+    const FRAME2_PTS = 5.250;
+    const frame2 = await extractStereoVideoFrameRgba(FRAME2_PTS, false);
+    const frame2Sha = await sha256Hex(frame2.tensor);
+    if (frame2Sha === f0102Sha) {
+      throw new Error('F0126 feed SHA unexpectedly matches F0102');
+    }
+
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+    const report = await subMod.runHitnetConv7ActivationSubstitutionDiagnostic({
+      m1Bytes: m1Prep.bytes,
+      f0102FeedFloat32: f0102Tensor,
+      f0126FeedFloat32: frame2.tensor,
+      confirmF0126: true,
+      includeConv7ReductionProbe: true,
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    const summarizeFrame = (f) =>
+      f
+        ? {
+            frameLabel: f.frameLabel,
+            feedSha256: f.feedSha256,
+            interventionInconclusive: f.interventionInconclusive,
+            inconclusiveReason: f.inconclusiveReason,
+            splitControlInvariance: f.verificationManifest.splitControlInvariance,
+            bypassBitwiseEqualGpuVsWasm: f.verificationManifest.bypassBitwiseEqualGpuVsWasm,
+            bypassCaptureDetails: f.verificationManifest.bypassCaptureDetails,
+            tapFinalsInvariance: f.verificationManifest.tapFinalsInvariance,
+            dispatchProfiles: {
+              fullM1GpuDispatchObserved: f.verificationManifest.dispatchProfiles.fullM1GpuDispatchObserved,
+              gpuSplitDispatchObserved: f.verificationManifest.dispatchProfiles.gpuSplitDispatchObserved,
+              gpuIntervenedDispatchObserved: f.verificationManifest.dispatchProfiles.gpuIntervenedDispatchObserved,
+              gpuSplitSummary: f.verificationManifest.dispatchProfiles.gpuSplitControl?.ok
+                ? f.verificationManifest.dispatchProfiles.gpuSplitControl.gpuKernelProfileSummary
+                : null,
+              gpuIntervenedSummary: f.verificationManifest.dispatchProfiles.gpuWithWasmConv7?.ok
+                ? f.verificationManifest.dispatchProfiles.gpuWithWasmConv7.gpuKernelProfileSummary
+                : null,
+            },
+            parentInputCheck: f.parentInputCheck,
+            armProvenances: f.armProvenances,
+            comparisons: f.comparisons,
+            reductionFromWasmConv7IntoWebGpu: f.reductionFromWasmConv7IntoWebGpu,
+            depthImpact: f.depthImpact,
+            conv7ReductionProbe: f.conv7ReductionProbe,
+          }
+        : null;
+
+    window.__hitnetConv7SubstitutionLast = {
+      ok: report.ok,
+      pinnedOrtVersion: report.pinnedOrtVersion,
+      runtimeAssetFamily: report.runtimeAssetFamily,
+      graphOptimizationLevel: report.graphOptimizationLevel,
+      m1ByteLength: report.m1ByteLength,
+      m1Sha256: report.m1Sha256,
+      suffixSummary: report.suffixSummary,
+      f0102: summarizeFrame(report.f0102),
+      f0126: summarizeFrame(report.f0126),
+      scientificScopeNote: report.scientificScopeNote,
+    };
+    appendLog('\n[DONE] Saved compact summary to window.__hitnetConv7SubstitutionLast (in-memory only).');
+  }
+
+  async function runDevOnlyPostConv7TapReplay() {
+    const replayMod = await import('/src/services/hitnetPostConv7TapReplay.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    const rawSha = await sha256Hex(state.rawModelBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(state.rawModelBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+
+    let f0102Tensor = state.inputFloat32;
+    let f0102Sha = await sha256Hex(f0102Tensor);
+    if (f0102Sha !== spec.expectedF0102FeedSha256) {
+      const f1Fresh = await extractStereoVideoFrameRgba(F0102_PTS, false);
+      f0102Tensor = f1Fresh.tensor;
+      f0102Sha = await sha256Hex(f0102Tensor);
+    }
+
+    const FRAME2_PTS = 5.250;
+    const frame2 = await extractStereoVideoFrameRgba(FRAME2_PTS, false);
+    const frame2Sha = await sha256Hex(frame2.tensor);
+    if (frame2Sha === f0102Sha) {
+      throw new Error('F0126 feed SHA unexpectedly matches F0102');
+    }
+
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+    const report = await replayMod.runHitnetPostConv7TapReplayDiagnostic({
+      m1Bytes: m1Prep.bytes,
+      f0102FeedFloat32: f0102Tensor,
+      f0126FeedFloat32: frame2.tensor,
+      confirmF0126: true,
+      normalizeSlot0ReshapeToTranspose: false,
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetPostConv7TapReplayLast = {
+      ok: report.ok,
+      aborted: report.aborted ?? false,
+      abortReason: report.abortReason ?? null,
+      pinnedOrtVersion: report.pinnedOrtVersion,
+      runtimeAssetFamily: report.runtimeAssetFamily,
+      graphOptimizationLevel: report.graphOptimizationLevel,
+      m1ByteLength: report.m1ByteLength,
+      m1Sha256: report.m1Sha256,
+      n1OffProof: report.n1OffProof,
+      chainSpec: report.chainSpec,
+      f0102: report.f0102,
+      f0126: report.f0126,
+      scientificScopeNote: report.scientificScopeNote,
+    };
+    appendLog('\n[DONE] Saved compact summary to window.__hitnetPostConv7TapReplayLast (in-memory only).');
+  }
+
+  async function runDevOnlySyntheticGroundTruth() {
+    const gtMod = await import('/src/services/hitnetSyntheticGroundTruth.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    let rawBytes = state.rawModelBytes;
+    if (!rawBytes) {
+      appendLog('既知正解テスト用: HITNet ONNX モデルを直接取得しています…');
+      const resp = await fetch(MODEL_URL, { method: 'GET' });
+      if (!resp.ok) throw new Error(`Model fetch HTTP ${resp.status}`);
+      rawBytes = new Uint8Array(await resp.arrayBuffer());
+    }
+    const rawSha = await sha256Hex(rawBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(rawBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+    const warmRuns = Math.max(0, Math.min(5, Number(document.getElementById('sel-warm-runs')?.value) || 1));
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+
+    const report = await gtMod.runHitnetSyntheticGroundTruthTest({
+      m1Bytes: m1Prep.bytes,
+      graphOptimizationLevel: 'basic',
+      warmRuns,
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetSyntheticGroundTruthLast = report;
+    appendLog('\n[DONE] Saved full report to window.__hitnetSyntheticGroundTruthLast (in-memory only).');
+  }
+
+  async function runDevOnlyMiddleburyEval3Benchmark() {
+    const middMod = await import('/src/services/hitnetMiddleburyEval3Benchmark.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    let rawBytes = state.rawModelBytes;
+    if (!rawBytes) {
+      appendLog('Middlebury Eval3 Q ベンチマーク用: HITNet ONNX モデルを取得しています…');
+      const resp = await fetch(MODEL_URL, { method: 'GET' });
+      if (!resp.ok) throw new Error(`Model fetch HTTP ${resp.status}`);
+      rawBytes = new Uint8Array(await resp.arrayBuffer());
+    }
+    const rawSha = await sha256Hex(rawBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(rawBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+    const warmRuns = Math.max(2, Math.min(5, Number(document.getElementById('sel-warm-runs')?.value) || 3));
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+
+    const report = await middMod.runHitnetMiddleburyEval3Benchmark({
+      m1Bytes: m1Prep.bytes,
+      sceneIds: ['Motorcycle', 'Teddy'],
+      warmRuns,
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetMiddleburyEval3Last = report;
+    appendLog(
+      `\n[DONE] Saved full Middlebury Eval3 Q report to window.__hitnetMiddleburyEval3Last (status=${report.productionGoNoGoEvaluation.overallStatus}).`
+    );
+  }
+
+  async function runDevOnlyMiddleburyFactorialDiagnosis() {
+    const factMod = await import('/src/services/hitnetMiddleburyFactorialDiagnosis.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    let rawBytes = state.rawModelBytes;
+    if (!rawBytes) {
+      appendLog('Middlebury RGB/BGR × 幾何 要因分解診断用: HITNet ONNX モデルを取得しています…');
+      const resp = await fetch(MODEL_URL, { method: 'GET' });
+      if (!resp.ok) throw new Error(`Model fetch HTTP ${resp.status}`);
+      rawBytes = new Uint8Array(await resp.arrayBuffer());
+    }
+    const rawSha = await sha256Hex(rawBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(rawBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+
+    const report = await factMod.runHitnetMiddleburyFactorialDiagnosis({
+      m1Bytes: m1Prep.bytes,
+      sceneIds: ['Motorcycle', 'Teddy'],
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetMiddleburyFactorialLast = report;
+    appendLog(
+      `\n[DONE] Saved Middlebury RGB/BGR x Geometry factorial report to window.__hitnetMiddleburyFactorialLast (${report.verdict.summaryVerdict}).`
+    );
+  }
+
+  async function runDevOnlyMiddleburyRawAndGtDiagnostic() {
+    const mod = await import('/src/services/hitnetMiddleburyRawAndGtDiagnostic.ts');
+    const report = await mod.runHitnetMiddleburyRawAndGtDiagnostic({
+      onLog: (line) => appendLog(line),
+    });
+    window.__hitnetMiddleburyRawAndGtLast = report;
+    appendLog(
+      `\n[DONE] Saved Middlebury Raw-vs-M1 & Source-GT report to window.__hitnetMiddleburyRawAndGtLast (${report.diagnosisSummary.rawVsM1Verdict} | ${report.diagnosisSummary.sourceGtConsistencyVerdict}).`
+    );
+  }
+
+  async function runDevOnlyMiddleburyScaleContextDiagnostic() {
+    const scaleMod = await import('/src/services/hitnetMiddleburyScaleContextDiagnostic.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    let rawBytes = state.rawModelBytes;
+    if (!rawBytes) {
+      appendLog('Motorcycle Native-Q スケール/文脈統制比較用: HITNet ONNX モデルを取得しています…');
+      const resp = await fetch(MODEL_URL, { method: 'GET' });
+      if (!resp.ok) throw new Error(`Model fetch HTTP ${resp.status}`);
+      rawBytes = new Uint8Array(await resp.arrayBuffer());
+    }
+    const rawSha = await sha256Hex(rawBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(rawBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+
+    const report = await scaleMod.runHitnetMiddleburyScaleContextDiagnostic({
+      m1Bytes: m1Prep.bytes,
+      includeWebGpuVerification: true,
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetMiddleburyScaleContextLast = report;
+    appendLog(
+      `\n[DONE] Saved Motorcycle Native-Q Scale/Context report to window.__hitnetMiddleburyScaleContextLast (${report.verdictSummary.interventionEffectObserved}).`
+    );
+  }
+
+  async function runDevOnlyMiddleburyNoPadScaleLadderDiagnostic() {
+    const ladderMod = await import('/src/services/hitnetMiddleburyNoPadScaleLadderDiagnostic.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    let rawBytes = state.rawModelBytes;
+    if (!rawBytes) {
+      appendLog('Motorcycle Q 無パディング・スケール階段検証用: HITNet ONNX モデルを取得しています…');
+      const resp = await fetch(MODEL_URL, { method: 'GET' });
+      if (!resp.ok) throw new Error(`Model fetch HTTP ${resp.status}`);
+      rawBytes = new Uint8Array(await resp.arrayBuffer());
+    }
+    const rawSha = await sha256Hex(rawBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(rawBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+
+    const report = await ladderMod.runHitnetMiddleburyNoPadScaleLadderDiagnostic({
+      m1Bytes: m1Prep.bytes,
+      includeWebGpuCheck: true,
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetMiddleburyNoPadScaleLadderLast = report;
+    appendLog(
+      `\n[DONE] Saved Motorcycle Q No-Pad Scale Ladder report to window.__hitnetMiddleburyNoPadScaleLadderLast (${report.summary.upperLeftTrend}; ${report.summary.centerTrend}).`
+    );
+  }
+
+  async function runDevOnlyMiddleburyPaddingAblationDiagnostic() {
+    const padMod = await import('/src/services/hitnetMiddleburyPaddingAblationDiagnostic.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    let rawBytes = state.rawModelBytes;
+    if (!rawBytes) {
+      appendLog('Motorcycle パディング対照実験用: HITNet ONNX モデルを取得しています…');
+      const resp = await fetch(MODEL_URL, { method: 'GET' });
+      if (!resp.ok) throw new Error(`Model fetch HTTP ${resp.status}`);
+      rawBytes = new Uint8Array(await resp.arrayBuffer());
+    }
+    const rawSha = await sha256Hex(rawBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(rawBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+
+    const report = await padMod.runHitnetMiddleburyPaddingAblationDiagnostic({
+      m1Bytes: m1Prep.bytes,
+      includeWebGpuCheck: true,
+      disableCpuEpFallback,
+      priorScaleContextReport: window.__hitnetMiddleburyScaleContextLast ?? null,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetMiddleburyPaddingAblationLast = report;
+    appendLog(
+      `\n[DONE] Saved Motorcycle Fixed-Active Padding Ablation report to window.__hitnetMiddleburyPaddingAblationLast (${report.conclusion.paddingAblationEffectSummary}).`
+    );
+  }
+
+  async function runDevOnlyConv9BlockedInjection() {
+    const conv9Mod = await import('/src/services/hitnetConv9BlockedInjection.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    const rawSha = await sha256Hex(state.rawModelBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(state.rawModelBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+
+    let f0102Tensor = state.inputFloat32;
+    let f0102Sha = await sha256Hex(f0102Tensor);
+    if (f0102Sha !== spec.expectedF0102FeedSha256) {
+      const f1Fresh = await extractStereoVideoFrameRgba(F0102_PTS, false);
+      f0102Tensor = f1Fresh.tensor;
+      f0102Sha = await sha256Hex(f0102Tensor);
+    }
+
+    const FRAME2_PTS = 5.250;
+    const frame2 = await extractStereoVideoFrameRgba(FRAME2_PTS, false);
+    const frame2Sha = await sha256Hex(frame2.tensor);
+    if (frame2Sha === f0102Sha) {
+      throw new Error('F0126 feed SHA unexpectedly matches F0102');
+    }
+
+    const warmRunsAppBaseline = Math.max(0, Math.min(3, Number(document.getElementById('sel-warm-runs')?.value) || 1));
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+    const report = await conv9Mod.runHitnetConv9BlockedInjectionDiagnostic({
+      m1Bytes: m1Prep.bytes,
+      f0102FeedFloat32: f0102Tensor,
+      f0126FeedFloat32: frame2.tensor,
+      normalizeSlot0ReshapeToTranspose: false,
+      disableCpuEpFallback,
+      warmRunsAppBaseline,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetConv9BlockedInjectionLast = report;
+    appendLog('\n[DONE] Saved full report to window.__hitnetConv9BlockedInjectionLast (in-memory only).');
+  }
+
+  async function runDevOnlyF0126SecondaryOutlier() {
+    const mod = await import('/src/services/hitnetF0126SecondaryOutlierDiagnostic.ts');
+    const gatherMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');
+    const fixtureMod = await import('/src/services/stereoDepthWebGpuDevFixture.ts');
+    fixtureMod.assertDevFixtureEnabled();
+    const spec = fixtureMod.HITNET_DEV_NON_JSEP_FIXTURE_SPEC;
+
+    const rawSha = await sha256Hex(state.rawModelBytes);
+    if (rawSha !== spec.expectedRawSha256) {
+      throw new Error(`Raw HITNet model SHA mismatch: expected=${spec.expectedRawSha256}, actual=${rawSha}`);
+    }
+    const m1Prep = gatherMod.prepareHitnetM1FullGraphBytes(state.rawModelBytes, {
+      rawModelSha256: spec.expectedRawSha256,
+    });
+
+    const FRAME2_PTS = 5.250;
+    const frame2 = await extractStereoVideoFrameRgba(FRAME2_PTS, false);
+    const frame2Sha = await sha256Hex(frame2.tensor);
+    if (frame2Sha !== spec.expectedF0126FeedSha256) {
+      throw new Error(`Frozen F0126 feed SHA mismatch: expected=${spec.expectedF0126FeedSha256}, actual=${frame2Sha}`);
+    }
+
+    const existingSummary = window.__hitnetConv9BlockedInjectionLast?.stage2RealFrames?.f0126?.causalCommonWasm7Controls ?? null;
+    const disableCpuEpFallback = Boolean(document.getElementById('chk-disable-cpu-fallback')?.checked);
+    const report = await mod.runHitnetF0126SecondaryOutlierDiagnostic({
+      m1Bytes: m1Prep.bytes,
+      f0126FeedFloat32: frame2.tensor,
+      normalizeSlot0ReshapeToTranspose: false,
+      existingCommonWasm7Summary: existingSummary,
+      disableCpuEpFallback,
+      onLog: (line) => appendLog(line),
+    });
+
+    window.__hitnetF0126SecondaryOutlierLast = report;
+    appendLog(
+      `\n[DONE] Saved report to window.__hitnetF0126SecondaryOutlierLast (gatePassed=${report.gatePassed}, verdict=${report.causalAttribution?.verdict ?? 'GATE_FAILED'}).`
+    );
+  }
+
+  btnDevMiddleburyNoPadLadder.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try {
+      await runDevOnlyMiddleburyNoPadScaleLadderDiagnostic();
+    } catch (err) {
+      appendLog(`DEV-ONLY Motorcycle No-Pad Scale Ladder FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevMiddleburyPaddingAblation.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try {
+      await runDevOnlyMiddleburyPaddingAblationDiagnostic();
+    } catch (err) {
+      appendLog(`DEV-ONLY Motorcycle Padding Ablation FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevMiddleburyScaleContext.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try {
+      await runDevOnlyMiddleburyScaleContextDiagnostic();
+    } catch (err) {
+      appendLog(`DEV-ONLY Motorcycle Scale/Context Comparison FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevMiddleburyRawAndGt.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try {
+      await runDevOnlyMiddleburyRawAndGtDiagnostic();
+    } catch (err) {
+      appendLog(`DEV-ONLY Middlebury Raw-vs-M1 & Source-GT FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevMiddleburyFactorial.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try {
+      await runDevOnlyMiddleburyFactorialDiagnosis();
+    } catch (err) {
+      appendLog(`DEV-ONLY Middlebury Factorial Diagnosis FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevMiddleburyEval3.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try {
+      await runDevOnlyMiddleburyEval3Benchmark();
+    } catch (err) {
+      appendLog(`DEV-ONLY Middlebury Eval3 Q Benchmark FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevSyntheticGtD16D32.addEventListener('click', async () => {
+    if (state.busy) return;
+    setBusy(true);
+    try {
+      await runDevOnlySyntheticGroundTruth();
+    } catch (err) {
+      appendLog(`DEV-ONLY Synthetic Ground-Truth (D16/D32) FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevF0126SecondaryOutlier.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runDevOnlyF0126SecondaryOutlier();
+    } catch (err) {
+      appendLog(`DEV-ONLY F0126 #9 Transport Gate & Secondary Outlier FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevConv9BlockedInjection.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runDevOnlyConv9BlockedInjection();
+    } catch (err) {
+      appendLog(`DEV-ONLY #9 Blocked Accumulation & Practical Injection FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevPostConv7TapReplay.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runDevOnlyPostConv7TapReplay();
+    } catch (err) {
+      appendLog(`DEV-ONLY Post-#7 (#8/#9) Paired Tap & Replay FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevConv7Substitution.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runDevOnlyConv7Substitution();
+    } catch (err) {
+      appendLog(`DEV-ONLY #7 Conv Substitution Diagnostic FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevStemFirstNonZeroReplay.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runDevOnlyStemFirstNonZeroReplay();
+    } catch (err) {
+      appendLog(`DEV-ONLY RGB-Stem First Nonzero Localization FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevResidualLocalization.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runDevOnlyResidualLocalization();
+    } catch (err) {
+      appendLog(`DEV-ONLY Residual Localization FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnDevAppWorkerNonJsep.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runDevOnlyAppWorkerNonJsepComparison();
+    } catch (err) {
+      appendLog(`DEV-ONLY Real App Worker Non-JSEP WebGPU Test FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnOrt130CvsDJsep.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runSameHarnessCvsDJsepControl();
+    } catch (err) {
+      appendLog(`Same-Harness C vs D JSEP Control FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  btnOrtStandaloneM1Verify.addEventListener('click', async () => {
+    if (state.busy || !state.rawModelBytes || !state.inputFloat32) return;
+    setBusy(true);
+    try {
+      await runStandaloneM1Verification();
+    } catch (err) {
+      appendLog(`Standalone M1 Detailed Verification FAILED: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setBusy(false);
+    }
+  });
 
   async function runOrt130Vs131M1Comparison() {
     const diagMod = await import('/src/services/hitnetGatherNdDiagnostic.ts');

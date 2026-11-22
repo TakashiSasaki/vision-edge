@@ -1,14 +1,12 @@
 import {
   executeOrtDiagnosticWorkerRun,
-  HITNET_ORT_VERSION_PROFILES,
-  type OrtLikeModule,
+  HITNET_ORT_130_FAMILY_PROFILES,
+  loadOrtEntryModuleWithBoundarySha256,
   type OrtVersionDiagnosticRequest,
   type OrtVersionDiagnosticResponse,
 } from './hitnetOrtComparisonHelper';
 
 const PINNED_ORT_VERSION = '1.30.0' as const;
-const PROFILE_130 = HITNET_ORT_VERSION_PROFILES[PINNED_ORT_VERSION];
-const ENTRY_URL_130 = `${PROFILE_130.distBaseUrl}${PROFILE_130.entryFile}`;
 
 const workerScope =
   typeof self !== 'undefined' &&
@@ -28,8 +26,11 @@ if (workerScope) {
       PINNED_ORT_VERSION,
       req,
       {
-        loadOrtModule: () =>
-          import(/* @vite-ignore */ ENTRY_URL_130) as Promise<OrtLikeModule>,
+        loadOrtModule: (entryModuleUrl, family) =>
+          loadOrtEntryModuleWithBoundarySha256(entryModuleUrl, {
+            referenceLocalDistSha256:
+              HITNET_ORT_130_FAMILY_PROFILES[family].referenceLocalDistSha256.entry,
+          }),
       }
     );
     workerScope.postMessage(response, transfers);
