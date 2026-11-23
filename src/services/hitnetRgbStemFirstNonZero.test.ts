@@ -500,8 +500,8 @@ describe('hitnetRgbStemFirstNonZero', () => {
           Tensor: class {
             dims: readonly number[];
             type: string;
-            data: Float32Array;
-            constructor(type: string, data: Float32Array, dims: number[]) {
+            data: Float32Array | Int32Array | BigInt64Array | Uint8Array;
+            constructor(type: string, data: Float32Array | Int32Array | BigInt64Array | Uint8Array, dims: number[]) {
               this.type = type;
               this.data = data;
               this.dims = dims;

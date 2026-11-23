@@ -4702,6 +4702,8 @@ export function normalizeHitnetGatherNdRankForWebGpu(
 
 export interface OnnxStaticInferenceResult {
   valid: boolean;
+  nodeCount: number;
+  initializerCount: number;
   irVersion: number | null;
   defaultOpset: number | null;
   hasControlFlowNode: boolean;
@@ -4719,6 +4721,8 @@ export interface OnnxStaticInferenceResult {
 export function inferOnnxStaticTensorMeta(bytes: Uint8Array): OnnxStaticInferenceResult {
   const empty: OnnxStaticInferenceResult = {
     valid: false,
+    nodeCount: 0,
+    initializerCount: 0,
     irVersion: null,
     defaultOpset: null,
     hasControlFlowNode: false,
@@ -4762,9 +4766,11 @@ export function inferOnnxStaticTensorMeta(bytes: Uint8Array): OnnxStaticInferenc
       attrs: Map<string, { i?: number; ints?: number[] }>;
     }
     const parsedNodes: InferNodeEntry[] = [];
+    let initializerCount = 0;
 
     for (const gf of graphFields) {
       if (gf.fn === 5 && gf.wt === 2) {
+        initializerCount++;
         const init = parseInitializerStaticMeta(bytes, gf, decoder);
         const nm = init?.name ?? getInitializerName(bytes, gf.valStart, gf.valEnd, decoder);
         if (nm) {
@@ -5188,6 +5194,8 @@ export function inferOnnxStaticTensorMeta(bytes: Uint8Array): OnnxStaticInferenc
       irVersion,
       defaultOpset,
       hasControlFlowNode,
+      nodeCount: parsedNodes.length,
+      initializerCount,
       tensorMeta: record,
       duplicateOutputs,
       duplicateInitializers,
