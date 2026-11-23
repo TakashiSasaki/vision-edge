@@ -14,7 +14,7 @@ import {
 } from './hitnetConv9BlockedInjection';
 import { buildVerifiedSuffixAfterConv7 } from './hitnetConv7ActivationSubstitution';
 import { prepareHitnetM1FullGraphBytes } from './hitnetGatherNdDiagnostic';
-import { type OrtVersionDiagnosticOutput } from './hitnetOrtComparisonHelper';
+import { type OrtVersionDiagnosticOutput, type OrtVersionDiagnosticSuccess } from './hitnetOrtComparisonHelper';
 import {
   resolveVerifiedPostConv7ChainSpec,
 } from './hitnetPostConv7TapReplay';
@@ -331,7 +331,7 @@ function buildSyntheticM1ChainOnnx(opts?: {
 function makeMockSuccessBase(req: {
   provider: 'webgpu' | 'wasm';
   graphOptimizationLevel: 'disabled' | 'basic';
-}) {
+}): Omit<OrtVersionDiagnosticSuccess, 'modelByteLength' | 'modelSha256' | 'feedSha256' | 'feedTensorName' | 'feedTensorShape' | 'feedTensorDataType' | 'outputs'> {
   return {
     id: 1,
     ok: true as const,
@@ -350,7 +350,11 @@ function makeMockSuccessBase(req: {
         url: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/ort-wasm-simd-threaded.asyncify.wasm',
         sha256: 'deadbeef',
         byteLength: 12345,
-        source: 'mock-cdn',
+        role: 'wasm',
+        via: 'WebAssembly.instantiate',
+        referenceLocalDistSha256: null,
+        matchesLocalDistSha256: null,
+        note: 'synthetic mock',
       },
     ],
     provider: req.provider,

@@ -98,15 +98,29 @@ test('non-JS user agent can read all catalog model URLs on /model-cache.html wit
     const page = await context.newPage();
     await page.goto('/model-cache.html');
     const links = page.locator('#static-model-catalog a.catalog-model-url');
-    await expect(links).toHaveCount(16);
+    // Independent inventory: fail on missing, duplicate, unexpected, or redirected entries.
+    const expectedHrefs = [
+      'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite',
+      'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite2/float32/1/efficientnet_lite2.tflite',
+      'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite',
+      'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite',
+      'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite',
+      'https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite2/float16/1/efficientdet_lite2.tflite',
+      'https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/yolov8n-seg.onnx',
+      'https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/dynamic/yolov8s-seg.onnx',
+      'https://huggingface.co/Xenova/segformer-b0-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx',
+      'https://huggingface.co/Xenova/segformer-b1-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx',
+      'https://huggingface.co/Xenova/segformer-b2-finetuned-ade-512-512/resolve/main/onnx/model_quantized.onnx',
+      'https://huggingface.co/Cactus-Compute/mirage/resolve/76c1e9e53381aca8fc3843c636216c96ff220122/mirage.cact',
+      'https://cdn.jsdelivr.net/gh/zz990099/lightstereo_cpp@master/models/lightstereo_s_sceneflow_general_opt_256_512.onnx',
+      '/api/cors-proxy/stereo/model_528_240_float32.onnx',
+      '/api/cors-proxy/stereo/hitnet_sceneflow_240x320.onnx',
+      '/api/cors-proxy/stereo/crestereo_init_iter2_180x320.onnx',
+      '/api/cors-proxy/stereo/crestereo_combined_iter5_240x320.onnx',
+    ];
+    await expect(links).toHaveCount(expectedHrefs.length);
     const hrefs = await links.evaluateAll((els) => els.map((e) => e.getAttribute('href') ?? ''));
-    expect(hrefs).toContain(
-      'https://storage.googleapis.com/mediapipe-models/image_classifier/efficientnet_lite0/float32/1/efficientnet_lite0.tflite'
-    );
-    expect(hrefs).toContain(
-      'https://huggingface.co/unileon-robotics/YOLO8-ONNX/resolve/main/yolov8n-seg.onnx'
-    );
-    expect(hrefs).toContain('/api/cors-proxy/stereo/hitnet_sceneflow_240x320.onnx');
+    expect([...hrefs].sort()).toEqual([...expectedHrefs].sort());
     for (const href of hrefs) {
       expect(href).not.toContain('/api/model-cache/');
     }

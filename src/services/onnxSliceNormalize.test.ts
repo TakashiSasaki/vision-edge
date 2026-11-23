@@ -95,7 +95,7 @@ function encodeStrField(fn: number, value: string): Uint8Array {
 function encodeAttrInt(name: string, val: number): Uint8Array {
   return encodeLenField(
     5,
-    concatBytes([encodeStrField(1, name), encodeVarintField(3, val), encodeVarintField(20, 2)])
+    concatBytes([encodeStrField(1, name), encodeVarintBigIntField(3, BigInt(val)), encodeVarintField(20, 2)])
   );
 }
 
@@ -104,7 +104,7 @@ function encodeAttrInts(name: string, vals: readonly number[]): Uint8Array {
     5,
     concatBytes([
       encodeStrField(1, name),
-      ...vals.map((v) => encodeVarintField(8, v)),
+      ...vals.map((v) => encodeVarintBigIntField(8, BigInt(v))),
       encodeVarintField(20, 7),
     ])
   );
@@ -1882,7 +1882,7 @@ describe('normalizeHitnetPropGatherNdRankForWebGpu (H1)', () => {
     );
 
     const dynamicModel = buildTapTestModel(true);
-    expect(() => appendOnnxGraphOutputs(dynamicModel, ['mid'])).toThrow(/non-static metadata/);
+    expect(() => appendOnnxGraphOutputs(dynamicModel, ['mid'])).toThrow("Missing/dynamic static metadata for existing output 'final_out'");
   });
 
   it('verifies post-prop0 P7..P11 checkpoints and bounded full-graph tap groups in ORT WASM on cached HITNet', async () => {

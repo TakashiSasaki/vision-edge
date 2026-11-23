@@ -1445,7 +1445,7 @@ export async function runHitnetConv9BlockedInjectionDiagnostic(params: {
       params.f0126FeedFloat32.byteLength
     )
   );
-  if (f0126Sha !== HITNET_DEV_NON_JSEP_FIXTURE_SPEC.expectedF0126FeedSha256 || f0126Sha === f0102Sha) {
+  if (f0126Sha === f0102Sha || f0126Sha !== HITNET_DEV_NON_JSEP_FIXTURE_SPEC.expectedF0126FeedSha256) {
     throw new Error(
       `Frozen F0126 feed SHA mismatch: expected=${HITNET_DEV_NON_JSEP_FIXTURE_SPEC.expectedF0126FeedSha256}, actual=${f0126Sha}`
     );

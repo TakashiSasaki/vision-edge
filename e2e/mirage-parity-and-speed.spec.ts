@@ -408,7 +408,8 @@ test.describe('Mirage ONNX (WASM & WebGPU) vs Official Cactus Parity & Speed Ben
         const wasmFullInitStart = performance.now();
         const wasmFullAssets = await bridge.acquireMirageFullPipelineAssets({
           variantId: 'mirage-onnx-exp-wasm',
-          delegate: 'CPU',
+          delegate: 'WASM',
+          allowWasmFallback: false,
         });
         const wasmFullPipelineInitMs = round(
           performance.now() - wasmFullInitStart,
@@ -440,7 +441,6 @@ test.describe('Mirage ONNX (WASM & WebGPU) vs Official Cactus Parity & Speed Ben
         const cactusInitStart = performance.now();
         const cactusTask = await bridge.createMirageWasmTask({
           variantId: 'mirage-51m',
-          confidenceThreshold: 0.3,
         });
         const cactusWasmInitMs = round(performance.now() - cactusInitStart, 2);
 
@@ -453,7 +453,7 @@ test.describe('Mirage ONNX (WASM & WebGPU) vs Official Cactus Parity & Speed Ben
             // Warmup runs
             await wasmTask.runRawHeads(preset.prep);
             await webgpuTask.runRawHeads(preset.prep);
-            cactusTask.detectForVideo(preset.canvas, performance.now(), {
+            await cactusTask.detectForVideo(preset.canvas, 0.3, {
               analysisMode: 'fast',
             });
 
@@ -531,13 +531,14 @@ test.describe('Mirage ONNX (WASM & WebGPU) vs Official Cactus Parity & Speed Ben
             const cactusFastTimes: number[] = [];
             for (let i = 0; i < BENCHMARK_RUNS; i++) {
               const t0 = performance.now();
-              cactusTask.detectForVideo(preset.canvas, performance.now(), {
+              await cactusTask.detectForVideo(preset.canvas, 0.3, {
                 analysisMode: 'fast',
               });
               const t1 = performance.now();
               cactusFastTimes.push(t1 - t0);
             }
-            const cactusFastRawObs = cactusTask.getLastRawObservation();
+            const cactusFastRawObs = cactusTask.getLastRawObservation?.();
+            if (!cactusFastRawObs) throw new Error('Cactus fast raw observation unavailable');
 
             // Parity: ONNX WebGPU vs ONNX WASM
             const detectionsParity = bridge.compareMirageTensorParity(
@@ -571,24 +572,31 @@ test.describe('Mirage ONNX (WASM & WebGPU) vs Official Cactus Parity & Speed Ben
             );
 
             // Parity vs Official Cactus Native (libcactus.so) & Official Cactus WASM (cactus-wasm.wasm)
-            const nativeCase = nativeGeometry?.cases?.[preset.name];
-            const nativeFastObs = nativeCase?.native?.fast ?? {
-              objects: [],
-              text: [],
-            };
-            const nativeObjectBoxes: [number, number, number, number][] = (
-              nativeFastObs.objects ?? []
-            ).map((o: { box: [number, number, number, number] }) => o.box);
-            const nativeTextBoxes: [number, number, number, number][] = (
-              nativeFastObs.text ?? []
-            ).map((t: { box: [number, number, number, number] }) => t.box);
-
-            const cactusWasmObjectBoxes: [number, number, number, number][] = (
-              cactusFastRawObs?.objects ?? []
-            ).map((o) => o.box);
-            const cactusWasmTextBoxes: [number, number, number, number][] = (
-              cactusFastRawObs?.text ?? []
-            ).map((t) => t.box);
+            type Box = [number, number, number, number];
+            const normalizeNativeBox = ([y0, x0, y1, x1]: Box): Box =>
+              [x0 / 1000, y0 / 1000, x1 / 1000, y1 / 1000];
+            const nativeFastObs = (
+              nativeGeometry?.cases?.find(
+                (candidate: { name: string }) => candidate.name === preset.name
+              )?.output ?? nativeCorpus?.native_reserved?.cases?.find(
+                (candidate: { name: string }) => candidate.name === preset.name
+              )?.requests?.['geometry-only']?.output
+            ) as { objects?: { bbox: Box }[]; text?: { bbox: Box }[] } | undefined;
+            const nativeObjectBoxes = nativeFastObs?.objects?.map((o) => normalizeNativeBox(o.bbox));
+            const nativeTextBoxes = nativeFastObs?.text?.map((t) => normalizeNativeBox(t.bbox));
+            const cactusWasmObjectBoxes = (cactusFastRawObs.objects ?? []).map(
+              (o) => normalizeNativeBox(o.bbox)
+            );
+            const cactusWasmTextBoxes = (cactusFastRawObs.text ?? []).map(
+              (t) => normalizeNativeBox(t.bbox)
+            );
+            const matchNativeGeometry = (objects: Box[], text: Box[]) =>
+              nativeObjectBoxes && nativeTextBoxes
+                ? {
+                    objects: evaluateBoxMatching(objects, nativeObjectBoxes),
+                    text: evaluateBoxMatching(text, nativeTextBoxes),
+                  }
+                : null;
 
             const onnxNoneObjectBoxes = lastWasmDecodedNone.objects.map(
               (o) => o.box
@@ -637,27 +645,9 @@ test.describe('Mirage ONNX (WASM & WebGPU) vs Official Cactus Parity & Speed Ben
                 exactProposalParityNms050: proposalParityNms050,
               },
               vsOfficialCactusRuntime: {
-                nativeVsCactusWasmAgreement: {
-                  objects: evaluateBoxMatching(
-                    cactusWasmObjectBoxes,
-                    nativeObjectBoxes
-                  ),
-                  text: evaluateBoxMatching(cactusWasmTextBoxes, nativeTextBoxes),
-                },
-                onnxNoNmsVsOfficialNative: {
-                  objects: evaluateBoxMatching(
-                    onnxNoneObjectBoxes,
-                    nativeObjectBoxes
-                  ),
-                  text: evaluateBoxMatching(onnxNoneTextBoxes, nativeTextBoxes),
-                },
-                onnxNms050VsOfficialNative: {
-                  objects: evaluateBoxMatching(
-                    onnxNmsObjectBoxes,
-                    nativeObjectBoxes
-                  ),
-                  text: evaluateBoxMatching(onnxNmsTextBoxes, nativeTextBoxes),
-                },
+                nativeVsCactusWasmAgreement: matchNativeGeometry(cactusWasmObjectBoxes, cactusWasmTextBoxes),
+                onnxNoNmsVsOfficialNative: matchNativeGeometry(onnxNoneObjectBoxes, onnxNoneTextBoxes),
+                onnxNms050VsOfficialNative: matchNativeGeometry(onnxNmsObjectBoxes, onnxNmsTextBoxes),
                 onnxNms050VsOfficialCactusWasm: {
                   objects: evaluateBoxMatching(
                     onnxNmsObjectBoxes,
@@ -815,21 +805,17 @@ test.describe('Mirage ONNX (WASM & WebGPU) vs Official Cactus Parity & Speed Ben
 
             // Run Official Cactus WASM Full Mode
             const cactusFullStart = performance.now();
-            cactusTask.detectForVideo(preset.canvas, performance.now(), {
+            await cactusTask.detectForVideo(preset.canvas, 0.3, {
               analysisMode: 'full',
-              language: 'en',
             });
             const cactusFullEnd = performance.now();
-            const cactusFullObs = cactusTask.getLastRawObservation();
+            const cactusFullObs = cactusTask.getLastRawObservation?.();
+            if (!cactusFullObs) throw new Error('Cactus full raw observation unavailable');
 
             // Check Native Corpus Reference if available
-            const nativeFullCase =
-              nativeGeometry?.cases?.[preset.name]?.native?.full ??
-              (preset.name === 'coco_000000458054'
-                ? nativeCorpus?.images?.find(
-                    (img: { id: string }) => img.id === '000000458054'
-                  )?.full
-                : null);
+            const nativeFullCase = nativeCorpus?.native_reserved?.cases?.find(
+              (candidate: { name: string }) => candidate.name === preset.name
+            )?.requests?.['full-score']?.output;
 
             // Stage-by-stage parity between WebGPU and WASM
             const memoryParity = bridge.compareMirageTensorParity(
@@ -965,64 +951,64 @@ test.describe('Mirage ONNX (WASM & WebGPU) vs Official Cactus Parity & Speed Ben
                 onnxWasmAssembledSummary: {
                   objectCount: wasmObservation.objects.length,
                   objectLabels: wasmObservation.objects.map(
-                    (o) => `${o.label} (${round(o.score, 2)})`
+                    (o) => o.score === undefined ? o.name : `${o.name} (${round(o.score, 2)})`
                   ),
                   regionCount: wasmObservation.regions.length,
                   regionLabels: wasmObservation.regions.map(
-                    (r) => `${r.label} (${round(r.score, 2)})`
+                    (r) => r.name
                   ),
                   textCount: wasmObservation.text.length,
                   textItems: wasmObservation.text.map(
-                    (t) => `${t.text} (${round(t.score, 2)})`
+                    (t) => `${t.string} (${round(t.score, 2)})`
                   ),
                   relationCount: wasmObservation.relations.length,
                 },
                 onnxWebgpuAssembledSummary: {
                   objectCount: webgpuObservation.objects.length,
                   objectLabels: webgpuObservation.objects.map(
-                    (o) => `${o.label} (${round(o.score, 2)})`
+                    (o) => o.score === undefined ? o.name : `${o.name} (${round(o.score, 2)})`
                   ),
                   regionCount: webgpuObservation.regions.length,
                   regionLabels: webgpuObservation.regions.map(
-                    (r) => `${r.label} (${round(r.score, 2)})`
+                    (r) => r.name
                   ),
                   textCount: webgpuObservation.text.length,
                   textItems: webgpuObservation.text.map(
-                    (t) => `${t.text} (${round(t.score, 2)})`
+                    (t) => `${t.string} (${round(t.score, 2)})`
                   ),
                   relationCount: webgpuObservation.relations.length,
                 },
                 officialCactusWasmSummary: {
-                  objectCount: cactusFullObs?.objects.length ?? 0,
-                  objectLabels: (cactusFullObs?.objects ?? []).map(
-                    (o) => `${o.label} (${round(o.score, 2)})`
+                  objectCount: cactusFullObs.objects?.length ?? 0,
+                  objectLabels: (cactusFullObs.objects ?? []).map(
+                    (o) => o.score === undefined ? o.name : `${o.name} (${round(o.score, 2)})`
                   ),
-                  regionCount: cactusFullObs?.regions.length ?? 0,
-                  regionLabels: (cactusFullObs?.regions ?? []).map(
-                    (r) => `${r.label} (${round(r.score, 2)})`
+                  regionCount: cactusFullObs.regions?.length ?? 0,
+                  regionLabels: (cactusFullObs.regions ?? []).map(
+                    (r) => `${r.name} (${round(r.score, 2)})`
                   ),
-                  textCount: cactusFullObs?.text.length ?? 0,
-                  textItems: (cactusFullObs?.text ?? []).map(
-                    (t) => `${t.text} (${round(t.score, 2)})`
+                  textCount: cactusFullObs.text?.length ?? 0,
+                  textItems: (cactusFullObs.text ?? []).map(
+                    (t) => `${t.string} (${round(t.score, 2)})`
                   ),
-                  relationCount: cactusFullObs?.relations.length ?? 0,
+                  relationCount: cactusFullObs.relations?.length ?? 0,
                 },
                 officialNativeSummary: nativeFullCase
                   ? {
                       objectCount: (nativeFullCase.objects ?? []).length,
                       objectLabels: (nativeFullCase.objects ?? []).map(
-                        (o: { label: string; score: number }) =>
-                          `${o.label} (${round(o.score, 2)})`
+                        (o: { name: string; score?: number }) => o.score === undefined
+                          ? o.name : `${o.name} (${round(o.score, 2)})`
                       ),
                       regionCount: (nativeFullCase.regions ?? []).length,
                       regionLabels: (nativeFullCase.regions ?? []).map(
-                        (r: { label: string; score: number }) =>
-                          `${r.label} (${round(r.score, 2)})`
+                        (r: { name: string; score?: number }) => r.score === undefined
+                          ? r.name : `${r.name} (${round(r.score, 2)})`
                       ),
                       textCount: (nativeFullCase.text ?? []).length,
                       textItems: (nativeFullCase.text ?? []).map(
-                        (t: { text: string; score: number }) =>
-                          `${t.text} (${round(t.score, 2)})`
+                        (t: { string: string; score?: number }) => t.score === undefined
+                          ? t.string : `${t.string} (${round(t.score, 2)})`
                       ),
                       relationCount: (nativeFullCase.relations ?? []).length,
                     }
@@ -1110,19 +1096,20 @@ test.describe('Mirage ONNX (WASM & WebGPU) vs Official Cactus Parity & Speed Ben
     }
 
     // Assertions:
-    // 1. Both WASM and WebGPU sessions initialized with their requested execution providers
-    expect(
-      benchmarkReport.sessionInitializationMs.backends.onnxWasmEncoder
-        .activeProvider
-    ).toBe('wasm');
-    expect(
-      benchmarkReport.sessionInitializationMs.backends.onnxWebgpuEncoder
-        .activeProvider
-    ).toBe('webgpu');
-    expect(
-      benchmarkReport.sessionInitializationMs.backends.onnxWebgpuDecoderStep
-        .activeProvider
-    ).toBe('webgpu');
+    // 1. Verify strict session configuration, not measured kernel placement.
+    const backends = benchmarkReport.sessionInitializationMs.backends;
+    for (const [backend, provider] of [
+      [backends.onnxWasmEncoder, 'wasm'],
+      [backends.onnxWebgpuEncoder, 'webgpu'],
+      [backends.onnxWebgpuDecoderStep, 'webgpu'],
+    ] as const) {
+      expect(backend).toMatchObject({
+        requestedProvider: provider,
+        configuredProviders: [provider],
+        fallbackReason: null,
+        actualBackend: 'unmeasured',
+      });
+    }
 
     // 2. Fast Proposal Mode: WebGPU vs WASM parity holds across all 3 cases
     for (const [caseName, caseData] of Object.entries(
